@@ -1,0 +1,41 @@
+.udb-job-log {
+  width: @job-log-width;
+  left: (@job-log-width * -1);
+  position: fixed;
+  top: @navbar-height;
+  bottom: 0;
+  transition: left 0.3s ease;
+  overflow-x: hidden;
+  overflow-y: auto;
+  background: #ddd;
+  border-right: silver;
+  padding: 10px;
+
+  .repeat-animation.ng-enter {
+    -webkit-transition: all linear 1s;
+    -moz-transition: all linear 1s;
+    -o-transition: all linear 1s;
+    transition: all linear 1s;
+  }
+
+  .repeat-animation.ng-enter {
+    opacity: 0;
+  }
+
+  .repeat-animation.ng-enter.ng-enter-active {
+    opacity: 1;
+  }
+}
+
+.udb-job-log.shown {
+  left: 0px;
+}
+
+body {
+  transition: margin-left 0.3s ease;
+  margin-left: 0px;
+}
+
+body.push-left {
+  margin-left: @job-log-width;
+}

@@ -1,0 +1,256 @@
+<udb-query-editor ng-show="queryEditorShown"></udb-query-editor>
+
+<div class="row rv-result-viewer">
+  <div class="col-sm-12 rv-search-results" ng-class="{loading: resultViewer.loading}">
+
+      <div class="rv-controls" ng-show="resultViewer.totalItems">
+          <div class="row">
+              <div class="col-xs-12">
+                  <ul class="nav nav-pills" role="tablist">
+                      <li>
+                          <p class="rv-item-counter">
+                              <span ng-bind="resultViewer.totalItems"></span> resultaten
+                          </p>
+                      </li>
+                      <li>
+                          <label for="rv-event-{{propertyKey}}" class="rv-control-toggle"
+                                 ng-class="{active: resultViewer.eventProperties[propertyKey].visible}"
+                                 ng-repeat="propertyKey in ['description', 'labels', 'image']">
+                              <input type="checkbox" id="rv-event-{{propertyKey}}"
+                                     ng-model="resultViewer.eventProperties[propertyKey].visible"/>
+                              <span ng-bind="resultViewer.eventProperties[propertyKey].name"></span>
+                          </label>
+                      </li>
+                      <li role="presentation" class="dropdown">
+                          <a class="dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-expanded="false">
+                              <span class="selectedField" ng-bind="resultViewer.activeSpecific.name"></span> <span class="caret"></span>
+                          </a>
+                          <ul class="dropdown-menu" role="menu" aria-labelledby="rv-event-specific">
+                              <li role="presentation" ng-repeat="specific in resultViewer.eventSpecifics">
+                                  <a role="menuitem" tabindex="-1" href="#" ng-bind="specific.name"
+                                     ng-click="resultViewer.activateSpecific(specific)"></a>
+                              </li>
+                          </ul>
+                  </ul>
+              </div>
+          </div>
+      </div>
+
+    <p class="rv-no-result-notice" ng-show="!resultViewer.loading && resultViewer.totalItems === 0" ng-cloak>
+        Geen evenementen gevonden, probeer een andere zoekopdracht.
+    </p>
+
+    <div ng-show="resultViewer.totalItems">
+        <div class="rv-item-info">
+
+            <div class="row" ng-hide="resultViewer.selectedIds.length">
+                <div class="col-sm-5 rv-first-column">
+                    Wat
+                </div>
+                <div class="col-sm-2">  Waar   </div>
+                <div class="col-sm-2">  Wanneer   </div>
+                <div class="col-sm-3">  <span class="selectedField" ng-bind="resultViewer.activeSpecific.name"></span> </div>
+            </div>
+
+            <div class="row" ng-show="resultViewer.selectedIds.length">
+                <div class="col-sm-12 rv-first-column">
+                {{resultViewer.selectedIds.length }} items geselecteerd
+                    (<a href="#" class="alert-link" ng-click="resultViewer.deselectAll()">deselecteer</a> -
+                    <a href="#" class="alert-link" ng-click="tagSelection()">tag selectie</a> -
+                    <a href="#" class="alert-link" ng-click="tagActiveQuery()">tag alle  <span ng-bind="resultViewer.totalItems"></span> zoekresultaten</a>)
+                </div>
+            </div>
+
+            <div class="rv-item-sidebar">
+                <div class="rv-selection-state fa {{resultViewer.selectionState.icon}}"
+                     ng-click="resultViewer.toggleSelection()"></div>
+            </div>
+        </div>
+
+      <div class="row rv-item" ng-repeat="event in resultViewer.events"
+              ng-class="{selected: resultViewer.isIdSelected(event.id)}"
+              udb-event="event"
+              ng-hide="fetching">
+          <div class="event-content">
+              <div class="col-sm-5 rv-first-column">
+                  <div class="rv-item-sidebar">
+                      <div class="rv-selection-state" ng-click="resultViewer.toggleSelectId(event.id)">
+                          <span class="fa"
+                                ng-class="resultViewer.isIdSelected(event.id) ? 'fa-check-square' : 'fa-square-o'"></span>
+                      </div>
+                  </div>
+
+                  <div class="udb-short-info">
+                      <span class="udb-category" ng-bind="event.type"></span>
+                      <span class="udb-short-info-seperator" ng-show="event.type && event.theme"> • </span>
+                      <span class="udb-theme" ng-bind="event.theme"></span>
+                  </div>
+                  <div class="udb-title">
+                      <a ng-href="{{ event.url }}" target="_blank"
+                         ng-bind="event.name"></a>
+                  </div>
+              </div>
+
+              <div class="col-sm-2">
+                  <div class="udb-place-name" ng-bind="event.location.name"></div>
+                  <div class="udb-place-city" ng-bind="event.location.address.addressLocality"></div>
+              </div>
+
+              <div class="col-sm-2" ng-switch="event.calendarType">
+                  <span ng-switch-when="permanent">permanent</span>
+                  <span ng-switch-when="single">
+                      <span class="udb-start-date" ng-bind="event.startDate | date: 'dd/MM/yyyy'"></span>
+                  </span>
+                  <span ng-switch-when="periodic" class="udb-date-range">
+                    <span class="udb-start-date" ng-bind="event.startDate | date: 'dd/MM/yyyy'"></span>
+                      <i class="fa fa-long-arrow-right"></i>
+                      <span class="udb-end-date" ng-bind="event.endDate | date: 'dd/MM/yyyy'"></span>
+                  </span>
+                  <span ng-switch-when="multiple" class="udb-date-range">
+                      <span class="udb-start-date" ng-bind="event.startDate | date: 'dd/MM/yyyy'"></span>
+                      ,…,
+                      <span class="udb-end-date" ng-bind="event.endDate | date: 'dd/MM/yyyy'"></span>
+                  </span>
+              </div>
+
+              <div class="col-sm-3" class="rv-specific-event-info">
+                  <div class="rv-event-info-input udb-organizer"
+                       ng-show="resultViewer.activeSpecific.id === 'input'">
+                      <div>
+                          <span class="fa fa-clock-o"></span>&nbsp;
+                          <span ng-bind="event.created | date : 'dd/MM/yyyy • HH:mm'"></span>
+                      </div>
+                      <div class="udb-email">
+                          <span class="fa fa-user"></span>&nbsp;
+                          <span ng-bind="event.creator"></span>
+                      </div>
+                      <div class="udb-organizer-name">
+                          <span class="fa fa-building-o"></span>&nbsp;
+                          <span ng-bind="event.organizer ? event.organizer.name : '-'"></span>
+                      </div>
+                  </div>
+
+                  <div class="rv-event-info-price"
+                       ng-show="resultViewer.activeSpecific.id === 'price'" ng-switch="event.pricing">
+                      <span ng-switch-when="free">gratis</span>
+                      <span ng-switch-when="payed">
+                          <i class="fa fa-eur meta icon"></i><span ng-if="event.price" ng-bind="event.price | currency"></span>
+                      </span>
+                      <span ng-switch-when="unknown">niet ingevoerd</span>
+                  </div>
+
+                  <div class="rv-event-info-translation btn-toolbar"
+                       ng-show="resultViewer.activeSpecific.id === 'translation'">
+                      <button type="button" ng-repeat="language in ::languageSelector"
+                              ng-class="{active: activeLanguage === language.lang}"
+                              class="btn btn-default" ng-click="toggleLanguage(language.lang)">
+                          <span class="fa {{getLanguageTranslationIcon(language.lang)}}"></span>
+                          {{language.lang}}
+                      </button>
+                  </div>
+              </div>
+
+              <div class="col-sm-12" ng-show="eventTranslation">
+                  <div class="udb-details row">
+
+                      <button type="button" class="close" ng-click="stopTranslating()">
+                          <span aria-hidden="true">&times;</span><span class="sr-only">Close</span>
+                      </button>
+
+                      <div class="col-sm-12">
+                          <div ng-switch="hasActiveTranslation()">
+                              <div ng-switch-when="false" class="udb-translation-info">
+                                  Voer een {{ activeLanguage.toUpperCase()+'_ADJECTIVE' | translate }} vertaling in
+                              </div>
+
+                              <div ng-switch-default class="udb-translation-info">
+                                  Wijzig de {{ activeLanguage.toUpperCase()+'_ADJECTIVE'  | translate }} vertaling
+                              </div>
+                          </div>
+
+                          <div class="row udb-property-translation">
+                              <div class="col-sm-6">
+                                  <div class="form-group">
+                                      <label>Titel</label>
+                                      <input type="text" class="form-control" ng-model="eventTranslation.name"/>
+                                  </div>
+                                  <div ng-show="hasPropertyChanged('name') && hasActiveTranslation()">
+                                      <button ng-disabled="!eventTranslation.name" class="btn btn-danger" ng-click="applyPropertyChanges('name')">Opslaan</button>
+                                      <button class="btn btn-default" ng-click="undoPropertyChanges('name')">Annuleren</button>
+                                  </div>
+                              </div>
+                              <div class="col-sm-6">
+                                  <strong>Basis-titel</strong>
+                                  <div ng-bind-html="::event.name"></div>
+                              </div>
+                          </div>
+
+
+                          <div class="row udb-property-translation">
+                              <div class="col-sm-6">
+                                  <div class="form-group">
+                                      <label>Beschrijving</label>
+                                      <textarea class="form-control resize-vertical" rows="3" ng-model="eventTranslation.description"></textarea>
+                                  </div>
+                                  <div ng-show="hasPropertyChanged('description') && hasActiveTranslation()">
+                                      <button ng-disabled="!eventTranslation.description" class="btn btn-danger" ng-click="applyPropertyChanges('description')">Opslaan</button>
+                                      <button class="btn btn-default" ng-click="undoPropertyChanges('description')">Annuleren</button>
+                                  </div>
+                              </div>
+                              <div class="col-sm-6">
+                                  <strong>Basis-beschrijving</strong>
+                                  <div ng-bind="event.description"></div>
+                              </div>
+                          </div>
+
+                          <div ng-hide="hasActiveTranslation()">
+                              <button ng-disabled="!eventTranslation.name" class="btn btn-danger" ng-click="translate()">Opslaan</button>
+                              <button class="btn btn-default" ng-click="stopTranslating()">Annuleren</button>
+                          </div>
+                      </div>
+
+
+                  </div>
+              </div>
+
+              <div class="col-sm-12" ng-show="resultViewer.isShowingProperties()">
+                  <div class="udb-details row">
+                      <div class="col-sm-2" ng-show="resultViewer.eventProperties.image.visible">
+                          <img ng-src="{{event.image}}" alt="{{event.name}}" class="img-responsive">
+                      </div>
+                      <div ng-class="resultViewer.eventProperties.image.visible ? 'col-sm-10' : 'col-sm-12'">
+                          <div ng-show="resultViewer.eventProperties.description.visible">
+                              <div ng-bind-html="event.description" class="udb-description"></div>
+                          </div>
+
+                          <div ng-show="resultViewer.eventProperties.labels.visible" class="udb-labels">
+                              <span ng-hide="event.labels.length">Dit evenement is nog niet getagd.</span>
+                              <ui-select multiple ng-model="event.labels" tagging tagging-label="(label toevoegen)"
+                                         ng-disabled="disabled" reset-search-input="true" tagging-tokens="ENTER|;"
+                                         on-select="labelAdded($item)" on-remove="labelRemoved($item)">
+                                  <ui-select-match placeholder="Voeg een label toe...">{{$item}}</ui-select-match>
+                                  <ui-select-choices repeat="label in availableLabels">
+                                      <div ng-bind-html="label | highlight: $select.search"></div>
+                                  </ui-select-choices>
+                              </ui-select>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+          </div>
+      </div>
+
+      <pagination total-items="resultViewer.totalItems" ng-model="resultViewer.currentPage" items-per-page="resultViewer.pageSize" ng-show="resultViewer.totalItems > 0"
+        ng-change="resultViewer.pageChanged()" max-size="10"></pagination>
+
+    <div class="col-sm-12" ng-show="realQuery">
+        <span class="help-block">
+          uitgevoerde query: <strong>{{realQuery}}</strong>
+        </span>
+    </div>
+    </div>
+  </div>
+    <div class="rv-loading-overlay" ng-show="resultViewer.loading">
+        <i class="fa fa-circle-o-notch fa-spin"></i> Zoeken…
+    </div>
+</div>

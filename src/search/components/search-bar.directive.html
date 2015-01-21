@@ -1,0 +1,11 @@
+<form class="navbar-form navbar-left udb-header-search" role="search">
+  <div class="form-group has-warning has-feedback">
+    <input type="text" class="form-control" ng-model="sb.query">
+    <i class="fa fa-search search-icon"></i>
+    <i ng-show="sb.hasErrors" class="fa fa-warning warning-icon" tooltip-append-to-body="true"
+       tooltip-placement="bottom" tooltip="{{sb.errors}}"></i>
+  </div>
+  <button type="submit" class="btn udb-query-editor-button" ng-click="sb.editQuery()">
+    <i class="fa fa-flask"></i>
+  </button>
+</form>

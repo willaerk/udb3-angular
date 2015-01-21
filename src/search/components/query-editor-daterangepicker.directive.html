@@ -1,0 +1,23 @@
+<div>
+  <p class="input-group" ng-hide="field.transformer === '<'">
+    <input type="text" class="form-control" datepicker-popup="{{drp.dateFormat}}" ng-model="field.lowerBound"
+           is-open="drp.startOpened" ng-required="true" datepicker-options="drp.options"/>
+    <span class="input-group-btn">
+        <button type="button" class="btn btn-default" ng-click="drp.openStart($event)">
+          <i class="fa fa-calendar"></i>
+        </button>
+    </span>
+  </p>
+
+  <span ng-hide="field.transformer === '<' || field.transformer === '>' || field.transformer === '='">tot</span>
+
+  <p class="input-group" ng-hide="field.transformer === '>' || field.transformer === '='">
+    <input type="text" class="form-control" datepicker-popup="{{drp.dateFormat}}" ng-model="field.upperBound"
+           is-open="drp.endOpened" ng-required="true" datepicker-options="drp.options"/>
+    <span class="input-group-btn">
+        <button type="button" class="btn btn-default" ng-click="drp.openEnd($event)">
+          <i class="fa fa-calendar"></i>
+        </button>
+    </span>
+  </p>
+</div>

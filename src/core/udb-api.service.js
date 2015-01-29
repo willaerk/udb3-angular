@@ -162,6 +162,19 @@ this.tagQuery = function (query, label) {
   );
 };
 
+this.exportQuery = function (query, email, format) {
+  return $http.post(appConfig.baseUrl + 'events/export/' + format,
+    {
+      query: query,
+      selection: [],
+      order: {},
+      include: [],
+      email: email,
+      perDay: true
+    },
+    defaultApiConfig)
+};
+
 this.translateEventProperty = function (eventId, property, language, translation) {
 
   var translationData = {};

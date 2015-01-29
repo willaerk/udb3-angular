@@ -233,6 +233,7 @@ module.exports = function (grunt) {
           'src/core/udb.config.module.js',
           'src/search/udb.search.module.js',
           'src/entry/udb.entry.module.js',
+          'src/export/udb.export.module.js',
           'src/search/parsers/udb-query-parser.service.js'
         ],
         dest: '.tmp/udb3-angular.modules.js'
@@ -241,8 +242,8 @@ module.exports = function (grunt) {
         src:  [
           '.tmp/udb3-angular.modules.js',
           'src/**/*.js',
-          '!**/*.spec.js',
-          '!**/*.module.js',
+          '!src/**/*.spec.js',
+          '!src/**/*.module.js',
           '!src/search/parsers/udb-query-parser.service.js',
           '.tmp/udb3-angular.templates.js'
         ],

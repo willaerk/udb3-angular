@@ -1,0 +1,59 @@
+<div class="modal-header">
+  <button type="button" class="close" aria-label="Close" ng-click="exporter.close()">
+    <span class="fa fa-close"></span>
+  </button>
+  <h4 class="modal-title">Exporteren - <span ng-bind="exporter.eventCount + ' Items'"></span></h4>
+
+</div>
+
+<div class="modal-body" ng-show="exporter.getActiveStepName() === 'format'">
+  <div class="radio" ng-repeat="format in ::exporter.exportFormats">
+    <label>
+      <input type="radio" name="event-export-format" ng-model="exporter.format" ng-value="format.type">
+      <span ng-bind="format.label"></span>
+    </label>
+    <span ng-bind="format.description"></span>
+  </div>
+</div>
+
+<div class="modal-body" ng-show="exporter.getActiveStepName() === 'filter'">
+  <h5>Kies de gewenste velden</h5>
+
+  <div class="checkbox" ng-repeat="(field, selected) in ::exporter.fields">
+    <label>
+      <input type="checkbox" ng-model="exporter.fields[field]" name="event-export-fields" >
+      <span ng-bind="field.toUpperCase() | translate"></span>
+    </label>
+  </div>
+</div>
+
+<div class="modal-body" ng-show="exporter.getActiveStepName() === 'sort'">
+  <h5>Herschik en verfijn</h5>
+
+  <strong>Sorteer op</strong>
+
+  <strong>Dag per dag</strong>
+</div>
+
+<div class="modal-body" ng-show="exporter.getActiveStepName() === 'confirm'">
+  <h5>Export versturen</h5>
+
+  <label>Email</label>
+  <input type="text" ng-model="exporter.email"/>
+</div>
+
+<div class="modal-body" ng-show="exporter.getActiveStepName() === 'finished'">
+  <h5>Export onderweg</h5>
+
+  <p>Je export is onderweg per mail.</p>
+</div>
+
+<div class="modal-footer" ng-hide="exporter.getActiveStepName() === 'finished'">
+  <button class="btn btn-default pull-left" ng-click="exporter.previousStep()">vorige stap</button>
+  <button ng-hide="exporter.onLastStep()" class="btn btn-primary" ng-click="exporter.nextStep()">volgende</button>
+  <button ng-show="exporter.onLastStep()" class="btn btn-primary" ng-click="exporter.export()">exporteren</button>
+</div>
+
+<div class="modal-footer" ng-show="exporter.getActiveStepName() === 'finished'">
+  <button class="btn btn-default" ng-click="exporter.close()">sluiten</button>
+</div>

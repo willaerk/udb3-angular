@@ -13,7 +13,7 @@ angular
 
 /* @ngInject */
 function Search($scope, udbApi, LuceneQueryBuilder, $window, $location, $modal, SearchResultViewer, eventTagger,
-                searchHelper, $rootScope) {
+                searchHelper, $rootScope, eventExporter) {
 
   var queryBuilder = LuceneQueryBuilder;
 
@@ -148,6 +148,25 @@ function Search($scope, udbApi, LuceneQueryBuilder, $window, $location, $modal, 
     }
   }
 
+  function exportActiveQuery() {
+    var query = $scope.activeQuery,
+        eventCount = $scope.resultViewer.totalItems;
+
+    eventExporter.activeExport.query = query;
+    eventExporter.activeExport.eventCount = eventCount;
+
+    if (query && query.queryString.length && queryBuilder.isValid(query)) {
+      var modal = $modal.open({
+        templateUrl: 'templates/event-export-modal.html',
+        controller: 'EventExportController',
+        controllerAs: 'exporter'
+      });
+    } else {
+      $window.alert('provide a valid query to export');
+    }
+  }
+
+  $scope.exportActiveQuery = exportActiveQuery;
   $scope.tagSelection = tagSelection;
   $scope.tagActiveQuery = tagActiveQuery;
 

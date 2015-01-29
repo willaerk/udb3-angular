@@ -16,6 +16,7 @@ angular
     'udb.config',
     'udb.search',
     'udb.entry',
+    'udb.export',
     'btford.socket-io',
     'pascalprecht.translate'
   ]);
@@ -60,6 +61,20 @@ angular
     'udb.search',
     'btford.socket-io',
     'pascalprecht.translate'
+  ]);
+/**
+ * @ngdoc module
+ * @name udb.export
+ * @description
+ * The udb export module
+ */
+angular
+  .module('udb.export', [
+    'ngAnimate',
+    'ngSanitize',
+    'ui.bootstrap',
+    'udb.config',
+    'udb.search'
   ]);
 angular.module('peg', []).factory('LuceneQueryParser', function () {
  return (function() {
@@ -2233,6 +2248,19 @@ this.tagQuery = function (query, label) {
   );
 };
 
+this.exportQuery = function (query, email, format) {
+  return $http.post(appConfig.baseUrl + 'events/export/' + format,
+    {
+      query: query,
+      selection: [],
+      order: {},
+      include: [],
+      email: email,
+      perDay: true
+    },
+    defaultApiConfig)
+};
+
 this.translateEventProperty = function (eventId, property, language, translation) {
 
   var translationData = {};
@@ -2944,6 +2972,143 @@ function EventTranslator(jobLogger, udbApi) {
   };
 }
 EventTranslator.$inject = ["jobLogger", "udbApi"];
+
+// Source: src/export/event-export.controller.js
+/**
+ * @ngdoc function
+ * @name udb.export.controller:EventExportController
+ * @description
+ * # EventExportController
+ * Controller of the udb.export
+ */
+angular
+  .module('udb.export')
+  .controller('EventExportController', EventExportController);
+
+/* @ngInject */
+function EventExportController($modalInstance, udbApi, eventExporter, queryFields) {
+
+  var exporter = this;
+
+  exporter.fields = _.indexBy(queryFields, 'name');
+
+  exporter.exportFormats = [
+    {
+      type: 'json',
+      label: 'als json',
+      description: 'Exporteren naar event-ld om de informatie voor ontwikkelaars beschikbaar te maken.'
+    },
+    {
+      type: 'csv',
+      label: 'als tabel',
+      description: 'Met spreadsheetprogramma\'s als Microsoft Excel kun je eenvoudig CSV-bestanden maken en bewerken.'
+    }
+  ];
+
+  exporter.steps = [
+    {name: 'format' },
+    //{name: 'filter', incomplete: function () {
+    //  return (exporter.fields.length === 0);
+    //} },
+    //{name: 'sort' },
+    {name: 'confirm' }
+  ];
+
+  var activeStep = 0;
+  exporter.nextStep = function () {
+    var incompleteCheck = exporter.steps[activeStep].incomplete;
+
+    if((typeof incompleteCheck === 'undefined') || (typeof incompleteCheck === 'function' && !incompleteCheck())) {
+      setActiveStep(activeStep + 1);
+    }
+  };
+
+  exporter.previousStep = function () {
+    setActiveStep(activeStep - 1);
+  };
+
+  function setActiveStep(stepIndex) {
+    if(stepIndex < 0) {
+      activeStep = 0;
+    } else if(stepIndex > exporter.steps.length) {
+      activeStep = exporter.steps.length;
+    } else {
+      activeStep = stepIndex;
+    }
+  }
+
+  exporter.getActiveStepName = function () {
+
+    if(activeStep === -1) {
+      return 'finished';
+    }
+
+    return exporter.steps[activeStep].name;
+  };
+
+  exporter.onLastStep = function () {
+    return activeStep >= (exporter.steps.length - 1);
+  };
+
+  exporter.export = function () {
+    eventExporter.export(exporter.format, exporter.email);
+    activeStep = -1;
+  };
+
+  exporter.format = exporter.exportFormats[0].type;
+  exporter.email = '';
+
+  // TODO: I'm not sure which property to check for a valid email address
+  udbApi.getMe().then(function (user) {
+    if(user.email) {
+      exporter.email = user.email;
+    }
+  });
+
+  exporter.close = function () {
+    $modalInstance.dismiss('cancel');
+  };
+
+  exporter.eventCount = eventExporter.activeExport.eventCount;
+}
+EventExportController.$inject = ["$modalInstance", "udbApi", "eventExporter", "queryFields"];
+
+// Source: src/export/event-exporter.service.js
+/**
+ * @ngdoc service
+ * @name udb.entry.eventExporter
+ * @description
+ * # eventExporter
+ * Service in the udb.export.
+ */
+angular
+  .module('udb.export')
+  .service('eventExporter', eventExporter);
+
+/* @ngInject */
+function eventExporter(jobLogger, udbApi) {
+
+  var eventExporter = this;
+
+  eventExporter.activeExport = {
+    query: {},
+    eventCount: 0
+  };
+
+  eventExporter.export = function (format, email) {
+    var queryString = eventExporter.activeExport.query.queryString;
+
+    var jobPromise = udbApi.exportQuery(queryString, email, format);
+
+    jobPromise.success(function (jobData) {
+      var jobId = jobData.commandId;
+      jobLogger.createTranslationJob(jobId, 'exporting query');
+    });
+
+    return jobPromise;
+  }
+}
+eventExporter.$inject = ["jobLogger", "udbApi"];
 
 // Source: src/search/components/query-editor-daterangepicker.directive.js
 /**
@@ -4528,7 +4693,7 @@ angular
 
 /* @ngInject */
 function Search($scope, udbApi, LuceneQueryBuilder, $window, $location, $modal, SearchResultViewer, eventTagger,
-                searchHelper, $rootScope) {
+                searchHelper, $rootScope, eventExporter) {
 
   var queryBuilder = LuceneQueryBuilder;
 
@@ -4663,6 +4828,25 @@ function Search($scope, udbApi, LuceneQueryBuilder, $window, $location, $modal, 
     }
   }
 
+  function exportActiveQuery() {
+    var query = $scope.activeQuery,
+        eventCount = $scope.resultViewer.totalItems;
+
+    eventExporter.activeExport.query = query;
+    eventExporter.activeExport.eventCount = eventCount;
+
+    if (query && query.queryString.length && queryBuilder.isValid(query)) {
+      var modal = $modal.open({
+        templateUrl: 'templates/event-export-modal.html',
+        controller: 'EventExportController',
+        controllerAs: 'exporter'
+      });
+    } else {
+      $window.alert('provide a valid query to export');
+    }
+  }
+
+  $scope.exportActiveQuery = exportActiveQuery;
   $scope.tagSelection = tagSelection;
   $scope.tagActiveQuery = tagActiveQuery;
 
@@ -4706,7 +4890,7 @@ function Search($scope, udbApi, LuceneQueryBuilder, $window, $location, $modal, 
   });
 
 }
-Search.$inject = ["$scope", "udbApi", "LuceneQueryBuilder", "$window", "$location", "$modal", "SearchResultViewer", "eventTagger", "searchHelper", "$rootScope"];
+Search.$inject = ["$scope", "udbApi", "LuceneQueryBuilder", "$window", "$location", "$modal", "SearchResultViewer", "eventTagger", "searchHelper", "$rootScope", "eventExporter"];
 
 // Source: src/search/ui/search.directive.js
 /**
@@ -4756,6 +4940,69 @@ $templateCache.put('templates/event-tag-modal.html',
     "<div class=\"modal-footer\">\n" +
     "  <button class=\"btn btn-primary\" ng-click=\"ok()\">label</button>\n" +
     "  <button class=\"btn btn-warning\" ng-click=\"close()\">annuleren</button>\n" +
+    "</div>"
+  );
+
+
+  $templateCache.put('templates/event-export-modal.html',
+    "<div class=\"modal-header\">\n" +
+    "  <button type=\"button\" class=\"close\" aria-label=\"Close\" ng-click=\"exporter.close()\">\n" +
+    "    <span class=\"fa fa-close\"></span>\n" +
+    "  </button>\n" +
+    "  <h4 class=\"modal-title\">Exporteren - <span ng-bind=\"exporter.eventCount + ' Items'\"></span></h4>\n" +
+    "\n" +
+    "</div>\n" +
+    "\n" +
+    "<div class=\"modal-body\" ng-show=\"exporter.getActiveStepName() === 'format'\">\n" +
+    "  <div class=\"radio\" ng-repeat=\"format in ::exporter.exportFormats\">\n" +
+    "    <label>\n" +
+    "      <input type=\"radio\" name=\"event-export-format\" ng-model=\"exporter.format\" ng-value=\"format.type\">\n" +
+    "      <span ng-bind=\"format.label\"></span>\n" +
+    "    </label>\n" +
+    "    <span ng-bind=\"format.description\"></span>\n" +
+    "  </div>\n" +
+    "</div>\n" +
+    "\n" +
+    "<div class=\"modal-body\" ng-show=\"exporter.getActiveStepName() === 'filter'\">\n" +
+    "  <h5>Kies de gewenste velden</h5>\n" +
+    "\n" +
+    "  <div class=\"checkbox\" ng-repeat=\"(field, selected) in ::exporter.fields\">\n" +
+    "    <label>\n" +
+    "      <input type=\"checkbox\" ng-model=\"exporter.fields[field]\" name=\"event-export-fields\" >\n" +
+    "      <span ng-bind=\"field.toUpperCase() | translate\"></span>\n" +
+    "    </label>\n" +
+    "  </div>\n" +
+    "</div>\n" +
+    "\n" +
+    "<div class=\"modal-body\" ng-show=\"exporter.getActiveStepName() === 'sort'\">\n" +
+    "  <h5>Herschik en verfijn</h5>\n" +
+    "\n" +
+    "  <strong>Sorteer op</strong>\n" +
+    "\n" +
+    "  <strong>Dag per dag</strong>\n" +
+    "</div>\n" +
+    "\n" +
+    "<div class=\"modal-body\" ng-show=\"exporter.getActiveStepName() === 'confirm'\">\n" +
+    "  <h5>Export versturen</h5>\n" +
+    "\n" +
+    "  <label>Email</label>\n" +
+    "  <input type=\"text\" ng-model=\"exporter.email\"/>\n" +
+    "</div>\n" +
+    "\n" +
+    "<div class=\"modal-body\" ng-show=\"exporter.getActiveStepName() === 'finished'\">\n" +
+    "  <h5>Export onderweg</h5>\n" +
+    "\n" +
+    "  <p>Je export is onderweg per mail.</p>\n" +
+    "</div>\n" +
+    "\n" +
+    "<div class=\"modal-footer\" ng-hide=\"exporter.getActiveStepName() === 'finished'\">\n" +
+    "  <button class=\"btn btn-default pull-left\" ng-click=\"exporter.previousStep()\">vorige stap</button>\n" +
+    "  <button ng-hide=\"exporter.onLastStep()\" class=\"btn btn-primary\" ng-click=\"exporter.nextStep()\">volgende</button>\n" +
+    "  <button ng-show=\"exporter.onLastStep()\" class=\"btn btn-primary\" ng-click=\"exporter.export()\">exporteren</button>\n" +
+    "</div>\n" +
+    "\n" +
+    "<div class=\"modal-footer\" ng-show=\"exporter.getActiveStepName() === 'finished'\">\n" +
+    "  <button class=\"btn btn-default\" ng-click=\"exporter.close()\">sluiten</button>\n" +
     "</div>"
   );
 
@@ -4983,7 +5230,8 @@ $templateCache.put('templates/event-tag-modal.html',
     "                {{resultViewer.selectedIds.length }} items geselecteerd\n" +
     "                    (<a href=\"#\" class=\"alert-link\" ng-click=\"resultViewer.deselectAll()\">deselecteer</a> -\n" +
     "                    <a href=\"#\" class=\"alert-link\" ng-click=\"tagSelection()\">tag selectie</a> -\n" +
-    "                    <a href=\"#\" class=\"alert-link\" ng-click=\"tagActiveQuery()\">tag alle  <span ng-bind=\"resultViewer.totalItems\"></span> zoekresultaten</a>)\n" +
+    "                    <a href=\"#\" class=\"alert-link\" ng-click=\"tagActiveQuery()\">tag alle  <span ng-bind=\"resultViewer.totalItems\"></span> zoekresultaten</a> -\n" +
+    "                    <a href=\"#\" class=\"alert-link\" ng-click=\"exportActiveQuery()\">exporteer query</a>)\n" +
     "                </div>\n" +
     "            </div>\n" +
     "\n" +

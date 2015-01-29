@@ -3205,7 +3205,7 @@ angular
   .directive('udbSearchBar', udbSearchBar);
 
 /* @ngInject */
-function udbSearchBar($route, $timeout, searchHelper, $rootScope) {
+function udbSearchBar(searchHelper, $rootScope) {
   return {
     templateUrl: 'templates/search-bar.directive.html',
     restrict: 'E',
@@ -3252,7 +3252,7 @@ function udbSearchBar($route, $timeout, searchHelper, $rootScope) {
     }
   };
 }
-udbSearchBar.$inject = ["$route", "$timeout", "searchHelper", "$rootScope"];
+udbSearchBar.$inject = ["searchHelper", "$rootScope"];
 // Source: src/search/filters/currency.filter.js
 /**
  * @ngdoc filter

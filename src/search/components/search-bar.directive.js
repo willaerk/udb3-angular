@@ -11,7 +11,7 @@ angular
   .directive('udbSearchBar', udbSearchBar);
 
 /* @ngInject */
-function udbSearchBar($route, $timeout, searchHelper, $rootScope) {
+function udbSearchBar(searchHelper, $rootScope) {
   return {
     templateUrl: 'templates/search-bar.directive.html',
     restrict: 'E',

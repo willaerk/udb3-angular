@@ -12,7 +12,7 @@ angular
   .service('eventTagger', EventTagger);
 
 /* @ngInject */
-function EventTagger(jobLogger, udbApi) {
+function EventTagger(jobLogger, udbApi, EventTagJob, EventTagBatchJob, QueryTagJob) {
 
   var eventTagger = this;
 
@@ -40,10 +40,8 @@ function EventTagger(jobLogger, udbApi) {
 
     jobPromise.success(function (jobData) {
       event.tag(label);
-      jobLogger.createTranslationJob(
-        jobData.commandId,
-        'Tag "' + event.name.nl + '" met label "' + label + '".',
-        event);
+      var job = new EventTagJob(jobData.commandId, event, label);
+      jobLogger.addJob(job);
     });
   };
 
@@ -57,10 +55,8 @@ function EventTagger(jobLogger, udbApi) {
 
     jobPromise.success(function (jobData) {
       event.untag(label);
-      jobLogger.createTranslationJob(
-        jobData.commandId,
-        'Verwijder label "' + label + '" van "' + event.name.nl + '".',
-        event);
+      var job = new EventTagJob(jobData.commandId, event, label, true);
+      jobLogger.addJob(job);
     });
   };
 
@@ -72,10 +68,9 @@ function EventTagger(jobLogger, udbApi) {
     var jobPromise = udbApi.tagEvents(eventIds, label);
 
     jobPromise.success(function (jobData) {
-      var jobId = jobData.commandId;
-      jobLogger.createJob(jobId, _.map(eventIds, function (id) {
-        return {'id': id};
-      }), label);
+      var job = new EventTagBatchJob(jobData.commandId, eventIds, label);
+      console.log(job);
+      jobLogger.addJob(job);
     });
   };
 
@@ -89,8 +84,8 @@ function EventTagger(jobLogger, udbApi) {
     eventCount = eventCount || 0;
 
     jobPromise.success(function (jobData) {
-      var jobId = jobData.commandId;
-      jobLogger.createJob(jobId, eventCount, label);
+      var job = new QueryTagJob(jobData.commandId, eventCount, label);
+      jobLogger.addJob(job);
     });
 
   };

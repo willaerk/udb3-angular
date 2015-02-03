@@ -18,7 +18,7 @@ function udbWorkIndicator ($window, jobLogger) {
       scope.working = false;
 
       $window.setInterval(function () {
-        scope.working = jobLogger.hasUnfinishedJobs();
+        scope.working = jobLogger.hasActiveJobs();
         element.toggleClass('working', scope.working);
       }, 2000);
     }

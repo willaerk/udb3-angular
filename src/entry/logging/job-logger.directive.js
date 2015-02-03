@@ -6,7 +6,8 @@
  * @description
  * # udbJobLog
  */
-angular.module('udb.entry')
+angular
+  .module('udb.entry')
   .directive('udbJobLog', udbJobLog);
 
 /* @ngInject */
@@ -23,7 +24,7 @@ function udbJobLog(jobLogger) {
       scope.giveJobBarType = function (job) {
         var barType = 'info';
 
-        if(job.type === 'batch') {
+        if(job.getTemplateName() === 'batch-job') {
           var failedTags = _.filter(job.events, function (event) {
             return typeof event.tagged !== 'undefined' && event.tagged === false;
           });
@@ -34,7 +35,7 @@ function udbJobLog(jobLogger) {
           } else if(job.progress === 100) {
             barType = 'success';
           }
-        } else if (job.type === 'single'){
+        } else if (job.getTemplateName() === 'base-job'){
           if(job.state === 'started') {
             barType = 'info';
           }

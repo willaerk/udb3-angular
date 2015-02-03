@@ -12,7 +12,7 @@ angular
   .service('eventTranslator', EventTranslator);
 
 /* @ngInject */
-function EventTranslator(jobLogger, udbApi) {
+function EventTranslator(jobLogger, udbApi, EventTranslationJob) {
 
   /**
    * Translates an event property to a given language and adds the job to the logger
@@ -26,27 +26,13 @@ function EventTranslator(jobLogger, udbApi) {
     var jobPromise = udbApi.translateEventProperty(event.id, property, language, translation);
 
     jobPromise.success(function (jobData) {
-      var jobId = jobData.commandId;
       // TODO get rid of this hack;
       if (property === 'title') {
         property = 'name';
       }
       event[property][language] = translation;
-      var jobTitle;
-      switch (property) {
-        case 'name':
-          jobTitle = 'Vertaal naam van evenement "' + event.name.nl + '".';
-          break;
-        case 'description':
-          jobTitle = 'Vertaal omschrijving van evenement "' + event.name.nl + '".';
-          break;
-        default:
-          jobTitle = 'Vertaal ' + property + ' van evenement "' + event.name.nl + '".';
-      }
-      jobLogger.createTranslationJob(
-        jobId,
-        jobTitle,
-        event);
+      var job = new EventTranslationJob(jobData.commandId, event, property, language, translation);
+      jobLogger.addJob(job);
     });
 
     return jobPromise;

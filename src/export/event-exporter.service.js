@@ -12,7 +12,7 @@ angular
   .service('eventExporter', eventExporter);
 
 /* @ngInject */
-function eventExporter(jobLogger, udbApi) {
+function eventExporter(jobLogger, udbApi, EventExportJob) {
 
   var eventExporter = this;
 
@@ -27,8 +27,10 @@ function eventExporter(jobLogger, udbApi) {
     var jobPromise = udbApi.exportQuery(queryString, email, format);
 
     jobPromise.success(function (jobData) {
-      var jobId = jobData.commandId;
-      jobLogger.createTranslationJob(jobId, 'exporting query');
+      var job = new EventExportJob(jobData.commandId);
+      jobLogger.addJob(job);
+      job.start();
+      console.log([job, job.getDescription()]);
     });
 
     return jobPromise;

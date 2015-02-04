@@ -39,6 +39,11 @@ textarea.resize-vertical {
   user-select: none;
   cursor: pointer;
 }
+.disabled.rv-selection-state {
+  opacity: 0.2;
+  cursor: default;
+  cursor: not-allowed;
+}
 .rv-selection-actions {
   text-align: center;
 }
@@ -100,14 +105,21 @@ textarea.resize-vertical {
   padding-bottom: 0.5em;
   padding-top: 0.5em;
   position: relative;
+  height: 55px;
 }
 .rv-item-info .row {
   margin: 0;
-  min-height: 30px;
-  line-height: 28px;
+  min-height: 32px;
+  line-height: 32px;
 }
 .rv-item-info .rv-item-sidebar {
   padding: 0.5em 0;
+}
+.rv-action {
+  margin-left: 15px;
+}
+.rv-action:first-child {
+  margin-left: 55px;
 }
 .rv-no-result-notice {
   font-size: 30px;

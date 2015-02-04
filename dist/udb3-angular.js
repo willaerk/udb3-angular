@@ -4755,6 +4755,7 @@ angular.module('udb.search')
       this.activeSpecific = this.eventSpecifics[0];
       this.selectedIds = [];
       this.selectionState = SelectionState.NONE;
+      this.querySelected = false;
     };
 
     SearchResultViewer.prototype = {
@@ -4763,9 +4764,17 @@ angular.module('udb.search')
 
         if( state === SelectionState.SOME || state === SelectionState.ALL) {
           this.deselectPageItems();
+          if(this.querySelected) {
+            this.deselectAll();
+            this.querySelected = false;
+          }
         } else {
           this.selectPageItems();
         }
+      },
+      selectQuery: function () {
+        this.querySelected = true;
+        this.selectPageItems();
       },
       updateSelectionState: function () {
         var selectedIds = this.selectedIds,
@@ -4782,6 +4791,12 @@ angular.module('udb.search')
         }
       },
       toggleSelectId: function (id) {
+
+        // Prevent toggling individual items when the whole query is selected
+        if(this.querySelected) {
+          return;
+        }
+
         var selectedIds = this.selectedIds,
           isSelected = _.contains(selectedIds, id);
 
@@ -4830,12 +4845,16 @@ angular.module('udb.search')
         viewer.totalItems = pagedResults.totalItems || 0;
 
         viewer.loading = false;
+        if(this.querySelected) {
+          this.selectPageItems();
+        }
         this.updateSelectionState();
       },
       queryChanged: function (query) {
         this.loading = true;
         this.currentPage = 1;
         this.selectedIds = [];
+        this.querySelected = false;
       },
       activateSpecific: function (specific) {
         this.activeSpecific = specific;
@@ -5128,6 +5147,16 @@ function Search($scope, udbApi, LuceneQueryBuilder, $window, $location, $modal, 
     });
   };
 
+  var tag = function () {
+    var taggingQuery = $scope.resultViewer.querySelected;
+
+    if(taggingQuery) {
+      tagActiveQuery();
+    } else {
+      tagSelection();
+    }
+  };
+
   var tagSelection = function () {
 
     var selectedIds = $scope.resultViewer.selectedIds;
@@ -5200,9 +5229,8 @@ function Search($scope, udbApi, LuceneQueryBuilder, $window, $location, $modal, 
     }
   }
 
-  $scope.exportActiveQuery = exportActiveQuery;
-  $scope.tagSelection = tagSelection;
-  $scope.tagActiveQuery = tagActiveQuery;
+  $scope.export = exportActiveQuery;
+  $scope.tag = tag;
 
   $scope.editQuery = function () {
     var query = $scope.activeQuery;
@@ -5600,17 +5628,37 @@ $templateCache.put('templates/base-job.template.html',
     "\n" +
     "            <div class=\"row\" ng-show=\"resultViewer.selectedIds.length\">\n" +
     "                <div class=\"col-sm-12 rv-first-column\">\n" +
-    "                {{resultViewer.selectedIds.length }} items geselecteerd\n" +
-    "                    (<a href=\"#\" class=\"alert-link\" ng-click=\"resultViewer.deselectAll()\">deselecteer</a> -\n" +
-    "                    <a href=\"#\" class=\"alert-link\" ng-click=\"tagSelection()\">tag selectie</a> -\n" +
-    "                    <a href=\"#\" class=\"alert-link\" ng-click=\"tagActiveQuery()\">tag alle  <span ng-bind=\"resultViewer.totalItems\"></span> zoekresultaten</a> -\n" +
-    "                    <a href=\"#\" class=\"alert-link\" ng-click=\"exportActiveQuery()\">exporteer query</a>)\n" +
+    "                    <span ng-bind=\"resultViewer.querySelected ? resultViewer.totalItems : resultViewer.selectedIds.length\"></span> items geselecteerd\n" +
+    "\n" +
+    "                    <button class=\"btn btn-default rv-action\" ng-click=\"tag()\">\n" +
+    "                        <i class=\"fa fa-tag\"></i> Labelen\n" +
+    "                    </button>\n" +
+    "                    <button class=\"btn btn-default rv-action\" ng-click=\"export()\">\n" +
+    "                        <i class=\"fa fa-cloud-download\"></i> Exporteren\n" +
+    "                    </button>\n" +
+    "                    <a href=\"#\" class=\"alert-link rv-action\" ng-click=\"resultViewer.deselectAll()\">Deselecteren</a>\n" +
     "                </div>\n" +
     "            </div>\n" +
     "\n" +
     "            <div class=\"rv-item-sidebar\">\n" +
-    "                <div class=\"rv-selection-state fa {{resultViewer.selectionState.icon}}\"\n" +
-    "                     ng-click=\"resultViewer.toggleSelection()\"></div>\n" +
+    "                <div class=\"rv-selection-state\">\n" +
+    "                    <span class=\"dropdown\" dropdown ng-hide=\"resultViewer.selectedIds.length\">\n" +
+    "                      <span class=\"dropdown-toggle fa {{resultViewer.selectionState.icon}}\" dropdown-toggle>\n" +
+    "                      </span>\n" +
+    "                      <ul class=\"dropdown-menu\">\n" +
+    "                          <li role=\"presentation\" class=\"dropdown-header\">Selecteer</li>\n" +
+    "                          <li ng-click=\"resultViewer.toggleSelection()\">\n" +
+    "                              <a href>Alles op deze pagina (30 items)</a>\n" +
+    "                          </li>\n" +
+    "                          <li ng-click=\"resultViewer.selectQuery()\">\n" +
+    "                              <a href>Alles resultaten (<span ng-bind=\"resultViewer.totalItems\"></span> items)</a>\n" +
+    "                          </li>\n" +
+    "                      </ul>\n" +
+    "                    </span>\n" +
+    "\n" +
+    "                    <span ng-show=\"resultViewer.selectedIds.length\" ng-click=\"resultViewer.toggleSelection()\"\n" +
+    "                          class=\" fa {{resultViewer.selectionState.icon}}\"></span>\n" +
+    "                </div>\n" +
     "            </div>\n" +
     "        </div>\n" +
     "\n" +
@@ -5621,7 +5669,8 @@ $templateCache.put('templates/base-job.template.html',
     "          <div class=\"event-content\">\n" +
     "              <div class=\"col-sm-5 rv-first-column\">\n" +
     "                  <div class=\"rv-item-sidebar\">\n" +
-    "                      <div class=\"rv-selection-state\" ng-click=\"resultViewer.toggleSelectId(event.id)\">\n" +
+    "                      <div class=\"rv-selection-state\" ng-class=\"{'disabled': resultViewer.querySelected}\"\n" +
+    "                           ng-click=\"resultViewer.toggleSelectId(event.id)\">\n" +
     "                          <span class=\"fa\"\n" +
     "                                ng-class=\"resultViewer.isIdSelected(event.id) ? 'fa-check-square' : 'fa-square-o'\"></span>\n" +
     "                      </div>\n" +

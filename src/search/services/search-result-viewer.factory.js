@@ -54,6 +54,7 @@ angular.module('udb.search')
       this.activeSpecific = this.eventSpecifics[0];
       this.selectedIds = [];
       this.selectionState = SelectionState.NONE;
+      this.querySelected = false;
     };
 
     SearchResultViewer.prototype = {
@@ -62,9 +63,17 @@ angular.module('udb.search')
 
         if( state === SelectionState.SOME || state === SelectionState.ALL) {
           this.deselectPageItems();
+          if(this.querySelected) {
+            this.deselectAll();
+            this.querySelected = false;
+          }
         } else {
           this.selectPageItems();
         }
+      },
+      selectQuery: function () {
+        this.querySelected = true;
+        this.selectPageItems();
       },
       updateSelectionState: function () {
         var selectedIds = this.selectedIds,
@@ -81,6 +90,12 @@ angular.module('udb.search')
         }
       },
       toggleSelectId: function (id) {
+
+        // Prevent toggling individual items when the whole query is selected
+        if(this.querySelected) {
+          return;
+        }
+
         var selectedIds = this.selectedIds,
           isSelected = _.contains(selectedIds, id);
 
@@ -129,12 +144,16 @@ angular.module('udb.search')
         viewer.totalItems = pagedResults.totalItems || 0;
 
         viewer.loading = false;
+        if(this.querySelected) {
+          this.selectPageItems();
+        }
         this.updateSelectionState();
       },
       queryChanged: function (query) {
         this.loading = true;
         this.currentPage = 1;
         this.selectedIds = [];
+        this.querySelected = false;
       },
       activateSpecific: function (specific) {
         this.activeSpecific = specific;

@@ -94,6 +94,16 @@ function Search($scope, udbApi, LuceneQueryBuilder, $window, $location, $modal, 
     });
   };
 
+  var tag = function () {
+    var taggingQuery = $scope.resultViewer.querySelected;
+
+    if(taggingQuery) {
+      tagActiveQuery();
+    } else {
+      tagSelection();
+    }
+  };
+
   var tagSelection = function () {
 
     var selectedIds = $scope.resultViewer.selectedIds;
@@ -166,9 +176,8 @@ function Search($scope, udbApi, LuceneQueryBuilder, $window, $location, $modal, 
     }
   }
 
-  $scope.exportActiveQuery = exportActiveQuery;
-  $scope.tagSelection = tagSelection;
-  $scope.tagActiveQuery = tagActiveQuery;
+  $scope.export = exportActiveQuery;
+  $scope.tag = tag;
 
   $scope.editQuery = function () {
     var query = $scope.activeQuery;

@@ -54,17 +54,37 @@
 
             <div class="row" ng-show="resultViewer.selectedIds.length">
                 <div class="col-sm-12 rv-first-column">
-                {{resultViewer.selectedIds.length }} items geselecteerd
-                    (<a href="#" class="alert-link" ng-click="resultViewer.deselectAll()">deselecteer</a> -
-                    <a href="#" class="alert-link" ng-click="tagSelection()">tag selectie</a> -
-                    <a href="#" class="alert-link" ng-click="tagActiveQuery()">tag alle  <span ng-bind="resultViewer.totalItems"></span> zoekresultaten</a> -
-                    <a href="#" class="alert-link" ng-click="exportActiveQuery()">exporteer query</a>)
+                    <span ng-bind="resultViewer.querySelected ? resultViewer.totalItems : resultViewer.selectedIds.length"></span> items geselecteerd
+
+                    <button class="btn btn-default rv-action" ng-click="tag()">
+                        <i class="fa fa-tag"></i> Labelen
+                    </button>
+                    <button class="btn btn-default rv-action" ng-click="export()">
+                        <i class="fa fa-cloud-download"></i> Exporteren
+                    </button>
+                    <a href="#" class="alert-link rv-action" ng-click="resultViewer.deselectAll()">Deselecteren</a>
                 </div>
             </div>
 
             <div class="rv-item-sidebar">
-                <div class="rv-selection-state fa {{resultViewer.selectionState.icon}}"
-                     ng-click="resultViewer.toggleSelection()"></div>
+                <div class="rv-selection-state">
+                    <span class="dropdown" dropdown ng-hide="resultViewer.selectedIds.length">
+                      <span class="dropdown-toggle fa {{resultViewer.selectionState.icon}}" dropdown-toggle>
+                      </span>
+                      <ul class="dropdown-menu">
+                          <li role="presentation" class="dropdown-header">Selecteer</li>
+                          <li ng-click="resultViewer.toggleSelection()">
+                              <a href>Alles op deze pagina (30 items)</a>
+                          </li>
+                          <li ng-click="resultViewer.selectQuery()">
+                              <a href>Alles resultaten (<span ng-bind="resultViewer.totalItems"></span> items)</a>
+                          </li>
+                      </ul>
+                    </span>
+
+                    <span ng-show="resultViewer.selectedIds.length" ng-click="resultViewer.toggleSelection()"
+                          class=" fa {{resultViewer.selectionState.icon}}"></span>
+                </div>
             </div>
         </div>
 
@@ -75,7 +95,8 @@
           <div class="event-content">
               <div class="col-sm-5 rv-first-column">
                   <div class="rv-item-sidebar">
-                      <div class="rv-selection-state" ng-click="resultViewer.toggleSelectId(event.id)">
+                      <div class="rv-selection-state" ng-class="{'disabled': resultViewer.querySelected}"
+                           ng-click="resultViewer.toggleSelectId(event.id)">
                           <span class="fa"
                                 ng-class="resultViewer.isIdSelected(event.id) ? 'fa-check-square' : 'fa-square-o'"></span>
                       </div>

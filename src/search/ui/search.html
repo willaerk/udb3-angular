@@ -21,16 +21,6 @@
                               <span ng-bind="resultViewer.eventProperties[propertyKey].name"></span>
                           </label>
                       </li>
-                      <li role="presentation" class="dropdown">
-                          <a class="dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-expanded="false">
-                              <span class="selectedField" ng-bind="resultViewer.activeSpecific.name"></span> <span class="caret"></span>
-                          </a>
-                          <ul class="dropdown-menu" role="menu" aria-labelledby="rv-event-specific">
-                              <li role="presentation" ng-repeat="specific in resultViewer.eventSpecifics">
-                                  <a role="menuitem" tabindex="-1" href="#" ng-bind="specific.name"
-                                     ng-click="resultViewer.activateSpecific(specific)"></a>
-                              </li>
-                          </ul>
                   </ul>
               </div>
           </div>
@@ -49,7 +39,19 @@
                 </div>
                 <div class="col-sm-2">  Waar   </div>
                 <div class="col-sm-2">  Wanneer   </div>
-                <div class="col-sm-3">  <span class="selectedField" ng-bind="resultViewer.activeSpecific.name"></span> </div>
+                <div class="col-sm-3">
+                    <div role="presentation" class="dropdown">
+                        <span class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+                            <span class="selectedField" ng-bind="resultViewer.activeSpecific.name"></span> <span class="caret"></span>
+                        </span>
+                        <ul class="dropdown-menu" role="menu" aria-labelledby="rv-event-specific">
+                            <li role="presentation" ng-repeat="specific in resultViewer.eventSpecifics">
+                                <a role="menuitem" tabindex="-1" href="#" ng-bind="specific.name"
+                                   ng-click="resultViewer.activateSpecific(specific)"></a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
             </div>
 
             <div class="row" ng-show="resultViewer.selectedIds.length">

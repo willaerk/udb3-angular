@@ -5595,16 +5595,6 @@ $templateCache.put('templates/base-job.template.html',
     "                              <span ng-bind=\"resultViewer.eventProperties[propertyKey].name\"></span>\n" +
     "                          </label>\n" +
     "                      </li>\n" +
-    "                      <li role=\"presentation\" class=\"dropdown\">\n" +
-    "                          <a class=\"dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\" role=\"button\" aria-expanded=\"false\">\n" +
-    "                              <span class=\"selectedField\" ng-bind=\"resultViewer.activeSpecific.name\"></span> <span class=\"caret\"></span>\n" +
-    "                          </a>\n" +
-    "                          <ul class=\"dropdown-menu\" role=\"menu\" aria-labelledby=\"rv-event-specific\">\n" +
-    "                              <li role=\"presentation\" ng-repeat=\"specific in resultViewer.eventSpecifics\">\n" +
-    "                                  <a role=\"menuitem\" tabindex=\"-1\" href=\"#\" ng-bind=\"specific.name\"\n" +
-    "                                     ng-click=\"resultViewer.activateSpecific(specific)\"></a>\n" +
-    "                              </li>\n" +
-    "                          </ul>\n" +
     "                  </ul>\n" +
     "              </div>\n" +
     "          </div>\n" +
@@ -5623,7 +5613,19 @@ $templateCache.put('templates/base-job.template.html',
     "                </div>\n" +
     "                <div class=\"col-sm-2\">  Waar   </div>\n" +
     "                <div class=\"col-sm-2\">  Wanneer   </div>\n" +
-    "                <div class=\"col-sm-3\">  <span class=\"selectedField\" ng-bind=\"resultViewer.activeSpecific.name\"></span> </div>\n" +
+    "                <div class=\"col-sm-3\">\n" +
+    "                    <div role=\"presentation\" class=\"dropdown\">\n" +
+    "                        <span class=\"dropdown-toggle\" data-toggle=\"dropdown\" role=\"button\" aria-expanded=\"false\">\n" +
+    "                            <span class=\"selectedField\" ng-bind=\"resultViewer.activeSpecific.name\"></span> <span class=\"caret\"></span>\n" +
+    "                        </span>\n" +
+    "                        <ul class=\"dropdown-menu\" role=\"menu\" aria-labelledby=\"rv-event-specific\">\n" +
+    "                            <li role=\"presentation\" ng-repeat=\"specific in resultViewer.eventSpecifics\">\n" +
+    "                                <a role=\"menuitem\" tabindex=\"-1\" href=\"#\" ng-bind=\"specific.name\"\n" +
+    "                                   ng-click=\"resultViewer.activateSpecific(specific)\"></a>\n" +
+    "                            </li>\n" +
+    "                        </ul>\n" +
+    "                    </div>\n" +
+    "                </div>\n" +
     "            </div>\n" +
     "\n" +
     "            <div class=\"row\" ng-show=\"resultViewer.selectedIds.length\">\n" +

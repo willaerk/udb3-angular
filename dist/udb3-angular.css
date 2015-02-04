@@ -115,11 +115,11 @@ textarea.resize-vertical {
 .rv-item-info .rv-item-sidebar {
   padding: 0.5em 0;
 }
+.rv-item-info .dropdown-toggle {
+  cursor: pointer;
+}
 .rv-action {
   margin-left: 15px;
-}
-.rv-action:first-child {
-  margin-left: 55px;
 }
 .rv-no-result-notice {
   font-size: 30px;

@@ -364,6 +364,7 @@ module.exports = function (grunt) {
     'less',
     'autoprefixer',
     'ngtemplates',
+    'jshint:all',
     'concat:modules',
     'concat:dist',
     'ngAnnotate',

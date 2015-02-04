@@ -5,7 +5,7 @@
  * @name udb.entry.eventExporter
  * @description
  * # eventExporter
- * Service in the udb.export.
+ * Event Exporter Service
  */
 angular
   .module('udb.export')
@@ -14,15 +14,15 @@ angular
 /* @ngInject */
 function eventExporter(jobLogger, udbApi, EventExportJob) {
 
-  var eventExporter = this;
+  var ex = this; // jshint ignore:line
 
-  eventExporter.activeExport = {
+  ex.activeExport = {
     query: {},
     eventCount: 0
   };
 
-  eventExporter.export = function (format, email) {
-    var queryString = eventExporter.activeExport.query.queryString;
+  ex.export = function (format, email) {
+    var queryString = ex.activeExport.query.queryString;
 
     var jobPromise = udbApi.exportQuery(queryString, email, format);
 
@@ -34,5 +34,5 @@ function eventExporter(jobLogger, udbApi, EventExportJob) {
     });
 
     return jobPromise;
-  }
+  };
 }

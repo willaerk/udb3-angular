@@ -2258,7 +2258,8 @@ this.exportQuery = function (query, email, format) {
       email: email,
       perDay: true
     },
-    defaultApiConfig)
+    defaultApiConfig
+  );
 };
 
 this.translateEventProperty = function (eventId, property, language, translation) {
@@ -2481,10 +2482,14 @@ function BaseJobFactory(JobStates) {
   /**
    * @class BaseJob
    * @constructor
-   * @param commandId
+   * @param {string}        commandId       - The commandId assigned to this job by the server
    *
-   * @property {object[]}   tasks        - A list of tasks
-   * @property {string}     id           - The command ID that uniquely identifies this job
+   * @property {object[]}   tasks           - A list of tasks
+   * @property {string}     id              - The command ID that uniquely identifies this job
+   * @property {number}     progress        - Percentage based progress (0-100)
+   * @property {Date}       created         - The date this job was returned by the server and created
+   * @property {string}     state           - One of the job states defined in JobStates
+   * @property {number} completedTaskCount  - Keeps count of the completed tasks to render the view
    */
   var BaseJob = function (commandId) {
     this.id = commandId;
@@ -2493,10 +2498,16 @@ function BaseJobFactory(JobStates) {
     this.created = new Date();
     this.tasks = [];
     this.completedTaskCount = 0;
-    this.progress = 0;
   };
 
+  /**
+   * Always define the constructor, also when you use this class' prototype to prevent any weird stuff.
+   * @type {Function}
+   */
   BaseJob.prototype.constructor = BaseJob;
+
+
+  // The following functions are used to update the job state based on feedback of the server.
 
   BaseJob.prototype.fail = function () {
     this.state = JobStates.FAILED;
@@ -2514,24 +2525,55 @@ function BaseJobFactory(JobStates) {
     this.progress = 100;
   };
 
+
+  /**
+   * Renders the job description based on its details.
+   * Overwrite this function if you want to show a more customized message.
+   *
+   * @return {string}
+   */
   BaseJob.prototype.getDescription = function () {
     return 'Job with id: ' + this.id;
   };
 
+  /**
+   * This name is used by the job directive to find the right template.
+   * The name will prepended with 'templates/' and a appended with '.template.html'.
+   * A Grunt task is set up to automatically include the templates following this format when exporting the project.
+   *
+   * @return {string}
+   */
   BaseJob.prototype.getTemplateName = function () {
     return 'base-job';
   };
 
+  /**
+   * Adds a simple task with a unique id property to the job.
+   *
+   * @param {object} task
+   */
   BaseJob.prototype.addTask = function (task) {
-    this.tasks.push(task);
+
+    var duplicateTask = _.find(this.tasks, {id: task.id});
+
+    if(!duplicateTask) {
+      this.tasks.push(task);
+    }
   };
 
   BaseJob.prototype.getTaskCount = function () {
     return this.tasks.length;
   };
 
+  /**
+   * Find a task based on the task data received from the server.
+   * Currently all tasks are identifiable by an event_id property.
+   *
+   * @param {object} taskData
+   * @return {object}
+   */
   BaseJob.prototype.findTask = function (taskData) {
-    var taskId = taskData['event_id'],
+    var taskId = taskData['event_id'], // jshint ignore:line
         task =  _.find(this.tasks, { id: taskId});
 
     if(!task) {
@@ -2541,6 +2583,9 @@ function BaseJobFactory(JobStates) {
 
     return task;
   };
+
+
+  // These functions are used to update this job's task state based on feedback from the server.
 
   BaseJob.prototype.failTask = function (taskData) {
     var task = this.findTask(taskData);
@@ -2560,12 +2605,17 @@ function BaseJobFactory(JobStates) {
     }
   };
 
+  /**
+   * Update job progress and completed task count.
+   * This information is used to render the view of batch jobs.
+   */
   BaseJob.prototype.updateProgress = function () {
     var job = this;
 
     ++job.completedTaskCount;
     job.progress = (job.completedTaskCount / job.getTaskCount()) * 100;
   };
+
 
   return (BaseJob);
 }
@@ -2738,7 +2788,13 @@ JobLogger.$inject = ["udbSocket", "JobStates"];
  */
 angular
   .module('udb.entry')
-  .constant('JobStates', {
+  .constant('JobStates',
+  /**
+   * Enum for job states
+   * @readonly
+   * @enum {string}
+   */
+  {
     CREATED: 'created',
     STARTED: 'started',
     FAILED: 'failed',
@@ -3375,7 +3431,7 @@ EventExportController.$inject = ["$modalInstance", "udbApi", "eventExporter", "q
  * @name udb.entry.eventExporter
  * @description
  * # eventExporter
- * Service in the udb.export.
+ * Event Exporter Service
  */
 angular
   .module('udb.export')
@@ -3384,15 +3440,15 @@ angular
 /* @ngInject */
 function eventExporter(jobLogger, udbApi, EventExportJob) {
 
-  var eventExporter = this;
+  var ex = this; // jshint ignore:line
 
-  eventExporter.activeExport = {
+  ex.activeExport = {
     query: {},
     eventCount: 0
   };
 
-  eventExporter.export = function (format, email) {
-    var queryString = eventExporter.activeExport.query.queryString;
+  ex.export = function (format, email) {
+    var queryString = ex.activeExport.query.queryString;
 
     var jobPromise = udbApi.exportQuery(queryString, email, format);
 
@@ -3404,7 +3460,7 @@ function eventExporter(jobLogger, udbApi, EventExportJob) {
     });
 
     return jobPromise;
-  }
+  };
 }
 eventExporter.$inject = ["jobLogger", "udbApi", "EventExportJob"];
 
@@ -5258,11 +5314,6 @@ $templateCache.put('templates/base-job.template.html',
     "  <button class=\"btn btn-primary\" ng-click=\"ok()\">label</button>\n" +
     "  <button class=\"btn btn-warning\" ng-click=\"close()\">annuleren</button>\n" +
     "</div>"
-  );
-
-
-  $templateCache.put('templates/event-export-job.template.html',
-    ""
   );
 
 

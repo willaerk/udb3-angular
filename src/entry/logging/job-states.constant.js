@@ -11,7 +11,13 @@
  */
 angular
   .module('udb.entry')
-  .constant('JobStates', {
+  .constant('JobStates',
+  /**
+   * Enum for job states
+   * @readonly
+   * @enum {string}
+   */
+  {
     CREATED: 'created',
     STARTED: 'started',
     FAILED: 'failed',

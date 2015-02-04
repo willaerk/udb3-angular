@@ -172,7 +172,8 @@ this.exportQuery = function (query, email, format) {
       email: email,
       perDay: true
     },
-    defaultApiConfig)
+    defaultApiConfig
+  );
 };
 
 this.translateEventProperty = function (eventId, property, language, translation) {

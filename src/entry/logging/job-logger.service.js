@@ -31,7 +31,7 @@ function JobLogger(udbSocket, JobStates) {
     var job = findJob(data['job_id']);
 
     if(job) {
-      job.start();
+      job.start(data);
       console.log('job with id: ' + job.id + ' started');
     }
   }
@@ -40,7 +40,7 @@ function JobLogger(udbSocket, JobStates) {
     var job = findJob(data['job_id']);
 
     if(job) {
-      job.finish();
+      job.finish(data);
       console.log('job with id: ' + job.id + ' finished');
     }
   }
@@ -49,7 +49,7 @@ function JobLogger(udbSocket, JobStates) {
     var job = findJob(data['job_id']);
 
     if(job) {
-      job.fail();
+      job.fail(data);
       console.log('job with id: ' + job.id + ' failed');
     }
   }
@@ -74,6 +74,7 @@ function JobLogger(udbSocket, JobStates) {
 
   udbSocket.on('event_was_tagged', taskFinished);
   udbSocket.on('event_was_not_tagged', taskFailed);
+  udbSocket.on('task_completed', taskFinished);
   udbSocket.on('job_started', jobStarted);
   udbSocket.on('job_finished', jobFinished);
   udbSocket.on('job_failed', jobFailed);

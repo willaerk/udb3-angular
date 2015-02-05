@@ -1,0 +1,9 @@
+<div>
+  {{::job.getDescription()}} - {{ job.state }}
+  <span ng-show="job.state === 'finished'">
+    <a target="_blank" ng-href="{{job.exportUrl}}">Bekijken</a> -
+    <a ng-href="{{job.exportUrl}}" download>Downloaden</a>
+  </span>
+  <progressbar value="job.progress" type="{{giveJobBarType(job)}}">
+  </progressbar>
+</div>

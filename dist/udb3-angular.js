@@ -2712,7 +2712,7 @@ function JobLogger(udbSocket, JobStates) {
     var job = findJob(data['job_id']);
 
     if(job) {
-      job.start();
+      job.start(data);
       console.log('job with id: ' + job.id + ' started');
     }
   }
@@ -2721,7 +2721,7 @@ function JobLogger(udbSocket, JobStates) {
     var job = findJob(data['job_id']);
 
     if(job) {
-      job.finish();
+      job.finish(data);
       console.log('job with id: ' + job.id + ' finished');
     }
   }
@@ -2730,7 +2730,7 @@ function JobLogger(udbSocket, JobStates) {
     var job = findJob(data['job_id']);
 
     if(job) {
-      job.fail();
+      job.fail(data);
       console.log('job with id: ' + job.id + ' failed');
     }
   }
@@ -2755,6 +2755,7 @@ function JobLogger(udbSocket, JobStates) {
 
   udbSocket.on('event_was_tagged', taskFinished);
   udbSocket.on('event_was_not_tagged', taskFailed);
+  udbSocket.on('task_completed', taskFinished);
   udbSocket.on('job_started', jobStarted);
   udbSocket.on('job_finished', jobFinished);
   udbSocket.on('job_failed', jobFailed);
@@ -3319,8 +3320,18 @@ function EventExportJobFactory(BaseJob) {
   EventExportJob.prototype = Object.create(BaseJob.prototype);
   EventExportJob.prototype.constructor = EventExportJob;
 
+  BaseJob.prototype.getTemplateName = function () {
+    return 'export-job';
+  };
+
   EventExportJob.prototype.getDescription = function() {
-    return 'Exporting events';
+    return 'exporting events';
+  };
+
+  BaseJob.prototype.finishTask = function (taskData) {
+
+    this.exportUrl = taskData.location;
+    this.finish(taskData);
   };
 
   return (EventExportJob);
@@ -3463,8 +3474,6 @@ function EventExportController($modalInstance, udbApi, eventExporter, queryField
       return value ? fieldName : '';
     });
     includedFieldNames = _.without(includedFieldNames, '');
-
-    //var order = _.indexBy(exporter.fieldSorters, 'fieldName');
 
     eventExporter.export(exporter.format, exporter.email, includedFieldNames, exporter.dayByDay);
     activeStep = -1;
@@ -5498,6 +5507,19 @@ $templateCache.put('templates/base-job.template.html',
     "\n" +
     "<div class=\"modal-footer\" ng-show=\"exporter.getActiveStepName() === 'finished'\">\n" +
     "  <button class=\"btn btn-default\" ng-click=\"exporter.close()\">sluiten</button>\n" +
+    "</div>"
+  );
+
+
+  $templateCache.put('templates/export-job.template.html',
+    "<div>\n" +
+    "  {{::job.getDescription()}} - {{ job.state }}\n" +
+    "  <span ng-show=\"job.state === 'finished'\">\n" +
+    "    <a target=\"_blank\" ng-href=\"{{job.exportUrl}}\">Bekijken</a> -\n" +
+    "    <a ng-href=\"{{job.exportUrl}}\" download>Downloaden</a>\n" +
+    "  </span>\n" +
+    "  <progressbar value=\"job.progress\" type=\"{{giveJobBarType(job)}}\">\n" +
+    "  </progressbar>\n" +
     "</div>"
   );
 

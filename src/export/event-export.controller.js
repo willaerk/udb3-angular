@@ -136,8 +136,6 @@ function EventExportController($modalInstance, udbApi, eventExporter, queryField
     });
     includedFieldNames = _.without(includedFieldNames, '');
 
-    //var order = _.indexBy(exporter.fieldSorters, 'fieldName');
-
     eventExporter.export(exporter.format, exporter.email, includedFieldNames, exporter.dayByDay);
     activeStep = -1;
   };

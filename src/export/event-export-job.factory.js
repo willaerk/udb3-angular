@@ -27,8 +27,18 @@ function EventExportJobFactory(BaseJob) {
   EventExportJob.prototype = Object.create(BaseJob.prototype);
   EventExportJob.prototype.constructor = EventExportJob;
 
+  BaseJob.prototype.getTemplateName = function () {
+    return 'export-job';
+  };
+
   EventExportJob.prototype.getDescription = function() {
-    return 'Exporting events';
+    return 'exporting events';
+  };
+
+  BaseJob.prototype.finishTask = function (taskData) {
+
+    this.exportUrl = taskData.location;
+    this.finish(taskData);
   };
 
   return (EventExportJob);

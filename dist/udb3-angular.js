@@ -1815,6 +1815,8 @@ angular.module('udb.core')
     '=_DATE': 'is',
     '><_DATE': 'tussen',
     'choice': {
+      'asc': 'oplopend',
+      'desc': 'aflopend',
       'today': 'vandaag',
       'tomorrow': 'morgen',
       'thisweekend': 'dit weekend',
@@ -2248,15 +2250,15 @@ this.tagQuery = function (query, label) {
   );
 };
 
-this.exportQuery = function (query, email, format) {
+this.exportQuery = function (query, email, format, fields, perDay) {
   return $http.post(appConfig.baseUrl + 'events/export/' + format,
     {
       query: query,
       selection: [],
       order: {},
-      include: [],
+      include: fields,
       email: email,
-      perDay: true
+      perDay: perDay
     },
     defaultApiConfig
   );
@@ -3338,45 +3340,99 @@ angular
   .controller('EventExportController', EventExportController);
 
 /* @ngInject */
-function EventExportController($modalInstance, udbApi, eventExporter, queryFields) {
+function EventExportController($modalInstance, udbApi, eventExporter, queryFields, $window) {
 
   var exporter = this;
 
+  exporter.dayByDay = false;
+
   exporter.fields = _.indexBy(queryFields, 'name');
+  _.forEach(exporter.fields, function(n, key) {
+    exporter.fields[key] = false;
+  });
+
+  exporter.fieldSorters = [];
+
+  exporter.getUnsortedFields = function (includeName) {
+    var sortedFieldNames = _.map(exporter.fieldSorters, 'fieldName');
+
+    if(includeName) {
+      sortedFieldNames = _.without(sortedFieldNames, includeName);
+    }
+
+    var unsortedFields = _.filter(queryFields, function (field) {
+      return !_.contains(sortedFieldNames, field.name);
+    });
+
+    return unsortedFields;
+  };
+
+  exporter.addSorter = function () {
+    var unsortedFields = exporter.getUnsortedFields();
+
+    if(unsortedFields.length) {
+      var fieldSorter = {
+        fieldName: unsortedFields[0].name,
+        order: 'asc'
+      };
+
+      exporter.fieldSorters.push(fieldSorter);
+    } else {
+      $window.alert('Already sorting on every possible field');
+    }
+
+  };
+  exporter.addSorter();
 
   exporter.exportFormats = [
     {
       type: 'json',
-      label: 'als json',
+      label: 'Als json',
       description: 'Exporteren naar event-ld om de informatie voor ontwikkelaars beschikbaar te maken.'
     },
     {
       type: 'csv',
-      label: 'als tabel',
+      label: 'Als tabel',
       description: 'Met spreadsheetprogramma\'s als Microsoft Excel kun je eenvoudig CSV-bestanden maken en bewerken.'
     }
   ];
 
+  /**
+   * This is a list of steps that the user has to navigate through.
+   * You can add a callback to its incomplete property which will be used to check if a step is completed.
+   */
   exporter.steps = [
-    {name: 'format' },
-    //{name: 'filter', incomplete: function () {
-    //  return (exporter.fields.length === 0);
-    //} },
+    { name: 'format' },
+    { name: 'filter',
+      incomplete: function () {
+        return !_.find(exporter.fields, function(field) {
+          return field;
+        });
+      }
+    },
     //{name: 'sort' },
-    {name: 'confirm' }
+    { name: 'confirm' }
   ];
 
   var activeStep = 0;
   exporter.nextStep = function () {
-    var incompleteCheck = exporter.steps[activeStep].incomplete;
-
-    if((typeof incompleteCheck === 'undefined') || (typeof incompleteCheck === 'function' && !incompleteCheck())) {
+    if(exporter.isStepCompleted()) {
       setActiveStep(activeStep + 1);
     }
   };
 
   exporter.previousStep = function () {
     setActiveStep(activeStep - 1);
+  };
+
+  exporter.isStepCompleted = function () {
+
+    if(activeStep === -1) {
+      return true;
+    }
+
+    var incompleteCheck = exporter.steps[activeStep].incomplete;
+    return ((typeof incompleteCheck === 'undefined') || (typeof incompleteCheck === 'function' && !incompleteCheck()));
   };
 
   function setActiveStep(stepIndex) {
@@ -3403,7 +3459,14 @@ function EventExportController($modalInstance, udbApi, eventExporter, queryField
   };
 
   exporter.export = function () {
-    eventExporter.export(exporter.format, exporter.email);
+    var includedFieldNames = _.map(exporter.fields, function (value, fieldName) {
+      return value ? fieldName : '';
+    });
+    includedFieldNames = _.without(includedFieldNames, '');
+
+    //var order = _.indexBy(exporter.fieldSorters, 'fieldName');
+
+    eventExporter.export(exporter.format, exporter.email, includedFieldNames, exporter.dayByDay);
     activeStep = -1;
   };
 
@@ -3423,7 +3486,7 @@ function EventExportController($modalInstance, udbApi, eventExporter, queryField
 
   exporter.eventCount = eventExporter.activeExport.eventCount;
 }
-EventExportController.$inject = ["$modalInstance", "udbApi", "eventExporter", "queryFields"];
+EventExportController.$inject = ["$modalInstance", "udbApi", "eventExporter", "queryFields", "$window"];
 
 // Source: src/export/event-exporter.service.js
 /**
@@ -3447,10 +3510,10 @@ function eventExporter(jobLogger, udbApi, EventExportJob) {
     eventCount: 0
   };
 
-  ex.export = function (format, email) {
+  ex.export = function (format, email, fields, perDay) {
     var queryString = ex.activeExport.query.queryString;
 
-    var jobPromise = udbApi.exportQuery(queryString, email, format);
+    var jobPromise = udbApi.exportQuery(queryString, email, format, fields, perDay);
 
     jobPromise.success(function (jobData) {
       var job = new EventExportJob(jobData.commandId);
@@ -5222,7 +5285,8 @@ function Search($scope, udbApi, LuceneQueryBuilder, $window, $location, $modal, 
       var modal = $modal.open({
         templateUrl: 'templates/event-export-modal.html',
         controller: 'EventExportController',
-        controllerAs: 'exporter'
+        controllerAs: 'exporter',
+        size: 'lg'
       });
     } else {
       $window.alert('provide a valid query to export');
@@ -5351,54 +5415,84 @@ $templateCache.put('templates/base-job.template.html',
     "    <span class=\"fa fa-close\"></span>\n" +
     "  </button>\n" +
     "  <h4 class=\"modal-title\">Exporteren - <span ng-bind=\"exporter.eventCount + ' Items'\"></span></h4>\n" +
-    "\n" +
     "</div>\n" +
     "\n" +
-    "<div class=\"modal-body\" ng-show=\"exporter.getActiveStepName() === 'format'\">\n" +
-    "  <div class=\"radio\" ng-repeat=\"format in ::exporter.exportFormats\">\n" +
-    "    <label>\n" +
-    "      <input type=\"radio\" name=\"event-export-format\" ng-model=\"exporter.format\" ng-value=\"format.type\">\n" +
-    "      <span ng-bind=\"format.label\"></span>\n" +
-    "    </label>\n" +
-    "    <span ng-bind=\"format.description\"></span>\n" +
+    "<div ng-switch=\"exporter.getActiveStepName()\">\n" +
+    "\n" +
+    "  <div class=\"modal-body\" ng-switch-when=\"format\">\n" +
+    "    <h5>Selecteer het formaat</h5>\n" +
+    "\n" +
+    "    <div class=\"export-format-field\" ng-repeat=\"format in ::exporter.exportFormats\">\n" +
+    "      <label>\n" +
+    "        <input type=\"radio\" name=\"event-export-format\" ng-model=\"exporter.format\" ng-value=\"format.type\" class=\"export-format-radio\">\n" +
+    "        <span ng-bind=\"format.label\" class=\"export-format-label\"></span>\n" +
+    "      </label>\n" +
+    "      <div class=\"export-format-description\" ng-bind=\"format.description\"></div>\n" +
+    "    </div>\n" +
     "  </div>\n" +
-    "</div>\n" +
     "\n" +
-    "<div class=\"modal-body\" ng-show=\"exporter.getActiveStepName() === 'filter'\">\n" +
-    "  <h5>Kies de gewenste velden</h5>\n" +
+    "  <div class=\"modal-body\" ng-switch-when=\"filter\">\n" +
+    "    <h5>Kies de gewenste velden</h5>\n" +
     "\n" +
-    "  <div class=\"checkbox\" ng-repeat=\"(field, selected) in ::exporter.fields\">\n" +
+    "    <div class=\"export-field-selection\">\n" +
+    "      <div class=\"checkbox\" ng-repeat=\"(field, selected) in ::exporter.fields\">\n" +
+    "        <label>\n" +
+    "          <input type=\"checkbox\" ng-model=\"exporter.fields[field]\" name=\"event-export-fields\">\n" +
+    "          <span ng-bind=\"field.toUpperCase() | translate\"></span>\n" +
+    "        </label>\n" +
+    "      </div>\n" +
+    "    </div>\n" +
+    "\n" +
+    "  </div>\n" +
+    "\n" +
+    "  <div class=\"modal-body\" ng-switch-when=\"sort\">\n" +
+    "    <h5>Herschik en verfijn</h5>\n" +
+    "\n" +
+    "    <strong>Sorteer op</strong>\n" +
+    "    <div class=\"row\" ng-repeat=\"sorter in exporter.fieldSorters\">\n" +
+    "      <div class=\"col-sm-3\">\n" +
+    "        Niveau <span ng-bind=\"($index + 1)\"></span>\n" +
+    "      </div>\n" +
+    "      <div class=\"col-sm-3\">\n" +
+    "        <select ng-options=\"field.name as field.name.toUpperCase() | translate for field in exporter.getUnsortedFields(sorter.fieldName)\"\n" +
+    "                ng-model=\"sorter.fieldName\" class=\"form-control\">\n" +
+    "        </select>\n" +
+    "      </div>\n" +
+    "      <div class=\"col-sm-3\">\n" +
+    "        <select ng-options=\"'choice.' + order | translate for order in ['asc', 'desc']\" ng-model=\"sorter.order\"\n" +
+    "                class=\"form-control\"></select>\n" +
+    "      </div>\n" +
+    "      <div class=\"col-sm-3\" ng-show=\"$last\">\n" +
+    "        <a href ng-click=\"exporter.addSorter()\">Niveau toevoegen</a>\n" +
+    "      </div>\n" +
+    "    </div>\n" +
+    "\n" +
+    "\n" +
+    "    <strong>Dag per dag</strong>\n" +
     "    <label>\n" +
-    "      <input type=\"checkbox\" ng-model=\"exporter.fields[field]\" name=\"event-export-fields\" >\n" +
-    "      <span ng-bind=\"field.toUpperCase() | translate\"></span>\n" +
+    "      <input type=\"checkbox\" ng-model=\"exporter.dayByDay\" name=\"event-export-day-by-day\">\n" +
+    "      <span>Toon evenementen met meerdere datums dag per dag</span>\n" +
     "    </label>\n" +
     "  </div>\n" +
-    "</div>\n" +
     "\n" +
-    "<div class=\"modal-body\" ng-show=\"exporter.getActiveStepName() === 'sort'\">\n" +
-    "  <h5>Herschik en verfijn</h5>\n" +
+    "  <div class=\"modal-body\" ng-switch-when=\"confirm\">\n" +
+    "    <h5>Export versturen</h5>\n" +
     "\n" +
-    "  <strong>Sorteer op</strong>\n" +
+    "    <label>Email</label>\n" +
+    "    <input type=\"text\" ng-model=\"exporter.email\"/>\n" +
+    "  </div>\n" +
     "\n" +
-    "  <strong>Dag per dag</strong>\n" +
-    "</div>\n" +
+    "  <div class=\"modal-body\" ng-show=\"exporter.getActiveStepName() === 'finished'\">\n" +
+    "    <h5>Export onderweg</h5>\n" +
     "\n" +
-    "<div class=\"modal-body\" ng-show=\"exporter.getActiveStepName() === 'confirm'\">\n" +
-    "  <h5>Export versturen</h5>\n" +
-    "\n" +
-    "  <label>Email</label>\n" +
-    "  <input type=\"text\" ng-model=\"exporter.email\"/>\n" +
-    "</div>\n" +
-    "\n" +
-    "<div class=\"modal-body\" ng-show=\"exporter.getActiveStepName() === 'finished'\">\n" +
-    "  <h5>Export onderweg</h5>\n" +
-    "\n" +
-    "  <p>Je export is onderweg per mail.</p>\n" +
+    "    <p>Je export is onderweg per mail.</p>\n" +
+    "  </div>\n" +
     "</div>\n" +
     "\n" +
     "<div class=\"modal-footer\" ng-hide=\"exporter.getActiveStepName() === 'finished'\">\n" +
     "  <button class=\"btn btn-default pull-left\" ng-click=\"exporter.previousStep()\">vorige stap</button>\n" +
-    "  <button ng-hide=\"exporter.onLastStep()\" class=\"btn btn-primary\" ng-click=\"exporter.nextStep()\">volgende</button>\n" +
+    "  <button ng-disabled=\"!exporter.isStepCompleted()\" ng-hide=\"exporter.onLastStep()\" class=\"btn btn-primary\"\n" +
+    "          ng-click=\"exporter.nextStep()\">volgende</button>\n" +
     "  <button ng-show=\"exporter.onLastStep()\" class=\"btn btn-primary\" ng-click=\"exporter.export()\">exporteren</button>\n" +
     "</div>\n" +
     "\n" +

@@ -162,15 +162,15 @@ this.tagQuery = function (query, label) {
   );
 };
 
-this.exportQuery = function (query, email, format) {
+this.exportQuery = function (query, email, format, fields, perDay) {
   return $http.post(appConfig.baseUrl + 'events/export/' + format,
     {
       query: query,
       selection: [],
       order: {},
-      include: [],
+      include: fields,
       email: email,
-      perDay: true
+      perDay: perDay
     },
     defaultApiConfig
   );

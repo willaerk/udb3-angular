@@ -1,0 +1,28 @@
+@export-format-radio-width: 50px;
+
+.export-format-field label {
+  cursor: pointer;
+}
+
+.export-format-label {
+  font-weight: bold;
+  margin-left: (@export-format-radio-width - 16);
+}
+
+.export-format-description {
+  margin-left: @export-format-radio-width;
+}
+
+.export-format-field {
+  padding: 10px 0px;
+  border-bottom: 1px solid @modal-footer-border-color;
+}
+
+.export-format-field:last-child {
+  border-bottom: none;
+}
+
+.export-field-selection {
+  max-height: 500px;
+  overflow-y: auto;
+}

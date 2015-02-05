@@ -31,6 +31,8 @@ angular.module('udb.core')
     '=_DATE': 'is',
     '><_DATE': 'tussen',
     'choice': {
+      'asc': 'oplopend',
+      'desc': 'aflopend',
       'today': 'vandaag',
       'tomorrow': 'morgen',
       'thisweekend': 'dit weekend',

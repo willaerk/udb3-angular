@@ -12,45 +12,99 @@ angular
   .controller('EventExportController', EventExportController);
 
 /* @ngInject */
-function EventExportController($modalInstance, udbApi, eventExporter, queryFields) {
+function EventExportController($modalInstance, udbApi, eventExporter, queryFields, $window) {
 
   var exporter = this;
 
+  exporter.dayByDay = false;
+
   exporter.fields = _.indexBy(queryFields, 'name');
+  _.forEach(exporter.fields, function(n, key) {
+    exporter.fields[key] = false;
+  });
+
+  exporter.fieldSorters = [];
+
+  exporter.getUnsortedFields = function (includeName) {
+    var sortedFieldNames = _.map(exporter.fieldSorters, 'fieldName');
+
+    if(includeName) {
+      sortedFieldNames = _.without(sortedFieldNames, includeName);
+    }
+
+    var unsortedFields = _.filter(queryFields, function (field) {
+      return !_.contains(sortedFieldNames, field.name);
+    });
+
+    return unsortedFields;
+  };
+
+  exporter.addSorter = function () {
+    var unsortedFields = exporter.getUnsortedFields();
+
+    if(unsortedFields.length) {
+      var fieldSorter = {
+        fieldName: unsortedFields[0].name,
+        order: 'asc'
+      };
+
+      exporter.fieldSorters.push(fieldSorter);
+    } else {
+      $window.alert('Already sorting on every possible field');
+    }
+
+  };
+  exporter.addSorter();
 
   exporter.exportFormats = [
     {
       type: 'json',
-      label: 'als json',
+      label: 'Als json',
       description: 'Exporteren naar event-ld om de informatie voor ontwikkelaars beschikbaar te maken.'
     },
     {
       type: 'csv',
-      label: 'als tabel',
+      label: 'Als tabel',
       description: 'Met spreadsheetprogramma\'s als Microsoft Excel kun je eenvoudig CSV-bestanden maken en bewerken.'
     }
   ];
 
+  /**
+   * This is a list of steps that the user has to navigate through.
+   * You can add a callback to its incomplete property which will be used to check if a step is completed.
+   */
   exporter.steps = [
-    {name: 'format' },
-    //{name: 'filter', incomplete: function () {
-    //  return (exporter.fields.length === 0);
-    //} },
+    { name: 'format' },
+    { name: 'filter',
+      incomplete: function () {
+        return !_.find(exporter.fields, function(field) {
+          return field;
+        });
+      }
+    },
     //{name: 'sort' },
-    {name: 'confirm' }
+    { name: 'confirm' }
   ];
 
   var activeStep = 0;
   exporter.nextStep = function () {
-    var incompleteCheck = exporter.steps[activeStep].incomplete;
-
-    if((typeof incompleteCheck === 'undefined') || (typeof incompleteCheck === 'function' && !incompleteCheck())) {
+    if(exporter.isStepCompleted()) {
       setActiveStep(activeStep + 1);
     }
   };
 
   exporter.previousStep = function () {
     setActiveStep(activeStep - 1);
+  };
+
+  exporter.isStepCompleted = function () {
+
+    if(activeStep === -1) {
+      return true;
+    }
+
+    var incompleteCheck = exporter.steps[activeStep].incomplete;
+    return ((typeof incompleteCheck === 'undefined') || (typeof incompleteCheck === 'function' && !incompleteCheck()));
   };
 
   function setActiveStep(stepIndex) {
@@ -77,7 +131,14 @@ function EventExportController($modalInstance, udbApi, eventExporter, queryField
   };
 
   exporter.export = function () {
-    eventExporter.export(exporter.format, exporter.email);
+    var includedFieldNames = _.map(exporter.fields, function (value, fieldName) {
+      return value ? fieldName : '';
+    });
+    includedFieldNames = _.without(includedFieldNames, '');
+
+    //var order = _.indexBy(exporter.fieldSorters, 'fieldName');
+
+    eventExporter.export(exporter.format, exporter.email, includedFieldNames, exporter.dayByDay);
     activeStep = -1;
   };
 

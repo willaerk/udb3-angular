@@ -169,7 +169,8 @@ function Search($scope, udbApi, LuceneQueryBuilder, $window, $location, $modal, 
       var modal = $modal.open({
         templateUrl: 'templates/event-export-modal.html',
         controller: 'EventExportController',
-        controllerAs: 'exporter'
+        controllerAs: 'exporter',
+        size: 'lg'
       });
     } else {
       $window.alert('provide a valid query to export');

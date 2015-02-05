@@ -3,54 +3,84 @@
     <span class="fa fa-close"></span>
   </button>
   <h4 class="modal-title">Exporteren - <span ng-bind="exporter.eventCount + ' Items'"></span></h4>
-
 </div>
 
-<div class="modal-body" ng-show="exporter.getActiveStepName() === 'format'">
-  <div class="radio" ng-repeat="format in ::exporter.exportFormats">
-    <label>
-      <input type="radio" name="event-export-format" ng-model="exporter.format" ng-value="format.type">
-      <span ng-bind="format.label"></span>
-    </label>
-    <span ng-bind="format.description"></span>
+<div ng-switch="exporter.getActiveStepName()">
+
+  <div class="modal-body" ng-switch-when="format">
+    <h5>Selecteer het formaat</h5>
+
+    <div class="export-format-field" ng-repeat="format in ::exporter.exportFormats">
+      <label>
+        <input type="radio" name="event-export-format" ng-model="exporter.format" ng-value="format.type" class="export-format-radio">
+        <span ng-bind="format.label" class="export-format-label"></span>
+      </label>
+      <div class="export-format-description" ng-bind="format.description"></div>
+    </div>
   </div>
-</div>
 
-<div class="modal-body" ng-show="exporter.getActiveStepName() === 'filter'">
-  <h5>Kies de gewenste velden</h5>
+  <div class="modal-body" ng-switch-when="filter">
+    <h5>Kies de gewenste velden</h5>
 
-  <div class="checkbox" ng-repeat="(field, selected) in ::exporter.fields">
+    <div class="export-field-selection">
+      <div class="checkbox" ng-repeat="(field, selected) in ::exporter.fields">
+        <label>
+          <input type="checkbox" ng-model="exporter.fields[field]" name="event-export-fields">
+          <span ng-bind="field.toUpperCase() | translate"></span>
+        </label>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="modal-body" ng-switch-when="sort">
+    <h5>Herschik en verfijn</h5>
+
+    <strong>Sorteer op</strong>
+    <div class="row" ng-repeat="sorter in exporter.fieldSorters">
+      <div class="col-sm-3">
+        Niveau <span ng-bind="($index + 1)"></span>
+      </div>
+      <div class="col-sm-3">
+        <select ng-options="field.name as field.name.toUpperCase() | translate for field in exporter.getUnsortedFields(sorter.fieldName)"
+                ng-model="sorter.fieldName" class="form-control">
+        </select>
+      </div>
+      <div class="col-sm-3">
+        <select ng-options="'choice.' + order | translate for order in ['asc', 'desc']" ng-model="sorter.order"
+                class="form-control"></select>
+      </div>
+      <div class="col-sm-3" ng-show="$last">
+        <a href ng-click="exporter.addSorter()">Niveau toevoegen</a>
+      </div>
+    </div>
+
+
+    <strong>Dag per dag</strong>
     <label>
-      <input type="checkbox" ng-model="exporter.fields[field]" name="event-export-fields" >
-      <span ng-bind="field.toUpperCase() | translate"></span>
+      <input type="checkbox" ng-model="exporter.dayByDay" name="event-export-day-by-day">
+      <span>Toon evenementen met meerdere datums dag per dag</span>
     </label>
   </div>
-</div>
 
-<div class="modal-body" ng-show="exporter.getActiveStepName() === 'sort'">
-  <h5>Herschik en verfijn</h5>
+  <div class="modal-body" ng-switch-when="confirm">
+    <h5>Export versturen</h5>
 
-  <strong>Sorteer op</strong>
+    <label>Email</label>
+    <input type="text" ng-model="exporter.email"/>
+  </div>
 
-  <strong>Dag per dag</strong>
-</div>
+  <div class="modal-body" ng-show="exporter.getActiveStepName() === 'finished'">
+    <h5>Export onderweg</h5>
 
-<div class="modal-body" ng-show="exporter.getActiveStepName() === 'confirm'">
-  <h5>Export versturen</h5>
-
-  <label>Email</label>
-  <input type="text" ng-model="exporter.email"/>
-</div>
-
-<div class="modal-body" ng-show="exporter.getActiveStepName() === 'finished'">
-  <h5>Export onderweg</h5>
-
-  <p>Je export is onderweg per mail.</p>
+    <p>Je export is onderweg per mail.</p>
+  </div>
 </div>
 
 <div class="modal-footer" ng-hide="exporter.getActiveStepName() === 'finished'">
   <button class="btn btn-default pull-left" ng-click="exporter.previousStep()">vorige stap</button>
-  <button ng-hide="exporter.onLastStep()" class="btn btn-primary" ng-click="exporter.nextStep()">volgende</button>
+  <button ng-disabled="!exporter.isStepCompleted()" ng-hide="exporter.onLastStep()" class="btn btn-primary"
+          ng-click="exporter.nextStep()">volgende</button>
   <button ng-show="exporter.onLastStep()" class="btn btn-primary" ng-click="exporter.export()">exporteren</button>
 </div>
 

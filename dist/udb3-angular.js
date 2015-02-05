@@ -2250,11 +2250,11 @@ this.tagQuery = function (query, label) {
   );
 };
 
-this.exportQuery = function (query, email, format, fields, perDay) {
+this.exportEvents = function (query, email, format, fields, perDay, selection) {
 
   var exportData = {
     query: query,
-    selection: [],
+    selection: selection || [],
     order: {},
     include: fields,
     perDay: perDay
@@ -3520,19 +3520,30 @@ function eventExporter(jobLogger, udbApi, EventExportJob) {
 
   ex.activeExport = {
     query: {},
-    eventCount: 0
+    eventCount: 0,
+    selection: []
   };
 
+  /**
+   * Send the active export job to the server
+   *
+   * @param {'json'|'csv'}  format
+   * @param {string}        email
+   * @param {string}        fields
+   * @param {boolean}       perDay
+   *
+   * @return {object}
+   */
   ex.export = function (format, email, fields, perDay) {
-    var queryString = ex.activeExport.query.queryString;
+    var queryString = ex.activeExport.query.queryString,
+        selection = ex.activeExport.selection || [];
 
-    var jobPromise = udbApi.exportQuery(queryString, email, format, fields, perDay);
+    var jobPromise = udbApi.exportEvents(queryString, email, format, fields, perDay, selection);
 
     jobPromise.success(function (jobData) {
       var job = new EventExportJob(jobData.commandId);
       jobLogger.addJob(job);
       job.start();
-      console.log([job, job.getDescription()]);
     });
 
     return jobPromise;
@@ -5287,12 +5298,28 @@ function Search($scope, udbApi, LuceneQueryBuilder, $window, $location, $modal, 
     }
   }
 
-  function exportActiveQuery() {
-    var query = $scope.activeQuery,
-        eventCount = $scope.resultViewer.totalItems;
+  function exportEvents() {
+    var exportingQuery = $scope.resultViewer.querySelected,
+        query = $scope.activeQuery,
+        eventCount,
+        selectedIds = [];
+
+    if(exportingQuery) {
+      eventCount = $scope.resultViewer.totalItems;
+    } else {
+      selectedIds = $scope.resultViewer.selectedIds;
+
+      if (!selectedIds.length) {
+        $window.alert('First select the events you want to tag.');
+        return;
+      } else {
+        eventCount = selectedIds.length;
+      }
+    }
 
     eventExporter.activeExport.query = query;
     eventExporter.activeExport.eventCount = eventCount;
+    eventExporter.activeExport.selection = selectedIds;
 
     if (query && query.queryString.length && queryBuilder.isValid(query)) {
       var modal = $modal.open({
@@ -5306,7 +5333,7 @@ function Search($scope, udbApi, LuceneQueryBuilder, $window, $location, $modal, 
     }
   }
 
-  $scope.export = exportActiveQuery;
+  $scope.exportEvents = exportEvents;
   $scope.tag = tag;
 
   $scope.editQuery = function () {
@@ -5755,7 +5782,7 @@ $templateCache.put('templates/base-job.template.html',
     "                    <button class=\"btn btn-default rv-action\" ng-click=\"tag()\">\n" +
     "                        <i class=\"fa fa-tag\"></i> Labelen\n" +
     "                    </button>\n" +
-    "                    <button class=\"btn btn-default rv-action\" ng-click=\"export()\">\n" +
+    "                    <button class=\"btn btn-default rv-action\" ng-click=\"exportEvents()\">\n" +
     "                        <i class=\"fa fa-cloud-download\"></i> Exporteren\n" +
     "                    </button>\n" +
     "                    <a href=\"#\" class=\"alert-link rv-action\" ng-click=\"resultViewer.deselectAll()\">Deselecteren</a>\n" +

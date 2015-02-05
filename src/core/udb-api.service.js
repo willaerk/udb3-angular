@@ -162,11 +162,11 @@ this.tagQuery = function (query, label) {
   );
 };
 
-this.exportQuery = function (query, email, format, fields, perDay) {
+this.exportEvents = function (query, email, format, fields, perDay, selection) {
 
   var exportData = {
     query: query,
-    selection: [],
+    selection: selection || [],
     order: {},
     include: fields,
     perDay: perDay

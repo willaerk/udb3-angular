@@ -158,12 +158,28 @@ function Search($scope, udbApi, LuceneQueryBuilder, $window, $location, $modal, 
     }
   }
 
-  function exportActiveQuery() {
-    var query = $scope.activeQuery,
-        eventCount = $scope.resultViewer.totalItems;
+  function exportEvents() {
+    var exportingQuery = $scope.resultViewer.querySelected,
+        query = $scope.activeQuery,
+        eventCount,
+        selectedIds = [];
+
+    if(exportingQuery) {
+      eventCount = $scope.resultViewer.totalItems;
+    } else {
+      selectedIds = $scope.resultViewer.selectedIds;
+
+      if (!selectedIds.length) {
+        $window.alert('First select the events you want to tag.');
+        return;
+      } else {
+        eventCount = selectedIds.length;
+      }
+    }
 
     eventExporter.activeExport.query = query;
     eventExporter.activeExport.eventCount = eventCount;
+    eventExporter.activeExport.selection = selectedIds;
 
     if (query && query.queryString.length && queryBuilder.isValid(query)) {
       var modal = $modal.open({
@@ -177,7 +193,7 @@ function Search($scope, udbApi, LuceneQueryBuilder, $window, $location, $modal, 
     }
   }
 
-  $scope.export = exportActiveQuery;
+  $scope.exportEvents = exportEvents;
   $scope.tag = tag;
 
   $scope.editQuery = function () {

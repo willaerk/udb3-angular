@@ -2251,16 +2251,20 @@ this.tagQuery = function (query, label) {
 };
 
 this.exportQuery = function (query, email, format, fields, perDay) {
-  return $http.post(appConfig.baseUrl + 'events/export/' + format,
-    {
-      query: query,
-      selection: [],
-      order: {},
-      include: fields,
-      email: email,
-      perDay: perDay
-    },
-    defaultApiConfig
+
+  var exportData = {
+    query: query,
+    selection: [],
+    order: {},
+    include: fields,
+    perDay: perDay
+  };
+
+  if(email) {
+    exportData.email = email;
+  }
+
+  return $http.post(appConfig.baseUrl + 'events/export/' + format, exportData, defaultApiConfig
   );
 };
 

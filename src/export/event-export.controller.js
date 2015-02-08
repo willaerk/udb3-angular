@@ -18,43 +18,59 @@ function EventExportController($modalInstance, udbApi, eventExporter, queryField
 
   exporter.dayByDay = false;
 
-  exporter.fields = _.indexBy(queryFields, 'name');
-  _.forEach(exporter.fields, function(n, key) {
-    exporter.fields[key] = false;
-  });
+  exporter.eventProperties = [
+    { name: 'name', include: true, sortable: false, excludable: false},
+    { name: 'description', include: false, sortable: false, excludable: true},
+    { name: 'keywords', include: false, sortable: false, excludable: true},
+    { name: 'calendarSummary', include: true, sortable: false, excludable: false},
+    { name: 'image', include: true, sortable: false, excludable: true},
+    { name: 'location', include: true, sortable: false, excludable: false},
+    { name: 'organizer', include: false, sortable: false, excludable: true},
+    { name: 'bookingInfo', include: true, sortable: false, excludable: true},
+    { name: 'creator', include: false, sortable: false, excludable: true},
+    { name: 'terms', include: true, sortable: false, excludable: true},
+    { name: 'created', include: false, sortable: false, excludable: true},
+    { name: 'publisher', include: false, sortable: false, excludable: true},
+    { name: 'endDate', include: false, sortable: false, excludable: true},
+    { name: 'startDate', include: false, sortable: false, excludable: true},
+    { name: 'calendarType', include: false, sortable: false, excludable: true},
+    { name: 'sameAs', include: false, sortable: false, excludable: true},
+    { name: 'typicalAgeRange', include: false, sortable: false, excludable: true},
+    { name: 'language', include: false, sortable: false, excludable: true}
+  ];
 
-  exporter.fieldSorters = [];
-
-  exporter.getUnsortedFields = function (includeName) {
-    var sortedFieldNames = _.map(exporter.fieldSorters, 'fieldName');
-
-    if(includeName) {
-      sortedFieldNames = _.without(sortedFieldNames, includeName);
-    }
-
-    var unsortedFields = _.filter(queryFields, function (field) {
-      return !_.contains(sortedFieldNames, field.name);
-    });
-
-    return unsortedFields;
-  };
-
-  exporter.addSorter = function () {
-    var unsortedFields = exporter.getUnsortedFields();
-
-    if(unsortedFields.length) {
-      var fieldSorter = {
-        fieldName: unsortedFields[0].name,
-        order: 'asc'
-      };
-
-      exporter.fieldSorters.push(fieldSorter);
-    } else {
-      $window.alert('Already sorting on every possible field');
-    }
-
-  };
-  exporter.addSorter();
+  //exporter.fieldSorters = [];
+  //
+  //exporter.getUnsortedFields = function (includeName) {
+  //  var sortedFieldNames = _.map(exporter.fieldSorters, 'fieldName');
+  //
+  //  if(includeName) {
+  //    sortedFieldNames = _.without(sortedFieldNames, includeName);
+  //  }
+  //
+  //  var unsortedFields = _.filter(queryFields, function (field) {
+  //    return !_.contains(sortedFieldNames, field.name);
+  //  });
+  //
+  //  return unsortedFields;
+  //};
+  //
+  //exporter.addSorter = function () {
+  //  var unsortedFields = exporter.getUnsortedFields();
+  //
+  //  if(unsortedFields.length) {
+  //    var fieldSorter = {
+  //      fieldName: unsortedFields[0].name,
+  //      order: 'asc'
+  //    };
+  //
+  //    exporter.fieldSorters.push(fieldSorter);
+  //  } else {
+  //    $window.alert('Already sorting on every possible field');
+  //  }
+  //
+  //};
+  //exporter.addSorter();
 
   exporter.exportFormats = [
     {
@@ -77,8 +93,8 @@ function EventExportController($modalInstance, udbApi, eventExporter, queryField
     { name: 'format' },
     { name: 'filter',
       incomplete: function () {
-        return !_.find(exporter.fields, function(field) {
-          return field;
+        return !_.find(exporter.eventProperties, function(property) {
+          return property.include === true;
         });
       }
     },
@@ -131,12 +147,9 @@ function EventExportController($modalInstance, udbApi, eventExporter, queryField
   };
 
   exporter.export = function () {
-    var includedFieldNames = _.map(exporter.fields, function (value, fieldName) {
-      return value ? fieldName : '';
-    });
-    includedFieldNames = _.without(includedFieldNames, '');
+    var includedProperties = _.pluck(_.filter(exporter.eventProperties, 'include'), 'name');
 
-    eventExporter.export(exporter.format, exporter.email, includedFieldNames, exporter.dayByDay);
+    eventExporter.export(exporter.format, exporter.email, includedProperties, exporter.dayByDay);
     activeStep = -1;
   };
 

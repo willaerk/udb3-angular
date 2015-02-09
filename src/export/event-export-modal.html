@@ -12,7 +12,8 @@
 
     <div class="export-format-field" ng-repeat="format in ::exporter.exportFormats">
       <label>
-        <input type="radio" name="event-export-format" ng-model="exporter.format" ng-value="format.type" class="export-format-radio">
+        <input type="radio" name="event-export-format" ng-model="exporter.format" ng-value="format.type"
+               class="export-format-radio">
         <span ng-bind="format.label" class="export-format-label"></span>
       </label>
       <div class="export-format-description" ng-bind="format.description"></div>
@@ -23,10 +24,11 @@
     <h5>Kies de gewenste velden</h5>
 
     <div class="export-field-selection">
-      <div class="checkbox" ng-repeat="(field, selected) in ::exporter.fields">
+      <div class="checkbox" ng-repeat="property in ::exporter.eventProperties">
         <label>
-          <input type="checkbox" ng-model="exporter.fields[field]" name="event-export-fields">
-          <span ng-bind="field.toUpperCase() | translate"></span>
+          <input type="checkbox" ng-model="property.include" name="event-export-fields"
+                 ng-disabled="!property.excludable">
+          <span ng-bind="('property.' + property.name) | translate"></span>
         </label>
       </div>
     </div>

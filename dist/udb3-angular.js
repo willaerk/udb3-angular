@@ -2083,6 +2083,26 @@ angular.module('udb.core')
       'KR': 'Zuid-Korea',
       'SE': 'Zweden',
       'CH': 'Zwitserland'
+    },
+    property: {
+      'name': 'Naam',
+      'description': 'Beschrijving',
+      'keywords': 'Labels',
+      'calendarSummary': 'Kalendersamenvatting',
+      'image': 'Afbeelding',
+      'location': 'Locatie',
+      'organizer': 'Organisator',
+      'bookingInfo': 'Prijsinformatie',
+      'creator': 'Auteur',
+      'terms': 'Thema',
+      'created': 'Datum aangemaakt',
+      'publisher': 'Auteur',
+      'endDate': 'Einddatum',
+      'startDate': 'Begindatum',
+      'calendarType': 'Tijd type',
+      'sameAs': 'Externe IDs',
+      'typicalAgeRange': 'Leeftijd',
+      'language': 'Taal'
     }
   }
 );
@@ -2250,13 +2270,13 @@ this.tagQuery = function (query, label) {
   );
 };
 
-this.exportEvents = function (query, email, format, fields, perDay, selection) {
+this.exportEvents = function (query, email, format, properties, perDay, selection) {
 
   var exportData = {
     query: query,
     selection: selection || [],
     order: {},
-    include: fields,
+    include: properties,
     perDay: perDay
   };
 
@@ -3365,43 +3385,59 @@ function EventExportController($modalInstance, udbApi, eventExporter, queryField
 
   exporter.dayByDay = false;
 
-  exporter.fields = _.indexBy(queryFields, 'name');
-  _.forEach(exporter.fields, function(n, key) {
-    exporter.fields[key] = false;
-  });
+  exporter.eventProperties = [
+    { name: 'name', include: true, sortable: false, excludable: false},
+    { name: 'description', include: false, sortable: false, excludable: true},
+    { name: 'keywords', include: false, sortable: false, excludable: true},
+    { name: 'calendarSummary', include: true, sortable: false, excludable: false},
+    { name: 'image', include: true, sortable: false, excludable: true},
+    { name: 'location', include: true, sortable: false, excludable: false},
+    { name: 'organizer', include: false, sortable: false, excludable: true},
+    { name: 'bookingInfo', include: true, sortable: false, excludable: true},
+    { name: 'creator', include: false, sortable: false, excludable: true},
+    { name: 'terms', include: true, sortable: false, excludable: true},
+    { name: 'created', include: false, sortable: false, excludable: true},
+    { name: 'publisher', include: false, sortable: false, excludable: true},
+    { name: 'endDate', include: false, sortable: false, excludable: true},
+    { name: 'startDate', include: false, sortable: false, excludable: true},
+    { name: 'calendarType', include: false, sortable: false, excludable: true},
+    { name: 'sameAs', include: false, sortable: false, excludable: true},
+    { name: 'typicalAgeRange', include: false, sortable: false, excludable: true},
+    { name: 'language', include: false, sortable: false, excludable: true}
+  ];
 
-  exporter.fieldSorters = [];
-
-  exporter.getUnsortedFields = function (includeName) {
-    var sortedFieldNames = _.map(exporter.fieldSorters, 'fieldName');
-
-    if(includeName) {
-      sortedFieldNames = _.without(sortedFieldNames, includeName);
-    }
-
-    var unsortedFields = _.filter(queryFields, function (field) {
-      return !_.contains(sortedFieldNames, field.name);
-    });
-
-    return unsortedFields;
-  };
-
-  exporter.addSorter = function () {
-    var unsortedFields = exporter.getUnsortedFields();
-
-    if(unsortedFields.length) {
-      var fieldSorter = {
-        fieldName: unsortedFields[0].name,
-        order: 'asc'
-      };
-
-      exporter.fieldSorters.push(fieldSorter);
-    } else {
-      $window.alert('Already sorting on every possible field');
-    }
-
-  };
-  exporter.addSorter();
+  //exporter.fieldSorters = [];
+  //
+  //exporter.getUnsortedFields = function (includeName) {
+  //  var sortedFieldNames = _.map(exporter.fieldSorters, 'fieldName');
+  //
+  //  if(includeName) {
+  //    sortedFieldNames = _.without(sortedFieldNames, includeName);
+  //  }
+  //
+  //  var unsortedFields = _.filter(queryFields, function (field) {
+  //    return !_.contains(sortedFieldNames, field.name);
+  //  });
+  //
+  //  return unsortedFields;
+  //};
+  //
+  //exporter.addSorter = function () {
+  //  var unsortedFields = exporter.getUnsortedFields();
+  //
+  //  if(unsortedFields.length) {
+  //    var fieldSorter = {
+  //      fieldName: unsortedFields[0].name,
+  //      order: 'asc'
+  //    };
+  //
+  //    exporter.fieldSorters.push(fieldSorter);
+  //  } else {
+  //    $window.alert('Already sorting on every possible field');
+  //  }
+  //
+  //};
+  //exporter.addSorter();
 
   exporter.exportFormats = [
     {
@@ -3429,8 +3465,8 @@ function EventExportController($modalInstance, udbApi, eventExporter, queryField
     { name: 'format' },
     { name: 'filter',
       incomplete: function () {
-        return !_.find(exporter.fields, function(field) {
-          return field;
+        return !_.find(exporter.eventProperties, function(property) {
+          return property.include === true;
         });
       }
     },
@@ -3483,12 +3519,9 @@ function EventExportController($modalInstance, udbApi, eventExporter, queryField
   };
 
   exporter.export = function () {
-    var includedFieldNames = _.map(exporter.fields, function (value, fieldName) {
-      return value ? fieldName : '';
-    });
-    includedFieldNames = _.without(includedFieldNames, '');
+    var includedProperties = _.pluck(_.filter(exporter.eventProperties, 'include'), 'name');
 
-    eventExporter.export(exporter.format, exporter.email, includedFieldNames, exporter.dayByDay);
+    eventExporter.export(exporter.format, exporter.email, includedProperties, exporter.dayByDay);
     activeStep = -1;
   };
 
@@ -3538,16 +3571,16 @@ function eventExporter(jobLogger, udbApi, EventExportJob) {
    *
    * @param {'json'|'csv'}  format
    * @param {string}        email
-   * @param {string}        fields
+   * @param {string[]}      properties
    * @param {boolean}       perDay
    *
    * @return {object}
    */
-  ex.export = function (format, email, fields, perDay) {
+  ex.export = function (format, email, properties, perDay) {
     var queryString = ex.activeExport.query.queryString,
         selection = ex.activeExport.selection || [];
 
-    var jobPromise = udbApi.exportEvents(queryString, email, format, fields, perDay, selection);
+    var jobPromise = udbApi.exportEvents(queryString, email, format, properties, perDay, selection);
 
     jobPromise.success(function (jobData) {
       var job = new EventExportJob(jobData.commandId);
@@ -5473,7 +5506,8 @@ $templateCache.put('templates/base-job.template.html',
     "\n" +
     "    <div class=\"export-format-field\" ng-repeat=\"format in ::exporter.exportFormats\">\n" +
     "      <label>\n" +
-    "        <input type=\"radio\" name=\"event-export-format\" ng-model=\"exporter.format\" ng-value=\"format.type\" class=\"export-format-radio\">\n" +
+    "        <input type=\"radio\" name=\"event-export-format\" ng-model=\"exporter.format\" ng-value=\"format.type\"\n" +
+    "               class=\"export-format-radio\">\n" +
     "        <span ng-bind=\"format.label\" class=\"export-format-label\"></span>\n" +
     "      </label>\n" +
     "      <div class=\"export-format-description\" ng-bind=\"format.description\"></div>\n" +
@@ -5484,10 +5518,11 @@ $templateCache.put('templates/base-job.template.html',
     "    <h5>Kies de gewenste velden</h5>\n" +
     "\n" +
     "    <div class=\"export-field-selection\">\n" +
-    "      <div class=\"checkbox\" ng-repeat=\"(field, selected) in ::exporter.fields\">\n" +
+    "      <div class=\"checkbox\" ng-repeat=\"property in ::exporter.eventProperties\">\n" +
     "        <label>\n" +
-    "          <input type=\"checkbox\" ng-model=\"exporter.fields[field]\" name=\"event-export-fields\">\n" +
-    "          <span ng-bind=\"field.toUpperCase() | translate\"></span>\n" +
+    "          <input type=\"checkbox\" ng-model=\"property.include\" name=\"event-export-fields\"\n" +
+    "                 ng-disabled=\"!property.excludable\">\n" +
+    "          <span ng-bind=\"('property.' + property.name) | translate\"></span>\n" +
     "        </label>\n" +
     "      </div>\n" +
     "    </div>\n" +

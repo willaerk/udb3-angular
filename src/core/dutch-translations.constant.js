@@ -299,6 +299,26 @@ angular.module('udb.core')
       'KR': 'Zuid-Korea',
       'SE': 'Zweden',
       'CH': 'Zwitserland'
+    },
+    property: {
+      'name': 'Naam',
+      'description': 'Beschrijving',
+      'keywords': 'Labels',
+      'calendarSummary': 'Kalendersamenvatting',
+      'image': 'Afbeelding',
+      'location': 'Locatie',
+      'organizer': 'Organisator',
+      'bookingInfo': 'Prijsinformatie',
+      'creator': 'Auteur',
+      'terms': 'Thema',
+      'created': 'Datum aangemaakt',
+      'publisher': 'Auteur',
+      'endDate': 'Einddatum',
+      'startDate': 'Begindatum',
+      'calendarType': 'Tijd type',
+      'sameAs': 'Externe IDs',
+      'typicalAgeRange': 'Leeftijd',
+      'language': 'Taal'
     }
   }
 );

@@ -3397,7 +3397,6 @@ function EventExportController($modalInstance, udbApi, eventExporter, queryField
     { name: 'creator', include: false, sortable: false, excludable: true},
     { name: 'terms', include: true, sortable: false, excludable: true},
     { name: 'created', include: false, sortable: false, excludable: true},
-    { name: 'publisher', include: false, sortable: false, excludable: true},
     { name: 'endDate', include: false, sortable: false, excludable: true},
     { name: 'startDate', include: false, sortable: false, excludable: true},
     { name: 'calendarType', include: false, sortable: false, excludable: true},

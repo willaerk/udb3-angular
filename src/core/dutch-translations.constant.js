@@ -307,6 +307,7 @@ angular.module('udb.core')
       'calendarSummary': 'Kalendersamenvatting',
       'image': 'Afbeelding',
       'location': 'Locatie',
+      'address': 'Adres',
       'organizer': 'Organisator',
       'bookingInfo': 'Prijsinformatie',
       'creator': 'Auteur',

@@ -66,6 +66,11 @@ function EventExportController($modalInstance, udbApi, eventExporter, queryField
       type: 'csv',
       label: 'Als tabel',
       description: 'Met spreadsheetprogramma\'s als Microsoft Excel kun je eenvoudig CSV-bestanden maken en bewerken.'
+    },
+    {
+      type: 'ooxml',
+      label: 'Office Open XML (Excel)',
+      description: 'Het standaard formaat van Excel vanaf Microsoft Office 2007.'
     }
   ];
 

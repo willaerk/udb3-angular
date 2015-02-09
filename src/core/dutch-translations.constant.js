@@ -312,11 +312,11 @@ angular.module('udb.core')
       'creator': 'Auteur',
       'terms': 'Thema',
       'created': 'Datum aangemaakt',
-      'publisher': 'Publiceerder',
+      'publisher': 'Auteur',
       'endDate': 'Einddatum',
       'startDate': 'Begindatum',
-      'calendarType': 'Kalender type',
-      'sameAs': 'Zelfde als',
+      'calendarType': 'Tijd type',
+      'sameAs': 'Externe IDs',
       'typicalAgeRange': 'Leeftijd',
       'language': 'Taal'
     }

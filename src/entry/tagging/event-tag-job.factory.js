@@ -45,5 +45,9 @@ function EventTagJobFactory(BaseJob) {
     return description;
   };
 
+  EventTagJob.prototype.getTemplateName = function () {
+    return 'base-job';
+  };
+
   return (EventTagJob);
 }

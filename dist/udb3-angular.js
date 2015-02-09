@@ -2986,6 +2986,10 @@ function EventTagJobFactory(BaseJob) {
     return description;
   };
 
+  EventTagJob.prototype.getTemplateName = function () {
+    return 'base-job';
+  };
+
   return (EventTagJob);
 }
 EventTagJobFactory.$inject = ["BaseJob"];
@@ -5546,8 +5550,7 @@ $templateCache.put('templates/base-job.template.html',
     "<div>\n" +
     "  {{::job.getDescription()}} - {{ job.state }}\n" +
     "  <span ng-show=\"job.state === 'finished'\">\n" +
-    "    <a target=\"_blank\" ng-href=\"{{job.exportUrl}}\">Bekijken</a> -\n" +
-    "    <a ng-href=\"{{job.exportUrl}}\" download>Downloaden</a>\n" +
+    "    <a target=\"_blank\" ng-href=\"{{job.exportUrl}}\" download>Downloaden</a>\n" +
     "  </span>\n" +
     "  <progressbar value=\"job.progress\" type=\"{{giveJobBarType(job)}}\">\n" +
     "  </progressbar>\n" +

@@ -3334,22 +3334,23 @@ angular
   .factory('EventExportJob', EventExportJobFactory);
 
 /* @ngInject */
-function EventExportJobFactory(BaseJob) {
+function EventExportJobFactory(BaseJob, JobStates) {
 
   /**
    * @class EventExportJob
    * @constructor
    * @param commandId
    */
-  var EventExportJob = function (commandId) {
+  var EventExportJob = function (commandId, eventCount) {
     BaseJob.call(this, commandId);
     this.exportUrl = '';
+    this.eventCount = eventCount;
   };
 
   EventExportJob.prototype = Object.create(BaseJob.prototype);
   EventExportJob.prototype.constructor = EventExportJob;
 
-  BaseJob.prototype.getTemplateName = function () {
+  EventExportJob.prototype.getTemplateName = function () {
     return 'export-job';
   };
 
@@ -3357,15 +3358,21 @@ function EventExportJobFactory(BaseJob) {
     return 'exporting events';
   };
 
-  BaseJob.prototype.finishTask = function (taskData) {
+  EventExportJob.prototype.finish = function (jobData) {
+    if(this.state !== JobStates.FAILED) {
+      this.state = JobStates.FINISHED;
+      this.exportUrl = jobData.location;
+    }
+    this.progress = 100;
+  };
 
-    this.exportUrl = taskData.location;
-    this.finish(taskData);
+  EventExportJob.prototype.getTaskCount = function () {
+    return this.eventCount;
   };
 
   return (EventExportJob);
 }
-EventExportJobFactory.$inject = ["BaseJob"];
+EventExportJobFactory.$inject = ["BaseJob", "JobStates"];
 
 // Source: src/export/event-export.controller.js
 /**
@@ -3583,12 +3590,13 @@ function eventExporter(jobLogger, udbApi, EventExportJob) {
    */
   ex.export = function (format, email, properties, perDay) {
     var queryString = ex.activeExport.query.queryString,
-        selection = ex.activeExport.selection || [];
+        selection = ex.activeExport.selection || [],
+        eventCount = ex.activeExport.eventCount;
 
     var jobPromise = udbApi.exportEvents(queryString, email, format, properties, perDay, selection);
 
     jobPromise.success(function (jobData) {
-      var job = new EventExportJob(jobData.commandId);
+      var job = new EventExportJob(jobData.commandId, eventCount);
       jobLogger.addJob(job);
       job.start();
     });
@@ -5572,9 +5580,12 @@ $templateCache.put('templates/base-job.template.html',
     "  </div>\n" +
     "\n" +
     "  <div class=\"modal-body\" ng-show=\"exporter.getActiveStepName() === 'finished'\">\n" +
-    "    <h5>Export onderweg</h5>\n" +
+    "    <h5>Bedankt</h5>\n" +
     "\n" +
-    "    <p>Je export is onderweg per mail.</p>\n" +
+    "    <p>De gevraagde items worden geëxporteerd.</p>\n" +
+    "\n" +
+    "    <p ng-hide=\"exporter.email\">Wanneer het gevraagde bestand klaar is, verschijnt een melding in de taakbalk.</p>\n" +
+    "    <p ng-show=\"exporter.email\">Wanneer het gevraagde bestand klaar is, verschijnt een melding in de taakbalk en sturen we je het document via mail.</p>\n" +
     "  </div>\n" +
     "</div>\n" +
     "\n" +
@@ -5594,11 +5605,12 @@ $templateCache.put('templates/base-job.template.html',
 
   $templateCache.put('templates/export-job.template.html',
     "<div>\n" +
-    "  {{::job.getDescription()}} - {{ job.state }}\n" +
+    "  {{::job.getDescription()}} - {{ job.state }} - <b>{{job.completedTaskCount}} / {{::job.getTaskCount()}}</b>\n" +
     "  <span ng-show=\"job.state === 'finished'\">\n" +
     "    <a target=\"_blank\" ng-href=\"{{job.exportUrl}}\" download>Downloaden</a>\n" +
     "  </span>\n" +
     "  <progressbar value=\"job.progress\" type=\"{{giveJobBarType(job)}}\">\n" +
+    "    <i ng-show=\"job.warning\" ng-bind=\"job.warning\"></i>\n" +
     "  </progressbar>\n" +
     "</div>"
   );

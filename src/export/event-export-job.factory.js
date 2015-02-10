@@ -12,22 +12,23 @@ angular
   .factory('EventExportJob', EventExportJobFactory);
 
 /* @ngInject */
-function EventExportJobFactory(BaseJob) {
+function EventExportJobFactory(BaseJob, JobStates) {
 
   /**
    * @class EventExportJob
    * @constructor
    * @param commandId
    */
-  var EventExportJob = function (commandId) {
+  var EventExportJob = function (commandId, eventCount) {
     BaseJob.call(this, commandId);
     this.exportUrl = '';
+    this.eventCount = eventCount;
   };
 
   EventExportJob.prototype = Object.create(BaseJob.prototype);
   EventExportJob.prototype.constructor = EventExportJob;
 
-  BaseJob.prototype.getTemplateName = function () {
+  EventExportJob.prototype.getTemplateName = function () {
     return 'export-job';
   };
 
@@ -35,10 +36,14 @@ function EventExportJobFactory(BaseJob) {
     return 'exporting events';
   };
 
-  BaseJob.prototype.finishTask = function (taskData) {
+  EventExportJob.prototype.info = function (jobData) {
+    if(jobData.location) {
+      this.exportUrl = jobData.location;
+    }
+  };
 
-    this.exportUrl = taskData.location;
-    this.finish(taskData);
+  EventExportJob.prototype.getTaskCount = function () {
+    return this.eventCount;
   };
 
   return (EventExportJob);

@@ -34,12 +34,13 @@ function eventExporter(jobLogger, udbApi, EventExportJob) {
    */
   ex.export = function (format, email, properties, perDay) {
     var queryString = ex.activeExport.query.queryString,
-        selection = ex.activeExport.selection || [];
+        selection = ex.activeExport.selection || [],
+        eventCount = ex.activeExport.eventCount;
 
     var jobPromise = udbApi.exportEvents(queryString, email, format, properties, perDay, selection);
 
     jobPromise.success(function (jobData) {
-      var job = new EventExportJob(jobData.commandId);
+      var job = new EventExportJob(jobData.commandId, eventCount);
       jobLogger.addJob(job);
       job.start();
     });

@@ -2552,6 +2552,14 @@ function BaseJobFactory(JobStates) {
     this.progress = 100;
   };
 
+  /**
+   * Update the event with additional job data. This method does nothing by default but can be used by more specific
+   * job types.
+   *
+   * @param {object}  jobData
+   */
+  BaseJob.prototype.info = function (jobData) {};
+
 
   /**
    * Renders the job description based on its details.
@@ -2742,6 +2750,15 @@ function JobLogger(udbSocket, JobStates) {
     }
   }
 
+  function jobInfo (data) {
+    var job = findJob(data['job_id']);
+
+    if(job) {
+      job.info(data);
+      console.log('job with id: ' + job.id + ' received some info.');
+    }
+  }
+
   function jobFinished (data) {
     var job = findJob(data['job_id']);
 
@@ -2782,6 +2799,7 @@ function JobLogger(udbSocket, JobStates) {
   udbSocket.on('event_was_not_tagged', taskFailed);
   udbSocket.on('task_completed', taskFinished);
   udbSocket.on('job_started', jobStarted);
+  udbSocket.on('job_info', jobInfo);
   udbSocket.on('job_finished', jobFinished);
   udbSocket.on('job_failed', jobFailed);
 
@@ -3358,12 +3376,10 @@ function EventExportJobFactory(BaseJob, JobStates) {
     return 'exporting events';
   };
 
-  EventExportJob.prototype.finish = function (jobData) {
-    if(this.state !== JobStates.FAILED) {
-      this.state = JobStates.FINISHED;
+  EventExportJob.prototype.info = function (jobData) {
+    if(jobData.location) {
       this.exportUrl = jobData.location;
     }
-    this.progress = 100;
   };
 
   EventExportJob.prototype.getTaskCount = function () {

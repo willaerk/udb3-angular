@@ -36,12 +36,10 @@ function EventExportJobFactory(BaseJob, JobStates) {
     return 'exporting events';
   };
 
-  EventExportJob.prototype.finish = function (jobData) {
-    if(this.state !== JobStates.FAILED) {
-      this.state = JobStates.FINISHED;
+  EventExportJob.prototype.info = function (jobData) {
+    if(jobData.location) {
       this.exportUrl = jobData.location;
     }
-    this.progress = 100;
   };
 
   EventExportJob.prototype.getTaskCount = function () {

@@ -60,6 +60,14 @@ function BaseJobFactory(JobStates) {
     this.progress = 100;
   };
 
+  /**
+   * Update the event with additional job data. This method does nothing by default but can be used by more specific
+   * job types.
+   *
+   * @param {object}  jobData
+   */
+  BaseJob.prototype.info = function (jobData) {};
+
 
   /**
    * Renders the job description based on its details.

@@ -3506,6 +3506,10 @@ function EventExportController($modalInstance, udbApi, eventExporter, queryField
     }
   }
 
+  exporter.isOnFirstStep = function () {
+    return activeStep === 0;
+  };
+
   exporter.getActiveStepName = function () {
 
     if(activeStep === -1) {
@@ -5575,7 +5579,8 @@ $templateCache.put('templates/base-job.template.html',
     "</div>\n" +
     "\n" +
     "<div class=\"modal-footer\" ng-hide=\"exporter.getActiveStepName() === 'finished'\">\n" +
-    "  <button class=\"btn btn-default pull-left\" ng-click=\"exporter.previousStep()\">vorige stap</button>\n" +
+    "  <button class=\"btn btn-default pull-left\" ng-click=\"exporter.previousStep()\"\n" +
+    "          ng-hide=\"exporter.isOnFirstStep()\">vorige stap</button>\n" +
     "  <button ng-disabled=\"!exporter.isStepCompleted()\" ng-hide=\"exporter.onLastStep()\" class=\"btn btn-primary\"\n" +
     "          ng-click=\"exporter.nextStep()\">volgende</button>\n" +
     "  <button ng-show=\"exporter.onLastStep()\" class=\"btn btn-primary\" ng-click=\"exporter.export()\">exporteren</button>\n" +

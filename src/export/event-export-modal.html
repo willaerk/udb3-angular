@@ -80,7 +80,8 @@
 </div>
 
 <div class="modal-footer" ng-hide="exporter.getActiveStepName() === 'finished'">
-  <button class="btn btn-default pull-left" ng-click="exporter.previousStep()">vorige stap</button>
+  <button class="btn btn-default pull-left" ng-click="exporter.previousStep()"
+          ng-hide="exporter.isOnFirstStep()">vorige stap</button>
   <button ng-disabled="!exporter.isStepCompleted()" ng-hide="exporter.onLastStep()" class="btn btn-primary"
           ng-click="exporter.nextStep()">volgende</button>
   <button ng-show="exporter.onLastStep()" class="btn btn-primary" ng-click="exporter.export()">exporteren</button>

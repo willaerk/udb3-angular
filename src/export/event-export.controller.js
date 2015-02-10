@@ -138,6 +138,10 @@ function EventExportController($modalInstance, udbApi, eventExporter, queryField
     }
   }
 
+  exporter.isOnFirstStep = function () {
+    return activeStep === 0;
+  };
+
   exporter.getActiveStepName = function () {
 
     if(activeStep === -1) {

@@ -164,11 +164,10 @@ function EventExportController($modalInstance, udbApi, eventExporter, queryField
 
   exporter.format = exporter.exportFormats[0].type;
   exporter.email = '';
-
-  // TODO: I'm not sure which property to check for a valid email address
+  
   udbApi.getMe().then(function (user) {
-    if(user.email) {
-      exporter.email = user.email;
+    if(user.mbox) {
+      exporter.email = user.mbox;
     }
   });
 

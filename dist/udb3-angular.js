@@ -2668,7 +2668,7 @@ angular
   .directive('udbJobLog', udbJobLog);
 
 /* @ngInject */
-function udbJobLog(jobLogger) {
+function udbJobLog(jobLogger, JobStates) {
   return {
     restrict: 'C',
     link: function postLink(scope, element, attrs) {
@@ -2681,27 +2681,27 @@ function udbJobLog(jobLogger) {
       scope.giveJobBarType = function (job) {
         var barType = 'info';
 
-        if(job.getTemplateName() === 'batch-job') {
-          var failedTags = _.filter(job.events, function (event) {
-            return typeof event.tagged !== 'undefined' && event.tagged === false;
+        if(job.getTaskCount()) {
+          var failedTasks = _.filter(job.tasks, function (task) {
+            return typeof task.state !== 'undefined' && task.state === 'failed';
           });
 
-          if(failedTags.length) {
+          if(failedTasks.length) {
             barType = 'warning';
-            job.warning = failedTags.length + ' mislukt';
+            job.warning = failedTasks.length + ' mislukt';
           } else if(job.progress === 100) {
             barType = 'success';
           }
         } else if (job.getTemplateName() === 'base-job'){
-          if(job.state === 'started') {
+          if(job.state === JobStates.STARTED) {
             barType = 'info';
           }
 
-          if(job.state === 'failed') {
+          if(job.state === JobStates.FAILED) {
             barType = 'danger';
           }
 
-          if(job.state === 'finished'){
+          if(job.state === JobStates.FINISHED) {
             barType = 'success';
           }
         }
@@ -2711,7 +2711,7 @@ function udbJobLog(jobLogger) {
     }
   };
 }
-udbJobLog.$inject = ["jobLogger"];
+udbJobLog.$inject = ["jobLogger", "JobStates"];
 
 // Source: src/entry/logging/job-logger.service.js
 /* jshint sub: true */

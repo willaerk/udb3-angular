@@ -49,8 +49,28 @@ module.exports = function (grunt) {
         tasks: ['wiredep']
       },
       js: {
-        files: ['<%= yeoman.app %>/scripts/{,*/}*.js'],
-        tasks: ['newer:jshint:all'],
+        files: ['<%= yeoman.app %>/**/*.js'],
+        tasks: [
+          'autoprefixer',
+          'ngtemplates',
+          'newer:jshint:all',
+          'concat:modules',
+          'concat:dist',
+          'ngAnnotate',
+        ],
+        options: {
+          livereload: '<%= connect.options.livereload %>'
+        }
+      },
+      html: {
+        files: ['<%= yeoman.app %>/**/*.html'],
+        tasks: [
+          'autoprefixer',
+          'ngtemplates',
+          'concat:modules',
+          'concat:dist',
+          'ngAnnotate',
+        ],
         options: {
           livereload: '<%= connect.options.livereload %>'
         }
@@ -232,6 +252,7 @@ module.exports = function (grunt) {
           'src/core/udb.core.module.js',
           'src/core/udb.config.module.js',
           'src/search/udb.search.module.js',
+          'src/event_form/udb.event-form.module.js',
           'src/entry/udb.entry.module.js',
           'src/export/udb.export.module.js',
           'src/search/parsers/udb-query-parser.service.js'

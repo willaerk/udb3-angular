@@ -16,6 +16,7 @@ angular
     'udb.config',
     'udb.search',
     'udb.entry',
+    'udb.event-form',
     'udb.export',
     'btford.socket-io',
     'pascalprecht.translate'
@@ -44,6 +45,20 @@ angular
     'udb.search',
     'btford.socket-io',
     'pascalprecht.translate'
+  ]);
+/**
+ * @ngdoc module
+ * @name udb.export
+ * @description
+ * The udb eventform module
+ */
+angular
+  .module('udb.event-form', [
+    'ngAnimate',
+    'ngSanitize',
+    'ui.bootstrap',
+    'udb.config',
+    'udb.entry'
   ]);
 /**
  * @ngdoc module
@@ -3321,6 +3336,195 @@ function EventTranslator(jobLogger, udbApi, EventTranslationJob) {
 }
 EventTranslator.$inject = ["jobLogger", "udbApi", "EventTranslationJob"];
 
+// Source: src/event_form/event-form.controller.js
+(function () {
+/**
+   * @ngdoc function
+   * @name udbApp.controller:NewEventCtrl
+   * @description
+   * # NewEventCtrl
+   * udbApp controller
+   */
+  angular
+    .module('udb.event-form')
+    .controller('EventFormCtrl', EventFormController);
+
+  EventFormController.$inject = ['udbApi', '$scope', '$q', 'moment'];
+
+  function EventFormController(udbApi, $scope, $q, $http, appConfig, moment) {
+
+    $scope.showStep1 = true;
+    $scope.showStep2 = false;
+    $scope.showStep3 = false;
+    $scope.lastUpdated = '';
+
+    $scope.event = null; // should be empty UdbEvent.
+
+    $scope.showStep = showStep;
+    $scope.saveEvent = saveEvent;
+    $scope.validateEvent = validateEvent;
+
+    /**
+     * Show the given step.
+     * @param int stepNumber
+     */
+    function showStep(stepNumber) {
+      $scope['showStep' + stepNumber] = true;
+    }
+
+    /**
+     * Hide the given step.
+     * @param int stepNumber
+     */
+    function hideStep(stepNumber) {
+      $scope['showStep' + stepNumber] = false;
+    }
+
+    /**
+     * Validate the event.
+     */
+    function validateEvent() {
+      showStep(5);
+      saveEvent();
+    }
+
+    /**
+     * Save the event.
+     */
+    function saveEvent() {
+      $scope.lastUpdated = moment(Date.now()).format('DD/MM/YYYY HH:mm:s');
+    }
+
+  }
+
+})();
+
+// Source: src/event_form/event-form.directive.js
+/**
+ * @ngdoc directive
+ * @name udb.search.directive:event-form.html
+ * @description
+ * # udb event form directive
+ */
+angular
+  .module('udb.event-form')
+  .directive('udbEventForm', EventFormDirective);
+
+/* @ngInject */
+function EventFormDirective() {
+  return {
+    templateUrl: 'templates/event-form.html',
+    restrict: 'EA',
+  };
+}
+
+/**
+ * @ngdoc directive
+ * @name udb.search.directive:event-form-extras.html
+ * @description
+ * # event form extras. Default empty, decorate it to add custom extras.
+ */
+angular
+  .module('udb.event-form')
+  .directive('udbEventFormExtras', EventFormExtras);
+
+/* @ngInject */
+function EventFormExtras() {
+  return {
+    template: '',
+    restrict: 'EA',
+  };
+}
+
+/**
+ * @ngdoc directive
+ * @name udb.search.directive:udbEvent
+ * @description
+ * # udb search directive
+ */
+angular
+  .module('udb.event-form')
+  .directive('udbEventFormStep1', EventFormStep1Directive);
+
+/* @ngInject */
+function EventFormStep1Directive() {
+  return {
+    templateUrl: 'templates/event-form-step1.html',
+    restrict: 'EA',
+  };
+}
+
+/**
+ * @ngdoc directive
+ * @name udb.search.directive:udbEvent
+ * @description
+ * # udb search directive
+ */
+angular
+  .module('udb.event-form')
+  .directive('udbEventFormStep2', EventFormStep2Directive);
+
+/* @ngInject */
+function EventFormStep2Directive() {
+  return {
+    templateUrl: 'templates/event-form-step2.html',
+    restrict: 'EA',
+  };
+}
+
+/**
+ * @ngdoc directive
+ * @name udb.search.directive:udbEvent
+ * @description
+ * # udb search directive
+ */
+angular
+  .module('udb.event-form')
+  .directive('udbEventFormStep3', EventFormStep3Directive);
+
+/* @ngInject */
+function EventFormStep3Directive() {
+  return {
+    templateUrl: 'templates/event-form-step3.html',
+    restrict: 'EA',
+  };
+}
+
+/**
+ * @ngdoc directive
+ * @name udb.search.directive:udbEvent
+ * @description
+ * # udb search directive
+ */
+angular
+  .module('udb.event-form')
+  .directive('udbEventFormStep4', EventFormStep4Directive);
+
+/* @ngInject */
+function EventFormStep4Directive() {
+  return {
+    templateUrl: 'templates/event-form-step4.html',
+    restrict: 'EA',
+  };
+}
+
+/**
+ * @ngdoc directive
+ * @name udb.search.directive:udbEvent
+ * @description
+ * # udb search directive
+ */
+angular
+  .module('udb.event-form')
+  .directive('udbEventFormStep5', EventFormStep5Directive);
+
+/* @ngInject */
+function EventFormStep5Directive() {
+  return {
+    templateUrl: 'templates/event-form-step5.html',
+    restrict: 'EA',
+  };
+}
 // Source: src/export/event-export-job.factory.js
 /**
  * @ngdoc service
@@ -5008,183 +5212,6 @@ angular.module('udb.search')
     return (SearchResultViewer);
   });
 
-// Source: src/search/ui/event.directive.js
-/**
- * @ngdoc directive
- * @name udb.search.directive:udbEvent
- * @description
- * # udbEvent
- */
-angular
-  .module('udb.search')
-  .directive('udbEvent', udbEvent);
-
-/* @ngInject */
-function udbEvent(udbApi, jsonLDLangFilter, eventTranslator, eventTagger) {
-  var event = {
-    restrict: 'A',
-    link: function postLink(scope, iElement, iAttrs) {
-
-      var TranslationState = {
-        ALL: {'name': 'all', 'icon': 'fa-circle'},
-        NONE: {'name': 'none', 'icon': 'fa-circle-o'},
-        SOME: {'name': 'some', 'icon': 'fa-dot-circle-o'}
-      };
-
-      function updateTranslationState(event) {
-        var languages = {'en': false, 'fr': false, 'de': false},
-          properties = ['name', 'description'];
-
-        _.forEach(languages, function (language, languageKey) {
-          var translationCount = 0,
-            state;
-
-          _.forEach(properties, function (property) {
-            if (event[property] && event[property][languageKey]) {
-              ++translationCount;
-            }
-          });
-
-          if (translationCount) {
-            if (translationCount === properties.length) {
-              state = TranslationState.ALL;
-            } else {
-              state = TranslationState.SOME;
-            }
-          } else {
-            state = TranslationState.NONE;
-          }
-
-          languages[languageKey] = state;
-        });
-
-        event.translationState = languages;
-      }
-
-      scope.hasActiveTranslation = function () {
-        return event && event.translationState[scope.activeLanguage] !== TranslationState.NONE;
-      };
-
-      scope.getLanguageTranslationIcon = function (lang) {
-        var icon = TranslationState.NONE.icon;
-
-        if (event && lang) {
-          icon = event.translationState[lang].icon;
-        }
-
-        return icon;
-      };
-
-      scope.translate = function () {
-        scope.applyPropertyChanges('name');
-        scope.applyPropertyChanges('description');
-      };
-
-      scope.activeLanguage = 'nl';
-      scope.languageSelector = [
-        {'lang': 'fr'},
-        {'lang': 'en'},
-        {'lang': 'de'}
-      ];
-      scope.availableLabels = eventTagger.recentLabels;
-
-      // The event object that's returned from the server
-      var event;
-
-      if (!scope.event.title) {
-        scope.fetching = true;
-        var eventPromise = udbApi.getEventByLDId(scope.event['@id']);
-
-        eventPromise.then(function (eventObject) {
-          event = eventObject;
-          updateTranslationState(event);
-          scope.availableLabels = _.union(event.labels, eventTagger.recentLabels);
-          scope.event = jsonLDLangFilter(event, 'nl');
-          scope.fetching = false;
-        });
-      } else {
-        scope.fetching = false;
-      }
-
-      scope.eventTranslation = false;
-      /**
-       * Sets the provided language as active or toggles it off when already active
-       *
-       * @param lang
-       */
-      function toggleLanguage(lang) {
-
-        if (lang === scope.activeLanguage) {
-          scope.stopTranslating();
-        } else {
-          scope.activeLanguage = lang;
-          scope.eventTranslation = jsonLDLangFilter(event, scope.activeLanguage);
-        }
-
-      }
-
-      scope.toggleLanguage = toggleLanguage;
-
-      scope.hasPropertyChanged = function (propertyName) {
-        var lang = scope.activeLanguage,
-          translation = scope.eventTranslation;
-
-        return scope.eventTranslation && event[propertyName][lang] !== translation[propertyName];
-      };
-
-      scope.undoPropertyChanges = function (propertyName) {
-        var lang = scope.activeLanguage,
-          translation = scope.eventTranslation;
-
-        if (translation) {
-          translation[propertyName] = event[propertyName][lang];
-        }
-      };
-
-      scope.applyPropertyChanges = function (propertyName) {
-        var translation = scope.eventTranslation[propertyName],
-          apiProperty;
-
-        // TODO: this is hacky, should decide on consistent name for this property
-        if (propertyName === 'name') {
-          apiProperty = 'title';
-        }
-
-        translateEventProperty(propertyName, translation, apiProperty);
-      };
-
-      scope.stopTranslating = function () {
-        scope.eventTranslation = undefined;
-        scope.activeLanguage = 'nl';
-      };
-
-      function translateEventProperty(property, translation, apiProperty) {
-        var language = scope.activeLanguage,
-          udbProperty = apiProperty || property;
-
-        if (translation && translation !== event[property][language]) {
-          var translationPromise = eventTranslator.translateProperty(event, udbProperty, language, translation);
-
-          translationPromise.then(function () {
-            updateTranslationState(event);
-          });
-        }
-      }
-
-      scope.labelAdded = function (label) {
-        eventTagger.tag(event, label);
-      };
-
-      scope.labelRemoved = function (label) {
-        eventTagger.untag(event, label);
-      };
-    }
-  };
-
-  return event;
-}
-udbEvent.$inject = ["udbApi", "jsonLDLangFilter", "eventTranslator", "eventTagger"];
-
 // Source: src/search/ui/search.controller.js
 /**
  * @ngdoc function
@@ -5492,6 +5519,86 @@ $templateCache.put('templates/base-job.template.html',
     "  <button class=\"btn btn-primary\" ng-click=\"ok()\">label</button>\n" +
     "  <button class=\"btn btn-warning\" ng-click=\"close()\">annuleren</button>\n" +
     "</div>"
+  );
+
+
+  $templateCache.put('templates/event-form.html',
+    "<div ng-controller=\"EventFormCtrl as eventForm\">\n" +
+    "  <udb-event-form-step1></udb-event-form-step1>\n" +
+    "  <udb-event-form-step2></udb-event-form-step2>\n" +
+    "  <udb-event-form-step3></udb-event-form-step3>\n" +
+    "  <udb-event-form-step4></udb-event-form-step4>\n" +
+    "  <udb-event-form-step5></udb-event-form-step5>\n" +
+    "</div>\n"
+  );
+
+
+  $templateCache.put('templates/event-form-step1.html',
+    "<a name=\"wat\"></a>\n" +
+    "<section id=\"wat\">\n" +
+    "  <section class=\"row\">\n" +
+    "    <div class=\"col-md-12\">\n" +
+    "      <h2 class=\"title-border\"><span class=\"number\">1</span> Wat wil je toevoegen?</h2>\n" +
+    "    </div>\n" +
+    "  </section>\n" +
+    "\n" +
+    "  <a href=\"#\" ng-click=\"showStep(2)\">Volgende stap</a>\n" +
+    "\n" +
+    "</section>"
+  );
+
+
+  $templateCache.put('templates/event-form-step2.html',
+    "<a name=\"wanneer\"></a>\n" +
+    "<section id=\"wanneer\" ng-show=\"showStep2\">\n" +
+    "  <h2 class=\"title-border\">\n" +
+    "    <span class=\"number\">2</span>\n" +
+    "    <span class=\"event-only\">Wanneer vindt dit evenement of deze activiteit plaats?</span>\n" +
+    "    <span class=\"place-only\">Wanneer is deze plaats of locatie open?</span>\n" +
+    "  </h2>\n" +
+    "\n" +
+    "  <a href=\"#\" ng-click=\"showStep(3)\">Volgende stap</a>\n" +
+    "\n" +
+    "</section>"
+  );
+
+
+  $templateCache.put('templates/event-form-step3.html',
+    "<a name=\"wanneer\"></a>\n" +
+    "<section id=\"waar\" ng-show=\"showStep3\">\n" +
+    "  <h2 class=\"title-border\">\n" +
+    "    <span class=\"number\">3</span>\n" +
+    "    <span class=\"event-only\">Waar vindt dit evenement of deze activiteit plaats?</span>\n" +
+    "    <span class=\"place-only\">Waar is deze plaats of locatie?</span>\n" +
+    "  </h2>\n" +
+    "\n" +
+    "  <a href=\"#\" ng-click=\"showStep(4)\">Volgende</a>\n" +
+    "\n" +
+    "</section>\n"
+  );
+
+
+  $templateCache.put('templates/event-form-step4.html',
+    "<a name=\"titel\"></a>\n" +
+    "<section id=\"titel\" ng-show=\"showStep4\">\n" +
+    "  <h2 class=\"title-border\"><span class=\"number\">4</span>Basisgegevens</h2>\n" +
+    "\n" +
+    "  <p><a class=\"btn btn-primary titel-doorgaan\" ng-click=\"validateEvent()\">Doorgaan</a></p>\n" +
+    "</section>"
+  );
+
+
+  $templateCache.put('templates/event-form-step5.html',
+    "<a name=\"extra\"></a>\n" +
+    "<section id=\"extra\" ng-show=\"showStep5\">\n" +
+    "\n" +
+    "  <h2 class=\"title-border\">\n" +
+    "    <span class=\"number\">5</span>\n" +
+    "    <span class=\"event-only\">Laat je evenement extra opvallen</span>\n" +
+    "    <span class=\"place-only\">Laat deze locatie extra opvallen</span>\n" +
+    "  </h2>\n" +
+    "\n" +
+    "</section>"
   );
 
 

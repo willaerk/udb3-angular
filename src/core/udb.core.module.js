@@ -16,6 +16,7 @@ angular
     'udb.config',
     'udb.search',
     'udb.entry',
+    'udb.event-form',
     'udb.export',
     'btford.socket-io',
     'pascalprecht.translate'

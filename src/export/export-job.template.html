@@ -1,8 +1,9 @@
 <div>
-  {{::job.getDescription()}} - {{ job.state }}
+  {{::job.getDescription()}} - {{ job.state }} - <b>{{job.completedTaskCount}} / {{::job.getTaskCount()}}</b>
   <span ng-show="job.state === 'finished'">
     <a target="_blank" ng-href="{{job.exportUrl}}" download>Downloaden</a>
   </span>
   <progressbar value="job.progress" type="{{giveJobBarType(job)}}">
+    <i ng-show="job.warning" ng-bind="job.warning"></i>
   </progressbar>
 </div>

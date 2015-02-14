@@ -73,9 +73,12 @@
   </div>
 
   <div class="modal-body" ng-show="exporter.getActiveStepName() === 'finished'">
-    <h5>Export onderweg</h5>
+    <h5>Bedankt</h5>
 
-    <p>Je export is onderweg per mail.</p>
+    <p>De gevraagde items worden geëxporteerd.</p>
+
+    <p ng-hide="exporter.email">Wanneer het gevraagde bestand klaar is, verschijnt een melding in de taakbalk.</p>
+    <p ng-show="exporter.email">Wanneer het gevraagde bestand klaar is, verschijnt een melding in de taakbalk en sturen we je het document via mail.</p>
   </div>
 </div>
 

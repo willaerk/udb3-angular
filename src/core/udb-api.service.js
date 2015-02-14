@@ -58,64 +58,64 @@ function UdbApi($q, $http, appConfig, $cookieStore, uitidAuth, $cacheFactory, Ud
     return deferredEvents.promise;
   };
 
-this.getEventById = function(eventId) {
-  var deferredEvent = $q.defer();
+  this.getEventById = function(eventId) {
+    var deferredEvent = $q.defer();
 
-  var event = eventCache.get(eventId);
+    var event = eventCache.get(eventId);
 
-  if(event) {
-    deferredEvent.resolve(event);
-  } else {
-    var eventRequest  = $http.get(
-      appConfig.baseUrl + 'event/' + eventId,
-      {
-        headers: {
-          'Accept': 'application/ld+json'
-        }
+    if(event) {
+      deferredEvent.resolve(event);
+    } else {
+      var eventRequest  = $http.get(
+        appConfig.baseUrl + 'event/' + eventId,
+        {
+          headers: {
+            'Accept': 'application/ld+json'
+          }
+        });
+
+      eventRequest.success(function(jsonEvent) {
+        var event = new UdbEvent(jsonEvent);
+        eventCache.put(eventId, event);
+        deferredEvent.resolve(event);
+      });
+    }
+
+    return deferredEvent.promise;
+  };
+
+  this.getEventByLDId = function (eventLDId) {
+    var eventId = eventLDId.split('/').pop();
+    return this.getEventById(eventId);
+  };
+
+  /**
+   * @returns {Promise} A list of tags wrapped as a promise.
+   */
+  this.getRecentLabels = function () {
+    var deferredLabels = $q.defer();
+
+    var request = $http.get(apiUrl + 'user/keywords', {
+      withCredentials: true,
+      headers: {
+        'Accept': 'application/json'
+      }
+    });
+
+    request
+      .success(function (data) {
+        deferredLabels.resolve(data);
+      })
+      .error(function () {
+        deferredLabels.reject();
       });
 
-    eventRequest.success(function(jsonEvent) {
-      var event = new UdbEvent(jsonEvent);
-      eventCache.put(eventId, event);
-      deferredEvent.resolve(event);
-    });
-  }
+    return deferredLabels.promise;
+  };
 
-  return deferredEvent.promise;
-};
-
-this.getEventByLDId = function (eventLDId) {
-  var eventId = eventLDId.split('/').pop();
-  return this.getEventById(eventId);
-};
-
-/**
- * @returns {Promise} A list of tags wrapped as a promise.
- */
-this.getRecentLabels = function () {
-  var deferredLabels = $q.defer();
-
-  var request = $http.get(apiUrl + 'user/keywords', {
-    withCredentials: true,
-    headers: {
-      'Accept': 'application/json'
-    }
-  });
-
-  request
-    .success(function (data) {
-      deferredLabels.resolve(data);
-    })
-    .error(function () {
-      deferredLabels.reject();
-    });
-
-  return deferredLabels.promise;
-};
-
-/**
- * @returns {Promise} A promise with the credentials of the currently logged in user.
- */
+  /**
+   * @returns {Promise} A promise with the credentials of the currently logged in user.
+   */
   this.getMe = function () {
     var deferredUser = $q.defer();
 
@@ -142,68 +142,76 @@ this.getRecentLabels = function () {
     return deferredUser.promise;
   };
 
-this.tagEvents = function (eventIds, label) {
-  return $http.post(appConfig.baseUrl + 'events/tag',
-    {
-      'keyword': label,
-      'events' : eventIds
-    },
-    defaultApiConfig
-  );
-};
-
-this.tagQuery = function (query, label) {
-  return $http.post(appConfig.baseUrl + 'query/tag',
-    {
-      'keyword': label,
-      'query' : query
-    },
-    defaultApiConfig
-  );
-};
-
-this.exportEvents = function (query, email, format, properties, perDay, selection) {
-
-  var exportData = {
-    query: query,
-    selection: selection || [],
-    order: {},
-    include: properties,
-    perDay: perDay
+  this.tagEvents = function (eventIds, label) {
+    return $http.post(appConfig.baseUrl + 'events/tag',
+      {
+        'keyword': label,
+        'events' : eventIds
+      },
+      defaultApiConfig
+    );
   };
 
-  if(email) {
-    exportData.email = email;
-  }
+  this.tagQuery = function (query, label) {
+    return $http.post(appConfig.baseUrl + 'query/tag',
+      {
+        'keyword': label,
+        'query' : query
+      },
+      defaultApiConfig
+    );
+  };
 
-  return $http.post(appConfig.baseUrl + 'events/export/' + format, exportData, defaultApiConfig
-  );
-};
+  this.exportEvents = function (query, email, format, properties, perDay, selection) {
 
-this.translateEventProperty = function (eventId, property, language, translation) {
+    var exportData = {
+      query: query,
+      selection: selection || [],
+      order: {},
+      include: properties,
+      perDay: perDay
+    };
 
-  var translationData = {};
-  translationData[property] = translation;
+    if(email) {
+      exportData.email = email;
+    }
 
-  return $http.post(
-    appConfig.baseUrl + 'event/' + eventId + '/' + language + '/' + property,
-    translationData,
-    defaultApiConfig
-  );
-};
+    return $http.post(appConfig.baseUrl + 'events/export/' + format, exportData, defaultApiConfig
+    );
+  };
 
-this.tagEvent = function (eventId, label) {
-  return $http.post(
-    appConfig.baseUrl + 'event/' + eventId + '/keywords',
-    { 'keyword': label},
-    defaultApiConfig
-  );
-};
+  this.translateEventProperty = function (eventId, property, language, translation) {
 
-this.untagEvent = function (eventId, label) {
-  return $http.delete(
-    appConfig.baseUrl + 'event/' + eventId + '/keywords/' + label,
-    defaultApiConfig
-  );
-};
+    var translationData = {};
+    translationData[property] = translation;
+
+    return $http.post(
+      appConfig.baseUrl + 'event/' + eventId + '/' + language + '/' + property,
+      translationData,
+      defaultApiConfig
+    );
+  };
+
+  this.tagEvent = function (eventId, label) {
+    return $http.post(
+      appConfig.baseUrl + 'event/' + eventId + '/keywords',
+      { 'keyword': label},
+      defaultApiConfig
+    );
+  };
+
+  this.untagEvent = function (eventId, label) {
+    return $http.delete(
+      appConfig.baseUrl + 'event/' + eventId + '/keywords/' + label,
+      defaultApiConfig
+    );
+  };
+
+  this.createEvent = function (event) {
+    return $http.post(
+      appConfig.baseUrl + 'event',
+      event,
+      defaultApiConfig
+    );
+  };
 }

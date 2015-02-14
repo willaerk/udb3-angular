@@ -12,13 +12,15 @@
     .module('udb.event-form')
     .controller('EventFormCtrl', EventFormController);
 
-  EventFormController.$inject = ['udbApi', '$scope', '$q', 'moment'];
+  EventFormController.$inject = ['udbApi', '$scope', '$controller', '$location', 'moment', 'eventCreator'];
 
-  function EventFormController(udbApi, $scope, $q, $http, appConfig, moment) {
+  function EventFormController(udbApi, $scope, $controller, $window, moment, eventCreator) {
 
     $scope.showStep1 = true;
     $scope.showStep2 = false;
     $scope.showStep3 = false;
+    $scope.showStep4 = false;
+    $scope.showStep5 = false;
     $scope.lastUpdated = '';
 
     $scope.event = null; // should be empty UdbEvent.

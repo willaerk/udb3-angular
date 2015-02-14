@@ -2182,64 +2182,64 @@ function UdbApi($q, $http, appConfig, $cookieStore, uitidAuth, $cacheFactory, Ud
     return deferredEvents.promise;
   };
 
-this.getEventById = function(eventId) {
-  var deferredEvent = $q.defer();
+  this.getEventById = function(eventId) {
+    var deferredEvent = $q.defer();
 
-  var event = eventCache.get(eventId);
+    var event = eventCache.get(eventId);
 
-  if(event) {
-    deferredEvent.resolve(event);
-  } else {
-    var eventRequest  = $http.get(
-      appConfig.baseUrl + 'event/' + eventId,
-      {
-        headers: {
-          'Accept': 'application/ld+json'
-        }
+    if(event) {
+      deferredEvent.resolve(event);
+    } else {
+      var eventRequest  = $http.get(
+        appConfig.baseUrl + 'event/' + eventId,
+        {
+          headers: {
+            'Accept': 'application/ld+json'
+          }
+        });
+
+      eventRequest.success(function(jsonEvent) {
+        var event = new UdbEvent(jsonEvent);
+        eventCache.put(eventId, event);
+        deferredEvent.resolve(event);
+      });
+    }
+
+    return deferredEvent.promise;
+  };
+
+  this.getEventByLDId = function (eventLDId) {
+    var eventId = eventLDId.split('/').pop();
+    return this.getEventById(eventId);
+  };
+
+  /**
+   * @returns {Promise} A list of tags wrapped as a promise.
+   */
+  this.getRecentLabels = function () {
+    var deferredLabels = $q.defer();
+
+    var request = $http.get(apiUrl + 'user/keywords', {
+      withCredentials: true,
+      headers: {
+        'Accept': 'application/json'
+      }
+    });
+
+    request
+      .success(function (data) {
+        deferredLabels.resolve(data);
+      })
+      .error(function () {
+        deferredLabels.reject();
       });
 
-    eventRequest.success(function(jsonEvent) {
-      var event = new UdbEvent(jsonEvent);
-      eventCache.put(eventId, event);
-      deferredEvent.resolve(event);
-    });
-  }
+    return deferredLabels.promise;
+  };
 
-  return deferredEvent.promise;
-};
-
-this.getEventByLDId = function (eventLDId) {
-  var eventId = eventLDId.split('/').pop();
-  return this.getEventById(eventId);
-};
-
-/**
- * @returns {Promise} A list of tags wrapped as a promise.
- */
-this.getRecentLabels = function () {
-  var deferredLabels = $q.defer();
-
-  var request = $http.get(apiUrl + 'user/keywords', {
-    withCredentials: true,
-    headers: {
-      'Accept': 'application/json'
-    }
-  });
-
-  request
-    .success(function (data) {
-      deferredLabels.resolve(data);
-    })
-    .error(function () {
-      deferredLabels.reject();
-    });
-
-  return deferredLabels.promise;
-};
-
-/**
- * @returns {Promise} A promise with the credentials of the currently logged in user.
- */
+  /**
+   * @returns {Promise} A promise with the credentials of the currently logged in user.
+   */
   this.getMe = function () {
     var deferredUser = $q.defer();
 
@@ -2266,70 +2266,78 @@ this.getRecentLabels = function () {
     return deferredUser.promise;
   };
 
-this.tagEvents = function (eventIds, label) {
-  return $http.post(appConfig.baseUrl + 'events/tag',
-    {
-      'keyword': label,
-      'events' : eventIds
-    },
-    defaultApiConfig
-  );
-};
-
-this.tagQuery = function (query, label) {
-  return $http.post(appConfig.baseUrl + 'query/tag',
-    {
-      'keyword': label,
-      'query' : query
-    },
-    defaultApiConfig
-  );
-};
-
-this.exportEvents = function (query, email, format, properties, perDay, selection) {
-
-  var exportData = {
-    query: query,
-    selection: selection || [],
-    order: {},
-    include: properties,
-    perDay: perDay
+  this.tagEvents = function (eventIds, label) {
+    return $http.post(appConfig.baseUrl + 'events/tag',
+      {
+        'keyword': label,
+        'events' : eventIds
+      },
+      defaultApiConfig
+    );
   };
 
-  if(email) {
-    exportData.email = email;
-  }
+  this.tagQuery = function (query, label) {
+    return $http.post(appConfig.baseUrl + 'query/tag',
+      {
+        'keyword': label,
+        'query' : query
+      },
+      defaultApiConfig
+    );
+  };
 
-  return $http.post(appConfig.baseUrl + 'events/export/' + format, exportData, defaultApiConfig
-  );
-};
+  this.exportEvents = function (query, email, format, properties, perDay, selection) {
 
-this.translateEventProperty = function (eventId, property, language, translation) {
+    var exportData = {
+      query: query,
+      selection: selection || [],
+      order: {},
+      include: properties,
+      perDay: perDay
+    };
 
-  var translationData = {};
-  translationData[property] = translation;
+    if(email) {
+      exportData.email = email;
+    }
 
-  return $http.post(
-    appConfig.baseUrl + 'event/' + eventId + '/' + language + '/' + property,
-    translationData,
-    defaultApiConfig
-  );
-};
+    return $http.post(appConfig.baseUrl + 'events/export/' + format, exportData, defaultApiConfig
+    );
+  };
 
-this.tagEvent = function (eventId, label) {
-  return $http.post(
-    appConfig.baseUrl + 'event/' + eventId + '/keywords',
-    { 'keyword': label},
-    defaultApiConfig
-  );
-};
+  this.translateEventProperty = function (eventId, property, language, translation) {
 
-this.untagEvent = function (eventId, label) {
-  return $http.delete(
-    appConfig.baseUrl + 'event/' + eventId + '/keywords/' + label,
-    defaultApiConfig
-  );
-};
+    var translationData = {};
+    translationData[property] = translation;
+
+    return $http.post(
+      appConfig.baseUrl + 'event/' + eventId + '/' + language + '/' + property,
+      translationData,
+      defaultApiConfig
+    );
+  };
+
+  this.tagEvent = function (eventId, label) {
+    return $http.post(
+      appConfig.baseUrl + 'event/' + eventId + '/keywords',
+      { 'keyword': label},
+      defaultApiConfig
+    );
+  };
+
+  this.untagEvent = function (eventId, label) {
+    return $http.delete(
+      appConfig.baseUrl + 'event/' + eventId + '/keywords/' + label,
+      defaultApiConfig
+    );
+  };
+
+  this.createEvent = function (event) {
+    return $http.post(
+      appConfig.baseUrl + 'event',
+      event,
+      defaultApiConfig
+    );
+  };
 }
 UdbApi.$inject = ["$q", "$http", "appConfig", "$cookieStore", "uitidAuth", "$cacheFactory", "UdbEvent"];
 
@@ -2505,6 +2513,75 @@ function UitidAuth($window, $location, $http, appConfig, $cookieStore) {
 
 }
 UitidAuth.$inject = ["$window", "$location", "$http", "appConfig", "$cookieStore"];
+
+// Source: src/entry/crud/event-creation-job.factory.js
+/**
+ * @ngdoc service
+ * @name udb.entry.EventCreationJob
+ * @description
+ * This Is the factory that creates an event creation job.
+ */
+angular
+  .module('udb.entry')
+  .factory('EventCreationJob', EventCreationJobFactory);
+
+/* @ngInject */
+function EventCreationJobFactory(BaseJob) {
+
+  /**
+   * @class EventCreationJob
+   * @constructor
+   * @param {string} commandId
+   * @param {UdbEvent} event
+   */
+  var EventCreationJob = function (commandId, event, property, language, translation) {
+    BaseJob.call(this, commandId);
+    this.event = event;
+  };
+
+  EventCreationJob.prototype = Object.create(BaseJob.prototype);
+  EventCreationJob.prototype.constructor = EventCreationJob;
+
+  EventCreationJob.prototype.getDescription = function() {
+    return 'Evenement toevoegen: "' + this.event.name.nl + '".';
+  };
+
+  return (EventCreationJob);
+}
+EventCreationJobFactory.$inject = ["BaseJob"];
+
+// Source: src/entry/crud/event-creator.service.js
+/**
+ * @ngdoc service
+ * @name udb.entry.eventCreator
+ * @description
+ * Service for creating new events.
+ */
+angular
+  .module('udb.entry')
+  .service('eventCreator', EventCreator);
+
+/* @ngInject */
+function EventCreator(jobLogger, udbApi, EventCreationJob) {
+
+  /**
+   * Creates a new event and add the job to the logger.
+   *
+   * @param {UdbEvent}  event        The event to be created
+   */
+  this.createEvent = function (event) {
+
+    var jobPromise = udbApi.createEvent(event);
+
+    jobPromise.success(function (jobData) {
+      var job = new EventCreationJob(jobData.commandId, event);
+      jobLogger.addJob(job);
+    });
+
+    return jobPromise;
+  };
+}
+EventCreator.$inject = ["jobLogger", "udbApi", "EventCreationJob"];
 
 // Source: src/entry/logging/base-job.factory.js
 /**
@@ -3349,13 +3426,15 @@ EventTranslator.$inject = ["jobLogger", "udbApi", "EventTranslationJob"];
     .module('udb.event-form')
     .controller('EventFormCtrl', EventFormController);
 
-  EventFormController.$inject = ['udbApi', '$scope', '$q', 'moment'];
+  EventFormController.$inject = ['udbApi', '$scope', '$controller', '$location', 'moment', 'eventCreator'];
 
-  function EventFormController(udbApi, $scope, $q, $http, appConfig, moment) {
+  function EventFormController(udbApi, $scope, $controller, $window, moment, eventCreator) {
 
     $scope.showStep1 = true;
     $scope.showStep2 = false;
     $scope.showStep3 = false;
+    $scope.showStep4 = false;
+    $scope.showStep5 = false;
     $scope.lastUpdated = '';
 
     $scope.event = null; // should be empty UdbEvent.

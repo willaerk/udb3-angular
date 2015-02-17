@@ -2,16 +2,16 @@
 
 /**
  * @ngdoc service
- * @name udb.entry.eventCreator
+ * @name udb.entry.eventCrud
  * @description
- * Service for creating new events.
+ * Service for creating / updating events.
  */
 angular
   .module('udb.entry')
-  .service('eventCreator', EventCreator);
+  .service('eventCrud', EventCrud);
 
 /* @ngInject */
-function EventCreator(jobLogger, udbApi, EventCreationJob) {
+function EventCrud(jobLogger, udbApi, EventCrudJob) {
 
   /**
    * Creates a new event and add the job to the logger.
@@ -23,7 +23,7 @@ function EventCreator(jobLogger, udbApi, EventCreationJob) {
     var jobPromise = udbApi.createEvent(event);
 
     jobPromise.success(function (jobData) {
-      var job = new EventCreationJob(jobData.commandId, event);
+      var job = new EventCrudJob(jobData.commandId, event);
       jobLogger.addJob(job);
     });
 

@@ -2199,7 +2199,8 @@ function UdbApi($q, $http, appConfig, $cookieStore, uitidAuth, $cacheFactory, Ud
         });
 
       eventRequest.success(function(jsonEvent) {
-        var event = new UdbEvent(jsonEvent);
+        var event = new UdbEvent();
+        event.parseJson(jsonEvent);
         eventCache.put(eventId, event);
         deferredEvent.resolve(event);
       });
@@ -2362,17 +2363,16 @@ function UdbEventFactory() {
     PAYED: 'payed'
   };
 
-  function getCategoryLabel(jsonEvent, domain) {
-    var label;
+  function getCategoryByType(jsonEvent, domain) {
     var category = _.find(jsonEvent.terms, function (category) {
       return category.domain === domain;
     });
 
     if (category) {
-      label = category.label;
+      return category.label;
     }
 
-    return label;
+    return;
   }
 
   function getPricing(jsonEvent) {
@@ -2395,8 +2395,13 @@ function UdbEventFactory() {
    * @constructor
    * @param jsonEvent
    */
-  var UdbEvent = function (jsonEvent) {
-    this.parseJson(jsonEvent);
+  var UdbEvent = function () {
+    this.id = '';
+    this.name = {};
+    this.place = {};
+    this.type = {};
+    this.theme = {};
+    this.calendar = {};
   };
 
   UdbEvent.prototype = {
@@ -2424,13 +2429,107 @@ function UdbEventFactory() {
       this.publisher = jsonEvent.publisher || '';
       this.created = new Date(jsonEvent.created);
       this.creator = jsonEvent.creator || '';
-      this.type = getCategoryLabel(jsonEvent, 'eventtype') || '';
-      this.theme = getCategoryLabel(jsonEvent, 'theme') || '';
+      this.type = getCategoryByType(jsonEvent, 'eventtype') || {};
+      this.theme = getCategoryByType(jsonEvent, 'theme') || {};
+      this.calendar = {};
       this.calendarType = jsonEvent.calendarType || '';
       this.startDate = jsonEvent.startDate;
       this.endDate = jsonEvent.endDate;
       this.url = jsonEvent.sameAs[0];
     },
+
+    /**
+     * Set the name of the event for a given langcode.
+     */
+    setName: function(name, langcode) {
+      this.name[langcode] = name;
+    },
+
+    /**
+     * Get the name of the event for a given langcode.
+     */
+    getName: function(langcode) {
+      return this.name[langcode];
+    },
+
+    /**
+     * Set the event type for this event.
+     */
+    setEventType: function(id, label) {
+      this.type = {
+        'id' : id,
+        'label' : label,
+        'domain' : 'eventtype',
+      };
+    },
+
+    /**
+     * Get the event type for this event.
+     */
+    getEventType: function() {
+      return this.type;
+    },
+
+    /**
+     * Get the label for the event type.
+     */
+    getEventTypeLabel: function() {
+      return this.type.label ? this.type.label : '';
+    },
+
+    /**
+     * Set the event type for this event.
+     */
+    setTheme: function(id, label) {
+      this.theme = {
+        'id' : id,
+        'label' : label,
+        'domain' : 'thema',
+      };
+    },
+
+    /**
+     * Get the event type for this event.
+     */
+    getTheme: function() {
+      return this.theme;
+    },
+
+    /**
+     * Get the label for the theme.
+     */
+    getThemeLabel: function() {
+      return this.theme.label ? this.theme.label : '';
+    },
+
+    /**
+     * Set the calendar for this event.
+     */
+    setCalendar: function(calendar) {
+      this.calendar = calendar;
+    },
+
+    /**
+     * Get the calendar for this event.
+     */
+    getCalendar: function() {
+      return this.calendar;
+    },
+
+    /**
+     * Set the location of this event.
+     */
+    setLocation: function(location) {
+      this.location = location;
+    },
+
+    /**
+     * Get the calendar for this event.
+     */
+    getLocation: function() {
+      return this.location;
+    },
+
     /**
      * Tag the event with a label or a list of labels
      * @param {string|string[]} label
@@ -2448,6 +2547,7 @@ function UdbEventFactory() {
 
       this.labels = _.union(this.labels, labels);
     },
+
     /**
      * Untag a label from an event
      * @param {string} labelName
@@ -2460,6 +2560,136 @@ function UdbEventFactory() {
   };
 
   return (UdbEvent);
+}
+
+// Source: src/core/udb-place.factory.js
+/**
+ * @ngdoc service
+ * @name udb.core.UdbTimestamps
+ * @description
+ * # UdbTimestamps
+ * Contains timestamps info for the calendar
+ */
+angular
+  .module('udb.core')
+  .factory('UdbPlace', UdbPlaceFactory);
+
+/* @ngInject */
+function UdbPlaceFactory() {
+
+  /**
+   * @class UdbPlace
+   * @constructor
+   */
+  var UdbPlace = function () {
+    this.name = '';
+    this.address = {
+      'addressCountry' : '',
+      'addressLocality' : '',
+      'postalCode' : '',
+      'streetAddress' : '',
+    };
+  };
+
+  UdbPlace.prototype = {
+    parseJson: function (json) {
+
+    },
+
+    setName: function(name) {
+      this.name = name;
+    },
+
+    setCountry: function(country) {
+      this.address.country = country;
+    },
+
+    setLocality: function(locality) {
+      this.address.addressLocality = locality;
+    },
+
+    setPostal: function(postalCode) {
+      this.address.postalCode = postalCode;
+    },
+
+    setStreet: function(street) {
+      this.address.streetAddress = street;
+    },
+
+    getName: function() {
+      return this.name;
+    },
+
+    getCountry: function() {
+      return this.address.country;
+    },
+
+    getLocality: function() {
+      return this.address.addressLocality;
+    },
+
+    getPostal: function() {
+      return this.address.postalCode;
+    },
+
+    getStreet: function(street) {
+      return this.address.streetAddress;
+    }
+
+  };
+
+  return (UdbPlace);
+}
+
+// Source: src/core/udb-timestamps.factory.js
+/**
+ * @ngdoc service
+ * @name udb.core.UdbTimestamps
+ * @description
+ * # UdbTimestamps
+ * Contains timestamps info for the calendar
+ */
+angular
+  .module('udb.core')
+  .factory('UdbTimestamps', UdbTimestampsFactory);
+
+/* @ngInject */
+function UdbTimestampsFactory() {
+
+  /**
+   * @class UdbTimestamps
+   * @constructor
+   */
+  var UdbTimestamps = function () {
+    this.type = 'timestamps';
+    this.timestamps = {};
+  };
+
+  UdbTimestamps.prototype = {
+    parseJson: function (json) {
+
+    },
+
+    /**
+     * Add a timestamp.
+     */
+    addTimestamp: function(date, timestart, timeend) {
+      this.timestamps[date] = {
+        'date' : date,
+        'timestart' : timestart,
+        'timeend' : timeend
+      };
+    },
+
+    /**
+     * Remove a timestamp.
+     */
+    removeTimestamp: function(date) {
+      delete this.timestamps[date];
+    }
+  };
+
+  return (UdbTimestamps);
 }
 
 // Source: src/core/uitid-auth.service.js
@@ -2514,7 +2744,7 @@ function UitidAuth($window, $location, $http, appConfig, $cookieStore) {
 }
 UitidAuth.$inject = ["$window", "$location", "$http", "appConfig", "$cookieStore"];
 
-// Source: src/entry/crud/event-creation-job.factory.js
+// Source: src/entry/crud/event-crud-job.factory.js
 /**
  * @ngdoc service
  * @name udb.entry.EventCreationJob
@@ -2523,10 +2753,10 @@ UitidAuth.$inject = ["$window", "$location", "$http", "appConfig", "$cookieStore
  */
 angular
   .module('udb.entry')
-  .factory('EventCreationJob', EventCreationJobFactory);
+  .factory('EventCrudJob', EventCrudJobFactory);
 
 /* @ngInject */
-function EventCreationJobFactory(BaseJob) {
+function EventCrudJobFactory(BaseJob) {
 
   /**
    * @class EventCreationJob
@@ -2534,35 +2764,42 @@ function EventCreationJobFactory(BaseJob) {
    * @param {string} commandId
    * @param {UdbEvent} event
    */
-  var EventCreationJob = function (commandId, event, property, language, translation) {
+  var EventCrudJob = function (commandId, event, action) {
     BaseJob.call(this, commandId);
     this.event = event;
   };
 
-  EventCreationJob.prototype = Object.create(BaseJob.prototype);
-  EventCreationJob.prototype.constructor = EventCreationJob;
+  EventCrudJob.prototype = Object.create(BaseJob.prototype);
+  EventCrudJob.prototype.constructor = EventCrudJob;
 
-  EventCreationJob.prototype.getDescription = function() {
-    return 'Evenement toevoegen: "' + this.event.name.nl + '".';
+  EventCrudJob.prototype.getDescription = function() {
+
+    switch (this.action) {
+
+      case 'create':
+        return 'Evenement toevoegen: "' + this.event.name.nl + '".';
+
+    }
+
   };
 
-  return (EventCreationJob);
+  return (EventCrudJob);
 }
-EventCreationJobFactory.$inject = ["BaseJob"];
+EventCrudJobFactory.$inject = ["BaseJob"];
 
-// Source: src/entry/crud/event-creator.service.js
+// Source: src/entry/crud/event-crud.service.js
 /**
  * @ngdoc service
- * @name udb.entry.eventCreator
+ * @name udb.entry.eventCrud
  * @description
- * Service for creating new events.
+ * Service for creating / updating events.
  */
 angular
   .module('udb.entry')
-  .service('eventCreator', EventCreator);
+  .service('eventCrud', EventCrud);
 
 /* @ngInject */
-function EventCreator(jobLogger, udbApi, EventCreationJob) {
+function EventCrud(jobLogger, udbApi, EventCrudJob) {
 
   /**
    * Creates a new event and add the job to the logger.
@@ -2574,14 +2811,14 @@ function EventCreator(jobLogger, udbApi, EventCreationJob) {
     var jobPromise = udbApi.createEvent(event);
 
     jobPromise.success(function (jobData) {
-      var job = new EventCreationJob(jobData.commandId, event);
+      var job = new EventCrudJob(jobData.commandId, event);
       jobLogger.addJob(job);
     });
 
     return jobPromise;
   };
 }
-EventCreator.$inject = ["jobLogger", "udbApi", "EventCreationJob"];
+EventCrud.$inject = ["jobLogger", "udbApi", "EventCrudJob"];
 
 // Source: src/entry/logging/base-job.factory.js
 /**
@@ -3444,9 +3681,27 @@ EventTranslator.$inject = ["jobLogger", "udbApi", "EventTranslationJob"];
     .module('udb.event-form')
     .controller('EventFormCtrl', EventFormController);
 
-  EventFormController.$inject = ['udbApi', '$scope', '$controller', '$location', 'moment', 'eventCreator'];
+  EventFormController.$inject = ['udbApi', '$scope', '$controller', '$location', 'UdbEvent', 'UdbTimestamps', 'UdbPlace', 'moment', 'eventCrud'];
 
-  function EventFormController(udbApi, $scope, $controller, $window, moment, eventCreator) {
+  function EventFormController(udbApi, $scope, $controller, $window, UdbEvent, UdbTimestamps, UdbPlace, moment, eventCrud) {
+
+    var event = new UdbEvent();
+
+    // Hardcoded for poc.
+    event.setName('my name', 'nl');
+    event.setEventType('0.50.4.0.0', 'Concert');
+    event.setTheme('1.8.3.5.0', 'Amusementsmuziek');
+
+    var calendar = new UdbTimestamps();
+    calendar.addTimestamp('06/06/15', '12:00', '13:00');
+    calendar.addTimestamp('07/06/15', '12:00', '13:00');
+    calendar.addTimestamp('08/06/15', '12:00', '13:00');
+    event.setCalendar(calendar);
+
+    var location = new UdbPlace();
+    location.setLocality('Gent');
+    location.setPostal(9000);
+    event.setLocation(location);
 
     $scope.showStep1 = true;
     $scope.showStep2 = false;
@@ -3454,8 +3709,7 @@ EventTranslator.$inject = ["jobLogger", "udbApi", "EventTranslationJob"];
     $scope.showStep4 = false;
     $scope.showStep5 = false;
     $scope.lastUpdated = '';
-
-    $scope.event = null; // should be empty UdbEvent.
+    $scope.event = event; // should be empty UdbEvent.
 
     $scope.showStep = showStep;
     $scope.saveEvent = saveEvent;
@@ -3481,6 +3735,7 @@ EventTranslator.$inject = ["jobLogger", "udbApi", "EventTranslationJob"];
      * Validate the event.
      */
     function validateEvent() {
+      event.location.address.addressLocality = 'test';
       showStep(5);
       saveEvent();
     }
@@ -3489,6 +3744,9 @@ EventTranslator.$inject = ["jobLogger", "udbApi", "EventTranslationJob"];
      * Save the event.
      */
     function saveEvent() {
+
+      eventCrud.createEvent(event);
+
       $scope.lastUpdated = moment(Date.now()).format('DD/MM/YYYY HH:mm:s');
     }
 
@@ -5821,6 +6079,9 @@ $templateCache.put('templates/base-job.template.html',
     "    </div>\n" +
     "  </section>\n" +
     "\n" +
+    "  <div ng-bind=\"event.getEventTypeLabel()\"></div>\n" +
+    "  <div ng-bind=\"event.getThemeLabel()\"></div>\n" +
+    "\n" +
     "  <a href=\"#\" ng-click=\"showStep(2)\">Volgende stap</a>\n" +
     "\n" +
     "</section>"
@@ -5836,6 +6097,16 @@ $templateCache.put('templates/base-job.template.html',
     "    <span class=\"place-only\">Wanneer is deze plaats of locatie open?</span>\n" +
     "  </h2>\n" +
     "\n" +
+    "  <div ng-bind=\"event.calendar.type\"></div>\n" +
+    "\n" +
+    "  <div ng-switch=\"event.calendar.type\">\n" +
+    "    <div ng-switch-when=\"timestamps\">\n" +
+    "      <div class=\"row rv-item\" ng-repeat=\"timestamp in event.calendar.timestamps\">\n" +
+    "        <div ng-bind=\"timestamp.date\"></div>\n" +
+    "      </div>\n" +
+    "    </div>\n" +
+    "  </div>\n" +
+    "\n" +
     "  <a href=\"#\" ng-click=\"showStep(3)\">Volgende stap</a>\n" +
     "\n" +
     "</section>"
@@ -5850,6 +6121,8 @@ $templateCache.put('templates/base-job.template.html',
     "    <span class=\"event-only\">Waar vindt dit evenement of deze activiteit plaats?</span>\n" +
     "    <span class=\"place-only\">Waar is deze plaats of locatie?</span>\n" +
     "  </h2>\n" +
+    "\n" +
+    "  <div ng-bind=\"event.location.address.addressLocality;\"></div>\n" +
     "\n" +
     "  <a href=\"#\" ng-click=\"showStep(4)\">Volgende</a>\n" +
     "\n" +

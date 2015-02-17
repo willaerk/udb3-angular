@@ -20,17 +20,16 @@ function UdbEventFactory() {
     PAYED: 'payed'
   };
 
-  function getCategoryLabel(jsonEvent, domain) {
-    var label;
+  function getCategoryByType(jsonEvent, domain) {
     var category = _.find(jsonEvent.terms, function (category) {
       return category.domain === domain;
     });
 
     if (category) {
-      label = category.label;
+      return category.label;
     }
 
-    return label;
+    return;
   }
 
   function getPricing(jsonEvent) {
@@ -53,8 +52,13 @@ function UdbEventFactory() {
    * @constructor
    * @param jsonEvent
    */
-  var UdbEvent = function (jsonEvent) {
-    this.parseJson(jsonEvent);
+  var UdbEvent = function () {
+    this.id = '';
+    this.name = {};
+    this.place = {};
+    this.type = {};
+    this.theme = {};
+    this.calendar = {};
   };
 
   UdbEvent.prototype = {
@@ -82,13 +86,107 @@ function UdbEventFactory() {
       this.publisher = jsonEvent.publisher || '';
       this.created = new Date(jsonEvent.created);
       this.creator = jsonEvent.creator || '';
-      this.type = getCategoryLabel(jsonEvent, 'eventtype') || '';
-      this.theme = getCategoryLabel(jsonEvent, 'theme') || '';
+      this.type = getCategoryByType(jsonEvent, 'eventtype') || {};
+      this.theme = getCategoryByType(jsonEvent, 'theme') || {};
+      this.calendar = {};
       this.calendarType = jsonEvent.calendarType || '';
       this.startDate = jsonEvent.startDate;
       this.endDate = jsonEvent.endDate;
       this.url = jsonEvent.sameAs[0];
     },
+
+    /**
+     * Set the name of the event for a given langcode.
+     */
+    setName: function(name, langcode) {
+      this.name[langcode] = name;
+    },
+
+    /**
+     * Get the name of the event for a given langcode.
+     */
+    getName: function(langcode) {
+      return this.name[langcode];
+    },
+
+    /**
+     * Set the event type for this event.
+     */
+    setEventType: function(id, label) {
+      this.type = {
+        'id' : id,
+        'label' : label,
+        'domain' : 'eventtype',
+      };
+    },
+
+    /**
+     * Get the event type for this event.
+     */
+    getEventType: function() {
+      return this.type;
+    },
+
+    /**
+     * Get the label for the event type.
+     */
+    getEventTypeLabel: function() {
+      return this.type.label ? this.type.label : '';
+    },
+
+    /**
+     * Set the event type for this event.
+     */
+    setTheme: function(id, label) {
+      this.theme = {
+        'id' : id,
+        'label' : label,
+        'domain' : 'thema',
+      };
+    },
+
+    /**
+     * Get the event type for this event.
+     */
+    getTheme: function() {
+      return this.theme;
+    },
+
+    /**
+     * Get the label for the theme.
+     */
+    getThemeLabel: function() {
+      return this.theme.label ? this.theme.label : '';
+    },
+
+    /**
+     * Set the calendar for this event.
+     */
+    setCalendar: function(calendar) {
+      this.calendar = calendar;
+    },
+
+    /**
+     * Get the calendar for this event.
+     */
+    getCalendar: function() {
+      return this.calendar;
+    },
+
+    /**
+     * Set the location of this event.
+     */
+    setLocation: function(location) {
+      this.location = location;
+    },
+
+    /**
+     * Get the calendar for this event.
+     */
+    getLocation: function() {
+      return this.location;
+    },
+
     /**
      * Tag the event with a label or a list of labels
      * @param {string|string[]} label
@@ -106,6 +204,7 @@ function UdbEventFactory() {
 
       this.labels = _.union(this.labels, labels);
     },
+
     /**
      * Untag a label from an event
      * @param {string} labelName

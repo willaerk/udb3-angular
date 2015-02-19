@@ -6,11 +6,11 @@
     <span class="place-only">Wanneer is deze plaats of locatie open?</span>
   </h2>
 
-  <div ng-bind="event.calendar.type"></div>
+  <div ng-bind="item.calendar.type"></div>
 
-  <div ng-switch="event.calendar.type">
+  <div ng-switch="item.calendar.type">
     <div ng-switch-when="timestamps">
-      <div class="row rv-item" ng-repeat="timestamp in event.calendar.timestamps">
+      <div class="row rv-item" ng-repeat="timestamp in item.calendar.timestamps">
         <div ng-bind="timestamp.date"></div>
       </div>
     </div>

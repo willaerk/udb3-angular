@@ -16,23 +16,22 @@
 
   function EventFormController(udbApi, $scope, $controller, $window, UdbEvent, UdbTimestamps, UdbPlace, moment, eventCrud) {
 
-    var event = new UdbEvent();
-
-    // Hardcoded for poc.
-    event.setName('my name', 'nl');
-    event.setEventType('0.50.4.0.0', 'Concert');
-    event.setTheme('1.8.3.5.0', 'Amusementsmuziek');
+    // Hardcoded as UdbEvent for poc.
+    var item = new UdbEvent();
+    item.setName('my name', 'nl');
+    item.setEventType('0.50.4.0.0', 'Concert');
+    item.setTheme('1.8.3.5.0', 'Amusementsmuziek');
 
     var calendar = new UdbTimestamps();
     calendar.addTimestamp('06/06/15', '12:00', '13:00');
     calendar.addTimestamp('07/06/15', '12:00', '13:00');
     calendar.addTimestamp('08/06/15', '12:00', '13:00');
-    event.setCalendar(calendar);
+    item.setCalendar(calendar);
 
     var location = new UdbPlace();
     location.setLocality('Gent');
     location.setPostal(9000);
-    event.setLocation(location);
+    item.setLocation(location);
 
     $scope.showStep1 = true;
     $scope.showStep2 = false;
@@ -41,11 +40,11 @@
     $scope.showStep5 = false;
     $scope.lastUpdated = '';
     $scope.type = 'event';
-    $scope.event = event; // should be empty UdbEvent.
+    $scope.item = item;
 
     $scope.showStep = showStep;
-    $scope.saveEvent = saveEvent;
-    $scope.validateEvent = validateEvent;
+    $scope.saveItem = saveItem;
+    $scope.validateItem = validateItem;
 
     /**
      * Show the given step.
@@ -64,20 +63,19 @@
     }
 
     /**
-     * Validate the event.
+     * Validate the event / place.
      */
-    function validateEvent() {
-      event.location.address.addressLocality = 'test';
+    function validateItem() {
       showStep(5);
       saveEvent();
     }
 
     /**
-     * Save the event.
+     * Save the event / place.
      */
     function saveEvent() {
 
-      eventCrud.createEvent(event);
+      eventCrud.createEvent(item);
 
       $scope.lastUpdated = moment(Date.now()).format('DD/MM/YYYY HH:mm:s');
     }

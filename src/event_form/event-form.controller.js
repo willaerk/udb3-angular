@@ -40,6 +40,7 @@
     $scope.showStep4 = false;
     $scope.showStep5 = false;
     $scope.lastUpdated = '';
+    $scope.type = 'event';
     $scope.event = event; // should be empty UdbEvent.
 
     $scope.showStep = showStep;

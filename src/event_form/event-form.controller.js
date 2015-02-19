@@ -16,6 +16,21 @@
 
   function EventFormController(udbApi, $scope, $controller, $window, UdbEvent, UdbTimestamps, UdbPlace, moment, eventCrud) {
 
+    $scope.showStep1 = true;
+    $scope.showStep2 = false;
+    $scope.showStep3 = false;
+    $scope.showStep4 = false;
+    $scope.showStep5 = false;
+    $scope.lastUpdated = '';
+    $scope.type = type;
+    $scope.item = item;
+
+    $scope.showStep = showStep;
+    $scope.saveItem = saveItem;
+    $scope.validateItem = validateItem;
+
+    var type = 'event';
+
     // Hardcoded as UdbEvent for poc.
     var item = new UdbEvent();
     item.setName('my name', 'nl');
@@ -32,19 +47,6 @@
     location.setLocality('Gent');
     location.setPostal(9000);
     item.setLocation(location);
-
-    $scope.showStep1 = true;
-    $scope.showStep2 = false;
-    $scope.showStep3 = false;
-    $scope.showStep4 = false;
-    $scope.showStep5 = false;
-    $scope.lastUpdated = '';
-    $scope.type = 'event';
-    $scope.item = item;
-
-    $scope.showStep = showStep;
-    $scope.saveItem = saveItem;
-    $scope.validateItem = validateItem;
 
     /**
      * Show the given step.
@@ -67,15 +69,17 @@
      */
     function validateItem() {
       showStep(5);
-      saveEvent();
+      saveItem();
     }
 
     /**
      * Save the event / place.
      */
-    function saveEvent() {
+    function saveItem() {
 
-      eventCrud.createEvent(item);
+      if (type == 'event') {
+        eventCrud.createEvent(item);
+      }
 
       $scope.lastUpdated = moment(Date.now()).format('DD/MM/YYYY HH:mm:s');
     }

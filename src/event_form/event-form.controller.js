@@ -31,7 +31,13 @@
 
     var type = 'event';
 
-    // Hardcoded as UdbEvent for poc.
+    console.warn('ok');
+    // Get the categories.
+    var categories = $http.get('categories.json').success(function(response) {
+        console.log(response.data);
+        return;
+    });
+
     var item = new UdbEvent();
     item.setName('my name', 'nl');
     item.setEventType('0.50.4.0.0', 'Concert');

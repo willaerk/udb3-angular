@@ -1,0 +1,30 @@
+{
+  "event": [
+    {
+      "id": "0.50.4.0.0",
+      "label": "Concert",
+      "themes": ["1.8.1.0.0", "1.8.2.0.0", "1.8.3.1.0"],
+      "primary": true
+    },
+    {
+      "id": "0.3.1.0.0",
+      "label": "Cursus of workshop",
+      "themes": ["1.21.0.0.0", "1.42.0.0.0"],
+      "primary": false
+    }
+  ],
+  "place": [
+    {
+      "id": "0.14.0.0.0",
+      "label": "Monument",
+      "themes": [],
+      "primary": true
+    },
+    {
+      "id": "0.15.0.0.0",
+      "label": "Natuur, park of tuin",
+      "themes": [],
+      "primary": false
+    }
+  ]
+}

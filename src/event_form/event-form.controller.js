@@ -12,9 +12,9 @@
     .module('udb.event-form')
     .controller('EventFormCtrl', EventFormController);
 
-  EventFormController.$inject = ['udbApi', '$scope', '$controller', '$location', 'UdbEvent', 'UdbTimestamps', 'UdbPlace', 'moment', 'eventCrud'];
+  EventFormController.$inject = ['udbApi', '$scope', '$controller', '$location', 'UdbEvent', 'UdbOpeningHours', 'UdbPlace', 'moment', 'eventCrud'];
 
-  function EventFormController(udbApi, $scope, $controller, $window, UdbEvent, UdbTimestamps, UdbPlace, moment, eventCrud) {
+  function EventFormController(udbApi, $scope, $controller, $window, UdbEvent, UdbOpeningHours, UdbPlace, moment, eventCrud) {
 
     // Hardcoded as UdbEvent for poc.
     var item = new UdbEvent();
@@ -22,17 +22,12 @@
     item.setEventType('0.50.4.0.0', 'Concert');
     item.setTheme('1.8.3.5.0', 'Amusementsmuziek');
 
-    var calendar = new UdbTimestamps();
-    calendar.addTimestamp('06/06/15', '12:00', '13:00');
-    calendar.addTimestamp('07/06/15', '12:00', '13:00');
-    calendar.addTimestamp('08/06/15', '12:00', '13:00');
-    item.setCalendar(calendar);
-
     var location = new UdbPlace();
     location.setLocality('Gent');
     location.setPostal(9000);
     item.setLocation(location);
 
+    // Scope vars.
     $scope.showStep1 = true;
     $scope.showStep2 = false;
     $scope.showStep3 = false;
@@ -40,10 +35,19 @@
     $scope.showStep5 = false;
     $scope.lastUpdated = '';
     $scope.item = item;
-    $scope.isEvent = true;
-    $scope.isPlace = false;
+    $scope.isEvent = true; // Is current item an event.
+    $scope.isPlace = false; // Is current item a place.
+    $scope.activeCalendarType = ''; // Current active calendar type.
+    $scope.activeCalendarLabel = '';
+    $scope.calendarLabels = [
+      { 'label': 'Eén of meerdere dagen', 'id' : 'single' },
+      { 'label': 'Van ... tot ... ', 'id' : 'periodic' },
+      { 'label' : 'Permanent', 'id' : 'permanent' }
+    ];
 
+    // Scope functions.
     $scope.showStep = showStep;
+    $scope.setCalendarType = setCalendarType;
     $scope.saveItem = saveItem;
     $scope.validateItem = validateItem;
 
@@ -69,6 +73,53 @@
      */
     function hideStep(stepNumber) {
       $scope['showStep' + stepNumber] = false;
+    }
+
+    /**
+     * Click listener on the calendar type buttons.
+     * Activate the selected calendar type.
+     */
+    function setCalendarType(type) {
+
+      $scope.activeCalendarType = type;
+
+      for (var i = 0; i < $scope.calendarLabels.length; i++) {
+        if ($scope.calendarLabels[i].id === type) {
+          $scope.activeCalendarLabel = $scope.calendarLabels[i].label;
+          break;
+        }
+      }
+
+      // Check if previous calendar type was the same.
+      // If so, we don't need to create new openinghours. Just show the previous entered data.
+      if (item.calendarType === type) {
+        return;
+      }
+
+      // A type is choosen, start a complet new calendar, removing old data.
+
+      item.calendarType = type;
+      item.resetOpeningHours();
+
+      if (type === 'single') {
+        addSingleDate();
+      }
+
+    }
+
+    /**
+     * Click listener to reset the calendar. User can select a new calendar type.
+     */
+    function resetCalendar() {
+      $scope.activeCalendarType = '';
+    }
+
+    /**
+     * Add a single date to the item.
+     */
+    function addSingleDate() {
+      item.openingHours.push(new UdbOpeningHours());
+      console.log(item.openingHours);
     }
 
     /**

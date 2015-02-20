@@ -2401,7 +2401,7 @@ function UdbEventFactory() {
     this.place = {};
     this.type = {};
     this.theme = {};
-    this.calendar = {};
+    this.openingHours = [];
   };
 
   UdbEvent.prototype = {
@@ -2431,7 +2431,6 @@ function UdbEventFactory() {
       this.creator = jsonEvent.creator || '';
       this.type = getCategoryByType(jsonEvent, 'eventtype') || {};
       this.theme = getCategoryByType(jsonEvent, 'theme') || {};
-      this.calendar = {};
       this.calendarType = jsonEvent.calendarType || '';
       this.startDate = jsonEvent.startDate;
       this.endDate = jsonEvent.endDate;
@@ -2503,17 +2502,17 @@ function UdbEventFactory() {
     },
 
     /**
-     * Set the calendar for this event.
+     * Reset the opening hours.
      */
-    setCalendar: function(calendar) {
-      this.calendar = calendar;
+    resetOpeningHours: function() {
+      this.openingHours = [];
     },
 
     /**
-     * Get the calendar for this event.
+     * Get the opening hours for this event.
      */
-    getCalendar: function() {
-      return this.calendar;
+    getOpeningHours: function() {
+      return this.openingHours;
     },
 
     /**
@@ -2562,6 +2561,72 @@ function UdbEventFactory() {
   return (UdbEvent);
 }
 
+// Source: src/core/udb-openinghours.factory.js
+/**
+ * @ngdoc service
+ * @name udb.core.UdbTimestamps
+ * @description
+ * # UdbOpeningHours
+ * Contains the opening hours for 1 period / date of an offer.
+ */
+angular
+  .module('udb.core')
+  .factory('UdbOpeningHours', UdbOpeningHoursFactory);
+
+/* @ngInject */
+function UdbOpeningHoursFactory() {
+
+  /**
+   * @class UdbOpeningHours
+   * @constructor
+   */
+  var UdbOpeningHours = function () {
+    this.validFrom = '';
+    this.validThrough = '';
+    this.dayOfWeek = '';
+    this.opens = '';
+    this.closes = '';
+  };
+
+  UdbOpeningHours.prototype = {
+
+    parseJson: function (json) {
+
+    },
+
+    /**
+     * Set the valid from date.
+     */
+    setValidFrom: function(date) {
+      this.validFrom = date;
+    },
+
+    /**
+     * Set the valid till date.
+     */
+    setValidTrough: function(date) {
+      this.validThrough = date;
+    },
+
+    /**
+     * Set the opening hour.
+     */
+    setOpens: function(hour) {
+      this.opens = hour;
+    },
+
+    /**
+     * Set the opening hour.
+     */
+    setDayOfWeek: function(dayOfWeek) {
+      this.dayOfWeek = dayOfWeek;
+    }
+
+  };
+
+  return (UdbOpeningHours);
+}
+
 // Source: src/core/udb-place.factory.js
 /**
  * @ngdoc service
@@ -2583,6 +2648,9 @@ function UdbPlaceFactory() {
    */
   var UdbPlace = function () {
     this.name = '';
+    this.type = {};
+    this.theme = {};
+    this.openinghours = [];
     this.address = {
       'addressCountry' : '',
       'addressLocality' : '',
@@ -2596,8 +2664,82 @@ function UdbPlaceFactory() {
 
     },
 
-    setName: function(name) {
-      this.name = name;
+    /**
+     * Set the name of the event for a given langcode.
+     */
+    setName: function(name, langcode) {
+      this.name[langcode] = name;
+    },
+
+    /**
+     * Get the name of the event for a given langcode.
+     */
+    getName: function(langcode) {
+      return this.name[langcode];
+    },
+
+    /**
+     * Set the event type for this event.
+     */
+    setEventType: function(id, label) {
+      this.type = {
+        'id' : id,
+        'label' : label,
+        'domain' : 'eventtype',
+      };
+    },
+
+    /**
+     * Get the event type for this event.
+     */
+    getEventType: function() {
+      return this.type;
+    },
+
+    /**
+     * Get the label for the event type.
+     */
+    getEventTypeLabel: function() {
+      return this.type.label ? this.type.label : '';
+    },
+
+    /**
+     * Set the event type for this event.
+     */
+    setTheme: function(id, label) {
+      this.theme = {
+        'id' : id,
+        'label' : label,
+        'domain' : 'thema',
+      };
+    },
+
+    /**
+     * Get the event type for this event.
+     */
+    getTheme: function() {
+      return this.theme;
+    },
+
+    /**
+     * Get the label for the theme.
+     */
+    getThemeLabel: function() {
+      return this.theme.label ? this.theme.label : '';
+    },
+
+    /**
+     * Reset the opening hours.
+     */
+    resetOpeningHours: function() {
+      this.openinghours = [];
+    },
+
+    /**
+     * Get the opening hours for this event.
+     */
+    getOpeningHours: function() {
+      return this.openinghours;
     },
 
     setCountry: function(country) {
@@ -2614,10 +2756,6 @@ function UdbPlaceFactory() {
 
     setStreet: function(street) {
       this.address.streetAddress = street;
-    },
-
-    getName: function() {
-      return this.name;
     },
 
     getCountry: function() {
@@ -3681,9 +3819,9 @@ EventTranslator.$inject = ["jobLogger", "udbApi", "EventTranslationJob"];
     .module('udb.event-form')
     .controller('EventFormCtrl', EventFormController);
 
-  EventFormController.$inject = ['udbApi', '$scope', '$controller', '$location', 'UdbEvent', 'UdbTimestamps', 'UdbPlace', 'moment', 'eventCrud'];
+  EventFormController.$inject = ['udbApi', '$scope', '$controller', '$location', 'UdbEvent', 'UdbOpeningHours', 'UdbPlace', 'moment', 'eventCrud'];
 
-  function EventFormController(udbApi, $scope, $controller, $window, UdbEvent, UdbTimestamps, UdbPlace, moment, eventCrud) {
+  function EventFormController(udbApi, $scope, $controller, $window, UdbEvent, UdbOpeningHours, UdbPlace, moment, eventCrud) {
 
     // Hardcoded as UdbEvent for poc.
     var item = new UdbEvent();
@@ -3691,17 +3829,12 @@ EventTranslator.$inject = ["jobLogger", "udbApi", "EventTranslationJob"];
     item.setEventType('0.50.4.0.0', 'Concert');
     item.setTheme('1.8.3.5.0', 'Amusementsmuziek');
 
-    var calendar = new UdbTimestamps();
-    calendar.addTimestamp('06/06/15', '12:00', '13:00');
-    calendar.addTimestamp('07/06/15', '12:00', '13:00');
-    calendar.addTimestamp('08/06/15', '12:00', '13:00');
-    item.setCalendar(calendar);
-
     var location = new UdbPlace();
     location.setLocality('Gent');
     location.setPostal(9000);
     item.setLocation(location);
 
+    // Scope vars.
     $scope.showStep1 = true;
     $scope.showStep2 = false;
     $scope.showStep3 = false;
@@ -3709,10 +3842,19 @@ EventTranslator.$inject = ["jobLogger", "udbApi", "EventTranslationJob"];
     $scope.showStep5 = false;
     $scope.lastUpdated = '';
     $scope.item = item;
-    $scope.isEvent = true;
-    $scope.isPlace = false;
+    $scope.isEvent = true; // Is current item an event.
+    $scope.isPlace = false; // Is current item a place.
+    $scope.activeCalendarType = ''; // Current active calendar type.
+    $scope.activeCalendarLabel = '';
+    $scope.calendarLabels = [
+      { 'label': 'Eén of meerdere dagen', 'id' : 'single' },
+      { 'label': 'Van ... tot ... ', 'id' : 'periodic' },
+      { 'label' : 'Permanent', 'id' : 'permanent' }
+    ];
 
+    // Scope functions.
     $scope.showStep = showStep;
+    $scope.setCalendarType = setCalendarType;
     $scope.saveItem = saveItem;
     $scope.validateItem = validateItem;
 
@@ -3738,6 +3880,53 @@ EventTranslator.$inject = ["jobLogger", "udbApi", "EventTranslationJob"];
      */
     function hideStep(stepNumber) {
       $scope['showStep' + stepNumber] = false;
+    }
+
+    /**
+     * Click listener on the calendar type buttons.
+     * Activate the selected calendar type.
+     */
+    function setCalendarType(type) {
+
+      $scope.activeCalendarType = type;
+
+      for (var i = 0; i < $scope.calendarLabels.length; i++) {
+        if ($scope.calendarLabels[i].id === type) {
+          $scope.activeCalendarLabel = $scope.calendarLabels[i].label;
+          break;
+        }
+      }
+
+      // Check if previous calendar type was the same.
+      // If so, we don't need to create new openinghours. Just show the previous entered data.
+      if (item.calendarType === type) {
+        return;
+      }
+
+      // A type is choosen, start a complet new calendar, removing old data.
+
+      item.calendarType = type;
+      item.resetOpeningHours();
+
+      if (type === 'single') {
+        addSingleDate();
+      }
+
+    }
+
+    /**
+     * Click listener to reset the calendar. User can select a new calendar type.
+     */
+    function resetCalendar() {
+      $scope.activeCalendarType = '';
+    }
+
+    /**
+     * Add a single date to the item.
+     */
+    function addSingleDate() {
+      item.openingHours.push(new UdbOpeningHours());
+      console.log(item.openingHours);
     }
 
     /**
@@ -6107,14 +6296,63 @@ $templateCache.put('templates/base-job.template.html',
     "    <span ng-show=\"isPlace\">Wanneer is deze plaats of locatie open?</span>\n" +
     "  </h2>\n" +
     "\n" +
-    "  <div ng-bind=\"item.calendar.type\"></div>\n" +
-    "\n" +
-    "  <div ng-switch=\"item.calendar.type\">\n" +
-    "    <div ng-switch-when=\"timestamps\">\n" +
-    "      <div class=\"row rv-item\" ng-repeat=\"timestamp in item.calendar.timestamps\">\n" +
-    "        <div ng-bind=\"timestamp.date\"></div>\n" +
+    "  <div class=\"row\">\n" +
+    "    <div class=\"col-xs-12\">\n" +
+    "      <div class=\"form-group\">\n" +
+    "        <label class=\"wanneerkiezer-label\">Maak een keuze</label>\n" +
+    "        <div class=\"wanneerkiezer\" ng-show=\"activeCalendarType === ''\">\n" +
+    "          <button ng-repeat=\"calendarLabel in calendarLabels\" ng-bind=\"calendarLabel.label\" class=\"btn btn-default\" ng-click=\"setCalendarType(calendarLabel.id)\"></button>\n" +
+    "        </div>\n" +
+    "        <div class=\"wanneer-chosen\" ng-hide=\"activeCalendarType === ''\">\n" +
+    "          <span class=\"btn-chosen\" ng-bind=\"activeCalendarLabel\"></span><a class=\"btn btn-link wanneerrestore\" href=\"#\" ng-click=\"resetCalendar()\">Wijzigen</a>\n" +
+    "        </div>\n" +
     "      </div>\n" +
     "    </div>\n" +
+    "  </div>\n" +
+    "\n" +
+    "  <div class=\"row\" ng-show=\"activeCalendarType === 'single'\">\n" +
+    "\n" +
+    "    <div id=\"wanneer-dagen\" ng-repeat=\"openingHour in item.openingHours\">\n" +
+    "\n" +
+    "      <div class=\"col-xs-12 col-sm-4 prototype-step\" id=\"add-date-form\">\n" +
+    "        <section class=\"add-date\">\n" +
+    "\n" +
+    "          <datepicker ng-model=\"dt\" min-date=\"minDate\" show-weeks=\"true\" class=\"well well-sm\"></datepicker>\n" +
+    "\n" +
+    "          <div class=\"row\">\n" +
+    "            <div class=\"col-xs-6\">\n" +
+    "              <label>\n" +
+    "                <input type=\"checkbox\" value=\"\" class=\"beginuur-toevoegen\">\n" +
+    "                Beginuur\n" +
+    "              </label>\n" +
+    "              <div class=\"beginuur-invullen\" style=\"display: none\">\n" +
+    "                <input type=\"text\" class=\"form-control uur\" placeholder=\"Bv. 08:00\"/>\n" +
+    "              </div>\n" +
+    "            </div>\n" +
+    "            <div class=\"col-xs-6 einduur\" style=\"display: none\">\n" +
+    "              <label>\n" +
+    "                <input type=\"checkbox\" value=\"\" class=\"einduur-toevoegen\">\n" +
+    "                Einduur\n" +
+    "              </label>\n" +
+    "              <div class=\"einduur-invullen\"  style=\"display: none\">\n" +
+    "                <input type=\"text\" class=\"form-control uur\" placeholder=\"Bv. 23:00\"/>\n" +
+    "              </div>\n" +
+    "            </div>\n" +
+    "          </div>\n" +
+    "        </section>\n" +
+    "      </div>\n" +
+    "\n" +
+    "    </div>\n" +
+    "\n" +
+    "    <div class=\"col-xs-12 col-sm-4\">\n" +
+    "      <div class=\"add-date\">\n" +
+    "        <a href=\"#\" class=\"add-date-link\" ng-click=\"addSingleDate()\">\n" +
+    "          <p id=\"add-date-plus\" ng-click=\"addSingleDate()\">+</p>\n" +
+    "          <p id=\"add-date-label\" ng-click=\"addSingleDate()\">Dag toevoegen</p>\n" +
+    "        </a>\n" +
+    "      </div>\n" +
+    "    </div>\n" +
+    "\n" +
     "  </div>\n" +
     "\n" +
     "  <a href=\"#\" ng-click=\"showStep(3)\">Volgende stap</a>\n" +

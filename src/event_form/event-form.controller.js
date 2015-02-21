@@ -153,7 +153,9 @@
      */
     function resetEventType() {
       $scope.activeEventType = '';
-      //item.eventType = '';
+      $scope.activeEventTypeLabel = '';
+      $scope.activeTheme = '';
+      $scope.activeThemeLabel = '';
     }
 
     /**

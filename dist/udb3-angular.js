@@ -3994,7 +3994,9 @@ EventTranslator.$inject = ["jobLogger", "udbApi", "EventTranslationJob"];
      */
     function resetEventType() {
       $scope.activeEventType = '';
-      //item.eventType = '';
+      $scope.activeEventTypeLabel = '';
+      $scope.activeTheme = '';
+      $scope.activeThemeLabel = '';
     }
 
     /**
@@ -6495,7 +6497,7 @@ $templateCache.put('templates/base-job.template.html',
     "\n" +
     "  </div>\n" +
     "\n" +
-    "  <a href=\"#\" ng-click=\"showStep(2)\">Volgende stap</a>\n" +
+    "  <a href=\"#\" ng-click=\"showStep(2)\" ng-hide=\"((isEvent && activeTheme === '') || (isPlace && activeEventType === ''))\">Volgende stap</a>\n" +
     "\n" +
     "</section>"
   );

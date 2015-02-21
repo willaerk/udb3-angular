@@ -3869,30 +3869,7 @@ EventTranslator.$inject = ["jobLogger", "udbApi", "EventTranslationJob"];
 
     item.setName('my name', 'nl');
 
-    // Categories, event types, places.
-    $scope.eventTypeLabels = [];
-    $scope.placeLabels = [];
-    $scope.activeEventType = ''; // Current active event type.
-    $scope.activeEventTypeLabel = ''; // Current active event type label.
-    // Load the categories asynchronously.
-    var eventPromise = eventTypes.getCategories();
-    eventPromise.then(function (categories) {
-      $scope.eventTypeLabels = categories.event;
-      $scope.placeLabels = categories.place;
-    });
-    $scope.setEventType = setEventType;
-    $scope.resetEventType = resetEventType;
-    $scope.toggleEventTypes = toggleEventTypes;
-    $scope.showAllEventTypes = false;
-    $scope.togglePlaces = togglePlaces;
-    $scope.showAllPlaces = false;
-    $scope.eventThemeLabels = [];
-    $scope.activeTheme = '';
-    $scope.activeThemeLabel = '';
-    $scope.setTheme = setTheme;
-    $scope.resetTheme = resetTheme;
-
-
+    setScopeForStep1();
 
     var location = new UdbPlace();
     location.setLocality('Gent');
@@ -3940,6 +3917,36 @@ EventTranslator.$inject = ["jobLogger", "udbApi", "EventTranslationJob"];
      */
     function hideStep(stepNumber) {
       $scope['showStep' + stepNumber] = false;
+    }
+
+    /**
+     * Extend the scope with the variables for step 1.
+     */
+    function setScopeForStep1() {
+
+      // Categories, event types, places.
+      $scope.eventTypeLabels = [];
+      $scope.placeLabels = [];
+      $scope.activeEventType = ''; // Current active event type.
+      $scope.activeEventTypeLabel = ''; // Current active event type label.
+      // Load the categories asynchronously.
+      var eventPromise = eventTypes.getCategories();
+      eventPromise.then(function (categories) {
+        $scope.eventTypeLabels = categories.event;
+        $scope.placeLabels = categories.place;
+      });
+      $scope.setEventType = setEventType;
+      $scope.resetEventType = resetEventType;
+      $scope.toggleEventTypes = toggleEventTypes;
+      $scope.showAllEventTypes = false;
+      $scope.togglePlaces = togglePlaces;
+      $scope.showAllPlaces = false;
+      $scope.eventThemeLabels = [];
+      $scope.activeTheme = '';
+      $scope.activeThemeLabel = '';
+      $scope.setTheme = setTheme;
+      $scope.resetTheme = resetTheme;
+
     }
 
     /**

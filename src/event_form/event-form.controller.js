@@ -26,9 +26,11 @@
 
     var item = new UdbEvent();
 
-    item.setName('my name', 'nl');
-
+    // Step 1: Choose event type and theme or a place.
     setScopeForStep1();
+
+    // Step 4: Set the title for the event.
+    setScopeForStep4();
 
     var location = new UdbPlace();
     location.setLocality('Gent');
@@ -210,6 +212,26 @@
      */
     function togglePlaces() {
       $scope.showAllPlaces = !$scope.showAllPlaces;
+    }
+
+    /**
+     *
+     * @param {type} type
+     * @returns {undefined}Set the scope variables for step 4: the title.
+     */
+    function setScopeForStep4() {
+      $scope.validateEvent = validateEvent;
+      $scope.activeTitle = '';
+    }
+
+    /**
+     * Validate date after step 4 to enter step 5.
+     */
+    function validateEvent() {
+
+      // Set the name.
+      item.setName($scope.activeTitle, 'nl');
+      
     }
 
     /**

@@ -3867,9 +3867,11 @@ EventTranslator.$inject = ["jobLogger", "udbApi", "EventTranslationJob"];
 
     var item = new UdbEvent();
 
-    item.setName('my name', 'nl');
-
+    // Step 1: Choose event type and theme or a place.
     setScopeForStep1();
+
+    // Step 4: Set the title for the event.
+    setScopeForStep4();
 
     var location = new UdbPlace();
     location.setLocality('Gent');
@@ -4051,6 +4053,26 @@ EventTranslator.$inject = ["jobLogger", "udbApi", "EventTranslationJob"];
      */
     function togglePlaces() {
       $scope.showAllPlaces = !$scope.showAllPlaces;
+    }
+
+    /**
+     *
+     * @param {type} type
+     * @returns {undefined}Set the scope variables for step 4: the title.
+     */
+    function setScopeForStep4() {
+      $scope.validateEvent = validateEvent;
+      $scope.activeTitle = '';
+    }
+
+    /**
+     * Validate date after step 4 to enter step 5.
+     */
+    function validateEvent() {
+
+      // Set the name.
+      item.setName($scope.activeTitle, 'nl');
+      
     }
 
     /**
@@ -6452,55 +6474,52 @@ $templateCache.put('templates/base-job.template.html',
     "\n" +
     "  <div class=\"row\">\n" +
     "\n" +
-    "    <div class=\"col-xs-5\" ng-show=\"activeEventType === ''\">\n" +
-    "      <div class=\"form-group\">\n" +
-    "        <label class=\"event-type-choser-label\">Een activiteit of evenement</label>\n" +
-    "        <div class=\"event-type-choser\">\n" +
-    "          <button ng-repeat=\"eventTypeLabel in eventTypeLabels\" ng-show=\"eventTypeLabel.primary == true || showAllEventTypes\" ng-bind=\"eventTypeLabel.label\" class=\"btn btn-default\" ng-click=\"setEventType(eventTypeLabel.id, true)\"></button>\n" +
-    "        </div>\n" +
-    "        <div ng-show=\"showAllEventTypes == false\">\n" +
-    "          Niet gevonden wat je zocht? <a class=\"btn btn-link event-type-collapse\" href=\"\" ng-click=\"toggleEventTypes()\">Toon alle mogelijkheden</a>\n" +
-    "        </div>\n" +
+    "    <div class=\"col-xs-5 col-xs-12\" ng-show=\"activeEventType === ''\">\n" +
+    "      <label class=\"event-type-choser-label\">Een activiteit of evenement</label>\n" +
+    "      <ul class=\"list-inline\">\n" +
+    "        <li ng-repeat=\"eventTypeLabel in eventTypeLabels\" ng-show=\"eventTypeLabel.primary == true || showAllEventTypes\">\n" +
+    "          <button ng-bind=\"eventTypeLabel.label\" class=\"btn btn-default\" ng-click=\"setEventType(eventTypeLabel.id, true)\"></button>\n" +
+    "        </li>\n" +
+    "      </ul>\n" +
+    "      <div ng-show=\"showAllEventTypes == false\">\n" +
+    "        Niet gevonden wat je zocht? <a class=\"btn btn-link event-type-collapse\" href=\"\" ng-click=\"toggleEventTypes()\">Toon alle mogelijkheden</a>\n" +
     "      </div>\n" +
     "    </div>\n" +
     "\n" +
-    "    <div class=\"col-xs-2\" ng-show=\"activeEventType === ''\"><em>Of</em></div>\n" +
+    "    <div class=\"col-xs-1 col-xs-12\" ng-show=\"activeEventType === ''\">\n" +
+    "      <p class=\"text-center\">of</p>\n" +
+    "    </div>\n" +
     "\n" +
-    "    <div class=\"col-xs-5\" ng-show=\"activeEventType === ''\">\n" +
-    "      <div class=\"form-group\">\n" +
-    "        <label class=\"event-type-choser-label\">Een locatie of plaats</label>\n" +
-    "        <div class=\"event-type-choser\">\n" +
-    "          <button ng-repeat=\"placeLabel in placeLabels\" ng-show=\"placeLabel.primary == true || showAllPlaces\" ng-bind=\"placeLabel.label\" class=\"btn btn-default\" ng-click=\"setEventType(placeLabel.id, false)\"></button>\n" +
-    "        </div>\n" +
-    "        <div ng-show=\"showAllPlaces == false\">\n" +
-    "          Niet gevonden wat je zocht? <a class=\"btn btn-link event-type-collapse\" href=\"\" ng-click=\"togglePlaces()\">Toon alle mogelijkheden</a>\n" +
-    "        </div>\n" +
+    "    <div class=\"col-xs-6 col-xs-12\" ng-show=\"activeEventType === ''\">\n" +
+    "      <label class=\"event-type-choser-label\">Een locatie of plaats</label>\n" +
+    "      <ul class=\"list-inline\">\n" +
+    "        <li ng-repeat=\"placeLabel in placeLabels\" ng-show=\"placeLabel.primary == true || showAllPlaces\">\n" +
+    "          <button ng-bind=\"placeLabel.label\" class=\"btn btn-default\" ng-click=\"setEventType(placeLabel.id, false)\"></button>\n" +
+    "        </li>\n" +
+    "      </ul>\n" +
+    "      <div ng-show=\"showAllPlaces == false\">\n" +
+    "        Niet gevonden wat je zocht? <a class=\"btn btn-link btn-default\" href=\"\" ng-click=\"togglePlaces()\">Toon alle mogelijkheden</a>\n" +
     "      </div>\n" +
     "    </div>\n" +
     "\n" +
-    "    <div class=\"col-xs-12\" ng-hide=\"activeEventType === ''\">\n" +
-    "      <div class=\"event-type-chosen\">\n" +
-    "        <span class=\"btn-chosen\" ng-bind=\"activeEventTypeLabel\"></span>\n" +
-    "        <a class=\"btn btn-link event-type-restore\" href=\"\" ng-click=\"resetEventType()\">Wijzigen</a>\n" +
-    "      </div>\n" +
-    "    </div>\n" +
+    "    <p class=\"col-xs-12 col-md-12\" ng-hide=\"activeEventType === ''\">\n" +
+    "      <span class=\"btn-chosen\" ng-bind=\"activeEventTypeLabel\"></span>\n" +
+    "      <a class=\"btn btn-link btn-default\" href=\"\" ng-click=\"resetEventType()\">Wijzigen</a>\n" +
+    "    </p>\n" +
     "\n" +
     "    <div class=\"col-xs-12\" ng-hide=\"activeTheme !== '' || activeEventType === '' || !isEvent\">\n" +
-    "      <div class=\"form-group\">\n" +
-    "        <label class=\"event-theme-label\">Verfijn</label>\n" +
-    "        <div class=\"event-theme-choser\">\n" +
-    "          <button ng-repeat=\"eventThemeLabel in eventThemeLabels\" ng-bind=\"eventThemeLabel.label\" class=\"btn btn-default\" ng-click=\"setTheme(eventThemeLabel.id, eventThemeLabel.label)\"></button>\n" +
-    "        </div>\n" +
-    "      </div>\n" +
+    "      <label class=\"event-theme-label\">Verfijn</label>\n" +
+    "      <ul class=\"list-inline\">\n" +
+    "        <li ng-repeat=\"eventThemeLabel in eventThemeLabels\">\n" +
+    "          <button ng-bind=\"eventThemeLabel.label\" class=\"btn btn-default\" ng-click=\"setTheme(eventThemeLabel.id, eventThemeLabel.label)\"></button>\n" +
+    "        </li>\n" +
+    "      </ul>\n" +
     "    </div>\n" +
     "\n" +
-    "    <div class=\"col-xs-12\" ng-hide=\"activeTheme === ''\">\n" +
-    "      <div class=\"event-theme-chosen\">\n" +
-    "        <span class=\"btn-chosen\" ng-bind=\"activeThemeLabel\"></span>\n" +
-    "        <a class=\"btn btn-link event-theme-restore\" href=\"\" ng-click=\"resetTheme()\">Wijzigen</a>\n" +
-    "      </div>\n" +
-    "\n" +
-    "    </div>\n" +
+    "    <p class=\"col-xs-12 col-md-12\"  ng-hide=\"activeTheme === ''\">\n" +
+    "      <span class=\"btn-chosen\" ng-bind=\"activeThemeLabel\"></span>\n" +
+    "      <a class=\"btn btn-link btn-default\" href=\"\" ng-click=\"resetTheme()\">Wijzigen</a>\n" +
+    "    </p>\n" +
     "\n" +
     "  </div>\n" +
     "\n" +
@@ -6604,9 +6623,73 @@ $templateCache.put('templates/base-job.template.html',
   $templateCache.put('templates/event-form-step4.html',
     "<a name=\"titel\"></a>\n" +
     "<section id=\"titel\" ng-show=\"showStep4\">\n" +
-    "  <h2 class=\"title-border\"><span class=\"number\">4</span>Basisgegevens</h2>\n" +
     "\n" +
-    "  <p><a class=\"btn btn-primary titel-doorgaan\" ng-click=\"validateEvent()\">Doorgaan</a></p>\n" +
+    "  <h2 class=\"title-border\"><span class=\"number\">4</span>Basisgegevens</h2>\n" +
+    "  <label>Vul een titel in</label>\n" +
+    "  <div class=\"row\">\n" +
+    "    <div class=\"col-xs-12 col-md-4\">\n" +
+    "      <div class=\"form-group-lg\">\n" +
+    "        <input type=\"text\" class=\"form-control\" ng-bind=\"activeTitle\">\n" +
+    "      </div>\n" +
+    "    </div>\n" +
+    "    <div class=\"col-xs-12 col-md-8\">\n" +
+    "      <p class=\"text-block\">\n" +
+    "        Bv. Candide, Magritte en het surrealisme, Cursus keramiek,... <br>Begin met een <strong>hoofdletter</strong> en hou het <strong>kort &amp; bondig</strong>:  een uitgebreide beschrijving vul je later in.</p>\n" +
+    "    </div>\n" +
+    "  </div>\n" +
+    "  <p><a class=\"btn btn-primary titel-doorgaan\" ng-show=\"activeTitle !== ''\" ng-click=\"validateEvent()\">Doorgaan</a></p>\n" +
+    "\n" +
+    "</section>\n" +
+    "\n" +
+    "<div class=\"spinner\" style=\"display: none;\">\n" +
+    "  <i class=\"fa fa-circle-o-notch fa-spin\"></i>\n" +
+    "</div>\n" +
+    "\n" +
+    "<a name=\"dubbeldetectie\"></a>\n" +
+    "<section class=\"dubbeldetectie\" ng-show=\"activeTitle !== ''\">\n" +
+    "  <div class=\"alert alert-info\">\n" +
+    "    <p class=\"h2\" style=\"margin-top: 0;\">Vermijd dubbel werk\n" +
+    "    </p><p> We vonden gelijkaardige items. Controleer deze eerder ingevoerde items.</p>\n" +
+    "    <br>\n" +
+    "\n" +
+    "    <div class=\"row clearfix\">\n" +
+    "        <div class=\"col-xs-12 col-sm-6 col-md-4 col-lg-3\">\n" +
+    "        <a class=\"btn btn-tile\" data-toggle=\"modal\" data-target=\"#dubbeldetectie-voorbeeld\">\n" +
+    "            <span>\n" +
+    "              <small class=\"label label-default\">Festival</small><br>\n" +
+    "              <strong class=\"title\">Lichtfestival</strong><br>\n" +
+    "              Gent - Van 29/01 tot 01/02<br>\n" +
+    "              <small class=\"preview-corner\"></small>\n" +
+    "              <i class=\"fa fa-eye preview-icon\"></i>\n" +
+    "            </span>\n" +
+    "        </a>\n" +
+    "        </div>\n" +
+    "\n" +
+    "        <div class=\"col-xs-12 col-sm-6 col-md-4 col-lg-3\">\n" +
+    "        <a class=\"btn btn-tile\" data-toggle=\"modal\" data-target=\"#dubbeldetectie-voorbeeld\">\n" +
+    "            <span>\n" +
+    "              <small class=\"label label-default\">Tentoonstelling</small><br>\n" +
+    "              <strong class=\"title\">Licht in de Duisternis</strong><br>\n" +
+    "              Gent - Op 13/02<br>\n" +
+    "              <small class=\"preview-corner\"></small>\n" +
+    "              <i class=\"fa fa-eye preview-icon\"></i>\n" +
+    "            </span>\n" +
+    "        </a>\n" +
+    "        </div>\n" +
+    "\n" +
+    "        <div class=\"col-xs-12 col-sm-6 col-md-4 col-lg-3\">\n" +
+    "        <a class=\"btn btn-tile\" data-toggle=\"modal\" data-target=\"#dubbeldetectie-voorbeeld\">\n" +
+    "            <span>\n" +
+    "              <small class=\"label label-default\">Tentoonstelling</small><br>\n" +
+    "              <strong class=\"title\">Opgelicht!</strong><br>\n" +
+    "              Gent - Op 13/02<br>\n" +
+    "              <small class=\"preview-corner\"></small>\n" +
+    "              <i class=\"fa fa-eye preview-icon\"></i>\n" +
+    "            </span>\n" +
+    "        </a>\n" +
+    "        </div>\n" +
+    "    </div>\n" +
+    "  </div>\n" +
     "</section>"
   );
 

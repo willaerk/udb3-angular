@@ -6,8 +6,60 @@
     </div>
   </section>
 
-  <div ng-bind="item.getEventTypeLabel()"></div>
-  <div ng-bind="item.getThemeLabel()"></div>
+
+  <div class="row">
+
+    <div class="col-xs-5" ng-show="activeEventType === ''">
+      <div class="form-group">
+        <label class="event-type-choser-label">Een activiteit of evenement</label>
+        <div class="event-type-choser">
+          <button ng-repeat="eventTypeLabel in eventTypeLabels" ng-show="eventTypeLabel.primary == true || showAllEventTypes" ng-bind="eventTypeLabel.label" class="btn btn-default" ng-click="setEventType(eventTypeLabel.id, true)"></button>
+        </div>
+        <div ng-show="showAllEventTypes == false">
+          Niet gevonden wat je zocht? <a class="btn btn-link event-type-collapse" href="" ng-click="toggleEventTypes()">Toon alle mogelijkheden</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-xs-2" ng-show="activeEventType === ''"><em>Of</em></div>
+
+    <div class="col-xs-5" ng-show="activeEventType === ''">
+      <div class="form-group">
+        <label class="event-type-choser-label">Een locatie of plaats</label>
+        <div class="event-type-choser">
+          <button ng-repeat="placeLabel in placeLabels" ng-show="placeLabel.primary == true || showAllPlaces" ng-bind="placeLabel.label" class="btn btn-default" ng-click="setEventType(placeLabel.id, false)"></button>
+        </div>
+        <div ng-show="showAllPlaces == false">
+          Niet gevonden wat je zocht? <a class="btn btn-link event-type-collapse" href="" ng-click="togglePlaces()">Toon alle mogelijkheden</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-xs-12" ng-hide="activeEventType === ''">
+      <div class="event-type-chosen">
+        <span class="btn-chosen" ng-bind="activeEventTypeLabel"></span>
+        <a class="btn btn-link event-type-restore" href="" ng-click="resetEventType()">Wijzigen</a>
+      </div>
+    </div>
+
+    <div class="col-xs-12" ng-hide="activeTheme !== '' || activeEventType === '' || !isEvent">
+      <div class="form-group">
+        <label class="event-theme-label">Verfijn</label>
+        <div class="event-theme-choser">
+          <button ng-repeat="eventThemeLabel in eventThemeLabels" ng-bind="eventThemeLabel.label" class="btn btn-default" ng-click="setTheme(eventThemeLabel.id, eventThemeLabel.label)"></button>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-xs-12" ng-hide="activeTheme === ''">
+      <div class="event-theme-chosen">
+        <span class="btn-chosen" ng-bind="activeThemeLabel"></span>
+        <a class="btn btn-link event-theme-restore" href="" ng-click="resetTheme()">Wijzigen</a>
+      </div>
+
+    </div>
+
+  </div>
 
   <a href="#" ng-click="showStep(2)">Volgende stap</a>
 

@@ -2123,6 +2123,40 @@ angular.module('udb.core')
   }
 );
 
+// Source: src/core/event-types.service.js
+/**
+ * @ngdoc service
+ * @name udb.core.eventTypes
+ * @description
+ * Service in the udb.core.
+ */
+angular
+  .module('udb.core')
+  .service('eventTypes', EventTypes);
+
+/* @ngInject */
+function EventTypes($q, $window, $location, $http, appConfig, $cookieStore) {
+
+  /**
+   * Get the categories.
+   */
+  this.getCategories = function () {
+
+    var deferredEvent = $q.defer();
+
+    var eventTypeRequest = $http.get(appConfig.udb3BaseUrl + '/src/event_form/categories.json');
+
+    eventTypeRequest.success(function(jsonData) {
+      deferredEvent.resolve(jsonData);
+    });
+
+    return deferredEvent.promise;
+
+  };
+
+}
+EventTypes.$inject = ["$q", "$window", "$location", "$http", "appConfig", "$cookieStore"];
+
 // Source: src/core/udb-api.service.js
 /**
  * @ngdoc service
@@ -3819,22 +3853,9 @@ EventTranslator.$inject = ["jobLogger", "udbApi", "EventTranslationJob"];
     .module('udb.event-form')
     .controller('EventFormCtrl', EventFormController);
 
-  EventFormController.$inject = ['udbApi', '$scope', '$controller', '$location', 'UdbEvent', 'UdbOpeningHours', 'UdbPlace', 'moment', 'eventCrud'];
+  EventFormController.$inject = ['udbApi', '$scope', '$controller', '$location', 'UdbEvent', 'UdbOpeningHours', 'UdbPlace', 'moment', 'eventCrud', 'eventTypes'];
 
-  function EventFormController(udbApi, $scope, $controller, $window, UdbEvent, UdbOpeningHours, UdbPlace, moment, eventCrud) {
-
-    var type = 'event';
-
-    // Hardcoded as UdbEvent for poc.
-    var item = new UdbEvent();
-    item.setName('my name', 'nl');
-    item.setEventType('0.50.4.0.0', 'Concert');
-    item.setTheme('1.8.3.5.0', 'Amusementsmuziek');
-
-    var location = new UdbPlace();
-    location.setLocality('Gent');
-    location.setPostal(9000);
-    item.setLocation(location);
+  function EventFormController(udbApi, $scope, $controller, $window, UdbEvent, UdbOpeningHours, UdbPlace, moment, eventCrud, eventTypes) {
 
     // Scope vars.
     $scope.showStep1 = true;
@@ -3843,13 +3864,46 @@ EventTranslator.$inject = ["jobLogger", "udbApi", "EventTranslationJob"];
     $scope.showStep4 = false;
     $scope.showStep5 = false;
     $scope.lastUpdated = '';
-    $scope.type = type;
-    $scope.item = item;
-<<<<<<< HEAD
 
-=======
+    var item = new UdbEvent();
+
+    item.setName('my name', 'nl');
+
+    // Categories, event types, places.
+    $scope.eventTypeLabels = [];
+    $scope.placeLabels = [];
+    $scope.activeEventType = ''; // Current active event type.
+    $scope.activeEventTypeLabel = ''; // Current active event type label.
+    // Load the categories asynchronously.
+    var eventPromise = eventTypes.getCategories();
+    eventPromise.then(function (categories) {
+      $scope.eventTypeLabels = categories.event;
+      $scope.placeLabels = categories.place;
+    });
+    $scope.setEventType = setEventType;
+    $scope.resetEventType = resetEventType;
+    $scope.toggleEventTypes = toggleEventTypes;
+    $scope.showAllEventTypes = false;
+    $scope.togglePlaces = togglePlaces;
+    $scope.showAllPlaces = false;
+    $scope.eventThemeLabels = [];
+    $scope.activeTheme = '';
+    $scope.activeThemeLabel = '';
+    $scope.setTheme = setTheme;
+    $scope.resetTheme = resetTheme;
+
+
+
+    var location = new UdbPlace();
+    location.setLocality('Gent');
+    location.setPostal(9000);
+    item.setLocation(location);
+
+    $scope.item = item;
+
     $scope.isEvent = true; // Is current item an event.
     $scope.isPlace = false; // Is current item a place.
+
     $scope.activeCalendarType = ''; // Current active calendar type.
     $scope.activeCalendarLabel = '';
     $scope.calendarLabels = [
@@ -3859,7 +3913,6 @@ EventTranslator.$inject = ["jobLogger", "udbApi", "EventTranslationJob"];
     ];
 
     // Scope functions.
->>>>>>> feature/HER-10
     $scope.showStep = showStep;
     $scope.setCalendarType = setCalendarType;
     $scope.saveItem = saveItem;
@@ -3870,6 +3923,14 @@ EventTranslator.$inject = ["jobLogger", "udbApi", "EventTranslationJob"];
      * @param int stepNumber
      */
     function showStep(stepNumber) {
+      if ($scope.isEvent) {
+        $scope.isPlace = true;
+        $scope.isEvent = false;
+      }
+      else {
+        $scope.isEvent = true;
+        $scope.isPlace = false;
+      }
       $scope['showStep' + stepNumber] = true;
     }
 
@@ -3879,6 +3940,108 @@ EventTranslator.$inject = ["jobLogger", "udbApi", "EventTranslationJob"];
      */
     function hideStep(stepNumber) {
       $scope['showStep' + stepNumber] = false;
+    }
+
+    /**
+     * Click listener on the event type buttons.
+     * Activate the selected event type.
+     */
+    function setEventType(type, isEvent) {
+
+      $scope.activeEventType = type;
+
+      if (isEvent) {
+        $scope.isEvent = true;
+        $scope.isPlace = false;
+
+        for (var i = 0; i < $scope.eventTypeLabels.length; i++) {
+          if ($scope.eventTypeLabels[i].id === type) {
+            $scope.activeEventType = $scope.eventTypeLabels[i].id;
+            $scope.activeEventTypeLabel = $scope.eventTypeLabels[i].label;
+
+            $scope.eventThemeLabels = $scope.eventTypeLabels[i].themes;
+            break;
+          }
+        }
+
+      }
+      else {
+        $scope.isEvent = false;
+        $scope.isPlace = true;
+
+        for (var j = 0; j < $scope.placeLabels.length; j++) {
+          if ($scope.placeLabels[j].id === type) {
+            $scope.activeEventType = $scope.placeLabels[j].id;
+            $scope.activeEventTypeLabel = $scope.placeLabels[j].label;
+            break;
+          }
+        }
+
+      }
+
+      // Check if previous event type was the same.
+      // If so, just show the previous entered data.
+      if (item.eventType === type) {
+        return;
+      }
+
+      item.eventType = type;
+
+    }
+
+    /**
+     * Click listener to reset the event type. User can select a new event type.
+     */
+    function resetEventType() {
+      $scope.activeEventType = '';
+      //item.eventType = '';
+    }
+
+    /**
+     * Click listener to set the active theme.
+     * @param {string} id
+     * @param {string} label
+     */
+    function setTheme(id, label) {
+
+      $scope.activeTheme = id;
+
+      for (var i = 0; i < $scope.eventThemeLabels.length; i++) {
+        if ($scope.eventThemeLabels[i].id === id) {
+          $scope.activeThemeLabel = $scope.eventThemeLabels[i].label;
+          break;
+        }
+      }
+
+      // Check if previous event theme was the same.
+      // If so, just show the previous entered data.
+      if (item.theme === id) {
+        return;
+      }
+
+      item.setTheme(id, label);
+
+    }
+
+    /**
+     * Click listener to reset the active theme.
+     */
+    function resetTheme() {
+      $scope.activeTheme = '';
+    }
+
+    /**
+     * Click listener to toggle the event types list.
+     */
+    function toggleEventTypes() {
+      $scope.showAllEventTypes = !$scope.showAllEventTypes;
+    }
+
+    /**
+     * Click listener to toggle th places list.
+     */
+    function togglePlaces() {
+      $scope.showAllPlaces = !$scope.showAllPlaces;
     }
 
     /**
@@ -3941,7 +4104,7 @@ EventTranslator.$inject = ["jobLogger", "udbApi", "EventTranslationJob"];
      */
     function saveItem() {
 
-      if (type === 'event') {
+      if ($scope.isEvent) {
         eventCrud.createEvent(item);
       }
 
@@ -6277,8 +6440,60 @@ $templateCache.put('templates/base-job.template.html',
     "    </div>\n" +
     "  </section>\n" +
     "\n" +
-    "  <div ng-bind=\"item.getEventTypeLabel()\"></div>\n" +
-    "  <div ng-bind=\"item.getThemeLabel()\"></div>\n" +
+    "\n" +
+    "  <div class=\"row\">\n" +
+    "\n" +
+    "    <div class=\"col-xs-5\" ng-show=\"activeEventType === ''\">\n" +
+    "      <div class=\"form-group\">\n" +
+    "        <label class=\"event-type-choser-label\">Een activiteit of evenement</label>\n" +
+    "        <div class=\"event-type-choser\">\n" +
+    "          <button ng-repeat=\"eventTypeLabel in eventTypeLabels\" ng-show=\"eventTypeLabel.primary == true || showAllEventTypes\" ng-bind=\"eventTypeLabel.label\" class=\"btn btn-default\" ng-click=\"setEventType(eventTypeLabel.id, true)\"></button>\n" +
+    "        </div>\n" +
+    "        <div ng-show=\"showAllEventTypes == false\">\n" +
+    "          Niet gevonden wat je zocht? <a class=\"btn btn-link event-type-collapse\" href=\"\" ng-click=\"toggleEventTypes()\">Toon alle mogelijkheden</a>\n" +
+    "        </div>\n" +
+    "      </div>\n" +
+    "    </div>\n" +
+    "\n" +
+    "    <div class=\"col-xs-2\" ng-show=\"activeEventType === ''\"><em>Of</em></div>\n" +
+    "\n" +
+    "    <div class=\"col-xs-5\" ng-show=\"activeEventType === ''\">\n" +
+    "      <div class=\"form-group\">\n" +
+    "        <label class=\"event-type-choser-label\">Een locatie of plaats</label>\n" +
+    "        <div class=\"event-type-choser\">\n" +
+    "          <button ng-repeat=\"placeLabel in placeLabels\" ng-show=\"placeLabel.primary == true || showAllPlaces\" ng-bind=\"placeLabel.label\" class=\"btn btn-default\" ng-click=\"setEventType(placeLabel.id, false)\"></button>\n" +
+    "        </div>\n" +
+    "        <div ng-show=\"showAllPlaces == false\">\n" +
+    "          Niet gevonden wat je zocht? <a class=\"btn btn-link event-type-collapse\" href=\"\" ng-click=\"togglePlaces()\">Toon alle mogelijkheden</a>\n" +
+    "        </div>\n" +
+    "      </div>\n" +
+    "    </div>\n" +
+    "\n" +
+    "    <div class=\"col-xs-12\" ng-hide=\"activeEventType === ''\">\n" +
+    "      <div class=\"event-type-chosen\">\n" +
+    "        <span class=\"btn-chosen\" ng-bind=\"activeEventTypeLabel\"></span>\n" +
+    "        <a class=\"btn btn-link event-type-restore\" href=\"\" ng-click=\"resetEventType()\">Wijzigen</a>\n" +
+    "      </div>\n" +
+    "    </div>\n" +
+    "\n" +
+    "    <div class=\"col-xs-12\" ng-hide=\"activeTheme !== '' || activeEventType === '' || !isEvent\">\n" +
+    "      <div class=\"form-group\">\n" +
+    "        <label class=\"event-theme-label\">Verfijn</label>\n" +
+    "        <div class=\"event-theme-choser\">\n" +
+    "          <button ng-repeat=\"eventThemeLabel in eventThemeLabels\" ng-bind=\"eventThemeLabel.label\" class=\"btn btn-default\" ng-click=\"setTheme(eventThemeLabel.id, eventThemeLabel.label)\"></button>\n" +
+    "        </div>\n" +
+    "      </div>\n" +
+    "    </div>\n" +
+    "\n" +
+    "    <div class=\"col-xs-12\" ng-hide=\"activeTheme === ''\">\n" +
+    "      <div class=\"event-theme-chosen\">\n" +
+    "        <span class=\"btn-chosen\" ng-bind=\"activeThemeLabel\"></span>\n" +
+    "        <a class=\"btn btn-link event-theme-restore\" href=\"\" ng-click=\"resetTheme()\">Wijzigen</a>\n" +
+    "      </div>\n" +
+    "\n" +
+    "    </div>\n" +
+    "\n" +
+    "  </div>\n" +
     "\n" +
     "  <a href=\"#\" ng-click=\"showStep(2)\">Volgende stap</a>\n" +
     "\n" +
@@ -6291,8 +6506,8 @@ $templateCache.put('templates/base-job.template.html',
     "<section id=\"wanneer\" ng-show=\"showStep2\">\n" +
     "  <h2 class=\"title-border\">\n" +
     "    <span class=\"number\">2</span>\n" +
-    "    <span class=\"event-only\">Wanneer vindt dit evenement of deze activiteit plaats?</span>\n" +
-    "    <span class=\"place-only\">Wanneer is deze plaats of locatie open?</span>\n" +
+    "    <span ng-show=\"isEvent\">Wanneer vindt dit evenement of deze activiteit plaats?</span>\n" +
+    "    <span ng-show=\"isPlace\">Wanneer is deze plaats of locatie open?</span>\n" +
     "  </h2>\n" +
     "\n" +
     "  <div class=\"row\">\n" +

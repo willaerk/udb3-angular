@@ -1,10 +1,12 @@
 <a name="wanneer"></a>
-<section id="wanneer" ng-show="showStep2">
+<section id="wanneer" ng-controller="EventFormStep2Ctrl as EventFormStep2">
   <h2 class="title-border">
     <span class="number">2</span>
     <span ng-show="isEvent">Wanneer vindt dit evenement of deze activiteit plaats?</span>
     <span ng-show="isPlace">Wanneer is deze plaats of locatie open?</span>
   </h2>
+
+  <a ng-click="testingChange()">testing</a>
 
   <div class="row">
     <div class="col-xs-12">

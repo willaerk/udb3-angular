@@ -2455,6 +2455,7 @@ function UdbEventFactory() {
      * Set the event type for this event.
      */
     setEventType: function(id, label) {
+      console.log(id + label);
       this.type = {
         'id' : id,
         'label' : label,
@@ -2473,6 +2474,7 @@ function UdbEventFactory() {
      * Get the label for the event type.
      */
     getEventTypeLabel: function() {
+      console.log(this.type.label);
       return this.type.label ? this.type.label : '';
     },
 
@@ -3953,6 +3955,26 @@ EventTranslator.$inject = ["jobLogger", "udbApi", "EventTranslationJob"];
 
 })();
 
+// Source: src/event_form/event-form.data.js
+/**
+ * @ngdoc service
+ * @name udb.core.EventFormData
+ * @description
+ * Contains data needed for the steps in the event form.
+ */
+angular
+  .module('udb.event-form')
+  .factory('EventFormData', EventFormDataFactory);
+
+/* @ngInject */
+function EventFormDataFactory() {
+  return {
+    item : {},
+    isEvent : true, // Is current item an event.
+    isPlace : false // Is current item a place.
+  };
+}
+
 // Source: src/event_form/event-form.directive.js
 /**
  * @ngdoc directive
@@ -4079,6 +4101,212 @@ function EventFormStep5Directive() {
     restrict: 'EA',
   };
 }
+// Source: src/event_form/steps/event-form-step1.controller.js
+(function () {
+/**
+   * @ngdoc function
+   * @name udbApp.controller:NewEventCtrl
+   * @description
+   * # NewEventCtrl
+   * udbApp controller
+   */
+  angular
+    .module('udb.event-form')
+    .controller('EventFormStep1Ctrl', EventFormStep1Controller);
+
+  EventFormStep1Controller.$inject = ['udbApi', '$scope', '$controller', '$location', 'EventFormData', 'UdbEvent', 'UdbOpeningHours', 'UdbPlace', 'moment', 'eventCrud'];
+
+  function EventFormStep1Controller(udbApi, $scope, $controller, $window, EventFormData, UdbEvent, UdbOpeningHours, UdbPlace, moment, eventCrud) {
+
+    var item;
+    console.log(EventFormData);
+
+    // Hardcoded as UdbEvent for poc.
+    EventFormData.item = new UdbEvent();
+    EventFormData.item.setName('my name', 'nl');
+    EventFormData.item.setEventType('0.50.4.0.0', 'Concert');
+    EventFormData.item.setTheme('1.8.3.5.0', 'Amusementsmuziek');
+
+    var location = new UdbPlace();
+    location.setLocality('Gent');
+    location.setPostal(9000);
+    EventFormData.item.setLocation(location);
+
+    // Scope vars.
+    $scope.showStep1 = true;
+    $scope.showStep2 = false;
+    $scope.showStep3 = false;
+    $scope.showStep4 = false;
+    $scope.showStep5 = false;
+    $scope.lastUpdated = '';
+    $scope.item = item;
+    $scope.EventFormData = EventFormData;
+    $scope.isEvent = true; // Is current item an event.
+    $scope.isPlace = false; // Is current item a place.
+    $scope.activeCalendarType = ''; // Current active calendar type.
+    $scope.activeCalendarLabel = '';
+    $scope.calendarLabels = [
+      { 'label': 'Eén of meerdere dagen', 'id' : 'single' },
+      { 'label': 'Van ... tot ... ', 'id' : 'periodic' },
+      { 'label' : 'Permanent', 'id' : 'permanent' }
+    ];
+
+    // Scope functions.
+    $scope.showStep = showStep;
+    $scope.setCalendarType = setCalendarType;
+    $scope.saveItem = saveItem;
+    $scope.validateItem = validateItem;
+
+    /**
+     * Show the given step.
+     * @param int stepNumber
+     */
+    function showStep(stepNumber) {
+      if ($scope.isEvent) {
+        $scope.isPlace = true;
+        $scope.isEvent = false;
+      }
+      else {
+        $scope.isEvent = true;
+        $scope.isPlace = false;
+      }
+      $scope['showStep' + stepNumber] = true;
+    }
+
+    /**
+     * Hide the given step.
+     * @param int stepNumber
+     */
+    function hideStep(stepNumber) {
+      $scope['showStep' + stepNumber] = false;
+    }
+
+    /**
+     * Click listener on the calendar type buttons.
+     * Activate the selected calendar type.
+     */
+    function setCalendarType(type) {
+
+      $scope.activeCalendarType = type;
+
+      for (var i = 0; i < $scope.calendarLabels.length; i++) {
+        if ($scope.calendarLabels[i].id === type) {
+          $scope.activeCalendarLabel = $scope.calendarLabels[i].label;
+          break;
+        }
+      }
+
+      // Check if previous calendar type was the same.
+      // If so, we don't need to create new openinghours. Just show the previous entered data.
+      if (item.calendarType === type) {
+        return;
+      }
+
+      // A type is choosen, start a complet new calendar, removing old data.
+
+      item.calendarType = type;
+      item.resetOpeningHours();
+
+      if (type === 'single') {
+        addSingleDate();
+      }
+
+    }
+
+    /**
+     * Click listener to reset the calendar. User can select a new calendar type.
+     */
+    function resetCalendar() {
+      $scope.activeCalendarType = '';
+    }
+
+    /**
+     * Add a single date to the item.
+     */
+    function addSingleDate() {
+      item.openingHours.push(new UdbOpeningHours());
+      console.log(item.openingHours);
+    }
+
+    /**
+     * Validate the event / place.
+     */
+    function validateItem() {
+      showStep(5);
+      saveItem();
+    }
+
+    /**
+     * Save the event / place.
+     */
+    function saveItem() {
+
+      if ($scope.isEvent) {
+        eventCrud.createEvent(item);
+      }
+
+      $scope.lastUpdated = moment(Date.now()).format('DD/MM/YYYY HH:mm:s');
+    }
+
+  }
+
+})();
+
+// Source: src/event_form/steps/event-form-step2-controller.js
+(function () {
+/**
+   * @ngdoc function
+   * @name udbApp.controller:NewEventCtrl
+   * @description
+   * # NewEventCtrl
+   * udbApp controller
+   */
+  angular
+    .module('udb.event-form')
+    .controller('EventFormStep2Ctrl', EventFormStep2Controller);
+
+  EventFormStep2Controller.$inject = ['udbApi', '$scope', '$controller', '$location', 'EventFormData', 'UdbEvent', 'UdbOpeningHours', 'UdbPlace', 'moment', 'eventCrud'];
+
+  function EventFormStep2Controller(udbApi, $scope, $controller, $window, EventFormData, UdbEvent, UdbOpeningHours, UdbPlace, moment, eventCrud) {
+
+    var item;
+    console.log(EventFormData);
+
+    // Scope vars.
+    $scope.showStep1 = true;
+    $scope.showStep2 = false;
+    $scope.showStep3 = false;
+    $scope.showStep4 = false;
+    $scope.showStep5 = false;
+    $scope.lastUpdated = '';
+    $scope.item = EventFormData;
+    $scope.showStep = showStep;
+    $scope.isEvent = true; // Is current item an event.
+    $scope.isPlace = false; // Is current item a place.
+    $scope.activeCalendarType = ''; // Current active calendar type.
+    $scope.activeCalendarLabel = '';
+    $scope.calendarLabels = [
+      { 'label': 'Eén of meerdere dagen', 'id' : 'single' },
+      { 'label': 'Van ... tot ... ', 'id' : 'periodic' },
+      { 'label' : 'Permanent', 'id' : 'permanent' }
+    ];
+    $scope.testingChange = testingChange;
+
+    /**
+     * Show the given step.
+     * @param int stepNumber
+     */
+    function showStep(stepNumber) {
+    }
+
+    function testingChange() {
+      EventFormData.item.setEventType('0.50.4.0.0', 'Concert changed');
+    }
+
+  }
+
+})();
+
 // Source: src/export/event-export-job.factory.js
 /**
  * @ngdoc service
@@ -6271,15 +6499,15 @@ $templateCache.put('templates/base-job.template.html',
 
   $templateCache.put('templates/event-form-step1.html',
     "<a name=\"wat\"></a>\n" +
-    "<section id=\"wat\">\n" +
+    "<section id=\"wat\" ng-controller=\"EventFormStep1Ctrl as EventFormStep1\">\n" +
     "  <section class=\"row\">\n" +
     "    <div class=\"col-md-12\">\n" +
     "      <h2 class=\"title-border\"><span class=\"number\">1</span> Wat wil je toevoegen?</h2>\n" +
     "    </div>\n" +
     "  </section>\n" +
     "\n" +
-    "  <div ng-bind=\"item.getEventTypeLabel()\"></div>\n" +
-    "  <div ng-bind=\"item.getThemeLabel()\"></div>\n" +
+    "  <div ng-bind=\"EventFormData.item.getEventTypeLabel()\"></div>\n" +
+    "  <div ng-bind=\"EventFormData.item.getThemeLabel()\"></div>\n" +
     "\n" +
     "  <a href=\"#\" ng-click=\"showStep(2)\">Volgende stap</a>\n" +
     "\n" +
@@ -6289,12 +6517,14 @@ $templateCache.put('templates/base-job.template.html',
 
   $templateCache.put('templates/event-form-step2.html',
     "<a name=\"wanneer\"></a>\n" +
-    "<section id=\"wanneer\" ng-show=\"showStep2\">\n" +
+    "<section id=\"wanneer\" ng-controller=\"EventFormStep2Ctrl as EventFormStep2\">\n" +
     "  <h2 class=\"title-border\">\n" +
     "    <span class=\"number\">2</span>\n" +
     "    <span ng-show=\"isEvent\">Wanneer vindt dit evenement of deze activiteit plaats?</span>\n" +
     "    <span ng-show=\"isPlace\">Wanneer is deze plaats of locatie open?</span>\n" +
     "  </h2>\n" +
+    "\n" +
+    "  <a ng-click=\"testingChange()\">testing</a>\n" +
     "\n" +
     "  <div class=\"row\">\n" +
     "    <div class=\"col-xs-12\">\n" +

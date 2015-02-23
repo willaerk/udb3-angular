@@ -1,13 +1,13 @@
 <a name="wat"></a>
-<section id="wat">
+<section id="wat" ng-controller="EventFormStep1Ctrl as EventFormStep1">
   <section class="row">
     <div class="col-md-12">
       <h2 class="title-border"><span class="number">1</span> Wat wil je toevoegen?</h2>
     </div>
   </section>
 
-  <div ng-bind="item.getEventTypeLabel()"></div>
-  <div ng-bind="item.getThemeLabel()"></div>
+  <div ng-bind="EventFormData.item.getEventTypeLabel()"></div>
+  <div ng-bind="EventFormData.item.getThemeLabel()"></div>
 
   <a href="#" ng-click="showStep(2)">Volgende stap</a>
 

@@ -28,11 +28,13 @@ function UdbApi($q, $http, appConfig, $cookieStore, uitidAuth, $cacheFactory, Ud
    * @returns {Promise} A promise that signals a succesful retrieval of
    *  search results or a failure.
    */
-  this.findEvents = function (queryString, start) {
+  this.findEvents = function (queryString, start, datetime) {
     var deferredEvents = $q.defer(),
         offset = start || 0,
+        dateRange = datetime || null,
         searchParams = {
-          start: offset
+          start: offset,
+          dateRange: dateRange
         };
 
     if(queryString.length) {

@@ -3,22 +3,22 @@
 
   /**
    * @ngdoc function
-   * @name udbApp.controller:NewEventCtrl
+   * @name udbApp.controller:EventFormStep2Ctrl
    * @description
-   * # NewEventCtrl
-   * udbApp controller
+   * # EventFormStep2Ctrl
+   * Step 2 of the event form
    */
   angular
     .module('udb.event-form')
     .controller('EventFormStep2Ctrl', EventFormStep2Controller);
 
-  EventFormStep2Controller.$inject = ['udbApi', '$scope', '$controller', '$location', 'EventFormData', 'UdbEvent', 'UdbOpeningHours', 'UdbPlace', 'moment', 'eventCrud'];
-
-  function EventFormStep2Controller(udbApi, $scope, $controller, $window, EventFormData, UdbEvent, UdbOpeningHours, UdbPlace, moment, eventCrud) {
+  /* @ngInject */
+  function EventFormStep2Controller($scope, EventFormData, UdbOpeningHours) {
 
     // Scope vars.
-    $scope.item = EventFormData;
-    $scope.showStep = showStep;
+    // main storage for event form.
+    $scope.eventFormData = EventFormData;
+
     $scope.activeCalendarType = ''; // Current active calendar type.
     $scope.activeCalendarLabel = '';
     $scope.calendarLabels = [
@@ -26,18 +26,6 @@
       { 'label': 'Van ... tot ... ', 'id' : 'periodic' },
       { 'label' : 'Permanent', 'id' : 'permanent' }
     ];
-    $scope.testingChange = testingChange;
-
-    /**
-     * Show the given step.
-     * @param int stepNumber
-     */
-    function showStep(stepNumber) {
-    }
-
-    function testingChange() {
-      EventFormData.item.setEventType('0.50.4.0.0', 'Concert changed');
-    }
 
   }
 

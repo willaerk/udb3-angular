@@ -3,147 +3,152 @@
 
   /**
    * @ngdoc function
-   * @name udbApp.controller:NewEventCtrl
+   * @name udbApp.controller:EventFormStep1Ctrl
    * @description
-   * # NewEventCtrl
-   * udbApp controller
+   * # EventFormStep1Ctrl
+   * Step 1 of the event form
    */
   angular
     .module('udb.event-form')
     .controller('EventFormStep1Ctrl', EventFormStep1Controller);
 
-  EventFormStep1Controller.$inject = ['udbApi', '$scope', '$controller', '$location', 'EventFormData', 'UdbEvent', 'UdbOpeningHours', 'UdbPlace', 'moment', 'eventCrud'];
+  /* @ngInject */
+  function EventFormStep1Controller($scope, EventFormData, UdbEvent, UdbPlace, eventTypes) {
 
-  function EventFormStep1Controller(udbApi, $scope, $controller, $window, EventFormData, UdbEvent, UdbOpeningHours, UdbPlace, moment, eventCrud) {
-
-    var item;
-    console.log(EventFormData);
-
-    // Hardcoded as UdbEvent for poc.
     EventFormData.item = new UdbEvent();
-    EventFormData.item.setName('my name', 'nl');
-    EventFormData.item.setEventType('0.50.4.0.0', 'Concert');
-    EventFormData.item.setTheme('1.8.3.5.0', 'Amusementsmuziek');
 
-    var location = new UdbPlace();
-    location.setLocality('Gent');
-    location.setPostal(9000);
-    EventFormData.item.setLocation(location);
+    // main storage for event form.
+    $scope.eventFormData = EventFormData;
 
-    // Scope vars.
-    $scope.showStep1 = true;
-    $scope.showStep2 = false;
-    $scope.showStep3 = false;
-    $scope.showStep4 = false;
-    $scope.showStep5 = false;
-    $scope.lastUpdated = '';
-    $scope.item = item;
-    $scope.EventFormData = EventFormData;
-    $scope.isEvent = true; // Is current item an event.
-    $scope.isPlace = false; // Is current item a place.
-    $scope.activeCalendarType = ''; // Current active calendar type.
-    $scope.activeCalendarLabel = '';
-    $scope.calendarLabels = [
-      { 'label': 'Eén of meerdere dagen', 'id' : 'single' },
-      { 'label': 'Van ... tot ... ', 'id' : 'periodic' },
-      { 'label' : 'Permanent', 'id' : 'permanent' }
-    ];
+    // Categories, event types, places.
+    $scope.eventTypeLabels = [];
+    $scope.placeLabels = [];
+    $scope.activeEventType = ''; // Current active event type.
+    $scope.activeEventTypeLabel = ''; // Current active event type label.
+    // Load the categories asynchronously.
+    var eventPromise = eventTypes.getCategories();
+    eventPromise.then(function (categories) {
+      $scope.eventTypeLabels = categories.event;
+      $scope.placeLabels = categories.place;
+    });
 
-    // Scope functions.
-    $scope.showStep = showStep;
-    $scope.setCalendarType = setCalendarType;
-    $scope.saveItem = saveItem;
-    $scope.validateItem = validateItem;
+    $scope.showAllEventTypes = false;
+    $scope.showAllPlaces = false;
+    $scope.eventThemeLabels = [];
+    $scope.activeTheme = '';
+    $scope.activeThemeLabel = '';
+
+    $scope.setEventType = setEventType;
+    $scope.resetEventType = resetEventType;
+    $scope.toggleEventTypes = toggleEventTypes;
+    $scope.togglePlaces = togglePlaces;
+    $scope.setTheme = setTheme;
+    $scope.resetTheme = resetTheme;
 
     /**
-     * Show the given step.
-     * @param int stepNumber
+     * Click listener on the event type buttons.
+     * Activate the selected event type.
      */
-    function showStep(stepNumber) {
-      if ($scope.isEvent) {
-        $scope.isPlace = true;
-        $scope.isEvent = false;
+    function setEventType(type, isEvent) {
+
+      $scope.activeEventType = type;
+
+      if (isEvent) {
+        EventFormData.isEvent = true;
+        EventFormData.isPlace = false;
+
+        for (var i = 0; i < $scope.eventTypeLabels.length; i++) {
+          if ($scope.eventTypeLabels[i].id === type) {
+            $scope.activeEventType = $scope.eventTypeLabels[i].id;
+            $scope.activeEventTypeLabel = $scope.eventTypeLabels[i].label;
+
+            $scope.eventThemeLabels = $scope.eventTypeLabels[i].themes;
+            break;
+          }
+        }
+
       }
       else {
-        $scope.isEvent = true;
-        $scope.isPlace = false;
+        EventFormData.isEvent = false;
+        EventFormData.isPlace = true;
+
+        for (var j = 0; j < $scope.placeLabels.length; j++) {
+          if ($scope.placeLabels[j].id === type) {
+            $scope.activeEventType = $scope.placeLabels[j].id;
+            $scope.activeEventTypeLabel = $scope.placeLabels[j].label;
+            break;
+          }
+        }
+
       }
-      $scope['showStep' + stepNumber] = true;
+
+      // Check if previous event type was the same.
+      // If so, just show the previous entered data.
+      if (EventFormData.item.eventType === type) {
+        return;
+      }
+
+      EventFormData.item.eventType = type;
+
     }
 
     /**
-     * Hide the given step.
-     * @param int stepNumber
+     * Click listener to reset the event type. User can select a new event type.
      */
-    function hideStep(stepNumber) {
-      $scope['showStep' + stepNumber] = false;
+    function resetEventType() {
+      $scope.activeEventType = '';
+      $scope.activeEventTypeLabel = '';
+      $scope.activeTheme = '';
+      $scope.activeThemeLabel = '';
     }
 
     /**
-     * Click listener on the calendar type buttons.
-     * Activate the selected calendar type.
+     * Click listener to set the active theme.
+     * @param {string} id
+     * @param {string} label
      */
-    function setCalendarType(type) {
+    function setTheme(id, label) {
 
-      $scope.activeCalendarType = type;
+      $scope.activeTheme = id;
 
-      for (var i = 0; i < $scope.calendarLabels.length; i++) {
-        if ($scope.calendarLabels[i].id === type) {
-          $scope.activeCalendarLabel = $scope.calendarLabels[i].label;
+      for (var i = 0; i < $scope.eventThemeLabels.length; i++) {
+        if ($scope.eventThemeLabels[i].id === id) {
+          $scope.activeThemeLabel = $scope.eventThemeLabels[i].label;
           break;
         }
       }
 
-      // Check if previous calendar type was the same.
-      // If so, we don't need to create new openinghours. Just show the previous entered data.
-      if (item.calendarType === type) {
+      // Check if previous event theme was the same.
+      // If so, just show the previous entered data.
+      if (EventFormData.item.theme === id) {
         return;
       }
 
-      // A type is choosen, start a complet new calendar, removing old data.
-
-      item.calendarType = type;
-      item.resetOpeningHours();
-
-      if (type === 'single') {
-        addSingleDate();
-      }
+      EventFormData.item.setTheme(id, label);
+console.log(EventFormData);
+      EventFormData.showStep(2);
 
     }
 
     /**
-     * Click listener to reset the calendar. User can select a new calendar type.
+     * Click listener to reset the active theme.
      */
-    function resetCalendar() {
-      $scope.activeCalendarType = '';
+    function resetTheme() {
+      $scope.activeTheme = '';
     }
 
     /**
-     * Add a single date to the item.
+     * Click listener to toggle the event types list.
      */
-    function addSingleDate() {
-      item.openingHours.push(new UdbOpeningHours());
-      console.log(item.openingHours);
+    function toggleEventTypes() {
+      $scope.showAllEventTypes = !$scope.showAllEventTypes;
     }
 
     /**
-     * Validate the event / place.
+     * Click listener to toggle th places list.
      */
-    function validateItem() {
-      showStep(5);
-      saveItem();
-    }
-
-    /**
-     * Save the event / place.
-     */
-    function saveItem() {
-
-      if ($scope.isEvent) {
-        eventCrud.createEvent(item);
-      }
-
-      $scope.lastUpdated = moment(Date.now()).format('DD/MM/YYYY HH:mm:s');
+    function togglePlaces() {
+      $scope.showAllPlaces = !$scope.showAllPlaces;
     }
 
   }

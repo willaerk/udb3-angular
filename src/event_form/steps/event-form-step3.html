@@ -1,13 +1,13 @@
-<a name="wanneer"></a>
-<section id="waar" ng-show="showStep3">
+<div ng-controller="EventFormStep3Ctrl as EventFormStep3">
+  <a name="wanneer"></a>
+  <section id="wanneer" ng-show="eventFormData.showStep3">
   <h2 class="title-border">
     <span class="number">3</span>
-    <span class="event-only">Waar vindt dit evenement of deze activiteit plaats?</span>
-    <span class="place-only">Waar is deze plaats of locatie?</span>
+    <span ng-show="eventFormData.isEvent">Waar vindt dit evenement of deze activiteit plaats?</span>
+    <span ng-show="eventFormData.isPlace">Waar is deze plaats of locatie?</span>
   </h2>
 
-  <div ng-bind="item.location.address.addressLocality;"></div>
+  <a href="#" ng-click="eventFormData.showStep(4)">Volgende stap</a>
 
-  <a href="#" ng-click="showStep(4)">Volgende</a>
-
-</section>
+  </section>
+</div>

@@ -1,62 +1,62 @@
-<a name="wat"></a>
-<section id="wat" ng-controller="EventFormStep1Ctrl as EventFormStep1">
-  <section class="row">
-    <div class="col-md-12">
-      <h2 class="title-border"><span class="number">1</span> Wat wil je toevoegen?</h2>
+<div ng-controller="EventFormStep1Ctrl as EventFormStep1">
+  <a name="wat"></a>
+  <section id="wat">
+    <section class="row">
+      <div class="col-md-12">
+        <h2 class="title-border"><span class="number">1</span> Wat wil je toevoegen?</h2>
+      </div>
+    </section>
+
+    <div class="row">
+
+      <div class="col-xs-5 col-xs-12" ng-show="activeEventType === ''">
+        <label class="event-type-choser-label">Een activiteit of evenement</label>
+        <ul class="list-inline">
+          <li ng-repeat="eventTypeLabel in eventTypeLabels" ng-show="eventTypeLabel.primary == true || showAllEventTypes">
+            <button ng-bind="eventTypeLabel.label" class="btn btn-default" ng-click="setEventType(eventTypeLabel.id, true)"></button>
+          </li>
+        </ul>
+        <div ng-show="showAllEventTypes == false">
+          Niet gevonden wat je zocht? <a class="btn btn-link event-type-collapse" href="" ng-click="toggleEventTypes()">Toon alle mogelijkheden</a>
+        </div>
+      </div>
+
+      <div class="col-xs-1 col-xs-12" ng-show="activeEventType === ''">
+        <p class="text-center">of</p>
+      </div>
+
+      <div class="col-xs-6 col-xs-12" ng-show="activeEventType === ''">
+        <label class="event-type-choser-label">Een locatie of plaats</label>
+        <ul class="list-inline">
+          <li ng-repeat="placeLabel in placeLabels" ng-show="placeLabel.primary == true || showAllPlaces">
+            <button ng-bind="placeLabel.label" class="btn btn-default" ng-click="setEventType(placeLabel.id, false)"></button>
+          </li>
+        </ul>
+        <div ng-show="showAllPlaces == false">
+          Niet gevonden wat je zocht? <a class="btn btn-link btn-default" href="" ng-click="togglePlaces()">Toon alle mogelijkheden</a>
+        </div>
+      </div>
+
+      <p class="col-xs-12 col-md-12" ng-hide="activeEventType === ''">
+        <span class="btn-chosen" ng-bind="activeEventTypeLabel"></span>
+        <a class="btn btn-link btn-default" href="" ng-click="resetEventType()">Wijzigen</a>
+      </p>
+
+      <div class="col-xs-12" ng-hide="activeTheme !== '' || activeEventType === '' || !eventFormData.isEvent">
+        <label class="event-theme-label">Verfijn</label>
+        <ul class="list-inline">
+          <li ng-repeat="eventThemeLabel in eventThemeLabels">
+            <button ng-bind="eventThemeLabel.label" class="btn btn-default" ng-click="setTheme(eventThemeLabel.id, eventThemeLabel.label)"></button>
+          </li>
+        </ul>
+      </div>
+
+      <p class="col-xs-12 col-md-12"  ng-hide="activeTheme === ''">
+        <span class="btn-chosen" ng-bind="activeThemeLabel"></span>
+        <a class="btn btn-link btn-default" href="" ng-click="resetTheme()">Wijzigen</a>
+      </p>
+
     </div>
+
   </section>
-
-  <div class="row">
-
-    <div class="col-xs-5 col-xs-12" ng-show="activeEventType === ''">
-      <label class="event-type-choser-label">Een activiteit of evenement</label>
-      <ul class="list-inline">
-        <li ng-repeat="eventTypeLabel in eventTypeLabels" ng-show="eventTypeLabel.primary == true || showAllEventTypes">
-          <button ng-bind="eventTypeLabel.label" class="btn btn-default" ng-click="setEventType(eventTypeLabel.id, true)"></button>
-        </li>
-      </ul>
-      <div ng-show="showAllEventTypes == false">
-        Niet gevonden wat je zocht? <a class="btn btn-link event-type-collapse" href="" ng-click="toggleEventTypes()">Toon alle mogelijkheden</a>
-      </div>
-    </div>
-
-    <div class="col-xs-1 col-xs-12" ng-show="activeEventType === ''">
-      <p class="text-center">of</p>
-    </div>
-
-    <div class="col-xs-6 col-xs-12" ng-show="activeEventType === ''">
-      <label class="event-type-choser-label">Een locatie of plaats</label>
-      <ul class="list-inline">
-        <li ng-repeat="placeLabel in placeLabels" ng-show="placeLabel.primary == true || showAllPlaces">
-          <button ng-bind="placeLabel.label" class="btn btn-default" ng-click="setEventType(placeLabel.id, false)"></button>
-        </li>
-      </ul>
-      <div ng-show="showAllPlaces == false">
-        Niet gevonden wat je zocht? <a class="btn btn-link btn-default" href="" ng-click="togglePlaces()">Toon alle mogelijkheden</a>
-      </div>
-    </div>
-
-    <p class="col-xs-12 col-md-12" ng-hide="activeEventType === ''">
-      <span class="btn-chosen" ng-bind="activeEventTypeLabel"></span>
-      <a class="btn btn-link btn-default" href="" ng-click="resetEventType()">Wijzigen</a>
-    </p>
-
-    <div class="col-xs-12" ng-hide="activeTheme !== '' || activeEventType === '' || !isEvent">
-      <label class="event-theme-label">Verfijn</label>
-      <ul class="list-inline">
-        <li ng-repeat="eventThemeLabel in eventThemeLabels">
-          <button ng-bind="eventThemeLabel.label" class="btn btn-default" ng-click="setTheme(eventThemeLabel.id, eventThemeLabel.label)"></button>
-        </li>
-      </ul>
-    </div>
-
-    <p class="col-xs-12 col-md-12"  ng-hide="activeTheme === ''">
-      <span class="btn-chosen" ng-bind="activeThemeLabel"></span>
-      <a class="btn btn-link btn-default" href="" ng-click="resetTheme()">Wijzigen</a>
-    </p>
-
-  </div>
-
-  <a href="#" ng-click="showStep(2)" ng-hide="((isEvent && activeTheme === '') || (isPlace && activeEventType === ''))">Volgende stap</a>
-
-</section>
+</div>

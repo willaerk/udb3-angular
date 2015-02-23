@@ -16,17 +16,7 @@
 
   function EventFormController(udbApi, $scope, $controller, $window, UdbEvent, UdbOpeningHours, UdbPlace, moment, eventCrud, eventTypes) {
 
-    var type = 'event';
-
-    console.warn('ok');
-    // Get the categories.
-    var categories = $http.get('categories.json').success(function(response) {
-        console.log(response.data);
-        return;
-    });
-
     // Hardcoded as UdbEvent for poc.
-
     // Scope vars.
     $scope.showStep1 = true;
     $scope.showStep2 = false;

@@ -112,7 +112,6 @@ function UdbEventFactory() {
      * Set the event type for this event.
      */
     setEventType: function(id, label) {
-      console.log(id + label);
       this.type = {
         'id' : id,
         'label' : label,
@@ -131,7 +130,6 @@ function UdbEventFactory() {
      * Get the label for the event type.
      */
     getEventTypeLabel: function() {
-      console.log(this.type.label);
       return this.type.label ? this.type.label : '';
     },
 

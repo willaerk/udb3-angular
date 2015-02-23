@@ -2186,11 +2186,13 @@ function UdbApi($q, $http, appConfig, $cookieStore, uitidAuth, $cacheFactory, Ud
    * @returns {Promise} A promise that signals a succesful retrieval of
    *  search results or a failure.
    */
-  this.findEvents = function (queryString, start) {
+  this.findEvents = function (queryString, start, datetime) {
     var deferredEvents = $q.defer(),
         offset = start || 0,
+        dateRange = datetime || null,
         searchParams = {
-          start: offset
+          start: offset,
+          dateRange: dateRange
         };
 
     if(queryString.length) {
@@ -3853,9 +3855,10 @@ EventTranslator.$inject = ["jobLogger", "udbApi", "EventTranslationJob"];
     .module('udb.event-form')
     .controller('EventFormCtrl', EventFormController);
 
-  EventFormController.$inject = ['udbApi', '$scope', '$controller', '$location', 'UdbEvent', 'UdbOpeningHours', 'UdbPlace', 'moment', 'eventCrud', 'eventTypes'];
-
-  function EventFormController(udbApi, $scope, $controller, $window, UdbEvent, UdbOpeningHours, UdbPlace, moment, eventCrud, eventTypes) {
+  //EventFormController.$inject = ['udbApi', '$scope', '$controller', '$location', 'UdbEvent', 'UdbOpeningHours', 'UdbPlace', 'moment', 'eventCrud', 'eventTypes'];
+  /* @ngInject */
+  function EventFormController(udbApi, $scope, $controller, $window, UdbEvent, UdbOpeningHours, UdbPlace, moment,
+                               eventCrud, eventTypes, SearchResultViewer) {
 
     // Scope vars.
     $scope.showStep1 = true;
@@ -4063,16 +4066,29 @@ EventTranslator.$inject = ["jobLogger", "udbApi", "EventTranslationJob"];
     function setScopeForStep4() {
       $scope.validateEvent = validateEvent;
       $scope.activeTitle = '';
+      $scope.duplicatesFound = false;
+      $scope.resultViewer = new SearchResultViewer();
     }
 
     /**
      * Validate date after step 4 to enter step 5.
      */
     function validateEvent() {
-
       // Set the name.
       item.setName($scope.activeTitle, 'nl');
-      
+
+      // Load the candidate duplicates asynchronously.
+      // Duplicates are found on existing identical properties:
+      // - title is the same
+      // - on the same location.
+      var promise = udbApi.findEvents($scope.activeTitle, 0, '03/05/2015');
+
+      $scope.resultViewer.loading = true;
+
+      promise.then(function (data) {
+        $scope.resultViewer.setResults(data);
+      });
+
     }
 
     /**
@@ -4143,6 +4159,7 @@ EventTranslator.$inject = ["jobLogger", "udbApi", "EventTranslationJob"];
     }
 
   }
+  EventFormController.$inject = ["udbApi", "$scope", "$controller", "$window", "UdbEvent", "UdbOpeningHours", "UdbPlace", "moment", "eventCrud", "eventTypes", "SearchResultViewer"];
 
 })();
 
@@ -6629,7 +6646,7 @@ $templateCache.put('templates/base-job.template.html',
     "  <div class=\"row\">\n" +
     "    <div class=\"col-xs-12 col-md-4\">\n" +
     "      <div class=\"form-group-lg\">\n" +
-    "        <input type=\"text\" class=\"form-control\" ng-bind=\"activeTitle\">\n" +
+    "        <input type=\"text\" class=\"form-control\" name=\"itemName\" ng-model=\"activeTitle\" required />\n" +
     "      </div>\n" +
     "    </div>\n" +
     "    <div class=\"col-xs-12 col-md-8\">\n" +
@@ -6646,48 +6663,29 @@ $templateCache.put('templates/base-job.template.html',
     "</div>\n" +
     "\n" +
     "<a name=\"dubbeldetectie\"></a>\n" +
-    "<section class=\"dubbeldetectie\" ng-show=\"activeTitle !== ''\">\n" +
+    "<section class=\"dubbeldetectie\" ng-show=\"resultViewer.totalItems > 0\">\n" +
     "  <div class=\"alert alert-info\">\n" +
     "    <p class=\"h2\" style=\"margin-top: 0;\">Vermijd dubbel werk\n" +
     "    </p><p> We vonden gelijkaardige items. Controleer deze eerder ingevoerde items.</p>\n" +
     "    <br>\n" +
     "\n" +
     "    <div class=\"row clearfix\">\n" +
-    "        <div class=\"col-xs-12 col-sm-6 col-md-4 col-lg-3\">\n" +
-    "        <a class=\"btn btn-tile\" data-toggle=\"modal\" data-target=\"#dubbeldetectie-voorbeeld\">\n" +
-    "            <span>\n" +
-    "              <small class=\"label label-default\">Festival</small><br>\n" +
-    "              <strong class=\"title\">Lichtfestival</strong><br>\n" +
-    "              Gent - Van 29/01 tot 01/02<br>\n" +
-    "              <small class=\"preview-corner\"></small>\n" +
-    "              <i class=\"fa fa-eye preview-icon\"></i>\n" +
-    "            </span>\n" +
-    "        </a>\n" +
-    "        </div>\n" +
     "\n" +
-    "        <div class=\"col-xs-12 col-sm-6 col-md-4 col-lg-3\">\n" +
+    "      <div class=\"col-xs-12 col-sm-6 col-md-4 col-lg-3\"\n" +
+    "           ng-repeat=\"event in resultViewer.events\"\n" +
+    "           udb-event=\"event\"\n" +
+    "           ng-hide=\"fetching\">\n" +
     "        <a class=\"btn btn-tile\" data-toggle=\"modal\" data-target=\"#dubbeldetectie-voorbeeld\">\n" +
-    "            <span>\n" +
-    "              <small class=\"label label-default\">Tentoonstelling</small><br>\n" +
-    "              <strong class=\"title\">Licht in de Duisternis</strong><br>\n" +
-    "              Gent - Op 13/02<br>\n" +
-    "              <small class=\"preview-corner\"></small>\n" +
-    "              <i class=\"fa fa-eye preview-icon\"></i>\n" +
-    "            </span>\n" +
+    "          <span>\n" +
+    "            <small class=\"label label-default\" ng-bind=\"event.type\"></small><br>\n" +
+    "            <strong class=\"title\" ng-bind=\"event.name\"></strong><br>\n" +
+    "             {{ event.location.name }} - Van {{ event.startDate | date: 'dd/MM' }} tot {{ event.endDate | date: 'dd/MM' }}<br>\n" +
+    "            <small class=\"preview-corner\"></small>\n" +
+    "            <i class=\"fa fa-eye preview-icon\"></i>\n" +
+    "          </span>\n" +
     "        </a>\n" +
-    "        </div>\n" +
+    "      </div>\n" +
     "\n" +
-    "        <div class=\"col-xs-12 col-sm-6 col-md-4 col-lg-3\">\n" +
-    "        <a class=\"btn btn-tile\" data-toggle=\"modal\" data-target=\"#dubbeldetectie-voorbeeld\">\n" +
-    "            <span>\n" +
-    "              <small class=\"label label-default\">Tentoonstelling</small><br>\n" +
-    "              <strong class=\"title\">Opgelicht!</strong><br>\n" +
-    "              Gent - Op 13/02<br>\n" +
-    "              <small class=\"preview-corner\"></small>\n" +
-    "              <i class=\"fa fa-eye preview-icon\"></i>\n" +
-    "            </span>\n" +
-    "        </a>\n" +
-    "        </div>\n" +
     "    </div>\n" +
     "  </div>\n" +
     "</section>"

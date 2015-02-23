@@ -58,7 +58,7 @@ function UdbEventFactory() {
     this.place = {};
     this.type = {};
     this.theme = {};
-    this.calendar = {};
+    this.openingHours = [];
   };
 
   UdbEvent.prototype = {
@@ -88,7 +88,6 @@ function UdbEventFactory() {
       this.creator = jsonEvent.creator || '';
       this.type = getCategoryByType(jsonEvent, 'eventtype') || {};
       this.theme = getCategoryByType(jsonEvent, 'theme') || {};
-      this.calendar = {};
       this.calendarType = jsonEvent.calendarType || '';
       this.startDate = jsonEvent.startDate;
       this.endDate = jsonEvent.endDate;
@@ -160,17 +159,17 @@ function UdbEventFactory() {
     },
 
     /**
-     * Set the calendar for this event.
+     * Reset the opening hours.
      */
-    setCalendar: function(calendar) {
-      this.calendar = calendar;
+    resetOpeningHours: function() {
+      this.openingHours = [];
     },
 
     /**
-     * Get the calendar for this event.
+     * Get the opening hours for this event.
      */
-    getCalendar: function() {
-      return this.calendar;
+    getOpeningHours: function() {
+      return this.openingHours;
     },
 
     /**

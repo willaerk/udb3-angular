@@ -311,7 +311,8 @@ angular.module('udb.core')
       'organizer': 'Organisator',
       'bookingInfo': 'Prijsinformatie',
       'creator': 'Auteur',
-      'terms': 'Thema',
+      'terms.theme': 'Thema',
+      'terms.eventtype': 'Soort aanbod',
       'created': 'Datum aangemaakt',
       'publisher': 'Auteur',
       'endDate': 'Einddatum',
@@ -323,3 +324,4 @@ angular.module('udb.core')
     }
   }
 );
+

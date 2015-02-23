@@ -2597,6 +2597,42 @@ function UdbEventFactory() {
   return (UdbEvent);
 }
 
+// Source: src/core/udb-offer.factory.js
+/**
+ * @ngdoc service
+ * @name udb.core.UdbOffer
+ * @description
+ * # UdbOffer
+ * UdbOffer factory
+ */
+angular
+  .module('udb.core')
+  .factory('UdbOffer', UdbOfferFactory);
+
+/* @ngInject */
+function UdbOfferFactory() {
+
+  /**
+   * @class UdbOffer
+   * @constructor
+   */
+  var UdbOffer = function () {
+    this.id = '';
+    this.name = {};
+    this.type = {};
+    this.theme = {};
+    this.openingHours = [];
+  };
+
+  UdbOfferFactory.prototype = {
+
+
+
+  };
+
+  return (UdbOffer);
+}
+
 // Source: src/core/udb-openinghours.factory.js
 /**
  * @ngdoc service
@@ -4181,6 +4217,7 @@ angular
 /* @ngInject */
 function EventFormDataFactory() {
   return {
+
     item : {},
     isEvent : true, // Is current item an event.
     isPlace : false, // Is current item a place.
@@ -4195,7 +4232,6 @@ function EventFormDataFactory() {
      * @param int stepNumber
      */
     showStep: function(stepNumber) {
-      console.log(stepNumber);
       this['showStep' + stepNumber] = true;
     },
 
@@ -4205,6 +4241,98 @@ function EventFormDataFactory() {
      */
     hideStep: function (stepNumber) {
       this['showStep' + stepNumber] = false;
+    },
+
+    /**
+     * Set the name of the offer for a given langcode.
+     */
+    setName: function(name, langcode) {
+      this.name[langcode] = name;
+    },
+
+    /**
+     * Get the name of the offer for a given langcode.
+     */
+    getName: function(langcode) {
+      return this.name[langcode];
+    },
+
+    /**
+     * Set the event type.
+     */
+    setEventType: function(id, label) {
+      this.type = {
+        'id' : id,
+        'label' : label,
+        'domain' : 'eventtype',
+      };
+    },
+
+    /**
+     * Get the event type.
+     */
+    getEventType: function() {
+      return this.type;
+    },
+
+    /**
+     * Get the label for the event type.
+     */
+    getEventTypeLabel: function() {
+      return this.type.label ? this.type.label : '';
+    },
+
+    /**
+     * Set the theme.
+     */
+    setTheme: function(id, label) {
+      this.theme = {
+        'id' : id,
+        'label' : label,
+        'domain' : 'thema',
+      };
+    },
+
+    /**
+     * Get the theme.
+     */
+    getTheme: function() {
+      return this.theme;
+    },
+
+    /**
+     * Get the label for the theme.
+     */
+    getThemeLabel: function() {
+      return this.theme.label ? this.theme.label : '';
+    },
+
+    /**
+     * Reset the opening hours.
+     */
+    resetOpeningHours: function() {
+      this.openingHours = [];
+    },
+
+    /**
+     * Get the opening hours.
+     */
+    getOpeningHours: function() {
+      return this.openingHours;
+    },
+
+    /**
+     * Set the location.
+     */
+    setLocation: function(location) {
+      this.location = location;
+    },
+
+    /**
+     * Get the calendar.
+     */
+    getLocation: function() {
+      return this.location;
     }
 
   };
@@ -4352,8 +4480,6 @@ function EventFormStep5Directive() {
   /* @ngInject */
   function EventFormStep1Controller($scope, EventFormData, UdbEvent, UdbPlace, eventTypes) {
 
-    EventFormData.item = new UdbEvent();
-
     // main storage for event form.
     $scope.eventFormData = EventFormData;
 
@@ -4421,11 +4547,11 @@ function EventFormStep5Directive() {
 
       // Check if previous event type was the same.
       // If so, just show the previous entered data.
-      if (EventFormData.item.eventType === type) {
+      if (EventFormData.eventType === type) {
         return;
       }
 
-      EventFormData.item.eventType = type;
+      EventFormData.eventType = type;
 
     }
 
@@ -4457,12 +4583,12 @@ function EventFormStep5Directive() {
 
       // Check if previous event theme was the same.
       // If so, just show the previous entered data.
-      if (EventFormData.item.theme === id) {
+      if (EventFormData.theme === id) {
         return;
       }
 
-      EventFormData.item.setTheme(id, label);
-console.log(EventFormData);
+      EventFormData.setTheme(id, label);
+
       EventFormData.showStep(2);
 
     }

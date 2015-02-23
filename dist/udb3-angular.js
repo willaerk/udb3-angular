@@ -3874,8 +3874,6 @@ EventTranslator.$inject = ["jobLogger", "udbApi", "EventTranslationJob"];
     // Step 1: Choose event type and theme or a place.
     setScopeForStep1();
 
-    // Step 4: Set the title for the event.
-    setScopeForStep4();
 
     var location = new UdbPlace();
     location.setLocality('Gent');
@@ -4057,42 +4055,6 @@ EventTranslator.$inject = ["jobLogger", "udbApi", "EventTranslationJob"];
      */
     function togglePlaces() {
       $scope.showAllPlaces = !$scope.showAllPlaces;
-    }
-
-    /**
-     *
-     * @param {type} type
-     * @returns {undefined}Set the scope variables for step 4: the title.
-     */
-    function setScopeForStep4() {
-      $scope.validateEvent = validateEvent;
-      $scope.activeTitle = '';
-      $scope.duplicatesFound = false;
-      $scope.resultViewer = new SearchResultViewer();
-    }
-
-    /**
-     * Validate date after step 4 to enter step 5.
-     */
-    function validateEvent() {
-      // Set the name.
-      item.setName($scope.activeTitle, 'nl');
-
-<<<<<<< HEAD
-=======
-      // Load the candidate duplicates asynchronously.
-      // Duplicates are found on existing identical properties:
-      // - title is the same
-      // - on the same location.
-      var promise = udbApi.findEvents($scope.activeTitle, 0, '03/05/2015');
-
-      $scope.resultViewer.loading = true;
-
-      promise.then(function (data) {
-        $scope.resultViewer.setResults(data);
-      });
-
->>>>>>> feature/HER-9
     }
 
     /**
@@ -4565,14 +4527,40 @@ console.log(EventFormData);
     .controller('EventFormStep4Ctrl', EventFormStep4Controller);
 
   /* @ngInject */
-  function EventFormStep4Controller(udbApi, $scope, EventFormData) {
+  function EventFormStep4Controller($scope, EventFormData, udbApi, SearchResultViewer) {
 
     // Scope vars.
     // main storage for event form.
     $scope.eventFormData = EventFormData;
 
+    $scope.validateEvent = validateEvent;
+    $scope.activeTitle = '';
+    $scope.duplicatesFound = false;
+    $scope.resultViewer = new SearchResultViewer();
+
+    /**
+     * Validate date after step 4 to enter step 5.
+     */
+    function validateEvent() {
+      // Set the name.
+      EventFormData.item.setName($scope.activeTitle, 'nl');
+
+      // Load the candidate duplicates asynchronously.
+      // Duplicates are found on existing identical properties:
+      // - title is the same
+      // - on the same location.
+      var promise = udbApi.findEvents($scope.activeTitle);
+
+      $scope.resultViewer.loading = true;
+
+      promise.then(function (data) {
+        $scope.resultViewer.setResults(data);
+      });
+
+    }
+
   }
-  EventFormStep4Controller.$inject = ["udbApi", "$scope", "EventFormData"];
+  EventFormStep4Controller.$inject = ["$scope", "EventFormData", "udbApi", "SearchResultViewer"];
 
 })();
 
@@ -6953,7 +6941,6 @@ $templateCache.put('templates/base-job.template.html',
   $templateCache.put('templates/event-form-step4.html',
     "<div ng-controller=\"EventFormStep4Ctrl as EventFormStep4\">\n" +
     "\n" +
-<<<<<<< HEAD
     "  <a name=\"titel\"></a>\n" +
     "  <section id=\"titel\" ng-show=\"eventFormData.showStep4\">\n" +
     "\n" +
@@ -6967,19 +6954,12 @@ $templateCache.put('templates/base-job.template.html',
     "      </div>\n" +
     "      <div class=\"col-xs-12 col-md-8\">\n" +
     "        <p class=\"text-block\">\n" +
-    "          Bv. Candide, Magritte en het surrealisme, Cursus keramiek,... <br>Begin met een <strong>hoofdletter</strong> en hou het <strong>kort &amp; bondig</strong>:  een uitgebreide beschrijving vul je later in.</p>\n" +
-=======
-    "  <h2 class=\"title-border\"><span class=\"number\">4</span>Basisgegevens</h2>\n" +
-    "  <label>Vul een titel in</label>\n" +
-    "  <div class=\"row\">\n" +
-    "    <div class=\"col-xs-12 col-md-4\">\n" +
-    "      <div class=\"form-group-lg\">\n" +
-    "        <input type=\"text\" class=\"form-control\" name=\"itemName\" ng-model=\"activeTitle\" required />\n" +
->>>>>>> feature/HER-9
+    "          Bv. Candide, Magritte en het surrealisme, Cursus keramiek,... <br>Begin met een <strong>hoofdletter</strong> en hou het <strong>kort &amp; bondig</strong>:  een uitgebreide beschrijving vul je later in.\n" +
+    "        </p>\n" +
     "      </div>\n" +
     "    </div>\n" +
-    "    <p><a class=\"btn btn-primary titel-doorgaan\" ng-show=\"activeTitle !== ''\" ng-click=\"validateEvent()\">Doorgaan</a></p>\n" +
-    "<a href=\"#\" ng-click=\"eventFormData.showStep(5)\">Volgende stap</a>\n" +
+    "    <p><a class=\"btn btn-primary titel-doorgaan\" ng-hide=\"activeTitle === ''\" ng-click=\"validateEvent()\">Doorgaan</a></p>\n" +
+    "\n" +
     "  </section>\n" +
     "\n" +
     "  <div class=\"spinner\" style=\"display: none;\">\n" +
@@ -6988,83 +6968,45 @@ $templateCache.put('templates/base-job.template.html',
     "\n" +
     "  <a name=\"dubbeldetectie\"></a>\n" +
     "  <section class=\"dubbeldetectie\" ng-show=\"activeTitle !== ''\">\n" +
-    "    <div class=\"alert alert-info\">\n" +
-    "      <p class=\"h2\" style=\"margin-top: 0;\">Vermijd dubbel werk\n" +
-    "      </p><p> We vonden gelijkaardige items. Controleer deze eerder ingevoerde items.</p>\n" +
-    "      <br>\n" +
+    "\n" +
+    "    <div class=\"alert alert-info\" ng-show=\"resultViewer.totalItems > 0\">\n" +
+    "      <p class=\"h2\" style=\"margin-top: 0;\">Vermijd dubbel werk</p>\n" +
+    "      <p> We vonden gelijkaardige items. Controleer deze eerder ingevoerde items.</p>\n" +
+    "      <br />\n" +
     "\n" +
     "      <div class=\"row clearfix\">\n" +
-    "          <div class=\"col-xs-12 col-sm-6 col-md-4 col-lg-3\">\n" +
-    "          <a class=\"btn btn-tile\" data-toggle=\"modal\" data-target=\"#dubbeldetectie-voorbeeld\">\n" +
-    "              <span>\n" +
-    "                <small class=\"label label-default\">Festival</small><br>\n" +
-    "                <strong class=\"title\">Lichtfestival</strong><br>\n" +
-    "                Gent - Van 29/01 tot 01/02<br>\n" +
-    "                <small class=\"preview-corner\"></small>\n" +
-    "                <i class=\"fa fa-eye preview-icon\"></i>\n" +
-    "              </span>\n" +
-    "          </a>\n" +
-    "          </div>\n" +
     "\n" +
-<<<<<<< HEAD
-    "          <div class=\"col-xs-12 col-sm-6 col-md-4 col-lg-3\">\n" +
+    "        <div class=\"col-xs-12 col-sm-6 col-md-4 col-lg-3\"\n" +
+    "             ng-repeat=\"event in resultViewer.events\"\n" +
+    "             udb-event=\"event\"\n" +
+    "             ng-hide=\"fetching\">\n" +
     "          <a class=\"btn btn-tile\" data-toggle=\"modal\" data-target=\"#dubbeldetectie-voorbeeld\">\n" +
-    "              <span>\n" +
-    "                <small class=\"label label-default\">Tentoonstelling</small><br>\n" +
-    "                <strong class=\"title\">Licht in de Duisternis</strong><br>\n" +
-    "                Gent - Op 13/02<br>\n" +
-    "                <small class=\"preview-corner\"></small>\n" +
-    "                <i class=\"fa fa-eye preview-icon\"></i>\n" +
-    "              </span>\n" +
+    "            <span>\n" +
+    "              <small class=\"label label-default\" ng-bind=\"event.type\"></small><br>\n" +
+    "              <strong class=\"title\" ng-bind=\"event.name\"></strong><br>\n" +
+    "               {{ event.location.name }} - Van {{ event.startDate | date: 'dd/MM' }} tot {{ event.endDate | date: 'dd/MM' }}<br>\n" +
+    "              <small class=\"preview-corner\"></small>\n" +
+    "              <i class=\"fa fa-eye preview-icon\"></i>\n" +
+    "            </span>\n" +
     "          </a>\n" +
-    "          </div>\n" +
+    "        </div>\n" +
     "\n" +
-    "          <div class=\"col-xs-12 col-sm-6 col-md-4 col-lg-3\">\n" +
-    "          <a class=\"btn btn-tile\" data-toggle=\"modal\" data-target=\"#dubbeldetectie-voorbeeld\">\n" +
-    "              <span>\n" +
-    "                <small class=\"label label-default\">Tentoonstelling</small><br>\n" +
-    "                <strong class=\"title\">Opgelicht!</strong><br>\n" +
-    "                Gent - Op 13/02<br>\n" +
-    "                <small class=\"preview-corner\"></small>\n" +
-    "                <i class=\"fa fa-eye preview-icon\"></i>\n" +
-    "              </span>\n" +
-    "          </a>\n" +
-    "          </div>\n" +
     "      </div>\n" +
     "    </div>\n" +
+    "\n" +
+    "    <h3>Ben je zeker dat je \"Lichtfestival in Gent\" wil toevoegen?</h3>\n" +
+    "    <ul class=\"list-inline\" ng-show=\"resultViewer.totalItems == 0\">\n" +
+    "      <li>\n" +
+    "        <a class=\"btn btn-default\" href=\"dashboard.html\">Nee, keer terug naar dashboard</a>\n" +
+    "      </li>\n" +
+    "      <li>\n" +
+    "        <a class=\"btn btn-primary dubbeldetectie-doorgaan\">Ja, doorgaan met invoeren</a>\n" +
+    "      </li>\n" +
+    "    </ul>\n" +
     "\n" +
     "  </section>\n" +
     "\n" +
-    "</div>"
-=======
-    "<a name=\"dubbeldetectie\"></a>\n" +
-    "<section class=\"dubbeldetectie\" ng-show=\"resultViewer.totalItems > 0\">\n" +
-    "  <div class=\"alert alert-info\">\n" +
-    "    <p class=\"h2\" style=\"margin-top: 0;\">Vermijd dubbel werk\n" +
-    "    </p><p> We vonden gelijkaardige items. Controleer deze eerder ingevoerde items.</p>\n" +
-    "    <br>\n" +
-    "\n" +
-    "    <div class=\"row clearfix\">\n" +
-    "\n" +
-    "      <div class=\"col-xs-12 col-sm-6 col-md-4 col-lg-3\"\n" +
-    "           ng-repeat=\"event in resultViewer.events\"\n" +
-    "           udb-event=\"event\"\n" +
-    "           ng-hide=\"fetching\">\n" +
-    "        <a class=\"btn btn-tile\" data-toggle=\"modal\" data-target=\"#dubbeldetectie-voorbeeld\">\n" +
-    "          <span>\n" +
-    "            <small class=\"label label-default\" ng-bind=\"event.type\"></small><br>\n" +
-    "            <strong class=\"title\" ng-bind=\"event.name\"></strong><br>\n" +
-    "             {{ event.location.name }} - Van {{ event.startDate | date: 'dd/MM' }} tot {{ event.endDate | date: 'dd/MM' }}<br>\n" +
-    "            <small class=\"preview-corner\"></small>\n" +
-    "            <i class=\"fa fa-eye preview-icon\"></i>\n" +
-    "          </span>\n" +
-    "        </a>\n" +
-    "      </div>\n" +
-    "\n" +
-    "    </div>\n" +
-    "  </div>\n" +
-    "</section>"
->>>>>>> feature/HER-9
+    "</div>\n"
   );
 
 

@@ -31,8 +31,6 @@
     // Step 1: Choose event type and theme or a place.
     setScopeForStep1();
 
-    // Step 4: Set the title for the event.
-    setScopeForStep4();
 
     var location = new UdbPlace();
     location.setLocality('Gent');
@@ -214,39 +212,6 @@
      */
     function togglePlaces() {
       $scope.showAllPlaces = !$scope.showAllPlaces;
-    }
-
-    /**
-     *
-     * @param {type} type
-     * @returns {undefined}Set the scope variables for step 4: the title.
-     */
-    function setScopeForStep4() {
-      $scope.validateEvent = validateEvent;
-      $scope.activeTitle = '';
-      $scope.duplicatesFound = false;
-      $scope.resultViewer = new SearchResultViewer();
-    }
-
-    /**
-     * Validate date after step 4 to enter step 5.
-     */
-    function validateEvent() {
-      // Set the name.
-      item.setName($scope.activeTitle, 'nl');
-
-      // Load the candidate duplicates asynchronously.
-      // Duplicates are found on existing identical properties:
-      // - title is the same
-      // - on the same location.
-      var promise = udbApi.findEvents($scope.activeTitle, 0, '03/05/2015');
-
-      $scope.resultViewer.loading = true;
-
-      promise.then(function (data) {
-        $scope.resultViewer.setResults(data);
-      });
-
     }
 
     /**

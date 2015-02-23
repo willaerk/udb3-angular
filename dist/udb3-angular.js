@@ -3685,8 +3685,6 @@ EventTranslator.$inject = ["jobLogger", "udbApi", "EventTranslationJob"];
 
   function EventFormController(udbApi, $scope, $controller, $window, UdbEvent, UdbTimestamps, UdbPlace, moment, eventCrud) {
 
-    var type = 'event';
-
     // Hardcoded as UdbEvent for poc.
     var item = new UdbEvent();
     item.setName('my name', 'nl');
@@ -3710,8 +3708,9 @@ EventTranslator.$inject = ["jobLogger", "udbApi", "EventTranslationJob"];
     $scope.showStep4 = false;
     $scope.showStep5 = false;
     $scope.lastUpdated = '';
-    $scope.type = type;
     $scope.item = item;
+    $scope.isEvent = true;
+    $scope.isPlace = false;
 
     $scope.showStep = showStep;
     $scope.saveItem = saveItem;
@@ -3722,6 +3721,14 @@ EventTranslator.$inject = ["jobLogger", "udbApi", "EventTranslationJob"];
      * @param int stepNumber
      */
     function showStep(stepNumber) {
+      if ($scope.isEvent) {
+        $scope.isPlace = true;
+        $scope.isEvent = false;
+      }
+      else {
+        $scope.isEvent = true;
+        $scope.isPlace = false;
+      }
       $scope['showStep' + stepNumber] = true;
     }
 
@@ -3746,7 +3753,7 @@ EventTranslator.$inject = ["jobLogger", "udbApi", "EventTranslationJob"];
      */
     function saveItem() {
 
-      if (type === 'event') {
+      if ($scope.isEvent) {
         eventCrud.createEvent(item);
       }
 
@@ -6096,8 +6103,8 @@ $templateCache.put('templates/base-job.template.html',
     "<section id=\"wanneer\" ng-show=\"showStep2\">\n" +
     "  <h2 class=\"title-border\">\n" +
     "    <span class=\"number\">2</span>\n" +
-    "    <span class=\"event-only\">Wanneer vindt dit evenement of deze activiteit plaats?</span>\n" +
-    "    <span class=\"place-only\">Wanneer is deze plaats of locatie open?</span>\n" +
+    "    <span ng-show=\"isEvent\">Wanneer vindt dit evenement of deze activiteit plaats?</span>\n" +
+    "    <span ng-show=\"isPlace\">Wanneer is deze plaats of locatie open?</span>\n" +
     "  </h2>\n" +
     "\n" +
     "  <div ng-bind=\"item.calendar.type\"></div>\n" +

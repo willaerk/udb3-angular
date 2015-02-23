@@ -25,6 +25,7 @@
         return;
     });
 
+    // Hardcoded as UdbEvent for poc.
     var item = new UdbEvent();
     item.setName('my name', 'nl');
     item.setEventType('0.50.4.0.0', 'Concert');
@@ -47,8 +48,9 @@
     $scope.showStep4 = false;
     $scope.showStep5 = false;
     $scope.lastUpdated = '';
-    $scope.type = type;
     $scope.item = item;
+    $scope.isEvent = true;
+    $scope.isPlace = false;
 
     $scope.showStep = showStep;
     $scope.saveItem = saveItem;
@@ -59,6 +61,14 @@
      * @param int stepNumber
      */
     function showStep(stepNumber) {
+      if ($scope.isEvent) {
+        $scope.isPlace = true;
+        $scope.isEvent = false;
+      }
+      else {
+        $scope.isEvent = true;
+        $scope.isPlace = false;
+      }
       $scope['showStep' + stepNumber] = true;
     }
 
@@ -83,7 +93,7 @@
      */
     function saveItem() {
 
-      if (type === 'event') {
+      if ($scope.isEvent) {
         eventCrud.createEvent(item);
       }
 

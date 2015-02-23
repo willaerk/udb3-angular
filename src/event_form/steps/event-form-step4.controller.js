@@ -21,7 +21,6 @@
 
     $scope.validateEvent = validateEvent;
     $scope.activeTitle = '';
-    $scope.duplicatesFound = false;
     $scope.resultViewer = new SearchResultViewer();
 
     /**

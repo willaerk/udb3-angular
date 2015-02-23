@@ -4143,6 +4143,7 @@ angular
 /* @ngInject */
 function EventFormDataFactory() {
   return {
+
     item : {},
     isEvent : true, // Is current item an event.
     isPlace : false, // Is current item a place.
@@ -4157,7 +4158,6 @@ function EventFormDataFactory() {
      * @param int stepNumber
      */
     showStep: function(stepNumber) {
-      console.log(stepNumber);
       this['showStep' + stepNumber] = true;
     },
 
@@ -4167,6 +4167,98 @@ function EventFormDataFactory() {
      */
     hideStep: function (stepNumber) {
       this['showStep' + stepNumber] = false;
+    },
+
+    /**
+     * Set the name of the offer for a given langcode.
+     */
+    setName: function(name, langcode) {
+      this.name[langcode] = name;
+    },
+
+    /**
+     * Get the name of the offer for a given langcode.
+     */
+    getName: function(langcode) {
+      return this.name[langcode];
+    },
+
+    /**
+     * Set the event type.
+     */
+    setEventType: function(id, label) {
+      this.type = {
+        'id' : id,
+        'label' : label,
+        'domain' : 'eventtype',
+      };
+    },
+
+    /**
+     * Get the event type.
+     */
+    getEventType: function() {
+      return this.type;
+    },
+
+    /**
+     * Get the label for the event type.
+     */
+    getEventTypeLabel: function() {
+      return this.type.label ? this.type.label : '';
+    },
+
+    /**
+     * Set the theme.
+     */
+    setTheme: function(id, label) {
+      this.theme = {
+        'id' : id,
+        'label' : label,
+        'domain' : 'thema',
+      };
+    },
+
+    /**
+     * Get the theme.
+     */
+    getTheme: function() {
+      return this.theme;
+    },
+
+    /**
+     * Get the label for the theme.
+     */
+    getThemeLabel: function() {
+      return this.theme.label ? this.theme.label : '';
+    },
+
+    /**
+     * Reset the opening hours.
+     */
+    resetOpeningHours: function() {
+      this.openingHours = [];
+    },
+
+    /**
+     * Get the opening hours.
+     */
+    getOpeningHours: function() {
+      return this.openingHours;
+    },
+
+    /**
+     * Set the location.
+     */
+    setLocation: function(location) {
+      this.location = location;
+    },
+
+    /**
+     * Get the calendar.
+     */
+    getLocation: function() {
+      return this.location;
     }
 
   };
@@ -4314,8 +4406,6 @@ function EventFormStep5Directive() {
   /* @ngInject */
   function EventFormStep1Controller($scope, EventFormData, UdbEvent, UdbPlace, eventTypes) {
 
-    EventFormData.item = new UdbEvent();
-
     // main storage for event form.
     $scope.eventFormData = EventFormData;
 
@@ -4383,11 +4473,15 @@ function EventFormStep5Directive() {
 
       // Check if previous event type was the same.
       // If so, just show the previous entered data.
-      if (EventFormData.item.eventType === type) {
+      if (EventFormData.eventType === type) {
         return;
       }
 
-      EventFormData.item.eventType = type;
+      EventFormData.eventType = type;
+
+      if (!isEvent) {
+        EventFormData.showStep(2);
+      }
 
     }
 
@@ -4419,12 +4513,12 @@ function EventFormStep5Directive() {
 
       // Check if previous event theme was the same.
       // If so, just show the previous entered data.
-      if (EventFormData.item.theme === id) {
+      if (EventFormData.theme === id) {
         return;
       }
 
-      EventFormData.item.setTheme(id, label);
-console.log(EventFormData);
+      EventFormData.setTheme(id, label);
+
       EventFormData.showStep(2);
 
     }
@@ -4535,7 +4629,6 @@ console.log(EventFormData);
 
     $scope.validateEvent = validateEvent;
     $scope.activeTitle = '';
-    $scope.duplicatesFound = false;
     $scope.resultViewer = new SearchResultViewer();
 
     /**
@@ -6793,14 +6886,14 @@ $templateCache.put('templates/base-job.template.html',
     "\n" +
     "      <div class=\"col-xs-5 col-xs-12\" ng-show=\"activeEventType === ''\">\n" +
     "        <label class=\"event-type-choser-label\">Een activiteit of evenement</label>\n" +
-    "        <ul class=\"list-inline\">\n" +
+    "        <ul class=\"list-inline\" id=\"step1-events\">\n" +
     "          <li ng-repeat=\"eventTypeLabel in eventTypeLabels\" ng-show=\"eventTypeLabel.primary == true || showAllEventTypes\">\n" +
     "            <button ng-bind=\"eventTypeLabel.label\" class=\"btn btn-default\" ng-click=\"setEventType(eventTypeLabel.id, true)\"></button>\n" +
     "          </li>\n" +
     "        </ul>\n" +
-    "        <div ng-show=\"showAllEventTypes == false\">\n" +
-    "          Niet gevonden wat je zocht? <a class=\"btn btn-link event-type-collapse\" href=\"\" ng-click=\"toggleEventTypes()\">Toon alle mogelijkheden</a>\n" +
-    "        </div>\n" +
+    "        <p ng-hide=\"showAllEventTypes\">\n" +
+    "          Niet gevonden wat je zocht? <a href=\"\" ng-click=\"toggleEventTypes()\">Toon alle mogelijkheden</a>\n" +
+    "        </p>\n" +
     "      </div>\n" +
     "\n" +
     "      <div class=\"col-xs-1 col-xs-12\" ng-show=\"activeEventType === ''\">\n" +
@@ -6809,14 +6902,14 @@ $templateCache.put('templates/base-job.template.html',
     "\n" +
     "      <div class=\"col-xs-6 col-xs-12\" ng-show=\"activeEventType === ''\">\n" +
     "        <label class=\"event-type-choser-label\">Een locatie of plaats</label>\n" +
-    "        <ul class=\"list-inline\">\n" +
+    "        <ul class=\"list-inline\" id=\"step1-places\">\n" +
     "          <li ng-repeat=\"placeLabel in placeLabels\" ng-show=\"placeLabel.primary == true || showAllPlaces\">\n" +
     "            <button ng-bind=\"placeLabel.label\" class=\"btn btn-default\" ng-click=\"setEventType(placeLabel.id, false)\"></button>\n" +
     "          </li>\n" +
     "        </ul>\n" +
-    "        <div ng-show=\"showAllPlaces == false\">\n" +
-    "          Niet gevonden wat je zocht? <a class=\"btn btn-link btn-default\" href=\"\" ng-click=\"togglePlaces()\">Toon alle mogelijkheden</a>\n" +
-    "        </div>\n" +
+    "        <p ng-hide=\"showAllPlaces\">\n" +
+    "          Niet gevonden wat je zocht? <a href=\"\" ng-click=\"togglePlaces()\">Toon alle mogelijkheden</a>\n" +
+    "        </p>\n" +
     "      </div>\n" +
     "\n" +
     "      <p class=\"col-xs-12 col-md-12\" ng-hide=\"activeEventType === ''\">\n" +
@@ -6958,7 +7051,7 @@ $templateCache.put('templates/base-job.template.html',
     "        </p>\n" +
     "      </div>\n" +
     "    </div>\n" +
-    "    <p><a class=\"btn btn-primary titel-doorgaan\" ng-hide=\"activeTitle === ''\" ng-click=\"validateEvent()\">Doorgaan</a></p>\n" +
+    "    <p><a class=\"btn btn-primary titel-doorgaan\" ng-show=\"activeTitle !== ''\" ng-click=\"validateEvent()\">Doorgaan</a></p>\n" +
     "\n" +
     "  </section>\n" +
     "\n" +

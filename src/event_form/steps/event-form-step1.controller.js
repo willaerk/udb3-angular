@@ -15,8 +15,6 @@
   /* @ngInject */
   function EventFormStep1Controller($scope, EventFormData, UdbEvent, UdbPlace, eventTypes) {
 
-    EventFormData.item = new UdbEvent();
-
     // main storage for event form.
     $scope.eventFormData = EventFormData;
 
@@ -84,11 +82,15 @@
 
       // Check if previous event type was the same.
       // If so, just show the previous entered data.
-      if (EventFormData.item.eventType === type) {
+      if (EventFormData.eventType === type) {
         return;
       }
 
-      EventFormData.item.eventType = type;
+      EventFormData.eventType = type;
+
+      if (!isEvent) {
+        EventFormData.showStep(2);
+      }
 
     }
 
@@ -120,12 +122,12 @@
 
       // Check if previous event theme was the same.
       // If so, just show the previous entered data.
-      if (EventFormData.item.theme === id) {
+      if (EventFormData.theme === id) {
         return;
       }
 
-      EventFormData.item.setTheme(id, label);
-console.log(EventFormData);
+      EventFormData.setTheme(id, label);
+
       EventFormData.showStep(2);
 
     }

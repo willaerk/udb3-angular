@@ -1,10 +1,12 @@
-<a name="extra"></a>
-<section id="extra" ng-show="showStep5">
+<div ng-controller="EventFormStep5Ctrl as EventFormStep5">
+  <a name="extra"></a>
+  <section id="extra" ng-show="eventFormData.showStep5">
 
-  <h2 class="title-border">
-    <span class="number">5</span>
-    <span class="event-only">Laat je evenement extra opvallen</span>
-    <span class="place-only">Laat deze locatie extra opvallen</span>
-  </h2>
+    <h2 class="title-border">
+      <span class="number">5</span>
+      <span ng-show="eventFormData.isEvent">Laat je evenement extra opvallen</span>
+      <span ng-show="eventFormData.isPlace">Laat deze locatie extra opvallen</span>
+    </h2>
 
-</section>
+  </section>
+</div>

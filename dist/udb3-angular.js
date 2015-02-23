@@ -2186,11 +2186,13 @@ function UdbApi($q, $http, appConfig, $cookieStore, uitidAuth, $cacheFactory, Ud
    * @returns {Promise} A promise that signals a succesful retrieval of
    *  search results or a failure.
    */
-  this.findEvents = function (queryString, start) {
+  this.findEvents = function (queryString, start, datetime) {
     var deferredEvents = $q.defer(),
         offset = start || 0,
+        dateRange = datetime || null,
         searchParams = {
-          start: offset
+          start: offset,
+          dateRange: dateRange
         };
 
     if(queryString.length) {
@@ -3853,10 +3855,12 @@ EventTranslator.$inject = ["jobLogger", "udbApi", "EventTranslationJob"];
     .module('udb.event-form')
     .controller('EventFormCtrl', EventFormController);
 
-  EventFormController.$inject = ['udbApi', '$scope', '$controller', '$location', 'UdbEvent', 'UdbOpeningHours', 'UdbPlace', 'moment', 'eventCrud', 'eventTypes'];
+  //EventFormController.$inject = ['udbApi', '$scope', '$controller', '$location', 'UdbEvent', 'UdbOpeningHours', 'UdbPlace', 'moment', 'eventCrud', 'eventTypes'];
+  /* @ngInject */
+  function EventFormController(udbApi, $scope, $controller, $window, UdbEvent, UdbOpeningHours, UdbPlace, moment,
+                               eventCrud, eventTypes, SearchResultViewer) {
 
-  function EventFormController(udbApi, $scope, $controller, $window, UdbEvent, UdbOpeningHours, UdbPlace, moment, eventCrud, eventTypes) {
-
+    // Hardcoded as UdbEvent for poc.
     // Scope vars.
     $scope.showStep1 = true;
     $scope.showStep2 = false;
@@ -4063,16 +4067,32 @@ EventTranslator.$inject = ["jobLogger", "udbApi", "EventTranslationJob"];
     function setScopeForStep4() {
       $scope.validateEvent = validateEvent;
       $scope.activeTitle = '';
+      $scope.duplicatesFound = false;
+      $scope.resultViewer = new SearchResultViewer();
     }
 
     /**
      * Validate date after step 4 to enter step 5.
      */
     function validateEvent() {
-
       // Set the name.
       item.setName($scope.activeTitle, 'nl');
 
+<<<<<<< HEAD
+=======
+      // Load the candidate duplicates asynchronously.
+      // Duplicates are found on existing identical properties:
+      // - title is the same
+      // - on the same location.
+      var promise = udbApi.findEvents($scope.activeTitle, 0, '03/05/2015');
+
+      $scope.resultViewer.loading = true;
+
+      promise.then(function (data) {
+        $scope.resultViewer.setResults(data);
+      });
+
+>>>>>>> develop
     }
 
     /**
@@ -4143,8 +4163,144 @@ EventTranslator.$inject = ["jobLogger", "udbApi", "EventTranslationJob"];
     }
 
   }
+  EventFormController.$inject = ["udbApi", "$scope", "$controller", "$window", "UdbEvent", "UdbOpeningHours", "UdbPlace", "moment", "eventCrud", "eventTypes", "SearchResultViewer"];
 
 })();
+
+// Source: src/event_form/event-form.data.js
+/**
+ * @ngdoc service
+ * @name udb.core.EventFormData
+ * @description
+ * Contains data needed for the steps in the event form.
+ */
+angular
+  .module('udb.event-form')
+  .factory('EventFormData', EventFormDataFactory);
+
+/* @ngInject */
+function EventFormDataFactory() {
+  return {
+
+    item : {},
+    isEvent : true, // Is current item an event.
+    isPlace : false, // Is current item a place.
+    showStep1 : true,
+    showStep2 : false,
+    showStep3 : false,
+    showStep4 : false,
+    showStep5 : false,
+
+    /**
+     * Show the given step.
+     * @param int stepNumber
+     */
+    showStep: function(stepNumber) {
+      this['showStep' + stepNumber] = true;
+    },
+
+    /**
+     * Hide the given step.
+     * @param int stepNumber
+     */
+    hideStep: function (stepNumber) {
+      this['showStep' + stepNumber] = false;
+    },
+
+    /**
+     * Set the name of the offer for a given langcode.
+     */
+    setName: function(name, langcode) {
+      this.name[langcode] = name;
+    },
+
+    /**
+     * Get the name of the offer for a given langcode.
+     */
+    getName: function(langcode) {
+      return this.name[langcode];
+    },
+
+    /**
+     * Set the event type.
+     */
+    setEventType: function(id, label) {
+      this.type = {
+        'id' : id,
+        'label' : label,
+        'domain' : 'eventtype',
+      };
+    },
+
+    /**
+     * Get the event type.
+     */
+    getEventType: function() {
+      return this.type;
+    },
+
+    /**
+     * Get the label for the event type.
+     */
+    getEventTypeLabel: function() {
+      return this.type.label ? this.type.label : '';
+    },
+
+    /**
+     * Set the theme.
+     */
+    setTheme: function(id, label) {
+      this.theme = {
+        'id' : id,
+        'label' : label,
+        'domain' : 'thema',
+      };
+    },
+
+    /**
+     * Get the theme.
+     */
+    getTheme: function() {
+      return this.theme;
+    },
+
+    /**
+     * Get the label for the theme.
+     */
+    getThemeLabel: function() {
+      return this.theme.label ? this.theme.label : '';
+    },
+
+    /**
+     * Reset the opening hours.
+     */
+    resetOpeningHours: function() {
+      this.openingHours = [];
+    },
+
+    /**
+     * Get the opening hours.
+     */
+    getOpeningHours: function() {
+      return this.openingHours;
+    },
+
+    /**
+     * Set the location.
+     */
+    setLocation: function(location) {
+      this.location = location;
+    },
+
+    /**
+     * Get the calendar.
+     */
+    getLocation: function() {
+      return this.location;
+    }
+
+  };
+}
 
 // Source: src/event_form/event-form.directive.js
 /**
@@ -4272,6 +4428,269 @@ function EventFormStep5Directive() {
     restrict: 'EA',
   };
 }
+// Source: src/event_form/steps/event-form-step1.controller.js
+(function () {
+/**
+   * @ngdoc function
+   * @name udbApp.controller:EventFormStep1Ctrl
+   * @description
+   * # EventFormStep1Ctrl
+   * Step 1 of the event form
+   */
+  angular
+    .module('udb.event-form')
+    .controller('EventFormStep1Ctrl', EventFormStep1Controller);
+
+  /* @ngInject */
+  function EventFormStep1Controller($scope, EventFormData, UdbEvent, UdbPlace, eventTypes) {
+
+    // main storage for event form.
+    $scope.eventFormData = EventFormData;
+
+    // Categories, event types, places.
+    $scope.eventTypeLabels = [];
+    $scope.placeLabels = [];
+    $scope.activeEventType = ''; // Current active event type.
+    $scope.activeEventTypeLabel = ''; // Current active event type label.
+    // Load the categories asynchronously.
+    var eventPromise = eventTypes.getCategories();
+    eventPromise.then(function (categories) {
+      $scope.eventTypeLabels = categories.event;
+      $scope.placeLabels = categories.place;
+    });
+
+    $scope.showAllEventTypes = false;
+    $scope.showAllPlaces = false;
+    $scope.eventThemeLabels = [];
+    $scope.activeTheme = '';
+    $scope.activeThemeLabel = '';
+
+    $scope.setEventType = setEventType;
+    $scope.resetEventType = resetEventType;
+    $scope.toggleEventTypes = toggleEventTypes;
+    $scope.togglePlaces = togglePlaces;
+    $scope.setTheme = setTheme;
+    $scope.resetTheme = resetTheme;
+
+    /**
+     * Click listener on the event type buttons.
+     * Activate the selected event type.
+     */
+    function setEventType(type, isEvent) {
+
+      $scope.activeEventType = type;
+
+      if (isEvent) {
+        EventFormData.isEvent = true;
+        EventFormData.isPlace = false;
+
+        for (var i = 0; i < $scope.eventTypeLabels.length; i++) {
+          if ($scope.eventTypeLabels[i].id === type) {
+            $scope.activeEventType = $scope.eventTypeLabels[i].id;
+            $scope.activeEventTypeLabel = $scope.eventTypeLabels[i].label;
+
+            $scope.eventThemeLabels = $scope.eventTypeLabels[i].themes;
+            break;
+          }
+        }
+
+      }
+      else {
+        EventFormData.isEvent = false;
+        EventFormData.isPlace = true;
+
+        for (var j = 0; j < $scope.placeLabels.length; j++) {
+          if ($scope.placeLabels[j].id === type) {
+            $scope.activeEventType = $scope.placeLabels[j].id;
+            $scope.activeEventTypeLabel = $scope.placeLabels[j].label;
+            break;
+          }
+        }
+
+      }
+
+      // Check if previous event type was the same.
+      // If so, just show the previous entered data.
+      if (EventFormData.eventType === type) {
+        return;
+      }
+
+      EventFormData.eventType = type;
+
+    }
+
+    /**
+     * Click listener to reset the event type. User can select a new event type.
+     */
+    function resetEventType() {
+      $scope.activeEventType = '';
+      $scope.activeEventTypeLabel = '';
+      $scope.activeTheme = '';
+      $scope.activeThemeLabel = '';
+    }
+
+    /**
+     * Click listener to set the active theme.
+     * @param {string} id
+     * @param {string} label
+     */
+    function setTheme(id, label) {
+
+      $scope.activeTheme = id;
+
+      for (var i = 0; i < $scope.eventThemeLabels.length; i++) {
+        if ($scope.eventThemeLabels[i].id === id) {
+          $scope.activeThemeLabel = $scope.eventThemeLabels[i].label;
+          break;
+        }
+      }
+
+      // Check if previous event theme was the same.
+      // If so, just show the previous entered data.
+      if (EventFormData.theme === id) {
+        return;
+      }
+
+      EventFormData.setTheme(id, label);
+
+      EventFormData.showStep(2);
+
+    }
+
+    /**
+     * Click listener to reset the active theme.
+     */
+    function resetTheme() {
+      $scope.activeTheme = '';
+    }
+
+    /**
+     * Click listener to toggle the event types list.
+     */
+    function toggleEventTypes() {
+      $scope.showAllEventTypes = !$scope.showAllEventTypes;
+    }
+
+    /**
+     * Click listener to toggle th places list.
+     */
+    function togglePlaces() {
+      $scope.showAllPlaces = !$scope.showAllPlaces;
+    }
+
+  }
+  EventFormStep1Controller.$inject = ["$scope", "EventFormData", "UdbEvent", "UdbPlace", "eventTypes"];
+
+})();
+
+// Source: src/event_form/steps/event-form-step2-controller.js
+(function () {
+/**
+   * @ngdoc function
+   * @name udbApp.controller:EventFormStep2Ctrl
+   * @description
+   * # EventFormStep2Ctrl
+   * Step 2 of the event form
+   */
+  angular
+    .module('udb.event-form')
+    .controller('EventFormStep2Ctrl', EventFormStep2Controller);
+
+  /* @ngInject */
+  function EventFormStep2Controller($scope, EventFormData, UdbOpeningHours) {
+
+    // Scope vars.
+    // main storage for event form.
+    $scope.eventFormData = EventFormData;
+
+    $scope.activeCalendarType = ''; // Current active calendar type.
+    $scope.activeCalendarLabel = '';
+    $scope.calendarLabels = [
+      { 'label': 'Eén of meerdere dagen', 'id' : 'single' },
+      { 'label': 'Van ... tot ... ', 'id' : 'periodic' },
+      { 'label' : 'Permanent', 'id' : 'permanent' }
+    ];
+
+  }
+  EventFormStep2Controller.$inject = ["$scope", "EventFormData", "UdbOpeningHours"];
+
+})();
+
+// Source: src/event_form/steps/event-form-step3.controller.js
+(function () {
+/**
+   * @ngdoc function
+   * @name udbApp.controller:EventFormStep3Ctrl
+   * @description
+   * # EventFormStep3Ctrl
+   * Step 3 of the event form
+   */
+  angular
+    .module('udb.event-form')
+    .controller('EventFormStep3Ctrl', EventFormStep3Controller);
+
+  /* @ngInject */
+  function EventFormStep3Controller($scope, EventFormData) {
+
+    // Scope vars.
+    // main storage for event form.
+    $scope.eventFormData = EventFormData;
+
+  }
+  EventFormStep3Controller.$inject = ["$scope", "EventFormData"];
+
+})();
+
+// Source: src/event_form/steps/event-form-step4.controller.js
+(function () {
+/**
+   * @ngdoc function
+   * @name udbApp.controller:EventFormStep4Ctrl
+   * @description
+   * # EventFormStep4Ctrl
+   * Step 4 of the event form
+   */
+  angular
+    .module('udb.event-form')
+    .controller('EventFormStep4Ctrl', EventFormStep4Controller);
+
+  /* @ngInject */
+  function EventFormStep4Controller(udbApi, $scope, EventFormData) {
+
+    // Scope vars.
+    // main storage for event form.
+    $scope.eventFormData = EventFormData;
+
+  }
+  EventFormStep4Controller.$inject = ["udbApi", "$scope", "EventFormData"];
+
+})();
+
+// Source: src/event_form/steps/event-form-step5.controller.js
+(function () {
+/**
+   * @ngdoc function
+   * @name udbApp.controller:EventFormStep5Ctrl
+   * @description
+   * # EventFormStep5Ctrl
+   * Step 5 of the event form
+   */
+  angular
+    .module('udb.event-form')
+    .controller('EventFormStep5Ctrl', EventFormStep5Controller);
+
+  /* @ngInject */
+  function EventFormStep5Controller(udbApi, $scope, EventFormData) {
+
+    // Scope vars.
+    // main storage for event form.
+    $scope.eventFormData = EventFormData;
+
+  }
+  EventFormStep5Controller.$inject = ["udbApi", "$scope", "EventFormData"];
+
+})();
+
 // Source: src/export/event-export-job.factory.js
 /**
  * @ngdoc service
@@ -6463,155 +6882,158 @@ $templateCache.put('templates/base-job.template.html',
 
 
   $templateCache.put('templates/event-form-step1.html',
-    "<a name=\"wat\"></a>\n" +
-    "<section id=\"wat\">\n" +
-    "  <section class=\"row\">\n" +
-    "    <div class=\"col-md-12\">\n" +
-    "      <h2 class=\"title-border\"><span class=\"number\">1</span> Wat wil je toevoegen?</h2>\n" +
+    "<div ng-controller=\"EventFormStep1Ctrl as EventFormStep1\">\n" +
+    "  <a name=\"wat\"></a>\n" +
+    "  <section id=\"wat\">\n" +
+    "    <section class=\"row\">\n" +
+    "      <div class=\"col-md-12\">\n" +
+    "        <h2 class=\"title-border\"><span class=\"number\">1</span> Wat wil je toevoegen?</h2>\n" +
+    "      </div>\n" +
+    "    </section>\n" +
+    "\n" +
+    "    <div class=\"row\">\n" +
+    "\n" +
+    "      <div class=\"col-xs-5 col-xs-12\" ng-show=\"activeEventType === ''\">\n" +
+    "        <label class=\"event-type-choser-label\">Een activiteit of evenement</label>\n" +
+    "        <ul class=\"list-inline\" id=\"step1-events\">\n" +
+    "          <li ng-repeat=\"eventTypeLabel in eventTypeLabels\" ng-show=\"eventTypeLabel.primary == true || showAllEventTypes\">\n" +
+    "            <button ng-bind=\"eventTypeLabel.label\" class=\"btn btn-default\" ng-click=\"setEventType(eventTypeLabel.id, true)\"></button>\n" +
+    "          </li>\n" +
+    "        </ul>\n" +
+    "        <p ng-hide=\"showAllEventTypes\">\n" +
+    "          Niet gevonden wat je zocht? <a href=\"\" ng-click=\"toggleEventTypes()\">Toon alle mogelijkheden</a>\n" +
+    "        </div>\n" +
+    "      </p>\n" +
+    "\n" +
+    "      <div class=\"col-xs-1 col-xs-12\" ng-show=\"activeEventType === ''\">\n" +
+    "        <p class=\"text-center\">of</p>\n" +
+    "      </div>\n" +
+    "\n" +
+    "      <div class=\"col-xs-6 col-xs-12\" ng-show=\"activeEventType === ''\">\n" +
+    "        <label class=\"event-type-choser-label\">Een locatie of plaats</label>\n" +
+    "        <ul class=\"list-inline\" id=\"step1-places\">\n" +
+    "          <li ng-repeat=\"placeLabel in placeLabels\" ng-show=\"placeLabel.primary == true || showAllPlaces\">\n" +
+    "            <button ng-bind=\"placeLabel.label\" class=\"btn btn-default\" ng-click=\"setEventType(placeLabel.id, false)\"></button>\n" +
+    "          </li>\n" +
+    "        </ul>\n" +
+    "        <p ng-hide=\"showAllPlaces\">\n" +
+    "          Niet gevonden wat je zocht? <a href=\"\" ng-click=\"togglePlaces()\">Toon alle mogelijkheden</a>\n" +
+    "        </p>\n" +
+    "      </div>\n" +
+    "\n" +
+    "      <p class=\"col-xs-12 col-md-12\" ng-hide=\"activeEventType === ''\">\n" +
+    "        <span class=\"btn-chosen\" ng-bind=\"activeEventTypeLabel\"></span>\n" +
+    "        <a class=\"btn btn-link btn-default\" href=\"\" ng-click=\"resetEventType()\">Wijzigen</a>\n" +
+    "      </p>\n" +
+    "\n" +
+    "      <div class=\"col-xs-12\" ng-hide=\"activeTheme !== '' || activeEventType === '' || !eventFormData.isEvent\">\n" +
+    "        <label class=\"event-theme-label\">Verfijn</label>\n" +
+    "        <ul class=\"list-inline\">\n" +
+    "          <li ng-repeat=\"eventThemeLabel in eventThemeLabels\">\n" +
+    "            <button ng-bind=\"eventThemeLabel.label\" class=\"btn btn-default\" ng-click=\"setTheme(eventThemeLabel.id, eventThemeLabel.label)\"></button>\n" +
+    "          </li>\n" +
+    "        </ul>\n" +
+    "      </div>\n" +
+    "\n" +
+    "      <p class=\"col-xs-12 col-md-12\"  ng-hide=\"activeTheme === ''\">\n" +
+    "        <span class=\"btn-chosen\" ng-bind=\"activeThemeLabel\"></span>\n" +
+    "        <a class=\"btn btn-link btn-default\" href=\"\" ng-click=\"resetTheme()\">Wijzigen</a>\n" +
+    "      </p>\n" +
+    "\n" +
     "    </div>\n" +
+    "\n" +
     "  </section>\n" +
-    "\n" +
-    "\n" +
-    "  <div class=\"row\">\n" +
-    "\n" +
-    "    <div class=\"col-xs-5 col-xs-12\" ng-show=\"activeEventType === ''\">\n" +
-    "      <label class=\"event-type-choser-label\">Een activiteit of evenement</label>\n" +
-    "      <ul class=\"list-inline\">\n" +
-    "        <li ng-repeat=\"eventTypeLabel in eventTypeLabels\" ng-show=\"eventTypeLabel.primary == true || showAllEventTypes\">\n" +
-    "          <button ng-bind=\"eventTypeLabel.label\" class=\"btn btn-default\" ng-click=\"setEventType(eventTypeLabel.id, true)\"></button>\n" +
-    "        </li>\n" +
-    "      </ul>\n" +
-    "      <div ng-show=\"showAllEventTypes == false\">\n" +
-    "        Niet gevonden wat je zocht? <a class=\"btn btn-link event-type-collapse\" href=\"\" ng-click=\"toggleEventTypes()\">Toon alle mogelijkheden</a>\n" +
-    "      </div>\n" +
-    "    </div>\n" +
-    "\n" +
-    "    <div class=\"col-xs-1 col-xs-12\" ng-show=\"activeEventType === ''\">\n" +
-    "      <p class=\"text-center\">of</p>\n" +
-    "    </div>\n" +
-    "\n" +
-    "    <div class=\"col-xs-6 col-xs-12\" ng-show=\"activeEventType === ''\">\n" +
-    "      <label class=\"event-type-choser-label\">Een locatie of plaats</label>\n" +
-    "      <ul class=\"list-inline\">\n" +
-    "        <li ng-repeat=\"placeLabel in placeLabels\" ng-show=\"placeLabel.primary == true || showAllPlaces\">\n" +
-    "          <button ng-bind=\"placeLabel.label\" class=\"btn btn-default\" ng-click=\"setEventType(placeLabel.id, false)\"></button>\n" +
-    "        </li>\n" +
-    "      </ul>\n" +
-    "      <div ng-show=\"showAllPlaces == false\">\n" +
-    "        Niet gevonden wat je zocht? <a class=\"btn btn-link btn-default\" href=\"\" ng-click=\"togglePlaces()\">Toon alle mogelijkheden</a>\n" +
-    "      </div>\n" +
-    "    </div>\n" +
-    "\n" +
-    "    <p class=\"col-xs-12 col-md-12\" ng-hide=\"activeEventType === ''\">\n" +
-    "      <span class=\"btn-chosen\" ng-bind=\"activeEventTypeLabel\"></span>\n" +
-    "      <a class=\"btn btn-link btn-default\" href=\"\" ng-click=\"resetEventType()\">Wijzigen</a>\n" +
-    "    </p>\n" +
-    "\n" +
-    "    <div class=\"col-xs-12\" ng-hide=\"activeTheme !== '' || activeEventType === '' || !isEvent\">\n" +
-    "      <label class=\"event-theme-label\">Verfijn</label>\n" +
-    "      <ul class=\"list-inline\">\n" +
-    "        <li ng-repeat=\"eventThemeLabel in eventThemeLabels\">\n" +
-    "          <button ng-bind=\"eventThemeLabel.label\" class=\"btn btn-default\" ng-click=\"setTheme(eventThemeLabel.id, eventThemeLabel.label)\"></button>\n" +
-    "        </li>\n" +
-    "      </ul>\n" +
-    "    </div>\n" +
-    "\n" +
-    "    <p class=\"col-xs-12 col-md-12\"  ng-hide=\"activeTheme === ''\">\n" +
-    "      <span class=\"btn-chosen\" ng-bind=\"activeThemeLabel\"></span>\n" +
-    "      <a class=\"btn btn-link btn-default\" href=\"\" ng-click=\"resetTheme()\">Wijzigen</a>\n" +
-    "    </p>\n" +
-    "\n" +
-    "  </div>\n" +
-    "\n" +
-    "  <a href=\"#\" ng-click=\"showStep(2)\" ng-hide=\"((isEvent && activeTheme === '') || (isPlace && activeEventType === ''))\">Volgende stap</a>\n" +
-    "\n" +
-    "</section>"
+    "</div>"
   );
 
 
   $templateCache.put('templates/event-form-step2.html',
-    "<a name=\"wanneer\"></a>\n" +
-    "<section id=\"wanneer\" ng-show=\"showStep2\">\n" +
-    "  <h2 class=\"title-border\">\n" +
-    "    <span class=\"number\">2</span>\n" +
-    "    <span ng-show=\"isEvent\">Wanneer vindt dit evenement of deze activiteit plaats?</span>\n" +
-    "    <span ng-show=\"isPlace\">Wanneer is deze plaats of locatie open?</span>\n" +
-    "  </h2>\n" +
+    "<div ng-controller=\"EventFormStep2Ctrl as EventFormStep2\">\n" +
+    "  <a name=\"wanneer\"></a>\n" +
+    "  <section id=\"wanneer\" ng-show=\"eventFormData.showStep2\">\n" +
+    "    <h2 class=\"title-border\">\n" +
+    "      <span class=\"number\">2</span>\n" +
+    "      <span ng-show=\"eventFormData.isEvent\">Wanneer vindt dit evenement of deze activiteit plaats?</span>\n" +
+    "      <span ng-show=\"eventFormData.isPlace\">Wanneer is deze plaats of locatie open?</span>\n" +
+    "    </h2>\n" +
     "\n" +
-    "  <div class=\"row\">\n" +
-    "    <div class=\"col-xs-12\">\n" +
-    "      <div class=\"form-group\">\n" +
-    "        <label class=\"wanneerkiezer-label\">Maak een keuze</label>\n" +
-    "        <div class=\"wanneerkiezer\" ng-show=\"activeCalendarType === ''\">\n" +
-    "          <button ng-repeat=\"calendarLabel in calendarLabels\" ng-bind=\"calendarLabel.label\" class=\"btn btn-default\" ng-click=\"setCalendarType(calendarLabel.id)\"></button>\n" +
-    "        </div>\n" +
-    "        <div class=\"wanneer-chosen\" ng-hide=\"activeCalendarType === ''\">\n" +
-    "          <span class=\"btn-chosen\" ng-bind=\"activeCalendarLabel\"></span><a class=\"btn btn-link wanneerrestore\" href=\"#\" ng-click=\"resetCalendar()\">Wijzigen</a>\n" +
-    "        </div>\n" +
-    "      </div>\n" +
-    "    </div>\n" +
-    "  </div>\n" +
-    "\n" +
-    "  <div class=\"row\" ng-show=\"activeCalendarType === 'single'\">\n" +
-    "\n" +
-    "    <div id=\"wanneer-dagen\" ng-repeat=\"openingHour in item.openingHours\">\n" +
-    "\n" +
-    "      <div class=\"col-xs-12 col-sm-4 prototype-step\" id=\"add-date-form\">\n" +
-    "        <section class=\"add-date\">\n" +
-    "\n" +
-    "          <datepicker ng-model=\"dt\" min-date=\"minDate\" show-weeks=\"true\" class=\"well well-sm\"></datepicker>\n" +
-    "\n" +
-    "          <div class=\"row\">\n" +
-    "            <div class=\"col-xs-6\">\n" +
-    "              <label>\n" +
-    "                <input type=\"checkbox\" value=\"\" class=\"beginuur-toevoegen\">\n" +
-    "                Beginuur\n" +
-    "              </label>\n" +
-    "              <div class=\"beginuur-invullen\" style=\"display: none\">\n" +
-    "                <input type=\"text\" class=\"form-control uur\" placeholder=\"Bv. 08:00\"/>\n" +
-    "              </div>\n" +
-    "            </div>\n" +
-    "            <div class=\"col-xs-6 einduur\" style=\"display: none\">\n" +
-    "              <label>\n" +
-    "                <input type=\"checkbox\" value=\"\" class=\"einduur-toevoegen\">\n" +
-    "                Einduur\n" +
-    "              </label>\n" +
-    "              <div class=\"einduur-invullen\"  style=\"display: none\">\n" +
-    "                <input type=\"text\" class=\"form-control uur\" placeholder=\"Bv. 23:00\"/>\n" +
-    "              </div>\n" +
-    "            </div>\n" +
+    "    <div class=\"row\">\n" +
+    "      <div class=\"col-xs-12\">\n" +
+    "        <div class=\"form-group\">\n" +
+    "          <label class=\"wanneerkiezer-label\">Maak een keuze</label>\n" +
+    "          <div class=\"wanneerkiezer\" ng-show=\"activeCalendarType === ''\">\n" +
+    "            <button ng-repeat=\"calendarLabel in calendarLabels\" ng-bind=\"calendarLabel.label\" class=\"btn btn-default\" ng-click=\"setCalendarType(calendarLabel.id)\"></button>\n" +
     "          </div>\n" +
-    "        </section>\n" +
+    "          <div class=\"wanneer-chosen\" ng-hide=\"activeCalendarType === ''\">\n" +
+    "            <span class=\"btn-chosen\" ng-bind=\"activeCalendarLabel\"></span><a class=\"btn btn-link wanneerrestore\" href=\"#\" ng-click=\"resetCalendar()\">Wijzigen</a>\n" +
+    "          </div>\n" +
+    "        </div>\n" +
+    "      </div>\n" +
+    "    </div>\n" +
+    "\n" +
+    "    <div class=\"row\" ng-show=\"activeCalendarType === 'single'\">\n" +
+    "\n" +
+    "      <div id=\"wanneer-dagen\" ng-repeat=\"openingHour in item.openingHours\">\n" +
+    "\n" +
+    "        <div class=\"col-xs-12 col-sm-4 prototype-step\" id=\"add-date-form\">\n" +
+    "          <section class=\"add-date\">\n" +
+    "\n" +
+    "            <datepicker ng-model=\"dt\" min-date=\"minDate\" show-weeks=\"true\" class=\"well well-sm\"></datepicker>\n" +
+    "\n" +
+    "            <div class=\"row\">\n" +
+    "              <div class=\"col-xs-6\">\n" +
+    "                <label>\n" +
+    "                  <input type=\"checkbox\" value=\"\" class=\"beginuur-toevoegen\">\n" +
+    "                  Beginuur\n" +
+    "                </label>\n" +
+    "                <div class=\"beginuur-invullen\" style=\"display: none\">\n" +
+    "                  <input type=\"text\" class=\"form-control uur\" placeholder=\"Bv. 08:00\"/>\n" +
+    "                </div>\n" +
+    "              </div>\n" +
+    "              <div class=\"col-xs-6 einduur\" style=\"display: none\">\n" +
+    "                <label>\n" +
+    "                  <input type=\"checkbox\" value=\"\" class=\"einduur-toevoegen\">\n" +
+    "                  Einduur\n" +
+    "                </label>\n" +
+    "                <div class=\"einduur-invullen\"  style=\"display: none\">\n" +
+    "                  <input type=\"text\" class=\"form-control uur\" placeholder=\"Bv. 23:00\"/>\n" +
+    "                </div>\n" +
+    "              </div>\n" +
+    "            </div>\n" +
+    "          </section>\n" +
+    "        </div>\n" +
+    "\n" +
+    "      </div>\n" +
+    "\n" +
+    "      <div class=\"col-xs-12 col-sm-4\">\n" +
+    "        <div class=\"add-date\">\n" +
+    "          <a href=\"#\" class=\"add-date-link\" ng-click=\"addSingleDate()\">\n" +
+    "            <p id=\"add-date-plus\" ng-click=\"addSingleDate()\">+</p>\n" +
+    "            <p id=\"add-date-label\" ng-click=\"addSingleDate()\">Dag toevoegen</p>\n" +
+    "          </a>\n" +
+    "        </div>\n" +
     "      </div>\n" +
     "\n" +
     "    </div>\n" +
     "\n" +
-    "    <div class=\"col-xs-12 col-sm-4\">\n" +
-    "      <div class=\"add-date\">\n" +
-    "        <a href=\"#\" class=\"add-date-link\" ng-click=\"addSingleDate()\">\n" +
-    "          <p id=\"add-date-plus\" ng-click=\"addSingleDate()\">+</p>\n" +
-    "          <p id=\"add-date-label\" ng-click=\"addSingleDate()\">Dag toevoegen</p>\n" +
-    "        </a>\n" +
-    "      </div>\n" +
-    "    </div>\n" +
+    "    <a href=\"#\" ng-click=\"eventFormData.showStep(3)\">Volgende stap</a>\n" +
     "\n" +
-    "  </div>\n" +
-    "\n" +
-    "  <a href=\"#\" ng-click=\"showStep(3)\">Volgende stap</a>\n" +
-    "\n" +
-    "</section>"
+    "  </section>\n" +
+    "</div>"
   );
 
 
   $templateCache.put('templates/event-form-step3.html',
-    "<a name=\"wanneer\"></a>\n" +
-    "<section id=\"waar\" ng-show=\"showStep3\">\n" +
+    "<div ng-controller=\"EventFormStep3Ctrl as EventFormStep3\">\n" +
+    "  <a name=\"wanneer\"></a>\n" +
+    "  <section id=\"wanneer\" ng-show=\"eventFormData.showStep3\">\n" +
     "  <h2 class=\"title-border\">\n" +
     "    <span class=\"number\">3</span>\n" +
-    "    <span class=\"event-only\">Waar vindt dit evenement of deze activiteit plaats?</span>\n" +
-    "    <span class=\"place-only\">Waar is deze plaats of locatie?</span>\n" +
+    "    <span ng-show=\"eventFormData.isEvent\">Waar vindt dit evenement of deze activiteit plaats?</span>\n" +
+    "    <span ng-show=\"eventFormData.isPlace\">Waar is deze plaats of locatie?</span>\n" +
     "  </h2>\n" +
     "\n" +
+<<<<<<< HEAD
     "  <div class=\"row\">\n" +
     "    <div class=\"col-xs-12\">\n" +
     "      <label id=\"gemeente-label\" for=\"gemeente-autocomplete\"> Kies een gemeente</label>\n" +
@@ -6629,96 +7051,89 @@ $templateCache.put('templates/base-job.template.html',
     "\n" +
     "  <a href=\"#\" ng-click=\"showStep(4)\">Volgende</a>\n" +
     "  <a href=\"#\" ng-click=\"hideStep(3)\">Vorige</a>\n" +
+=======
+    "  <a href=\"#\" ng-click=\"eventFormData.showStep(4)\">Volgende stap</a>\n" +
+>>>>>>> develop
     "\n" +
-    "</section>\n"
+    "  </section>\n" +
+    "</div>"
   );
 
 
   $templateCache.put('templates/event-form-step4.html',
-    "<a name=\"titel\"></a>\n" +
-    "<section id=\"titel\" ng-show=\"showStep4\">\n" +
+    "<div ng-controller=\"EventFormStep4Ctrl as EventFormStep4\">\n" +
     "\n" +
-    "  <h2 class=\"title-border\"><span class=\"number\">4</span>Basisgegevens</h2>\n" +
-    "  <label>Vul een titel in</label>\n" +
-    "  <div class=\"row\">\n" +
-    "    <div class=\"col-xs-12 col-md-4\">\n" +
-    "      <div class=\"form-group-lg\">\n" +
-    "        <input type=\"text\" class=\"form-control\" ng-bind=\"activeTitle\">\n" +
+    "  <a name=\"titel\"></a>\n" +
+    "  <section id=\"titel\" ng-show=\"eventFormData.showStep4\">\n" +
+    "\n" +
+    "    <h2 class=\"title-border\"><span class=\"number\">4</span>Basisgegevens</h2>\n" +
+    "    <label>Vul een titel in</label>\n" +
+    "    <div class=\"row\">\n" +
+    "      <div class=\"col-xs-12 col-md-4\">\n" +
+    "        <div class=\"form-group-lg\">\n" +
+    "          <input type=\"text\" class=\"form-control\" ng-bind=\"activeTitle\">\n" +
+    "        </div>\n" +
+    "      </div>\n" +
+    "      <div class=\"col-xs-12 col-md-8\">\n" +
+    "        <p class=\"text-block\">\n" +
+    "          Bv. Candide, Magritte en het surrealisme, Cursus keramiek,... <br>Begin met een <strong>hoofdletter</strong> en hou het <strong>kort &amp; bondig</strong>:  een uitgebreide beschrijving vul je later in.\n" +
+    "        </p>\n" +
     "      </div>\n" +
     "    </div>\n" +
-    "    <div class=\"col-xs-12 col-md-8\">\n" +
-    "      <p class=\"text-block\">\n" +
-    "        Bv. Candide, Magritte en het surrealisme, Cursus keramiek,... <br>Begin met een <strong>hoofdletter</strong> en hou het <strong>kort &amp; bondig</strong>:  een uitgebreide beschrijving vul je later in.</p>\n" +
-    "    </div>\n" +
+    "    <p><a class=\"btn btn-primary titel-doorgaan\" ng-show=\"activeTitle !== ''\" ng-click=\"validateEvent()\">Doorgaan</a></p>\n" +
+    "<a href=\"#\" ng-click=\"eventFormData.showStep(5)\">Volgende stap</a>\n" +
+    "  </section>\n" +
+    "\n" +
+    "  <div class=\"spinner\" style=\"display: none;\">\n" +
+    "    <i class=\"fa fa-circle-o-notch fa-spin\"></i>\n" +
     "  </div>\n" +
-    "  <p><a class=\"btn btn-primary titel-doorgaan\" ng-show=\"activeTitle !== ''\" ng-click=\"validateEvent()\">Doorgaan</a></p>\n" +
     "\n" +
-    "</section>\n" +
+    "  <a name=\"dubbeldetectie\"></a>\n" +
+    "  <section class=\"dubbeldetectie\" ng-show=\"activeTitle !== '' || resultViewer.totalItems > 0\">\n" +
+    "    <div class=\"alert alert-info\">\n" +
+    "      <p class=\"h2\" style=\"margin-top: 0;\">Vermijd dubbel werk\n" +
+    "      </p><p> We vonden gelijkaardige items. Controleer deze eerder ingevoerde items.</p>\n" +
+    "      <br>\n" +
     "\n" +
-    "<div class=\"spinner\" style=\"display: none;\">\n" +
-    "  <i class=\"fa fa-circle-o-notch fa-spin\"></i>\n" +
-    "</div>\n" +
+    "      <div class=\"row clearfix\">\n" +
     "\n" +
-    "<a name=\"dubbeldetectie\"></a>\n" +
-    "<section class=\"dubbeldetectie\" ng-show=\"activeTitle !== ''\">\n" +
-    "  <div class=\"alert alert-info\">\n" +
-    "    <p class=\"h2\" style=\"margin-top: 0;\">Vermijd dubbel werk\n" +
-    "    </p><p> We vonden gelijkaardige items. Controleer deze eerder ingevoerde items.</p>\n" +
-    "    <br>\n" +
-    "\n" +
-    "    <div class=\"row clearfix\">\n" +
-    "        <div class=\"col-xs-12 col-sm-6 col-md-4 col-lg-3\">\n" +
-    "        <a class=\"btn btn-tile\" data-toggle=\"modal\" data-target=\"#dubbeldetectie-voorbeeld\">\n" +
+    "        <div class=\"col-xs-12 col-sm-6 col-md-4 col-lg-3\"\n" +
+    "             ng-repeat=\"event in resultViewer.events\"\n" +
+    "             udb-event=\"event\"\n" +
+    "             ng-hide=\"fetching\">\n" +
+    "          <a class=\"btn btn-tile\" data-toggle=\"modal\" data-target=\"#dubbeldetectie-voorbeeld\">\n" +
     "            <span>\n" +
-    "              <small class=\"label label-default\">Festival</small><br>\n" +
-    "              <strong class=\"title\">Lichtfestival</strong><br>\n" +
-    "              Gent - Van 29/01 tot 01/02<br>\n" +
+    "              <small class=\"label label-default\" ng-bind=\"event.type\"></small><br>\n" +
+    "              <strong class=\"title\" ng-bind=\"event.name\"></strong><br>\n" +
+    "               {{ event.location.name }} - Van {{ event.startDate | date: 'dd/MM' }} tot {{ event.endDate | date: 'dd/MM' }}<br>\n" +
     "              <small class=\"preview-corner\"></small>\n" +
     "              <i class=\"fa fa-eye preview-icon\"></i>\n" +
     "            </span>\n" +
-    "        </a>\n" +
+    "          </a>\n" +
     "        </div>\n" +
     "\n" +
-    "        <div class=\"col-xs-12 col-sm-6 col-md-4 col-lg-3\">\n" +
-    "        <a class=\"btn btn-tile\" data-toggle=\"modal\" data-target=\"#dubbeldetectie-voorbeeld\">\n" +
-    "            <span>\n" +
-    "              <small class=\"label label-default\">Tentoonstelling</small><br>\n" +
-    "              <strong class=\"title\">Licht in de Duisternis</strong><br>\n" +
-    "              Gent - Op 13/02<br>\n" +
-    "              <small class=\"preview-corner\"></small>\n" +
-    "              <i class=\"fa fa-eye preview-icon\"></i>\n" +
-    "            </span>\n" +
-    "        </a>\n" +
-    "        </div>\n" +
-    "\n" +
-    "        <div class=\"col-xs-12 col-sm-6 col-md-4 col-lg-3\">\n" +
-    "        <a class=\"btn btn-tile\" data-toggle=\"modal\" data-target=\"#dubbeldetectie-voorbeeld\">\n" +
-    "            <span>\n" +
-    "              <small class=\"label label-default\">Tentoonstelling</small><br>\n" +
-    "              <strong class=\"title\">Opgelicht!</strong><br>\n" +
-    "              Gent - Op 13/02<br>\n" +
-    "              <small class=\"preview-corner\"></small>\n" +
-    "              <i class=\"fa fa-eye preview-icon\"></i>\n" +
-    "            </span>\n" +
-    "        </a>\n" +
-    "        </div>\n" +
+    "      </div>\n" +
     "    </div>\n" +
-    "  </div>\n" +
-    "</section>"
+    "\n" +
+    "  </section>\n" +
+    "\n" +
+    "</div>\n"
   );
 
 
   $templateCache.put('templates/event-form-step5.html',
-    "<a name=\"extra\"></a>\n" +
-    "<section id=\"extra\" ng-show=\"showStep5\">\n" +
+    "<div ng-controller=\"EventFormStep5Ctrl as EventFormStep5\">\n" +
+    "  <a name=\"extra\"></a>\n" +
+    "  <section id=\"extra\" ng-show=\"eventFormData.showStep5\">\n" +
     "\n" +
-    "  <h2 class=\"title-border\">\n" +
-    "    <span class=\"number\">5</span>\n" +
-    "    <span class=\"event-only\">Laat je evenement extra opvallen</span>\n" +
-    "    <span class=\"place-only\">Laat deze locatie extra opvallen</span>\n" +
-    "  </h2>\n" +
+    "    <h2 class=\"title-border\">\n" +
+    "      <span class=\"number\">5</span>\n" +
+    "      <span ng-show=\"eventFormData.isEvent\">Laat je evenement extra opvallen</span>\n" +
+    "      <span ng-show=\"eventFormData.isPlace\">Laat deze locatie extra opvallen</span>\n" +
+    "    </h2>\n" +
     "\n" +
-    "</section>"
+    "  </section>\n" +
+    "</div>"
   );
 
 

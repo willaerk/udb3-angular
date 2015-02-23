@@ -12,21 +12,13 @@
     .module('udb.event-form')
     .controller('EventFormCtrl', EventFormController);
 
-  EventFormController.$inject = ['udbApi', '$scope', '$controller', '$location', 'UdbEvent', 'UdbOpeningHours', 'UdbPlace', 'moment', 'eventCrud', 'eventTypes'];
 
-  function EventFormController(udbApi, $scope, $controller, $window, UdbEvent, UdbOpeningHours, UdbPlace, moment, eventCrud, eventTypes) {
-
-    var type = 'event';
-
-    //console.warn('ok');
-    // Get the categories.
-    /*var categories = $http.get('categories.json').success(function(response) {
-        console.log(response.data);
-        return;
-    });*/
+  //EventFormController.$inject = ['udbApi', '$scope', '$controller', '$location', 'UdbEvent', 'UdbOpeningHours', 'UdbPlace', 'moment', 'eventCrud', 'eventTypes'];
+  /* @ngInject */
+  function EventFormController(udbApi, $scope, $controller, $window, UdbEvent, UdbOpeningHours, UdbPlace, moment,
+                               eventCrud, eventTypes, SearchResultViewer) {
 
     // Hardcoded as UdbEvent for poc.
-
     // Scope vars.
     $scope.showStep1 = true;
     $scope.showStep2 = false;
@@ -233,15 +225,28 @@
     function setScopeForStep4() {
       $scope.validateEvent = validateEvent;
       $scope.activeTitle = '';
+      $scope.duplicatesFound = false;
+      $scope.resultViewer = new SearchResultViewer();
     }
 
     /**
      * Validate date after step 4 to enter step 5.
      */
     function validateEvent() {
-
       // Set the name.
       item.setName($scope.activeTitle, 'nl');
+
+      // Load the candidate duplicates asynchronously.
+      // Duplicates are found on existing identical properties:
+      // - title is the same
+      // - on the same location.
+      var promise = udbApi.findEvents($scope.activeTitle, 0, '03/05/2015');
+
+      $scope.resultViewer.loading = true;
+
+      promise.then(function (data) {
+        $scope.resultViewer.setResults(data);
+      });
 
     }
 

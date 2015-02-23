@@ -1,70 +1,57 @@
-<a name="titel"></a>
-<section id="titel" ng-show="showStep4">
+<div ng-controller="EventFormStep4Ctrl as EventFormStep4">
 
-  <h2 class="title-border"><span class="number">4</span>Basisgegevens</h2>
-  <label>Vul een titel in</label>
-  <div class="row">
-    <div class="col-xs-12 col-md-4">
-      <div class="form-group-lg">
-        <input type="text" class="form-control" ng-bind="activeTitle">
+  <a name="titel"></a>
+  <section id="titel" ng-show="eventFormData.showStep4">
+
+    <h2 class="title-border"><span class="number">4</span>Basisgegevens</h2>
+    <label>Vul een titel in</label>
+    <div class="row">
+      <div class="col-xs-12 col-md-4">
+        <div class="form-group-lg">
+          <input type="text" class="form-control" ng-bind="activeTitle">
+        </div>
+      </div>
+      <div class="col-xs-12 col-md-8">
+        <p class="text-block">
+          Bv. Candide, Magritte en het surrealisme, Cursus keramiek,... <br>Begin met een <strong>hoofdletter</strong> en hou het <strong>kort &amp; bondig</strong>:  een uitgebreide beschrijving vul je later in.
+        </p>
       </div>
     </div>
-    <div class="col-xs-12 col-md-8">
-      <p class="text-block">
-        Bv. Candide, Magritte en het surrealisme, Cursus keramiek,... <br>Begin met een <strong>hoofdletter</strong> en hou het <strong>kort &amp; bondig</strong>:  een uitgebreide beschrijving vul je later in.</p>
-    </div>
+    <p><a class="btn btn-primary titel-doorgaan" ng-show="activeTitle !== ''" ng-click="validateEvent()">Doorgaan</a></p>
+<a href="#" ng-click="eventFormData.showStep(5)">Volgende stap</a>
+  </section>
+
+  <div class="spinner" style="display: none;">
+    <i class="fa fa-circle-o-notch fa-spin"></i>
   </div>
-  <p><a class="btn btn-primary titel-doorgaan" ng-show="activeTitle !== ''" ng-click="validateEvent()">Doorgaan</a></p>
 
-</section>
+  <a name="dubbeldetectie"></a>
+  <section class="dubbeldetectie" ng-show="activeTitle !== '' || resultViewer.totalItems > 0">
+    <div class="alert alert-info">
+      <p class="h2" style="margin-top: 0;">Vermijd dubbel werk
+      </p><p> We vonden gelijkaardige items. Controleer deze eerder ingevoerde items.</p>
+      <br>
 
-<div class="spinner" style="display: none;">
-  <i class="fa fa-circle-o-notch fa-spin"></i>
+      <div class="row clearfix">
+
+        <div class="col-xs-12 col-sm-6 col-md-4 col-lg-3"
+             ng-repeat="event in resultViewer.events"
+             udb-event="event"
+             ng-hide="fetching">
+          <a class="btn btn-tile" data-toggle="modal" data-target="#dubbeldetectie-voorbeeld">
+            <span>
+              <small class="label label-default" ng-bind="event.type"></small><br>
+              <strong class="title" ng-bind="event.name"></strong><br>
+               {{ event.location.name }} - Van {{ event.startDate | date: 'dd/MM' }} tot {{ event.endDate | date: 'dd/MM' }}<br>
+              <small class="preview-corner"></small>
+              <i class="fa fa-eye preview-icon"></i>
+            </span>
+          </a>
+        </div>
+
+      </div>
+    </div>
+
+  </section>
+
 </div>
-
-<a name="dubbeldetectie"></a>
-<section class="dubbeldetectie" ng-show="activeTitle !== ''">
-  <div class="alert alert-info">
-    <p class="h2" style="margin-top: 0;">Vermijd dubbel werk
-    </p><p> We vonden gelijkaardige items. Controleer deze eerder ingevoerde items.</p>
-    <br>
-
-    <div class="row clearfix">
-        <div class="col-xs-12 col-sm-6 col-md-4 col-lg-3">
-        <a class="btn btn-tile" data-toggle="modal" data-target="#dubbeldetectie-voorbeeld">
-            <span>
-              <small class="label label-default">Festival</small><br>
-              <strong class="title">Lichtfestival</strong><br>
-              Gent - Van 29/01 tot 01/02<br>
-              <small class="preview-corner"></small>
-              <i class="fa fa-eye preview-icon"></i>
-            </span>
-        </a>
-        </div>
-
-        <div class="col-xs-12 col-sm-6 col-md-4 col-lg-3">
-        <a class="btn btn-tile" data-toggle="modal" data-target="#dubbeldetectie-voorbeeld">
-            <span>
-              <small class="label label-default">Tentoonstelling</small><br>
-              <strong class="title">Licht in de Duisternis</strong><br>
-              Gent - Op 13/02<br>
-              <small class="preview-corner"></small>
-              <i class="fa fa-eye preview-icon"></i>
-            </span>
-        </a>
-        </div>
-
-        <div class="col-xs-12 col-sm-6 col-md-4 col-lg-3">
-        <a class="btn btn-tile" data-toggle="modal" data-target="#dubbeldetectie-voorbeeld">
-            <span>
-              <small class="label label-default">Tentoonstelling</small><br>
-              <strong class="title">Opgelicht!</strong><br>
-              Gent - Op 13/02<br>
-              <small class="preview-corner"></small>
-              <i class="fa fa-eye preview-icon"></i>
-            </span>
-        </a>
-        </div>
-    </div>
-  </div>
-</section>

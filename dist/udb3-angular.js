@@ -3875,7 +3875,7 @@ EventTranslator.$inject = ["jobLogger", "udbApi", "EventTranslationJob"];
 
     var location = new UdbPlace();
     location.setLocality('Gent');
-    location.setPostal(9000);
+    location.setPostal('9000');
     item.setLocation(location);
 
     $scope.item = item;
@@ -4072,7 +4072,7 @@ EventTranslator.$inject = ["jobLogger", "udbApi", "EventTranslationJob"];
 
       // Set the name.
       item.setName($scope.activeTitle, 'nl');
-      
+
     }
 
     /**
@@ -4488,7 +4488,7 @@ function EventExportController($modalInstance, udbApi, eventExporter, queryField
 
   exporter.format = exporter.exportFormats[0].type;
   exporter.email = '';
-  
+
   udbApi.getMe().then(function (user) {
     if(user.mbox) {
       exporter.email = user.mbox;
@@ -6612,9 +6612,23 @@ $templateCache.put('templates/base-job.template.html',
     "    <span class=\"place-only\">Waar is deze plaats of locatie?</span>\n" +
     "  </h2>\n" +
     "\n" +
+    "  <div class=\"row\">\n" +
+    "    <div class=\"col-xs-12\">\n" +
+    "      <label id=\"gemeente-label\" for=\"gemeente-autocomplete\"> Kies een gemeente</label>\n" +
+    "      <div id=\"gemeente-kiezer\">\n" +
+    "        <span class=\"twitter-typeahead\" style=\"position: relative; display: inline-block; direction: ltr;\"><input type=\"text\" class=\"form-control typeahead tt-hint\" style=\"position: absolute; top: 0px; left: 0px; border-color: transparent; box-shadow: none; opacity: 1; background: none repeat scroll 0% 0% rgb(255, 255, 255);\" readonly=\"\" autocomplete=\"off\" spellcheck=\"false\" tabindex=\"-1\"><input type=\"text\" placeholder=\"Gemeente of postcode\" class=\"form-control typeahead tt-input\" id=\"gemeente-autocomplete\" autocomplete=\"off\" spellcheck=\"false\" style=\"position: relative; vertical-align: top; background-color: transparent;\" dir=\"auto\"><pre aria-hidden=\"true\" style=\"position: absolute; visibility: hidden; white-space: pre; font-family: &quot;Open Sans&quot;,Helvetica,Arial,sans-serif; font-size: 15px; font-style: normal; font-variant: normal; font-weight: 400; word-spacing: 0px; letter-spacing: 0px; text-indent: 0px; text-rendering: optimizelegibility; text-transform: none;\"></pre><span class=\"tt-dropdown-menu\" style=\"position: absolute; top: 100%; left: 0px; z-index: 100; display: none; right: auto;\"><div class=\"tt-dataset-gemeentes\"></div></span></span>\n" +
+    "      </div>\n" +
+    "      <div style=\"display: none\" id=\"gemeente-gekozen\">\n" +
+    "        <span id=\"gemeente-gekozen-button\" class=\"btn-chosen\"></span>\n" +
+    "        <a class=\"btn btn-default btn-link\" href=\"\">Wijzigen</a>\n" +
+    "      </div>\n" +
+    "    </div>\n" +
+    "  </div>\n" +
+    "\n" +
     "  <div ng-bind=\"item.location.address.addressLocality;\"></div>\n" +
     "\n" +
     "  <a href=\"#\" ng-click=\"showStep(4)\">Volgende</a>\n" +
+    "  <a href=\"#\" ng-click=\"hideStep(3)\">Vorige</a>\n" +
     "\n" +
     "</section>\n"
   );

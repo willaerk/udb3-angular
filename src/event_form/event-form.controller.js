@@ -18,12 +18,12 @@
 
     var type = 'event';
 
-    console.warn('ok');
+    //console.warn('ok');
     // Get the categories.
-    var categories = $http.get('categories.json').success(function(response) {
+    /*var categories = $http.get('categories.json').success(function(response) {
         console.log(response.data);
         return;
-    });
+    });*/
 
     // Hardcoded as UdbEvent for poc.
 
@@ -45,7 +45,7 @@
 
     var location = new UdbPlace();
     location.setLocality('Gent');
-    location.setPostal(9000);
+    location.setPostal('9000');
     item.setLocation(location);
 
     $scope.item = item;

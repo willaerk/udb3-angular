@@ -4654,40 +4654,79 @@ function EventFormStep5Directive() {
     // Scope vars.
     // main storage for event form.
     $scope.eventFormData = EventFormData;
-    $scope.eventFormData.selectedCity = "";
-    $scope.eventFormData.selectedLocation = "";
+    $scope.eventFormData.selectedCity = '';
+    $scope.eventFormData.selectedLocation = '';
+    $scope.eventFormData.placeStreet = '';
+    $scope.eventFormData.placeNumber = '';
+    $scope.eventFormData.place = '';
+
+    // storage for step 3
+    $scope.cities = [];
+    $scope.locationsForCity = [];
     $scope.citySelected = false;
     $scope.locationSelected = false;
-    $scope.selectCity = selectCity;
-    $scope.selectLocation = selectLocation;
-    $scope.changeCitySelection = changeCitySelection;
+    $scope.addLocation = false;
+    $scope.placeValidated = false;
+
+    // Get cities and locations.
     getCities();
     getLocationsForCity();
 
+    // define functions
+    $scope.selectCity = selectCity;
+    $scope.selectLocation = selectLocation;
+    $scope.changeCitySelection = changeCitySelection;
+    $scope.changeLocationSelection = changeLocationSelection;
+    $scope.validatePlace = validatePlace;
+    $scope.changePlace = changePlace;
+
+
+    // Functions for cities.
     function getCities(){
       $scope.cities = ['9000 Gent', '2000 Antwerpen'];
     }
 
-    function getLocationsForCity() {
-      $scope.locationsForCity = ['Locatie1', 'Locatie2'];
+    function changeCitySelection() {
+      $scope.eventFormData.selectedCity = '';
+      $scope.citySelected = false;
     }
 
     function selectCity() {
       $scope.citySelected = true;
+      $scope.eventFormData.place = '';
+      $scope.placeValidated = false;
     }
 
-    function changeCitySelection() {
-      $scope.eventFormData.selectedCity = "";
-      $scope.citySelected = false;
+    // Functions for locations (in case of event)
+    function getLocationsForCity() {
+      $scope.locationsForCity = [];
     }
 
     function selectLocation() {
-      $scope.locationSelected = true;
+      if ($scope.locationsForCity.length > 0) {
+        $scope.locationSelected = true;
+      }
+      else {
+        $scope.locationSelected = false;
+        $scope.addLocation = true;
+      }
     }
 
     function changeLocationSelection() {
-      $scope.eventFormData.selectedLocation = "";
+      $scope.eventFormData.selectedLocation = '';
       $scope.locationSelected = false;
+    }
+
+    // Functions for places (in case of place)
+    function validatePlace() {
+      $scope.eventFormData.place = $scope.eventFormData.placeStreet + ' ' + $scope.eventFormData.placeNumber;
+      $scope.placeValidated = true;
+      $scope.eventFormData.showStep4 = true;
+    }
+
+    function changePlace() {
+      $scope.placeValidated = false;
+      $scope.eventFormData.showStep4 = false;
     }
   }
   EventFormStep3Controller.$inject = ["$scope", "EventFormData"];
@@ -6996,6 +7035,7 @@ $templateCache.put('templates/base-job.template.html',
     "    </div>\n" +
     "\n" +
     "  </section>\n" +
+    "  <a href=\"#\" ng-click=\"eventFormData.showStep(2)\">Volgende stap</a>\n" +
     "</div>"
   );
 
@@ -7103,7 +7143,7 @@ $templateCache.put('templates/base-job.template.html',
     "\n" +
     "\n" +
     "    <div id=\"waar-evenement\" ng-show=\"eventFormData.isEvent && citySelected\">\n" +
-    "      <div class=\"row\" >\n" +
+    "      <div class=\"row\">\n" +
     "        <div class=\"col-xs-12\">\n" +
     "          <label id=\"locatie-label\">Kies een locatie</label>\n" +
     "          <div id=\"locatie-kiezer\" ng-hide=\"locationSelected\" >\n" +
@@ -7118,7 +7158,7 @@ $templateCache.put('templates/base-job.template.html',
     "        </div>\n" +
     "      </div>\n" +
     "\n" +
-    "      <div class=\"modal fade\" id=\"waar-locatie-toevoegen\" ng-show=\"locationSelected\">\n" +
+    "      <div class=\"modal fade\" id=\"waar-locatie-toevoegen\" ng-show=\"addLocation\">\n" +
     "        <div class=\"modal-dialog\">\n" +
     "          <div class=\"modal-content\">\n" +
     "            <div class=\"modal-header\">\n" +
@@ -7126,12 +7166,12 @@ $templateCache.put('templates/base-job.template.html',
     "            </div>\n" +
     "            <div class=\"modal-body\">\n" +
     "              <div class=\"form-group\">\n" +
-    "                <label for=\"\">Titel</label>\n" +
-    "                <input class=\"form-control\" id=\"\" placeholder=\"\" type=\"text\">\n" +
+    "                <label>Titel</label>\n" +
+    "                <input class=\"form-control\" type=\"text\">\n" +
     "              </div>\n" +
     "\n" +
     "              <div class=\"form-group\">\n" +
-    "                <label for=\"\">Categorie</label>\n" +
+    "                <label>Categorie</label>\n" +
     "                <select class=\"form-control\" size=\"4\" id=\"locatie-toevoegen-types\"><option value=\"Archeologische site\">Archeologische site</option><option value=\"Bioscoop\">Bioscoop</option><option value=\"Bibliotheek of documentatiecentrum\">Bibliotheek of documentatiecentrum</option><option value=\"Cultuur- of ontmoetingscentrum\">Cultuur- of ontmoetingscentrum</option><option value=\"Discotheek\">Discotheek</option><option value=\"Jeugdhuis of jeugdcentrum\">Jeugdhuis of jeugdcentrum</option><option value=\"Horeca\">Horeca</option><option value=\"Monument\">Monument</option><option value=\"Museum of galerij\">Museum of galerij</option><option value=\"Natuur, park of tuin\">Natuur, park of tuin</option><option value=\"Zaal of expohal\">Zaal of expohal</option><option value=\"School of onderwijscentrum\">School of onderwijscentrum</option><option value=\"Sportcentrum\">Sportcentrum</option><option value=\"Thema en pretpark\">Thema en pretpark</option><option value=\"Winkel\">Winkel</option></select>\n" +
     "              </div>\n" +
     "\n" +
@@ -7172,26 +7212,29 @@ $templateCache.put('templates/base-job.template.html',
     "    </div>\n" +
     "\n" +
     "    <div id=\"waar-plaats\" ng-show=\"eventFormData.isPlace && citySelected\">\n" +
-    "      <div class=\"plaats-adres-ingeven\">\n" +
+    "      <div class=\"plaats-adres-ingeven\" ng-hide=\"placeValidated\" >\n" +
     "        <div class=\"row\">\n" +
     "          <div class=\"col-xs-8 col-lg-4\">\n" +
     "            <div class=\"form-group\">\n" +
     "              <label>Straat</label>\n" +
-    "              <input class=\"form-control\" id=\"straat\" placeholder=\"\" type=\"text\">\n" +
+    "              <input class=\"form-control\" id=\"straat\" placeholder=\"\" type=\"text\" ng-model=\"eventFormData.placeStreet\">\n" +
     "            </div>\n" +
     "          </div>\n" +
     "          <div class=\"col-xs-4 col-lg-2\">\n" +
     "            <div class=\"form-group\">\n" +
     "              <label>Nummer</label>\n" +
-    "              <input class=\"form-control waar-plaats-nummer\" id=\"nummer\" placeholder=\"\" type=\"text\">\n" +
+    "              <input class=\"form-control waar-plaats-nummer\" id=\"nummer\" placeholder=\"\" type=\"text\"ng-model=\"eventFormData.placeNumber\" >\n" +
     "            </div>\n" +
     "          </div>\n" +
     "        </div>\n" +
-    "        <a class=\"btn btn-primary plaats-ok\">OK</a>\n" +
+    "        <a class=\"btn btn-primary plaats-ok\" ng-click=\"validatePlace()\">OK</a>\n" +
     "      </div>\n" +
     "\n" +
-    "      <div class=\"plaats-adres-resultaat\" style=\"display: none;\">\n" +
-    "        <p><span class=\"btn-chosen\">Stationsstraat 143</span> <a class=\"btn btn-link plaats-adres-wijzigen\">Wijzigen</a></p>\n" +
+    "      <div class=\"plaats-adres-resultaat\" ng-show=\"placeValidated\">\n" +
+    "        <p>\n" +
+    "          <span class=\"btn-chosen\" ng-bind=\"eventFormData.place\"></span>\n" +
+    "          <a class=\"btn btn-link plaats-adres-wijzigen\"ng-click=\"changePlace()\">Wijzigen</a>\n" +
+    "        </p>\n" +
     "      </div>\n" +
     "\n" +
     "    </div>\n" +

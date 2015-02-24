@@ -18,40 +18,79 @@
     // Scope vars.
     // main storage for event form.
     $scope.eventFormData = EventFormData;
-    $scope.eventFormData.selectedCity = "";
-    $scope.eventFormData.selectedLocation = "";
+    $scope.eventFormData.selectedCity = '';
+    $scope.eventFormData.selectedLocation = '';
+    $scope.eventFormData.placeStreet = '';
+    $scope.eventFormData.placeNumber = '';
+    $scope.eventFormData.place = '';
+
+    // storage for step 3
+    $scope.cities = [];
+    $scope.locationsForCity = [];
     $scope.citySelected = false;
     $scope.locationSelected = false;
-    $scope.selectCity = selectCity;
-    $scope.selectLocation = selectLocation;
-    $scope.changeCitySelection = changeCitySelection;
+    $scope.addLocation = false;
+    $scope.placeValidated = false;
+
+    // Get cities and locations.
     getCities();
     getLocationsForCity();
 
+    // define functions
+    $scope.selectCity = selectCity;
+    $scope.selectLocation = selectLocation;
+    $scope.changeCitySelection = changeCitySelection;
+    $scope.changeLocationSelection = changeLocationSelection;
+    $scope.validatePlace = validatePlace;
+    $scope.changePlace = changePlace;
+
+
+    // Functions for cities.
     function getCities(){
       $scope.cities = ['9000 Gent', '2000 Antwerpen'];
     }
 
-    function getLocationsForCity() {
-      $scope.locationsForCity = ['Locatie1', 'Locatie2'];
+    function changeCitySelection() {
+      $scope.eventFormData.selectedCity = '';
+      $scope.citySelected = false;
     }
 
     function selectCity() {
       $scope.citySelected = true;
+      $scope.eventFormData.place = '';
+      $scope.placeValidated = false;
     }
 
-    function changeCitySelection() {
-      $scope.eventFormData.selectedCity = "";
-      $scope.citySelected = false;
+    // Functions for locations (in case of event)
+    function getLocationsForCity() {
+      $scope.locationsForCity = [];
     }
 
     function selectLocation() {
-      $scope.locationSelected = true;
+      if ($scope.locationsForCity.length > 0) {
+        $scope.locationSelected = true;
+      }
+      else {
+        $scope.locationSelected = false;
+        $scope.addLocation = true;
+      }
     }
 
     function changeLocationSelection() {
-      $scope.eventFormData.selectedLocation = "";
+      $scope.eventFormData.selectedLocation = '';
       $scope.locationSelected = false;
+    }
+
+    // Functions for places (in case of place)
+    function validatePlace() {
+      $scope.eventFormData.place = $scope.eventFormData.placeStreet + ' ' + $scope.eventFormData.placeNumber;
+      $scope.placeValidated = true;
+      $scope.eventFormData.showStep4 = true;
+    }
+
+    function changePlace() {
+      $scope.placeValidated = false;
+      $scope.eventFormData.showStep4 = false;
     }
   }
 

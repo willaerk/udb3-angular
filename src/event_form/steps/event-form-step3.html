@@ -24,7 +24,7 @@
 
 
     <div id="waar-evenement" ng-show="eventFormData.isEvent && citySelected">
-      <div class="row" >
+      <div class="row">
         <div class="col-xs-12">
           <label id="locatie-label">Kies een locatie</label>
           <div id="locatie-kiezer" ng-hide="locationSelected" >
@@ -39,7 +39,7 @@
         </div>
       </div>
 
-      <div class="modal fade" id="waar-locatie-toevoegen" ng-show="locationSelected">
+      <div class="modal fade" id="waar-locatie-toevoegen" ng-show="addLocation">
         <div class="modal-dialog">
           <div class="modal-content">
             <div class="modal-header">
@@ -47,12 +47,12 @@
             </div>
             <div class="modal-body">
               <div class="form-group">
-                <label for="">Titel</label>
-                <input class="form-control" id="" placeholder="" type="text">
+                <label>Titel</label>
+                <input class="form-control" type="text">
               </div>
 
               <div class="form-group">
-                <label for="">Categorie</label>
+                <label>Categorie</label>
                 <select class="form-control" size="4" id="locatie-toevoegen-types"><option value="Archeologische site">Archeologische site</option><option value="Bioscoop">Bioscoop</option><option value="Bibliotheek of documentatiecentrum">Bibliotheek of documentatiecentrum</option><option value="Cultuur- of ontmoetingscentrum">Cultuur- of ontmoetingscentrum</option><option value="Discotheek">Discotheek</option><option value="Jeugdhuis of jeugdcentrum">Jeugdhuis of jeugdcentrum</option><option value="Horeca">Horeca</option><option value="Monument">Monument</option><option value="Museum of galerij">Museum of galerij</option><option value="Natuur, park of tuin">Natuur, park of tuin</option><option value="Zaal of expohal">Zaal of expohal</option><option value="School of onderwijscentrum">School of onderwijscentrum</option><option value="Sportcentrum">Sportcentrum</option><option value="Thema en pretpark">Thema en pretpark</option><option value="Winkel">Winkel</option></select>
               </div>
 
@@ -93,26 +93,29 @@
     </div>
 
     <div id="waar-plaats" ng-show="eventFormData.isPlace && citySelected">
-      <div class="plaats-adres-ingeven">
+      <div class="plaats-adres-ingeven" ng-hide="placeValidated" >
         <div class="row">
           <div class="col-xs-8 col-lg-4">
             <div class="form-group">
               <label>Straat</label>
-              <input class="form-control" id="straat" placeholder="" type="text">
+              <input class="form-control" id="straat" placeholder="" type="text" ng-model="eventFormData.placeStreet">
             </div>
           </div>
           <div class="col-xs-4 col-lg-2">
             <div class="form-group">
               <label>Nummer</label>
-              <input class="form-control waar-plaats-nummer" id="nummer" placeholder="" type="text">
+              <input class="form-control waar-plaats-nummer" id="nummer" placeholder="" type="text"ng-model="eventFormData.placeNumber" >
             </div>
           </div>
         </div>
-        <a class="btn btn-primary plaats-ok">OK</a>
+        <a class="btn btn-primary plaats-ok" ng-click="validatePlace()">OK</a>
       </div>
 
-      <div class="plaats-adres-resultaat" style="display: none;">
-        <p><span class="btn-chosen">Stationsstraat 143</span> <a class="btn btn-link plaats-adres-wijzigen">Wijzigen</a></p>
+      <div class="plaats-adres-resultaat" ng-show="placeValidated">
+        <p>
+          <span class="btn-chosen" ng-bind="eventFormData.place"></span>
+          <a class="btn btn-link plaats-adres-wijzigen"ng-click="changePlace()">Wijzigen</a>
+        </p>
       </div>
 
     </div>

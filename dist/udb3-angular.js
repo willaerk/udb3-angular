@@ -2597,42 +2597,6 @@ function UdbEventFactory() {
   return (UdbEvent);
 }
 
-// Source: src/core/udb-offer.factory.js
-/**
- * @ngdoc service
- * @name udb.core.UdbOffer
- * @description
- * # UdbOffer
- * UdbOffer factory
- */
-angular
-  .module('udb.core')
-  .factory('UdbOffer', UdbOfferFactory);
-
-/* @ngInject */
-function UdbOfferFactory() {
-
-  /**
-   * @class UdbOffer
-   * @constructor
-   */
-  var UdbOffer = function () {
-    this.id = '';
-    this.name = {};
-    this.type = {};
-    this.theme = {};
-    this.openingHours = [];
-  };
-
-  UdbOfferFactory.prototype = {
-
-
-
-  };
-
-  return (UdbOffer);
-}
-
 // Source: src/core/udb-openinghours.factory.js
 /**
  * @ngdoc service
@@ -2849,57 +2813,6 @@ function UdbPlaceFactory() {
   };
 
   return (UdbPlace);
-}
-
-// Source: src/core/udb-timestamps.factory.js
-/**
- * @ngdoc service
- * @name udb.core.UdbTimestamps
- * @description
- * # UdbTimestamps
- * Contains timestamps info for the calendar
- */
-angular
-  .module('udb.core')
-  .factory('UdbTimestamps', UdbTimestampsFactory);
-
-/* @ngInject */
-function UdbTimestampsFactory() {
-
-  /**
-   * @class UdbTimestamps
-   * @constructor
-   */
-  var UdbTimestamps = function () {
-    this.type = 'timestamps';
-    this.timestamps = {};
-  };
-
-  UdbTimestamps.prototype = {
-    parseJson: function (json) {
-
-    },
-
-    /**
-     * Add a timestamp.
-     */
-    addTimestamp: function(date, timestart, timeend) {
-      this.timestamps[date] = {
-        'date' : date,
-        'timestart' : timestart,
-        'timeend' : timeend
-      };
-    },
-
-    /**
-     * Remove a timestamp.
-     */
-    removeTimestamp: function(date) {
-      delete this.timestamps[date];
-    }
-  };
-
-  return (UdbTimestamps);
 }
 
 // Source: src/core/uitid-auth.service.js
@@ -3878,6 +3791,43 @@ function EventTranslator(jobLogger, udbApi, EventTranslationJob) {
 }
 EventTranslator.$inject = ["jobLogger", "udbApi", "EventTranslationJob"];
 
+// Source: src/event_form/components/datepicker/datepicker.directive.js
+(function () {
+/**
+ * @ngdoc directive
+ * @name udb.search.directive:event-form.html
+ * @description
+ * # udb event form directive
+ */
+angular
+  .module('udb.event-form')
+  .directive('udbDatepicker', udbDatepickerDirective);
+
+  function udbDatepickerDirective() {
+
+    var datepicker = {
+      restrict: 'A',
+      link: function (scope, elem, attrs) {
+
+        var options = {
+        format: 'd MM yyyy',
+           language: 'nl-BE',
+           beforeShowDay: function(date) {
+             var dateFormat = date.getUTCFullYear() + '-' + date.getUTCMonth() + '-' + date.getUTCDate();
+             if (attrs.highlightDate && dateFormat === attrs.highlightDate) {
+               return {classes: 'highlight'};
+             }
+           }
+        };
+        elem.datepicker(options);
+      }
+    };
+
+    return datepicker;
+
+  }
+
+})();
 // Source: src/event_form/event-form.controller.js
 (function () {
 /**
@@ -4114,8 +4064,6 @@ EventTranslator.$inject = ["jobLogger", "udbApi", "EventTranslationJob"];
       // Set the name.
       item.setName($scope.activeTitle, 'nl');
 
-<<<<<<< HEAD
-=======
       // Load the candidate duplicates asynchronously.
       // Duplicates are found on existing identical properties:
       // - title is the same
@@ -4128,7 +4076,6 @@ EventTranslator.$inject = ["jobLogger", "udbApi", "EventTranslationJob"];
         $scope.resultViewer.setResults(data);
       });
 
->>>>>>> feature/HER-9
     }
 
     /**
@@ -4218,7 +4165,6 @@ angular
 function EventFormDataFactory() {
   return {
 
-    item : {},
     isEvent : true, // Is current item an event.
     isPlace : false, // Is current item a place.
     showStep1 : true,
@@ -4226,6 +4172,14 @@ function EventFormDataFactory() {
     showStep3 : false,
     showStep4 : false,
     showStep5 : false,
+
+    // Properties that will be copied to UdbEvent / UdbPlace.
+    name : {},
+    place : {},
+    type : {},
+    theme : {},
+    timestamps : [],
+    openingHours : [],
 
     /**
      * Show the given step.
@@ -4308,13 +4262,6 @@ function EventFormDataFactory() {
     },
 
     /**
-     * Reset the opening hours.
-     */
-    resetOpeningHours: function() {
-      this.openingHours = [];
-    },
-
-    /**
      * Get the opening hours.
      */
     getOpeningHours: function() {
@@ -4333,7 +4280,29 @@ function EventFormDataFactory() {
      */
     getLocation: function() {
       return this.location;
-    }
+    },
+
+    /**
+     * Add a timestamp to the timestamps array.
+     */
+    addTimestamp: function(date, startHour, endHour) {
+
+      this.timestamps.push({
+        'date' : '',
+        'startHour' : '',
+        'endHour' : '',
+        'showStartHour' : startHour !== '',
+        'showEndHour' : endHour !== '',
+      });
+    },
+
+    /**
+     * Reset the calendar.
+     */
+    resetCalendar: function() {
+      this.openingHours = [];
+      this.timestamps = [];
+    },
 
   };
 }
@@ -4646,6 +4615,93 @@ function EventFormStep5Directive() {
       { 'label': 'Van ... tot ... ', 'id' : 'periodic' },
       { 'label' : 'Permanent', 'id' : 'permanent' }
     ];
+
+    // Scope functions
+    $scope.setCalendarType = setCalendarType;
+    $scope.resetCalendar = resetCalendar;
+    $scope.addTimestamp = addTimestamp;
+    $scope.toggleStartHour = toggleStartHour;
+    $scope.toggleEndHour = toggleEndHour;
+
+    /**
+     * Click listener on the calendar type buttons.
+     * Activate the selected calendar type.
+     */
+    function setCalendarType(type) {
+
+      $scope.activeCalendarType = type;
+
+      for (var i = 0; i < $scope.calendarLabels.length; i++) {
+        if ($scope.calendarLabels[i].id === type) {
+          $scope.activeCalendarLabel = $scope.calendarLabels[i].label;
+          break;
+        }
+      }
+
+      // Check if previous calendar type was the same.
+      // If so, we don't need to create new openinghours. Just show the previous entered data.
+      if (EventFormData.calendarType === type) {
+        return;
+      }
+
+      // A type is choosen, start a complet new calendar, removing old data.
+
+      EventFormData.calendarType = type;
+      EventFormData.resetCalendar();
+
+      if (type === 'single') {
+        addTimestamp();
+      }
+
+    }
+
+    /**
+     * Click listener to reset the calendar. User can select a new calendar type.
+     */
+    function resetCalendar() {
+      $scope.activeCalendarType = '';
+    }
+
+    /**
+     * Add a single date to the item.
+     */
+    function addTimestamp() {
+      EventFormData.addTimestamp('', '', '');
+    }
+
+    /**
+     * Toggle the starthour field for given timestamp.
+     * @param timestamp
+     *   Timestamp to change
+     */
+    function toggleStartHour(timestamp) {
+
+      timestamp.showStartHour = !timestamp.showStartHour;
+
+      // If we hide the textfield, empty all other time fields.
+      if (!timestamp.showStartHour) {
+        timestamp.startHour = '';
+        timestamp.endHour = '';
+        timestamp.showEndHour = false;
+      }
+
+    }
+
+    /**
+     * Toggle the endhour field for given timestamp
+     * @param timestamp
+     *   Timestamp to change
+     */
+    function toggleEndHour(timestamp) {
+
+      timestamp.showEndHour = !timestamp.showEndHour;
+
+      // If we hide the textfield, empty also the input.
+      if (!timestamp.showEndHour) {
+        timestamp.endHour = '';
+      }
+
+    }
 
   }
   EventFormStep2Controller.$inject = ["$scope", "EventFormData", "UdbOpeningHours"];
@@ -6986,7 +7042,7 @@ $templateCache.put('templates/base-job.template.html',
   $templateCache.put('templates/event-form-step2.html',
     "<div ng-controller=\"EventFormStep2Ctrl as EventFormStep2\">\n" +
     "  <a name=\"wanneer\"></a>\n" +
-    "  <section id=\"wanneer\" ng-show=\"eventFormData.showStep2\">\n" +
+    "  <section id=\"wanneer\" ng-show=\"!eventFormData.showStep2\">\n" +
     "    <h2 class=\"title-border\">\n" +
     "      <span class=\"number\">2</span>\n" +
     "      <span ng-show=\"eventFormData.isEvent\">Wanneer vindt dit evenement of deze activiteit plaats?</span>\n" +
@@ -7009,30 +7065,30 @@ $templateCache.put('templates/base-job.template.html',
     "\n" +
     "    <div class=\"row\" ng-show=\"activeCalendarType === 'single'\">\n" +
     "\n" +
-    "      <div id=\"wanneer-dagen\" ng-repeat=\"openingHour in item.openingHours\">\n" +
+    "      <div id=\"wanneer-dagen\" ng-repeat=\"timestamp in eventFormData.timestamps\">\n" +
     "\n" +
     "        <div class=\"col-xs-12 col-sm-4 prototype-step\" id=\"add-date-form\">\n" +
     "          <section class=\"add-date\">\n" +
     "\n" +
-    "            <datepicker ng-model=\"dt\" min-date=\"minDate\" show-weeks=\"true\" class=\"well well-sm\"></datepicker>\n" +
+    "            <div udb-datepicker highlight-date=\"2015-8-12\" ng-model=\"timestamp.date\"></div>\n" +
     "\n" +
     "            <div class=\"row\">\n" +
     "              <div class=\"col-xs-6\">\n" +
     "                <label>\n" +
-    "                  <input type=\"checkbox\" value=\"\" class=\"beginuur-toevoegen\">\n" +
+    "                  <input type=\"checkbox\" value=\"\" class=\"beginuur-toevoegen\" ng-click=\"toggleStartHour(timestamp)\">\n" +
     "                  Beginuur\n" +
     "                </label>\n" +
-    "                <div class=\"beginuur-invullen\" style=\"display: none\">\n" +
-    "                  <input type=\"text\" class=\"form-control uur\" placeholder=\"Bv. 08:00\"/>\n" +
+    "                <div class=\"beginuur-invullen\" ng-show=\"timestamp.showStartHour\">\n" +
+    "                  <input type=\"text\" class=\"form-control uur\" placeholder=\"Bv. 08:00\" ng-model=\"timestamp.startHour\" />\n" +
     "                </div>\n" +
     "              </div>\n" +
-    "              <div class=\"col-xs-6 einduur\" style=\"display: none\">\n" +
+    "              <div class=\"col-xs-6 einduur\" ng-show=\"timestamp.showStartHour\">\n" +
     "                <label>\n" +
-    "                  <input type=\"checkbox\" value=\"\" class=\"einduur-toevoegen\">\n" +
+    "                  <input type=\"checkbox\" value=\"\" class=\"einduur-toevoegen\" ng-click=\"toggleEndHour(timestamp)\">\n" +
     "                  Einduur\n" +
     "                </label>\n" +
-    "                <div class=\"einduur-invullen\"  style=\"display: none\">\n" +
-    "                  <input type=\"text\" class=\"form-control uur\" placeholder=\"Bv. 23:00\"/>\n" +
+    "                <div class=\"einduur-invullen\" ng-show=\"timestamp.showEndHour\">\n" +
+    "                  <input type=\"text\" class=\"form-control uur\" placeholder=\"Bv. 23:00\" ng-model=\"timestamp.endHour\" />\n" +
     "                </div>\n" +
     "              </div>\n" +
     "            </div>\n" +
@@ -7043,9 +7099,9 @@ $templateCache.put('templates/base-job.template.html',
     "\n" +
     "      <div class=\"col-xs-12 col-sm-4\">\n" +
     "        <div class=\"add-date\">\n" +
-    "          <a href=\"#\" class=\"add-date-link\" ng-click=\"addSingleDate()\">\n" +
-    "            <p id=\"add-date-plus\" ng-click=\"addSingleDate()\">+</p>\n" +
-    "            <p id=\"add-date-label\" ng-click=\"addSingleDate()\">Dag toevoegen</p>\n" +
+    "          <a href=\"#\" class=\"add-date-link\" ng-click=\"addTimestamp()\">\n" +
+    "            <p id=\"add-date-plus\">+</p>\n" +
+    "            <p id=\"add-date-label\">Dag toevoegen</p>\n" +
     "          </a>\n" +
     "        </div>\n" +
     "      </div>\n" +
@@ -7055,7 +7111,7 @@ $templateCache.put('templates/base-job.template.html',
     "    <a href=\"#\" ng-click=\"eventFormData.showStep(3)\">Volgende stap</a>\n" +
     "\n" +
     "  </section>\n" +
-    "</div>"
+    "</div>\n"
   );
 
 
@@ -7079,7 +7135,6 @@ $templateCache.put('templates/base-job.template.html',
   $templateCache.put('templates/event-form-step4.html',
     "<div ng-controller=\"EventFormStep4Ctrl as EventFormStep4\">\n" +
     "\n" +
-<<<<<<< HEAD
     "  <a name=\"titel\"></a>\n" +
     "  <section id=\"titel\" ng-show=\"eventFormData.showStep4\">\n" +
     "\n" +
@@ -7093,15 +7148,8 @@ $templateCache.put('templates/base-job.template.html',
     "      </div>\n" +
     "      <div class=\"col-xs-12 col-md-8\">\n" +
     "        <p class=\"text-block\">\n" +
-    "          Bv. Candide, Magritte en het surrealisme, Cursus keramiek,... <br>Begin met een <strong>hoofdletter</strong> en hou het <strong>kort &amp; bondig</strong>:  een uitgebreide beschrijving vul je later in.</p>\n" +
-=======
-    "  <h2 class=\"title-border\"><span class=\"number\">4</span>Basisgegevens</h2>\n" +
-    "  <label>Vul een titel in</label>\n" +
-    "  <div class=\"row\">\n" +
-    "    <div class=\"col-xs-12 col-md-4\">\n" +
-    "      <div class=\"form-group-lg\">\n" +
-    "        <input type=\"text\" class=\"form-control\" name=\"itemName\" ng-model=\"activeTitle\" required />\n" +
->>>>>>> feature/HER-9
+    "          Bv. Candide, Magritte en het surrealisme, Cursus keramiek,... <br>Begin met een <strong>hoofdletter</strong> en hou het <strong>kort &amp; bondig</strong>:  een uitgebreide beschrijving vul je later in.\n" +
+    "        </p>\n" +
     "      </div>\n" +
     "    </div>\n" +
     "    <p><a class=\"btn btn-primary titel-doorgaan\" ng-show=\"activeTitle !== ''\" ng-click=\"validateEvent()\">Doorgaan</a></p>\n" +
@@ -7113,84 +7161,35 @@ $templateCache.put('templates/base-job.template.html',
     "  </div>\n" +
     "\n" +
     "  <a name=\"dubbeldetectie\"></a>\n" +
-    "  <section class=\"dubbeldetectie\" ng-show=\"activeTitle !== ''\">\n" +
+    "  <section class=\"dubbeldetectie\" ng-show=\"activeTitle !== '' || resultViewer.totalItems > 0\">\n" +
     "    <div class=\"alert alert-info\">\n" +
     "      <p class=\"h2\" style=\"margin-top: 0;\">Vermijd dubbel werk\n" +
     "      </p><p> We vonden gelijkaardige items. Controleer deze eerder ingevoerde items.</p>\n" +
     "      <br>\n" +
     "\n" +
     "      <div class=\"row clearfix\">\n" +
-    "          <div class=\"col-xs-12 col-sm-6 col-md-4 col-lg-3\">\n" +
-    "          <a class=\"btn btn-tile\" data-toggle=\"modal\" data-target=\"#dubbeldetectie-voorbeeld\">\n" +
-    "              <span>\n" +
-    "                <small class=\"label label-default\">Festival</small><br>\n" +
-    "                <strong class=\"title\">Lichtfestival</strong><br>\n" +
-    "                Gent - Van 29/01 tot 01/02<br>\n" +
-    "                <small class=\"preview-corner\"></small>\n" +
-    "                <i class=\"fa fa-eye preview-icon\"></i>\n" +
-    "              </span>\n" +
-    "          </a>\n" +
-    "          </div>\n" +
     "\n" +
-<<<<<<< HEAD
-    "          <div class=\"col-xs-12 col-sm-6 col-md-4 col-lg-3\">\n" +
+    "        <div class=\"col-xs-12 col-sm-6 col-md-4 col-lg-3\"\n" +
+    "             ng-repeat=\"event in resultViewer.events\"\n" +
+    "             udb-event=\"event\"\n" +
+    "             ng-hide=\"fetching\">\n" +
     "          <a class=\"btn btn-tile\" data-toggle=\"modal\" data-target=\"#dubbeldetectie-voorbeeld\">\n" +
-    "              <span>\n" +
-    "                <small class=\"label label-default\">Tentoonstelling</small><br>\n" +
-    "                <strong class=\"title\">Licht in de Duisternis</strong><br>\n" +
-    "                Gent - Op 13/02<br>\n" +
-    "                <small class=\"preview-corner\"></small>\n" +
-    "                <i class=\"fa fa-eye preview-icon\"></i>\n" +
-    "              </span>\n" +
+    "            <span>\n" +
+    "              <small class=\"label label-default\" ng-bind=\"event.type\"></small><br>\n" +
+    "              <strong class=\"title\" ng-bind=\"event.name\"></strong><br>\n" +
+    "               {{ event.location.name }} - Van {{ event.startDate | date: 'dd/MM' }} tot {{ event.endDate | date: 'dd/MM' }}<br>\n" +
+    "              <small class=\"preview-corner\"></small>\n" +
+    "              <i class=\"fa fa-eye preview-icon\"></i>\n" +
+    "            </span>\n" +
     "          </a>\n" +
-    "          </div>\n" +
+    "        </div>\n" +
     "\n" +
-    "          <div class=\"col-xs-12 col-sm-6 col-md-4 col-lg-3\">\n" +
-    "          <a class=\"btn btn-tile\" data-toggle=\"modal\" data-target=\"#dubbeldetectie-voorbeeld\">\n" +
-    "              <span>\n" +
-    "                <small class=\"label label-default\">Tentoonstelling</small><br>\n" +
-    "                <strong class=\"title\">Opgelicht!</strong><br>\n" +
-    "                Gent - Op 13/02<br>\n" +
-    "                <small class=\"preview-corner\"></small>\n" +
-    "                <i class=\"fa fa-eye preview-icon\"></i>\n" +
-    "              </span>\n" +
-    "          </a>\n" +
-    "          </div>\n" +
     "      </div>\n" +
     "    </div>\n" +
     "\n" +
     "  </section>\n" +
     "\n" +
-    "</div>"
-=======
-    "<a name=\"dubbeldetectie\"></a>\n" +
-    "<section class=\"dubbeldetectie\" ng-show=\"resultViewer.totalItems > 0\">\n" +
-    "  <div class=\"alert alert-info\">\n" +
-    "    <p class=\"h2\" style=\"margin-top: 0;\">Vermijd dubbel werk\n" +
-    "    </p><p> We vonden gelijkaardige items. Controleer deze eerder ingevoerde items.</p>\n" +
-    "    <br>\n" +
-    "\n" +
-    "    <div class=\"row clearfix\">\n" +
-    "\n" +
-    "      <div class=\"col-xs-12 col-sm-6 col-md-4 col-lg-3\"\n" +
-    "           ng-repeat=\"event in resultViewer.events\"\n" +
-    "           udb-event=\"event\"\n" +
-    "           ng-hide=\"fetching\">\n" +
-    "        <a class=\"btn btn-tile\" data-toggle=\"modal\" data-target=\"#dubbeldetectie-voorbeeld\">\n" +
-    "          <span>\n" +
-    "            <small class=\"label label-default\" ng-bind=\"event.type\"></small><br>\n" +
-    "            <strong class=\"title\" ng-bind=\"event.name\"></strong><br>\n" +
-    "             {{ event.location.name }} - Van {{ event.startDate | date: 'dd/MM' }} tot {{ event.endDate | date: 'dd/MM' }}<br>\n" +
-    "            <small class=\"preview-corner\"></small>\n" +
-    "            <i class=\"fa fa-eye preview-icon\"></i>\n" +
-    "          </span>\n" +
-    "        </a>\n" +
-    "      </div>\n" +
-    "\n" +
-    "    </div>\n" +
-    "  </div>\n" +
-    "</section>"
->>>>>>> feature/HER-9
+    "</div>\n"
   );
 
 

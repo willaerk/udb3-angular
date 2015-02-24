@@ -1,6 +1,6 @@
 <div ng-controller="EventFormStep2Ctrl as EventFormStep2">
   <a name="wanneer"></a>
-  <section id="wanneer" ng-show="eventFormData.showStep2">
+  <section id="wanneer" ng-show="!eventFormData.showStep2">
     <h2 class="title-border">
       <span class="number">2</span>
       <span ng-show="eventFormData.isEvent">Wanneer vindt dit evenement of deze activiteit plaats?</span>
@@ -23,30 +23,30 @@
 
     <div class="row" ng-show="activeCalendarType === 'single'">
 
-      <div id="wanneer-dagen" ng-repeat="openingHour in item.openingHours">
+      <div id="wanneer-dagen" ng-repeat="timestamp in eventFormData.timestamps">
 
         <div class="col-xs-12 col-sm-4 prototype-step" id="add-date-form">
           <section class="add-date">
 
-            <datepicker ng-model="dt" min-date="minDate" show-weeks="true" class="well well-sm"></datepicker>
+            <div udb-datepicker highlight-date="2015-8-12" ng-model="timestamp.date"></div>
 
             <div class="row">
               <div class="col-xs-6">
                 <label>
-                  <input type="checkbox" value="" class="beginuur-toevoegen">
+                  <input type="checkbox" value="" class="beginuur-toevoegen" ng-click="toggleStartHour(timestamp)">
                   Beginuur
                 </label>
-                <div class="beginuur-invullen" style="display: none">
-                  <input type="text" class="form-control uur" placeholder="Bv. 08:00"/>
+                <div class="beginuur-invullen" ng-show="timestamp.showStartHour">
+                  <input type="text" class="form-control uur" placeholder="Bv. 08:00" ng-model="timestamp.startHour" />
                 </div>
               </div>
-              <div class="col-xs-6 einduur" style="display: none">
+              <div class="col-xs-6 einduur" ng-show="timestamp.showStartHour">
                 <label>
-                  <input type="checkbox" value="" class="einduur-toevoegen">
+                  <input type="checkbox" value="" class="einduur-toevoegen" ng-click="toggleEndHour(timestamp)">
                   Einduur
                 </label>
-                <div class="einduur-invullen"  style="display: none">
-                  <input type="text" class="form-control uur" placeholder="Bv. 23:00"/>
+                <div class="einduur-invullen" ng-show="timestamp.showEndHour">
+                  <input type="text" class="form-control uur" placeholder="Bv. 23:00" ng-model="timestamp.endHour" />
                 </div>
               </div>
             </div>
@@ -57,9 +57,9 @@
 
       <div class="col-xs-12 col-sm-4">
         <div class="add-date">
-          <a href="#" class="add-date-link" ng-click="addSingleDate()">
-            <p id="add-date-plus" ng-click="addSingleDate()">+</p>
-            <p id="add-date-label" ng-click="addSingleDate()">Dag toevoegen</p>
+          <a href="#" class="add-date-link" ng-click="addTimestamp()">
+            <p id="add-date-plus">+</p>
+            <p id="add-date-label">Dag toevoegen</p>
           </a>
         </div>
       </div>

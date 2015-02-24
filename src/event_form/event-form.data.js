@@ -14,7 +14,6 @@ angular
 function EventFormDataFactory() {
   return {
 
-    item : {},
     isEvent : true, // Is current item an event.
     isPlace : false, // Is current item a place.
     showStep1 : true,
@@ -22,6 +21,14 @@ function EventFormDataFactory() {
     showStep3 : false,
     showStep4 : false,
     showStep5 : false,
+
+    // Properties that will be copied to UdbEvent / UdbPlace.
+    name : {},
+    place : {},
+    type : {},
+    theme : {},
+    timestamps : [],
+    openingHours : [],
 
     /**
      * Show the given step.
@@ -104,13 +111,6 @@ function EventFormDataFactory() {
     },
 
     /**
-     * Reset the opening hours.
-     */
-    resetOpeningHours: function() {
-      this.openingHours = [];
-    },
-
-    /**
      * Get the opening hours.
      */
     getOpeningHours: function() {
@@ -129,7 +129,29 @@ function EventFormDataFactory() {
      */
     getLocation: function() {
       return this.location;
-    }
+    },
+
+    /**
+     * Add a timestamp to the timestamps array.
+     */
+    addTimestamp: function(date, startHour, endHour) {
+
+      this.timestamps.push({
+        'date' : '',
+        'startHour' : '',
+        'endHour' : '',
+        'showStartHour' : startHour !== '',
+        'showEndHour' : endHour !== '',
+      });
+    },
+
+    /**
+     * Reset the calendar.
+     */
+    resetCalendar: function() {
+      this.openingHours = [];
+      this.timestamps = [];
+    },
 
   };
 }

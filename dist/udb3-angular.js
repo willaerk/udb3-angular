@@ -4152,6 +4152,13 @@ function EventFormDataFactory() {
     showStep3 : false,
     showStep4 : false,
     showStep5 : false,
+    // Properties that will be copied to UdbEvent / UdbPlace.
+    name : {},
+    place : {},
+    type : {},
+    theme : {},
+    timestamps : [],
+    openingHours : [],
 
     /**
      * Show the given step.
@@ -4621,14 +4628,22 @@ function EventFormStep5Directive() {
     .controller('EventFormStep4Ctrl', EventFormStep4Controller);
 
   /* @ngInject */
-  function EventFormStep4Controller($scope, EventFormData, udbApi, SearchResultViewer) {
+  function EventFormStep4Controller($scope, EventFormData, udbApi, appConfig, SearchResultViewer, $modal) {
 
     // Scope vars.
     // main storage for event form.
     $scope.eventFormData = EventFormData;
 
     $scope.validateEvent = validateEvent;
+    $scope.duplicatesSearched = false;
+    $scope.udb3DashboardUrl = appConfig.udb3DashboardUrl;
     $scope.activeTitle = '';
+    $scope.currentDuplicateId = '';
+    $scope.currentDuplicateDelta = 0;
+    //$scope.event = new UdbEvent();
+    $scope.setActiveDuplicate = setActiveDuplicate;
+    $scope.previousDuplicate = previousDuplicate;
+    $scope.nextDuplicate = nextDuplicate;
     $scope.resultViewer = new SearchResultViewer();
 
     /**
@@ -4636,7 +4651,7 @@ function EventFormStep5Directive() {
      */
     function validateEvent() {
       // Set the name.
-      EventFormData.item.setName($scope.activeTitle, 'nl');
+      EventFormData.setName($scope.activeTitle, 'nl');
 
       // Load the candidate duplicates asynchronously.
       // Duplicates are found on existing identical properties:
@@ -4645,6 +4660,7 @@ function EventFormStep5Directive() {
       var promise = udbApi.findEvents($scope.activeTitle);
 
       $scope.resultViewer.loading = true;
+      $scope.duplicatesSearched = true;
 
       promise.then(function (data) {
         $scope.resultViewer.setResults(data);
@@ -4652,8 +4668,59 @@ function EventFormStep5Directive() {
 
     }
 
+    /**
+     * Set a focus to a duplicate
+     * @param {type} id
+     */
+    function setActiveDuplicate(id) {
+
+      for (var duplicateId in $scope.resultViewer.events) {
+        var eventId = $scope.resultViewer.events[duplicateId]['@id'].split('/').pop();
+        if (eventId === id) {
+          console.log('found ' + id);
+          $scope.currentDuplicateId = id;
+          $scope.currentDuplicateDelta = parseInt(duplicateId) + 1;
+        }
+      }
+
+    }
+
+    /**
+     * Set the previous duplicate active or close modal.
+     */
+    function previousDuplicate() {
+
+      var previousDelta = parseInt($scope.currentDuplicateDelta) - 2;
+      if ($scope.resultViewer.events[previousDelta] === undefined) {
+        angular.element('#dubbeldetectie-voorbeeld').modal('hide');
+      }
+      else {
+        var eventId = $scope.resultViewer.events[previousDelta]['@id'].split('/').pop();
+        $scope.currentDuplicateId = eventId;
+        $scope.currentDuplicateDelta = parseInt(previousDelta) + 1;
+      }
+
+    }
+
+    /**
+     * Set the next duplicate active or close modal.
+     */
+    function nextDuplicate() {
+
+      var nextDelta = parseInt($scope.currentDuplicateDelta);
+      if ($scope.resultViewer.events[nextDelta] === undefined) {
+        angular.element('#dubbeldetectie-voorbeeld').modal('hide');
+      }
+      else {
+        var eventId = $scope.resultViewer.events[nextDelta]['@id'].split('/').pop();
+        $scope.currentDuplicateId = eventId;
+        $scope.currentDuplicateDelta = parseInt(nextDelta) + 1;
+      }
+
+    }
+
   }
-  EventFormStep4Controller.$inject = ["$scope", "EventFormData", "udbApi", "SearchResultViewer"];
+  EventFormStep4Controller.$inject = ["$scope", "EventFormData", "udbApi", "appConfig", "SearchResultViewer", "$modal"];
 
 })();
 
@@ -7042,7 +7109,7 @@ $templateCache.put('templates/base-job.template.html',
     "    <div class=\"row\">\n" +
     "      <div class=\"col-xs-12 col-md-4\">\n" +
     "        <div class=\"form-group-lg\">\n" +
-    "          <input type=\"text\" class=\"form-control\" ng-bind=\"activeTitle\">\n" +
+    "          <input type=\"text\" class=\"form-control\" ng-model=\"activeTitle\">\n" +
     "        </div>\n" +
     "      </div>\n" +
     "      <div class=\"col-xs-12 col-md-8\">\n" +
@@ -7064,16 +7131,14 @@ $templateCache.put('templates/base-job.template.html',
     "\n" +
     "    <div class=\"alert alert-info\" ng-show=\"resultViewer.totalItems > 0\">\n" +
     "      <p class=\"h2\" style=\"margin-top: 0;\">Vermijd dubbel werk</p>\n" +
-    "      <p> We vonden gelijkaardige items. Controleer deze eerder ingevoerde items.</p>\n" +
-    "      <br />\n" +
+    "      <p> We vonden gelijkaardige items. Controleer deze eerder ingevoerde items.</p><br />\n" +
     "\n" +
     "      <div class=\"row clearfix\">\n" +
-    "\n" +
     "        <div class=\"col-xs-12 col-sm-6 col-md-4 col-lg-3\"\n" +
     "             ng-repeat=\"event in resultViewer.events\"\n" +
     "             udb-event=\"event\"\n" +
     "             ng-hide=\"fetching\">\n" +
-    "          <a class=\"btn btn-tile\" data-toggle=\"modal\" data-target=\"#dubbeldetectie-voorbeeld\">\n" +
+    "          <a class=\"btn btn-tile\" ng-click=\"setActiveDuplicate(event.id)\" data-toggle=\"modal\" data-target=\"#dubbeldetectie-voorbeeld\">\n" +
     "            <span>\n" +
     "              <small class=\"label label-default\" ng-bind=\"event.type\"></small><br>\n" +
     "              <strong class=\"title\" ng-bind=\"event.name\"></strong><br>\n" +
@@ -7087,15 +7152,85 @@ $templateCache.put('templates/base-job.template.html',
     "      </div>\n" +
     "    </div>\n" +
     "\n" +
-    "    <h3>Ben je zeker dat je \"Lichtfestival in Gent\" wil toevoegen?</h3>\n" +
-    "    <ul class=\"list-inline\" ng-show=\"resultViewer.totalItems == 0\">\n" +
+    "    <h3 ng-show=\"duplicatesSearched\">Ben je zeker dat je \"{{ activeTitle }}\" wil toevoegen?</h3>\n" +
+    "    <ul class=\"list-inline\" ng-show=\"duplicatesSearched\">\n" +
     "      <li>\n" +
-    "        <a class=\"btn btn-default\" href=\"dashboard.html\">Nee, keer terug naar dashboard</a>\n" +
+    "        <a class=\"btn btn-default\" href=\"{{ udb3DashboardUrl }}\">Nee, keer terug naar dashboard</a>\n" +
     "      </li>\n" +
     "      <li>\n" +
     "        <a class=\"btn btn-primary dubbeldetectie-doorgaan\">Ja, doorgaan met invoeren</a>\n" +
     "      </li>\n" +
     "    </ul>\n" +
+    "\n" +
+    "    <div class=\"modal fade\" id=\"dubbeldetectie-voorbeeld\" aria-hidden=\"true\" ng-hide=\"currentDuplicateId === ''\">\n" +
+    "\n" +
+    "      <div class=\"modal-dialog modal-lg\"\n" +
+    "           ng-repeat=\"event in resultViewer.events\"\n" +
+    "           udb-event=\"event\">\n" +
+    "        <div class=\"modal-content \" ng-show=\"event.id === currentDuplicateId\">\n" +
+    "          <div class=\"modal-header\">\n" +
+    "            <div class=\"pull-right\">\n" +
+    "              <button type=\"button\" class=\"btn btn-default\" ng-click=\"previousDuplicate()\">Vorige</button>\n" +
+    "              <button type=\"button\" class=\"btn btn-default\" ng-click=\"nextDuplicate()\">Volgende</button>\n" +
+    "              <button type=\"button\" class=\"close\" data-dismiss=\"modal\" aria-label=\"Close\">\n" +
+    "                <span aria-hidden=\"true\">×</span>\n" +
+    "              </button>\n" +
+    "            </div>\n" +
+    "            <h4 class=\"modal-title\">Gelijkaardige items <small>Evenement {{ currentDuplicateDelta }} van {{ resultViewer.totalItems }}</small></h4>\n" +
+    "          </div>\n" +
+    "          <div class=\"modal-body\">\n" +
+    "            <div class=\"panel panel-default preview\">\n" +
+    "\n" +
+    "\n" +
+    "              <div class=\"panel-heading\" style=\"background-image: url({{ event.image }});\">\n" +
+    "                <ul class=\"list-inline\">\n" +
+    "                  <li><small class=\"label label-default\">{{ event.type }}</small></li>\n" +
+    "                </ul>\n" +
+    "                <p class=\"title\">{{ event.getName('nl') }}</p>\n" +
+    "              </div>\n" +
+    "\n" +
+    "            <div class=\"panel-body\">\n" +
+    "\n" +
+    "              {{ event.getDescription('nl') }}\n" +
+    "\n" +
+    "              <table class=\"table table-condended\">\n" +
+    "                <tbody>\n" +
+    "                  <tr>\n" +
+    "                    <td class=\"\"><strong class=\"hidden-xs hidden-sm\">Waar</strong><i class=\"fa fa-map-marker hidden-md hidden-lg\"></i></td>\n" +
+    "                    <td>{{ event.location.name }}</td>\n" +
+    "                  </tr>\n" +
+    "                  <tr>\n" +
+    "                    <td><strong class=\"hidden-xs hidden-sm\">Wanneer</strong><i class=\"fa fa-calendar hidden-md hidden-lg\"></i></td>\n" +
+    "                    <td class=\"cf-when scroll scroll-150\">{{ event.startDate | date: 'dd/MM/yyyy' }}</td>\n" +
+    "                  </tr>\n" +
+    "                  <tr>\n" +
+    "                    <td><strong class=\"hidden-xs hidden-sm\">Organisatie</strong><i class=\"fa fa-building-o hidden-md hidden-lg\"></i></td>\n" +
+    "                    <td>{{ event.organizer.name }}</td>\n" +
+    "                  </tr>\n" +
+    "                  <tr>\n" +
+    "                    <td><strong class=\"hidden-xs hidden-sm\">Prijs</strong><i class=\"fa fa-eur hidden-md hidden-lg\"></i></td>\n" +
+    "                    <td>\n" +
+    "                      <div ng-switch=\"event.pricing\">\n" +
+    "                      <span ng-switch-when=\"free\">gratis</span>\n" +
+    "                      <span ng-switch-when=\"payed\">\n" +
+    "                          <i class=\"fa fa-eur meta icon\"></i><span ng-if=\"event.price\" ng-bind=\"event.price | currency\"></span>\n" +
+    "                      </span>\n" +
+    "                      <span ng-switch-when=\"unknown\">niet ingevoerd</span>\n" +
+    "                  </div>\n" +
+    "                    </td>\n" +
+    "                  </tr>\n" +
+    "                </tbody>\n" +
+    "              </table>\n" +
+    "            </div>\n" +
+    "          </div>\n" +
+    "\n" +
+    "          <p><em>Ingevoerd door {{ event.organizer.name }} op {{ event.created | date : 'dd/MM/yyyy • HH:mm' }}</em></p>\n" +
+    "\n" +
+    "      </div>\n" +
+    "    </div><!-- /.modal-content -->\n" +
+    "\n" +
+    "  </div><!-- /.modal-dialog -->\n" +
+    "</div>\n" +
     "\n" +
     "  </section>\n" +
     "\n" +

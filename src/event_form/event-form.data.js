@@ -22,6 +22,13 @@ function EventFormDataFactory() {
     showStep3 : false,
     showStep4 : false,
     showStep5 : false,
+    // Properties that will be copied to UdbEvent / UdbPlace.
+    name : {},
+    place : {},
+    type : {},
+    theme : {},
+    timestamps : [],
+    openingHours : [],
 
     /**
      * Show the given step.

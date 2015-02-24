@@ -1,4 +1,122 @@
 <div ng-controller="EventFormStep3Ctrl as EventFormStep3">
 
-</div>
+<section id="waar" ng-show="eventFormData.showStep3">
+    <h2 class="title-border">
+      <span class="number">3</span>
+      <span ng-show="eventFormData.isEvent">Waar vindt dit evenement of deze activiteit plaats?</span>
+      <span ng-show="eventFormData.isPlace">Waar is deze plaats of locatie?</span>
+    </h2>
 
+    <div class="row">
+      <div class="col-xs-12">
+        <label for="gemeente-autocomplete" id="gemeente-label"> Kies een gemeente</label>
+        <div id="gemeente-kiezer" ng-hide="citySelected">
+          <span style="position: relative; display: inline-block; direction: ltr;" class="twitter-typeahead">
+            <input type="text" placeholder="Gemeente of postcode" ng-click="selectCity()" ng-model="eventFormData.selectedCity" typeahead="city for city in cities | filter:$viewValue | limitTo:10" typeahead-min-length='1' typeahead-on-select='onSelectPart($item, $model, $label)' class="form-control">
+          </span>
+        </div>
+        <div id="gemeente-gekozen" ng-show="citySelected">
+          <span class="btn-chosen" id="gemeente-gekozen-button" ng-bind="eventFormData.selectedCity"></span>
+          <a href="" class="btn btn-default btn-link" ng-click="changeCitySelection()">Wijzigen</a>
+        </div>
+      </div>
+    </div>
+
+
+    <div id="waar-evenement" ng-show="eventFormData.isEvent && citySelected">
+      <div class="row" >
+        <div class="col-xs-12">
+          <label id="locatie-label">Kies een locatie</label>
+          <div id="locatie-kiezer" ng-hide="locationSelected" >
+            <span style="position: relative; display: inline-block; direction: ltr;" class="twitter-typeahead">
+              <input type="text" placeholder="Locatie" ng-click="selectLocation()" ng-model="eventFormData.selectedLocation" typeahead="location for location in locationsForCity | filter:$viewValue | limitTo:10" typeahead-min-length='1' typeahead-on-select='onSelectPart($item, $model, $label)' class="form-control">
+            </span>
+          </div>
+          <div id="locatie-gekozen" ng-show="locationSelected">
+            <span class=" btn-chosen" id="locatie-gekozen-button" ng-bind="eventFormData.selectedLocation"></span>
+            <a href="" class="btn btn-default btn-link" ng-click="changeLocationSelection()">Wijzigen</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal fade" id="waar-locatie-toevoegen" ng-show="locationSelected">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h4 class="modal-title">Nieuwe locatie toevoegen</h4>
+            </div>
+            <div class="modal-body">
+              <div class="form-group">
+                <label for="">Titel</label>
+                <input class="form-control" id="" placeholder="" type="text">
+              </div>
+
+              <div class="form-group">
+                <label for="">Categorie</label>
+                <select class="form-control" size="4" id="locatie-toevoegen-types"><option value="Archeologische site">Archeologische site</option><option value="Bioscoop">Bioscoop</option><option value="Bibliotheek of documentatiecentrum">Bibliotheek of documentatiecentrum</option><option value="Cultuur- of ontmoetingscentrum">Cultuur- of ontmoetingscentrum</option><option value="Discotheek">Discotheek</option><option value="Jeugdhuis of jeugdcentrum">Jeugdhuis of jeugdcentrum</option><option value="Horeca">Horeca</option><option value="Monument">Monument</option><option value="Museum of galerij">Museum of galerij</option><option value="Natuur, park of tuin">Natuur, park of tuin</option><option value="Zaal of expohal">Zaal of expohal</option><option value="School of onderwijscentrum">School of onderwijscentrum</option><option value="Sportcentrum">Sportcentrum</option><option value="Thema en pretpark">Thema en pretpark</option><option value="Winkel">Winkel</option></select>
+              </div>
+
+              <div class="row">
+
+                <div class="col-xs-9">
+                  <div class="form-group">
+                    <label>Straat</label>
+                    <input class="form-control" id="straat" placeholder="" type="text">
+                  </div>
+                </div>
+                <div class="col-xs-3">
+                  <div class="form-group">
+                    <label>Nummer</label>
+                    <input class="form-control" id="nummer" placeholder="" type="text">
+                  </div>
+                </div>
+                <div class="col-xs-12">
+                  <div class="form-group">
+                    <label>Gemeente</label>
+                    <p id="waar-locatie-toevoegen-gemeente"></p>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-default" data-dismiss="modal">Annuleren</button>
+              <button type="button" class="btn btn-primary">Toevoegen</button>
+            </div>
+          </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+      </div><!-- /.modal -->
+
+      <!-- Button trigger modal -->
+
+
+    </div>
+
+    <div id="waar-plaats" ng-show="eventFormData.isPlace && citySelected">
+      <div class="plaats-adres-ingeven">
+        <div class="row">
+          <div class="col-xs-8 col-lg-4">
+            <div class="form-group">
+              <label>Straat</label>
+              <input class="form-control" id="straat" placeholder="" type="text">
+            </div>
+          </div>
+          <div class="col-xs-4 col-lg-2">
+            <div class="form-group">
+              <label>Nummer</label>
+              <input class="form-control waar-plaats-nummer" id="nummer" placeholder="" type="text">
+            </div>
+          </div>
+        </div>
+        <a class="btn btn-primary plaats-ok">OK</a>
+      </div>
+
+      <div class="plaats-adres-resultaat" style="display: none;">
+        <p><span class="btn-chosen">Stationsstraat 143</span> <a class="btn btn-link plaats-adres-wijzigen">Wijzigen</a></p>
+      </div>
+
+    </div>
+
+  </section>
+
+</div>

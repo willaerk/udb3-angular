@@ -3855,6 +3855,7 @@ EventTranslator.$inject = ["jobLogger", "udbApi", "EventTranslationJob"];
     .module('udb.event-form')
     .controller('EventFormCtrl', EventFormController);
 
+
   //EventFormController.$inject = ['udbApi', '$scope', '$controller', '$location', 'UdbEvent', 'UdbOpeningHours', 'UdbPlace', 'moment', 'eventCrud', 'eventTypes'];
   /* @ngInject */
   function EventFormController(udbApi, $scope, $controller, $window, UdbEvent, UdbOpeningHours, UdbPlace, moment,
@@ -4078,8 +4079,6 @@ EventTranslator.$inject = ["jobLogger", "udbApi", "EventTranslationJob"];
       // Set the name.
       item.setName($scope.activeTitle, 'nl');
 
-<<<<<<< HEAD
-=======
       // Load the candidate duplicates asynchronously.
       // Duplicates are found on existing identical properties:
       // - title is the same
@@ -4092,7 +4091,6 @@ EventTranslator.$inject = ["jobLogger", "udbApi", "EventTranslationJob"];
         $scope.resultViewer.setResults(data);
       });
 
->>>>>>> develop
     }
 
     /**
@@ -4635,7 +4633,41 @@ function EventFormStep5Directive() {
     // Scope vars.
     // main storage for event form.
     $scope.eventFormData = EventFormData;
+    $scope.eventFormData.selectedCity = "";
+    $scope.eventFormData.selectedLocation = "";
+    $scope.citySelected = false;
+    $scope.locationSelected = false;
+    $scope.selectCity = selectCity;
+    $scope.selectLocation = selectLocation;
+    $scope.changeCitySelection = changeCitySelection;
+    getCities();
+    getLocationsForCity();
 
+    function getCities(){
+      $scope.cities = ['9000 Gent', '2000 Antwerpen'];
+    }
+
+    function getLocationsForCity() {
+      $scope.locationsForCity = ['Locatie1', 'Locatie2'];
+    }
+
+    function selectCity() {
+      $scope.citySelected = true;
+    }
+
+    function changeCitySelection() {
+      $scope.eventFormData.selectedCity = "";
+      $scope.citySelected = false;
+    }
+
+    function selectLocation() {
+      $scope.locationSelected = true;
+    }
+
+    function changeLocationSelection() {
+      $scope.eventFormData.selectedLocation = "";
+      $scope.locationSelected = false;
+    }
   }
   EventFormStep3Controller.$inject = ["$scope", "EventFormData"];
 
@@ -4907,7 +4939,7 @@ function EventExportController($modalInstance, udbApi, eventExporter, queryField
 
   exporter.format = exporter.exportFormats[0].type;
   exporter.email = '';
-
+  
   udbApi.getMe().then(function (user) {
     if(user.mbox) {
       exporter.email = user.mbox;
@@ -7025,37 +7057,126 @@ $templateCache.put('templates/base-job.template.html',
 
   $templateCache.put('templates/event-form-step3.html',
     "<div ng-controller=\"EventFormStep3Ctrl as EventFormStep3\">\n" +
-    "  <a name=\"wanneer\"></a>\n" +
-    "  <section id=\"wanneer\" ng-show=\"eventFormData.showStep3\">\n" +
-    "  <h2 class=\"title-border\">\n" +
-    "    <span class=\"number\">3</span>\n" +
-    "    <span ng-show=\"eventFormData.isEvent\">Waar vindt dit evenement of deze activiteit plaats?</span>\n" +
-    "    <span ng-show=\"eventFormData.isPlace\">Waar is deze plaats of locatie?</span>\n" +
-    "  </h2>\n" +
     "\n" +
-<<<<<<< HEAD
-    "  <div class=\"row\">\n" +
-    "    <div class=\"col-xs-12\">\n" +
-    "      <label id=\"gemeente-label\" for=\"gemeente-autocomplete\"> Kies een gemeente</label>\n" +
-    "      <div id=\"gemeente-kiezer\">\n" +
-    "        <span class=\"twitter-typeahead\" style=\"position: relative; display: inline-block; direction: ltr;\"><input type=\"text\" class=\"form-control typeahead tt-hint\" style=\"position: absolute; top: 0px; left: 0px; border-color: transparent; box-shadow: none; opacity: 1; background: none repeat scroll 0% 0% rgb(255, 255, 255);\" readonly=\"\" autocomplete=\"off\" spellcheck=\"false\" tabindex=\"-1\"><input type=\"text\" placeholder=\"Gemeente of postcode\" class=\"form-control typeahead tt-input\" id=\"gemeente-autocomplete\" autocomplete=\"off\" spellcheck=\"false\" style=\"position: relative; vertical-align: top; background-color: transparent;\" dir=\"auto\"><pre aria-hidden=\"true\" style=\"position: absolute; visibility: hidden; white-space: pre; font-family: &quot;Open Sans&quot;,Helvetica,Arial,sans-serif; font-size: 15px; font-style: normal; font-variant: normal; font-weight: 400; word-spacing: 0px; letter-spacing: 0px; text-indent: 0px; text-rendering: optimizelegibility; text-transform: none;\"></pre><span class=\"tt-dropdown-menu\" style=\"position: absolute; top: 100%; left: 0px; z-index: 100; display: none; right: auto;\"><div class=\"tt-dataset-gemeentes\"></div></span></span>\n" +
-    "      </div>\n" +
-    "      <div style=\"display: none\" id=\"gemeente-gekozen\">\n" +
-    "        <span id=\"gemeente-gekozen-button\" class=\"btn-chosen\"></span>\n" +
-    "        <a class=\"btn btn-default btn-link\" href=\"\">Wijzigen</a>\n" +
+    "<section id=\"waar\" ng-show=\"eventFormData.showStep3\">\n" +
+    "    <h2 class=\"title-border\">\n" +
+    "      <span class=\"number\">3</span>\n" +
+    "      <span ng-show=\"eventFormData.isEvent\">Waar vindt dit evenement of deze activiteit plaats?</span>\n" +
+    "      <span ng-show=\"eventFormData.isPlace\">Waar is deze plaats of locatie?</span>\n" +
+    "    </h2>\n" +
+    "\n" +
+    "    <div class=\"row\">\n" +
+    "      <div class=\"col-xs-12\">\n" +
+    "        <label for=\"gemeente-autocomplete\" id=\"gemeente-label\"> Kies een gemeente</label>\n" +
+    "        <div id=\"gemeente-kiezer\" ng-hide=\"citySelected\">\n" +
+    "          <span style=\"position: relative; display: inline-block; direction: ltr;\" class=\"twitter-typeahead\">\n" +
+    "            <input type=\"text\" placeholder=\"Gemeente of postcode\" ng-click=\"selectCity()\" ng-model=\"eventFormData.selectedCity\" typeahead=\"city for city in cities | filter:$viewValue | limitTo:10\" typeahead-min-length='1' typeahead-on-select='onSelectPart($item, $model, $label)' class=\"form-control\">\n" +
+    "          </span>\n" +
+    "        </div>\n" +
+    "        <div id=\"gemeente-gekozen\" ng-show=\"citySelected\">\n" +
+    "          <span class=\"btn-chosen\" id=\"gemeente-gekozen-button\" ng-bind=\"eventFormData.selectedCity\"></span>\n" +
+    "          <a href=\"\" class=\"btn btn-default btn-link\" ng-click=\"changeCitySelection()\">Wijzigen</a>\n" +
+    "        </div>\n" +
     "      </div>\n" +
     "    </div>\n" +
-    "  </div>\n" +
     "\n" +
-    "  <div ng-bind=\"item.location.address.addressLocality;\"></div>\n" +
     "\n" +
-    "  <a href=\"#\" ng-click=\"showStep(4)\">Volgende</a>\n" +
-    "  <a href=\"#\" ng-click=\"hideStep(3)\">Vorige</a>\n" +
-=======
-    "  <a href=\"#\" ng-click=\"eventFormData.showStep(4)\">Volgende stap</a>\n" +
->>>>>>> develop
+    "    <div id=\"waar-evenement\" ng-show=\"eventFormData.isEvent && citySelected\">\n" +
+    "      <div class=\"row\" >\n" +
+    "        <div class=\"col-xs-12\">\n" +
+    "          <label id=\"locatie-label\">Kies een locatie</label>\n" +
+    "          <div id=\"locatie-kiezer\"ng-hide=\"locationSelected\" >\n" +
+    "            <span style=\"position: relative; display: inline-block; direction: ltr;\" class=\"twitter-typeahead\">\n" +
+    "              <input type=\"text\" placeholder=\"Locatie\" ng-click=\"selectLocation()\" ng-model=\"eventFormData.selectedLocation\" typeahead=\"location for location in locationsForCity | filter:$viewValue | limitTo:10\" typeahead-min-length='1' typeahead-on-select='onSelectPart($item, $model, $label)' class=\"form-control\">\n" +
+    "            </span>\n" +
+    "          </div>\n" +
+    "          <div id=\"locatie-gekozen\" ng-show=\"locationSelected\">\n" +
+    "            <span class=\" btn-chosen\" id=\"locatie-gekozen-button\" ng-bind=\"eventFormData.selectedLocation\"></span>\n" +
+    "            <a href=\"\" class=\"btn btn-default btn-link\" ng-click=\"changeLocationSelection()\">Wijzigen</a>\n" +
+    "          </div>\n" +
+    "        </div>\n" +
+    "      </div>\n" +
+    "\n" +
+    "      <div class=\"modal fade\" id=\"waar-locatie-toevoegen\" ng-show=\"locationSelected\">\n" +
+    "        <div class=\"modal-dialog\">\n" +
+    "          <div class=\"modal-content\">\n" +
+    "            <div class=\"modal-header\">\n" +
+    "              <h4 class=\"modal-title\">Nieuwe locatie toevoegen</h4>\n" +
+    "            </div>\n" +
+    "            <div class=\"modal-body\">\n" +
+    "              <div class=\"form-group\">\n" +
+    "                <label for=\"\">Titel</label>\n" +
+    "                <input class=\"form-control\" id=\"\" placeholder=\"\" type=\"text\">\n" +
+    "              </div>\n" +
+    "\n" +
+    "              <div class=\"form-group\">\n" +
+    "                <label for=\"\">Categorie</label>\n" +
+    "                <select class=\"form-control\" size=\"4\" id=\"locatie-toevoegen-types\"><option value=\"Archeologische site\">Archeologische site</option><option value=\"Bioscoop\">Bioscoop</option><option value=\"Bibliotheek of documentatiecentrum\">Bibliotheek of documentatiecentrum</option><option value=\"Cultuur- of ontmoetingscentrum\">Cultuur- of ontmoetingscentrum</option><option value=\"Discotheek\">Discotheek</option><option value=\"Jeugdhuis of jeugdcentrum\">Jeugdhuis of jeugdcentrum</option><option value=\"Horeca\">Horeca</option><option value=\"Monument\">Monument</option><option value=\"Museum of galerij\">Museum of galerij</option><option value=\"Natuur, park of tuin\">Natuur, park of tuin</option><option value=\"Zaal of expohal\">Zaal of expohal</option><option value=\"School of onderwijscentrum\">School of onderwijscentrum</option><option value=\"Sportcentrum\">Sportcentrum</option><option value=\"Thema en pretpark\">Thema en pretpark</option><option value=\"Winkel\">Winkel</option></select>\n" +
+    "              </div>\n" +
+    "\n" +
+    "              <div class=\"row\">\n" +
+    "\n" +
+    "                <div class=\"col-xs-9\">\n" +
+    "                  <div class=\"form-group\">\n" +
+    "                    <label>Straat</label>\n" +
+    "                    <input class=\"form-control\" id=\"straat\" placeholder=\"\" type=\"text\">\n" +
+    "                  </div>\n" +
+    "                </div>\n" +
+    "                <div class=\"col-xs-3\">\n" +
+    "                  <div class=\"form-group\">\n" +
+    "                    <label>Nummer</label>\n" +
+    "                    <input class=\"form-control\" id=\"nummer\" placeholder=\"\" type=\"text\">\n" +
+    "                  </div>\n" +
+    "                </div>\n" +
+    "                <div class=\"col-xs-12\">\n" +
+    "                  <div class=\"form-group\">\n" +
+    "                    <label>Gemeente</label>\n" +
+    "                    <p id=\"waar-locatie-toevoegen-gemeente\"></p>\n" +
+    "                  </div>\n" +
+    "                </div>\n" +
+    "\n" +
+    "              </div>\n" +
+    "            </div>\n" +
+    "            <div class=\"modal-footer\">\n" +
+    "              <button type=\"button\" class=\"btn btn-default\" data-dismiss=\"modal\">Annuleren</button>\n" +
+    "              <button type=\"button\" class=\"btn btn-primary\">Toevoegen</button>\n" +
+    "            </div>\n" +
+    "          </div><!-- /.modal-content -->\n" +
+    "        </div><!-- /.modal-dialog -->\n" +
+    "      </div><!-- /.modal -->\n" +
+    "\n" +
+    "      <!-- Button trigger modal -->\n" +
+    "\n" +
+    "\n" +
+    "    </div>\n" +
+    "\n" +
+    "    <div id=\"waar-plaats\" ng-show=\"eventFormData.isPlace && citySelected\">\n" +
+    "      <div class=\"plaats-adres-ingeven\">\n" +
+    "        <div class=\"row\">\n" +
+    "          <div class=\"col-xs-8 col-lg-4\">\n" +
+    "            <div class=\"form-group\">\n" +
+    "              <label>Straat</label>\n" +
+    "              <input class=\"form-control\" id=\"straat\" placeholder=\"\" type=\"text\">\n" +
+    "            </div>\n" +
+    "          </div>\n" +
+    "          <div class=\"col-xs-4 col-lg-2\">\n" +
+    "            <div class=\"form-group\">\n" +
+    "              <label>Nummer</label>\n" +
+    "              <input class=\"form-control waar-plaats-nummer\" id=\"nummer\" placeholder=\"\" type=\"text\">\n" +
+    "            </div>\n" +
+    "          </div>\n" +
+    "        </div>\n" +
+    "        <a class=\"btn btn-primary plaats-ok\">OK</a>\n" +
+    "      </div>\n" +
+    "\n" +
+    "      <div class=\"plaats-adres-resultaat\" style=\"display: none;\">\n" +
+    "        <p><span class=\"btn-chosen\">Stationsstraat 143</span> <a class=\"btn btn-link plaats-adres-wijzigen\">Wijzigen</a></p>\n" +
+    "      </div>\n" +
+    "\n" +
+    "    </div>\n" +
     "\n" +
     "  </section>\n" +
+    "\n" +
     "</div>"
   );
 

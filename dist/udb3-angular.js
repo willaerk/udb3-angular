@@ -6987,15 +6987,15 @@ $templateCache.put('templates/base-job.template.html',
     "\n" +
     "      <div class=\"col-xs-5 col-xs-12\" ng-show=\"activeEventType === ''\">\n" +
     "        <label class=\"event-type-choser-label\">Een activiteit of evenement</label>\n" +
-    "        <ul class=\"list-inline\">\n" +
+    "        <ul class=\"list-inline\" id=\"step1-events\">\n" +
     "          <li ng-repeat=\"eventTypeLabel in eventTypeLabels\" ng-show=\"eventTypeLabel.primary == true || showAllEventTypes\">\n" +
     "            <button ng-bind=\"eventTypeLabel.label\" class=\"btn btn-default\" ng-click=\"setEventType(eventTypeLabel.id, true)\"></button>\n" +
     "          </li>\n" +
     "        </ul>\n" +
-    "        <div ng-show=\"showAllEventTypes == false\">\n" +
-    "          Niet gevonden wat je zocht? <a class=\"btn btn-link event-type-collapse\" href=\"\" ng-click=\"toggleEventTypes()\">Toon alle mogelijkheden</a>\n" +
+    "        <p ng-hide=\"showAllEventTypes\">\n" +
+    "          Niet gevonden wat je zocht? <a href=\"\" ng-click=\"toggleEventTypes()\">Toon alle mogelijkheden</a>\n" +
     "        </div>\n" +
-    "      </div>\n" +
+    "      </p>\n" +
     "\n" +
     "      <div class=\"col-xs-1 col-xs-12\" ng-show=\"activeEventType === ''\">\n" +
     "        <p class=\"text-center\">of</p>\n" +
@@ -7003,14 +7003,14 @@ $templateCache.put('templates/base-job.template.html',
     "\n" +
     "      <div class=\"col-xs-6 col-xs-12\" ng-show=\"activeEventType === ''\">\n" +
     "        <label class=\"event-type-choser-label\">Een locatie of plaats</label>\n" +
-    "        <ul class=\"list-inline\">\n" +
+    "        <ul class=\"list-inline\" id=\"step1-places\">\n" +
     "          <li ng-repeat=\"placeLabel in placeLabels\" ng-show=\"placeLabel.primary == true || showAllPlaces\">\n" +
     "            <button ng-bind=\"placeLabel.label\" class=\"btn btn-default\" ng-click=\"setEventType(placeLabel.id, false)\"></button>\n" +
     "          </li>\n" +
     "        </ul>\n" +
-    "        <div ng-show=\"showAllPlaces == false\">\n" +
-    "          Niet gevonden wat je zocht? <a class=\"btn btn-link btn-default\" href=\"\" ng-click=\"togglePlaces()\">Toon alle mogelijkheden</a>\n" +
-    "        </div>\n" +
+    "        <p ng-hide=\"showAllPlaces\">\n" +
+    "          Niet gevonden wat je zocht? <a href=\"\" ng-click=\"togglePlaces()\">Toon alle mogelijkheden</a>\n" +
+    "        </p>\n" +
     "      </div>\n" +
     "\n" +
     "      <p class=\"col-xs-12 col-md-12\" ng-hide=\"activeEventType === ''\">\n" +

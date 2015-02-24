@@ -3,19 +3,20 @@
 
 /**
  * @ngdoc directive
- * @name udb.search.directive:event-form.html
+ * @name udb.core.directive:udbDatepicker
  * @description
- * # udb event form directive
+ * # directive for datepicker integration
  */
 angular
-  .module('udb.event-form')
+  .module('udb.core')
   .directive('udbDatepicker', udbDatepickerDirective);
 
   function udbDatepickerDirective() {
 
     var datepicker = {
       restrict: 'A',
-      link: function (scope, elem, attrs) {
+      require: 'ngModel',
+      link: function (scope, elem, attrs, ngModel) {
 
         var options = {
         format: 'd MM yyyy',
@@ -27,7 +28,9 @@ angular
              }
            }
         };
-        elem.datepicker(options);
+        elem.datepicker(options).on('changeDate', function(e) {
+          ngModel.$setViewValue(e.date);
+        });
       }
     };
 

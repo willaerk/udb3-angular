@@ -1798,6 +1798,84 @@ function AuthorizationService($q, uitidAuth, udbApi, $location) {
 }
 AuthorizationService.$inject = ["$q", "uitidAuth", "udbApi", "$location"];
 
+// Source: src/core/components/datepicker/datepicker.directive.js
+(function () {
+/**
+ * @ngdoc directive
+ * @name udb.core.directive:udbDatepicker
+ * @description
+ * # directive for datepicker integration
+ */
+angular
+  .module('udb.core')
+  .directive('udbDatepicker', udbDatepickerDirective);
+
+  function udbDatepickerDirective() {
+
+    var datepicker = {
+      restrict: 'A',
+      require: 'ngModel',
+      link: function (scope, elem, attrs, ngModel) {
+
+        var options = {
+        format: 'd MM yyyy',
+           language: 'nl-BE',
+           beforeShowDay: function(date) {
+             var dateFormat = date.getUTCFullYear() + '-' + date.getUTCMonth() + '-' + date.getUTCDate();
+             if (attrs.highlightDate && dateFormat === attrs.highlightDate) {
+               return {classes: 'highlight'};
+             }
+           }
+        };
+        elem.datepicker(options).on('changeDate', function(e) {
+          ngModel.$setViewValue(e.date);
+        });
+      }
+    };
+
+    return datepicker;
+
+  }
+
+})();
+// Source: src/core/components/multiselect/multiselect.directive.js
+(function () {
+/**
+ * @ngdoc directive
+ * @name udb.core.directive:udbMultiselect
+ * @description
+ * # directive for bootstrap-multiselect integration
+ */
+angular
+  .module('udb.core')
+  .directive('udbMultiselect', udbMultiselectDirective);
+
+  function udbMultiselectDirective() {
+
+    return {
+      restrict: 'A',
+      link: function (scope, elem, attrs, ngModel) {
+
+        elem.multiselect({
+          buttonText: function(options, select) {
+            if (options.length > 0) {
+              var labels = [];
+              options.each(function() {
+                labels.push(angular.element(this).html().substring(0,2));
+              });
+              return labels.join(', ') + ' ';
+            }
+            else {
+              return attrs.startLabel;
+            }
+          }
+       });
+      }
+
+    };
+  }
+
+})();
 // Source: src/core/dutch-translations.constant.js
 /**
  * @ngdoc service
@@ -3791,43 +3869,60 @@ function EventTranslator(jobLogger, udbApi, EventTranslationJob) {
 }
 EventTranslator.$inject = ["jobLogger", "udbApi", "EventTranslationJob"];
 
-// Source: src/event_form/components/datepicker/datepicker.directive.js
-(function () {
+// Source: src/event_form/components/calendartypes/event-form-period.directive.js
 /**
  * @ngdoc directive
- * @name udb.search.directive:event-form.html
+ * @name udb.search.directive:tudbEventFormTimestampSelection
  * @description
- * # udb event form directive
+ * # timestamp selection for event form
  */
 angular
   .module('udb.event-form')
-  .directive('udbDatepicker', udbDatepickerDirective);
+  .directive('udbEventFormPeriod', EventFormPeriodDirective);
 
-  function udbDatepickerDirective() {
+/* @ngInject */
+function EventFormPeriodDirective() {
+  return {
+    templateUrl: 'templates/event-form-period.html',
+    restrict: 'EA',
+  };
+}
+// Source: src/event_form/components/calendartypes/event-form-timestamp.directive.js
+/**
+ * @ngdoc directive
+ * @name udb.search.directive:tudbEventFormTimestampSelection
+ * @description
+ * # timestamp selection for event form
+ */
+angular
+  .module('udb.event-form')
+  .directive('udbEventFormTimestamp', EventFormTimestampDirective);
 
-    var datepicker = {
-      restrict: 'A',
-      link: function (scope, elem, attrs) {
+/* @ngInject */
+function EventFormTimestampDirective() {
+  return {
+    templateUrl: 'templates/event-form-timestamp.html',
+    restrict: 'EA',
+  };
+}
+// Source: src/event_form/components/openinghours/openinghours.directive.js
+/**
+ * @ngdoc directive
+ * @name udb.search.directive:tudbEventFormTimestampSelection
+ * @description
+ * # timestamp selection for event form
+ */
+angular
+  .module('udb.event-form')
+  .directive('udbEventFormOpeningHours', EventFormOpeningHoursDirective);
 
-        var options = {
-        format: 'd MM yyyy',
-           language: 'nl-BE',
-           beforeShowDay: function(date) {
-             var dateFormat = date.getUTCFullYear() + '-' + date.getUTCMonth() + '-' + date.getUTCDate();
-             if (attrs.highlightDate && dateFormat === attrs.highlightDate) {
-               return {classes: 'highlight'};
-             }
-           }
-        };
-        elem.datepicker(options);
-      }
-    };
-
-    return datepicker;
-
-  }
-
-})();
+/* @ngInject */
+function EventFormOpeningHoursDirective() {
+  return {
+    templateUrl: 'templates/event-form-openinghours.html',
+    restrict: 'E',
+  };
+}
 // Source: src/event_form/event-form.controller.js
 (function () {
 /**
@@ -4178,6 +4273,8 @@ function EventFormDataFactory() {
     place : {},
     type : {},
     theme : {},
+    startDate : '',
+    endDate : '',
     timestamps : [],
     openingHours : [],
 
@@ -4186,6 +4283,7 @@ function EventFormDataFactory() {
      * @param int stepNumber
      */
     showStep: function(stepNumber) {
+      console.log(this);
       this['showStep' + stepNumber] = true;
     },
 
@@ -4261,6 +4359,22 @@ function EventFormDataFactory() {
       return this.theme.label ? this.theme.label : '';
     },
 
+    getStartDate : function() {
+      return this.startDate;
+    },
+
+    setStartDate: function(startDate) {
+      this.startDate = startDate;
+    },
+
+    getEndDate : function() {
+      return this.endDate;
+    },
+
+    setEndDate: function(endDate) {
+      this.endDate = endDate;
+    },
+
     /**
      * Get the opening hours.
      */
@@ -4294,6 +4408,27 @@ function EventFormDataFactory() {
         'showStartHour' : startHour !== '',
         'showEndHour' : endHour !== '',
       });
+
+    },
+
+    /**
+     * Add a timestamp to the timestamps array.
+     */
+    addOpeningHour: function(daysOfWeek, opens, closes) {
+
+      this.openingHours.push({
+        'daysOfWeek' : daysOfWeek,
+        'opens' : opens,
+        'closes' : closes,
+      });
+
+    },
+
+    /**
+     * Remove the openinghour with the given index.
+     */
+    removeOpeningHour: function(index) {
+       this.openingHours.splice(index, 1);
     },
 
     /**
@@ -4302,6 +4437,8 @@ function EventFormDataFactory() {
     resetCalendar: function() {
       this.openingHours = [];
       this.timestamps = [];
+      this.startDate = '';
+      this.endDate = '';
     },
 
   };
@@ -4651,6 +4788,9 @@ function EventFormStep5Directive() {
 
       if (type === 'single') {
         addTimestamp();
+      }
+      else if (type === 'periodic') {
+        EventFormData.addOpeningHour('', '', '');
       }
 
     }
@@ -6962,6 +7102,169 @@ $templateCache.put('templates/base-job.template.html',
   );
 
 
+  $templateCache.put('templates/event-form-period.html',
+    "<div id=\"wanneer-periode\">\n" +
+    "  <div class=\"col-xs-12 col-sm-4\">\n" +
+    "    <section class=\"add-date\">\n" +
+    "      <div class=\"form-group\">\n" +
+    "        <p class=\"module-title\">Vanaf</p>\n" +
+    "        <div udb-datepicker highlight-date=\"2015-8-12\" ng-model=\"eventFormData.startdate\"></div>\n" +
+    "      </div>\n" +
+    "    </section>\n" +
+    "  </div>\n" +
+    "\n" +
+    "  <div class=\"col-xs-12 col-sm-4\">\n" +
+    "    <section class=\"add-date\">\n" +
+    "      <div class=\"form-group\">\n" +
+    "        <p class=\"module-title\">Tot en met</p>\n" +
+    "        <div udb-datepicker highlight-date=\"2015-8-12\" ng-model=\"eventFormData.enddate\"></div>\n" +
+    "      </div>\n" +
+    "    </section>\n" +
+    "  </div>\n" +
+    "\n" +
+    "  <udb-event-form-opening-hours></udb-event-form-opening-hours>\n" +
+    "  \n" +
+    "</div>"
+  );
+
+
+  $templateCache.put('templates/event-form-timestamp.html',
+    "<div id=\"wanneer-dagen\" ng-repeat=\"timestamp in eventFormData.timestamps\">\n" +
+    "\n" +
+    "  <div class=\"col-xs-12 col-sm-4 prototype-step\" id=\"add-date-form\">\n" +
+    "    <section class=\"add-date\">\n" +
+    "\n" +
+    "      <div udb-datepicker highlight-date=\"2015-8-12\" ng-model=\"timestamp.date\"></div>\n" +
+    "\n" +
+    "      <div class=\"row\">\n" +
+    "        <div class=\"col-xs-6\">\n" +
+    "          <label>\n" +
+    "            <input type=\"checkbox\" value=\"\" class=\"beginuur-toevoegen\" ng-click=\"toggleStartHour(timestamp)\">\n" +
+    "            Beginuur\n" +
+    "          </label>\n" +
+    "          <div class=\"beginuur-invullen\" ng-show=\"timestamp.showStartHour\">\n" +
+    "            <input type=\"text\" class=\"form-control uur\" placeholder=\"Bv. 08:00\" ng-model=\"timestamp.startHour\" />\n" +
+    "          </div>\n" +
+    "        </div>\n" +
+    "        <div class=\"col-xs-6 einduur\" ng-show=\"timestamp.showStartHour\">\n" +
+    "          <label>\n" +
+    "            <input type=\"checkbox\" value=\"\" class=\"einduur-toevoegen\" ng-click=\"toggleEndHour(timestamp)\">\n" +
+    "            Einduur\n" +
+    "          </label>\n" +
+    "          <div class=\"einduur-invullen\" ng-show=\"timestamp.showEndHour\">\n" +
+    "            <input type=\"text\" class=\"form-control uur\" placeholder=\"Bv. 23:00\" ng-model=\"timestamp.endHour\" />\n" +
+    "          </div>\n" +
+    "        </div>\n" +
+    "      </div>\n" +
+    "    </section>\n" +
+    "  </div>\n" +
+    "\n" +
+    "</div>\n" +
+    "\n" +
+    "<div class=\"col-xs-12 col-sm-4\">\n" +
+    "  <div class=\"add-date\">\n" +
+    "    <a href=\"#\" class=\"add-date-link\" ng-click=\"addTimestamp()\">\n" +
+    "      <p id=\"add-date-plus\">+</p>\n" +
+    "      <p id=\"add-date-label\">Dag toevoegen</p>\n" +
+    "    </a>\n" +
+    "  </div>\n" +
+    "</div>"
+  );
+
+
+  $templateCache.put('templates/event-form-openinghours.html',
+    "<div class=\"col-xs-12\">\n" +
+    "  <a href=\"#\" class=\"btn btn-link btn-plus wanneer-openingsuren-link\" data-toggle=\"modal\" data-target=\"#wanneer-openingsuren-toevoegen\">Openingsuren toevoegen</a>\n" +
+    "</div>\n" +
+    "\n" +
+    "<div class=\"col-xs-12 col-sm-4\">\n" +
+    "  <section class=\"wanneer-openingsuren-resultaat\" style=\"display: none;\">\n" +
+    "    <table class=\"table table-condensed \">\n" +
+    "      <thead>\n" +
+    "      <th>Openingsuren</th>\n" +
+    "      <th><a href=\"#\" data-toggle=\"modal\" data-target=\"#wanneer-openingsuren-toevoegen\" class=\"btn btn-default\">Wijzigen</a></th>\n" +
+    "      </thead>\n" +
+    "      <tbody>\n" +
+    "        <tr><td>maandag</td><td>09:00–18:00</td></tr>\n" +
+    "        <tr><td>dinsdag</td><td>09:00–18:00</td></tr>\n" +
+    "        <tr><td>woensdag</td><td>09:00–12:00</td></tr>\n" +
+    "        <tr><td>donderdag</td><td>09:00–18:00</td></tr>\n" +
+    "        <tr><td>vrijdag</td><td>09:00–18:00</td></tr>\n" +
+    "        <tr><td>zaterdag</td><td>gesloten</td></tr>\n" +
+    "        <tr><td>zondag</td><td>gesloten</td></tr>\n" +
+    "      </tbody>\n" +
+    "    </table>\n" +
+    "  </section>\n" +
+    "\n" +
+    "</div>\n" +
+    "\n" +
+    "<div class=\"modal fade\" id=\"wanneer-openingsuren-toevoegen\">\n" +
+    "  <div class=\"modal-dialog\">\n" +
+    "    <div class=\"modal-content\">\n" +
+    "      <div class=\"modal-header\">\n" +
+    "        <h4 class=\"modal-title\">Openingsuren</h4>\n" +
+    "      </div>\n" +
+    "      <div class=\"modal-body\">\n" +
+    "        <table class=\"table\">\n" +
+    "          <thead>\n" +
+    "            <tr>\n" +
+    "              <th> Dag(en)\n" +
+    "              </th>\n" +
+    "              <th> Van\n" +
+    "              </th>\n" +
+    "              <th>\n" +
+    "              </th>\n" +
+    "              <th> Tot\n" +
+    "              </th>\n" +
+    "              <th>\n" +
+    "              </th>\n" +
+    "            </tr>\n" +
+    "          </thead>\n" +
+    "\n" +
+    "          <tr ng-repeat=\"(i, openingHour) in eventFormData.openingHours\">\n" +
+    "            <td>\n" +
+    "              <select class=\"selectpicker\" multiple udb-multiselect start-label=\"Kies dag(en)\" ng-model=\"openingHour.daysOfWeek\">\n" +
+    "                <option value=\"0\">maandag</option>\n" +
+    "                <option value=\"1\">dinsdag</option>\n" +
+    "                <option value=\"2\">woensdag</option>\n" +
+    "                <option value=\"3\">donderdag</option>\n" +
+    "                <option value=\"4\">vrijdag</option>\n" +
+    "                <option value=\"5\">zaterdag</option>\n" +
+    "                <option value=\"6\">zondag</option>\n" +
+    "              </select>\n" +
+    "            </td>\n" +
+    "            <td>\n" +
+    "              <input class=\"form-control\" type=\"text\" ng-model=\"openingHour.opens\" />\n" +
+    "            </td>\n" +
+    "            <td>\n" +
+    "              &nbsp;-&nbsp;\n" +
+    "            </td>\n" +
+    "            <td>\n" +
+    "              <input class=\"form-control\" type=\"text\" ng-model=\"openingHour.closes\" />\n" +
+    "            </td>\n" +
+    "            <td>\n" +
+    "              <button type=\"button\" class=\"close\" aria-label=\"Close\" ng-click=\"eventFormData.removeOpeningHour(i)\"><span aria-hidden=\"true\">&times;</span>\n" +
+    "              </button>\n" +
+    "            </td>\n" +
+    "          </tr>\n" +
+    "        </table>\n" +
+    "        <a class=\"btn btn-link btn-plus\" ng-click=\"eventFormData.addOpeningHour('', '' , '')\">Meer openingstijden toevoegen</a>\n" +
+    "      </div>\n" +
+    "      <div class=\"modal-footer\">\n" +
+    "        <button type=\"button\" class=\"btn btn-default\" data-dismiss=\"modal\">Annuleren</button>\n" +
+    "        <button type=\"button\" class=\"btn btn-primary openingsuren-toevoegen\" data-dismiss=\"modal\">Toevoegen</button>\n" +
+    "      </div>\n" +
+    "    </div>\n" +
+    "    <!-- /.modal-content -->\n" +
+    "  </div>\n" +
+    "  <!-- /.modal-dialog -->\n" +
+    "</div>\n" +
+    "<!-- /.modal -->\n" +
+    "\n" +
+    "<!-- Button trigger modal -->"
+  );
+
+
   $templateCache.put('templates/event-form.html',
     "<div ng-controller=\"EventFormCtrl as eventForm\">\n" +
     "  <udb-event-form-step1></udb-event-form-step1>\n" +
@@ -7052,9 +7355,14 @@ $templateCache.put('templates/base-job.template.html',
     "    <div class=\"row\">\n" +
     "      <div class=\"col-xs-12\">\n" +
     "        <div class=\"form-group\">\n" +
+    "\n" +
     "          <label class=\"wanneerkiezer-label\">Maak een keuze</label>\n" +
     "          <div class=\"wanneerkiezer\" ng-show=\"activeCalendarType === ''\">\n" +
-    "            <button ng-repeat=\"calendarLabel in calendarLabels\" ng-bind=\"calendarLabel.label\" class=\"btn btn-default\" ng-click=\"setCalendarType(calendarLabel.id)\"></button>\n" +
+    "            <ul class=\"list-inline button-list\">\n" +
+    "              <li ng-repeat=\"calendarLabel in calendarLabels\">\n" +
+    "                <button class=\"btn btn-default\" ng-bind=\"calendarLabel.label\" ng-click=\"setCalendarType(calendarLabel.id)\"></button>\n" +
+    "              </li>\n" +
+    "            </ul>\n" +
     "          </div>\n" +
     "          <div class=\"wanneer-chosen\" ng-hide=\"activeCalendarType === ''\">\n" +
     "            <span class=\"btn-chosen\" ng-bind=\"activeCalendarLabel\"></span><a class=\"btn btn-link wanneerrestore\" href=\"#\" ng-click=\"resetCalendar()\">Wijzigen</a>\n" +
@@ -7064,48 +7372,15 @@ $templateCache.put('templates/base-job.template.html',
     "    </div>\n" +
     "\n" +
     "    <div class=\"row\" ng-show=\"activeCalendarType === 'single'\">\n" +
+    "      <udb-event-form-timestamp></udb-event-form-timestamp>\n" +
+    "    </div>\n" +
     "\n" +
-    "      <div id=\"wanneer-dagen\" ng-repeat=\"timestamp in eventFormData.timestamps\">\n" +
+    "    <div class=\"row\" ng-show=\"activeCalendarType === 'periodic'\">\n" +
+    "      <udb-event-form-period></udb-event-form-period>\n" +
+    "    </div>\n" +
     "\n" +
-    "        <div class=\"col-xs-12 col-sm-4 prototype-step\" id=\"add-date-form\">\n" +
-    "          <section class=\"add-date\">\n" +
-    "\n" +
-    "            <div udb-datepicker highlight-date=\"2015-8-12\" ng-model=\"timestamp.date\"></div>\n" +
-    "\n" +
-    "            <div class=\"row\">\n" +
-    "              <div class=\"col-xs-6\">\n" +
-    "                <label>\n" +
-    "                  <input type=\"checkbox\" value=\"\" class=\"beginuur-toevoegen\" ng-click=\"toggleStartHour(timestamp)\">\n" +
-    "                  Beginuur\n" +
-    "                </label>\n" +
-    "                <div class=\"beginuur-invullen\" ng-show=\"timestamp.showStartHour\">\n" +
-    "                  <input type=\"text\" class=\"form-control uur\" placeholder=\"Bv. 08:00\" ng-model=\"timestamp.startHour\" />\n" +
-    "                </div>\n" +
-    "              </div>\n" +
-    "              <div class=\"col-xs-6 einduur\" ng-show=\"timestamp.showStartHour\">\n" +
-    "                <label>\n" +
-    "                  <input type=\"checkbox\" value=\"\" class=\"einduur-toevoegen\" ng-click=\"toggleEndHour(timestamp)\">\n" +
-    "                  Einduur\n" +
-    "                </label>\n" +
-    "                <div class=\"einduur-invullen\" ng-show=\"timestamp.showEndHour\">\n" +
-    "                  <input type=\"text\" class=\"form-control uur\" placeholder=\"Bv. 23:00\" ng-model=\"timestamp.endHour\" />\n" +
-    "                </div>\n" +
-    "              </div>\n" +
-    "            </div>\n" +
-    "          </section>\n" +
-    "        </div>\n" +
-    "\n" +
-    "      </div>\n" +
-    "\n" +
-    "      <div class=\"col-xs-12 col-sm-4\">\n" +
-    "        <div class=\"add-date\">\n" +
-    "          <a href=\"#\" class=\"add-date-link\" ng-click=\"addTimestamp()\">\n" +
-    "            <p id=\"add-date-plus\">+</p>\n" +
-    "            <p id=\"add-date-label\">Dag toevoegen</p>\n" +
-    "          </a>\n" +
-    "        </div>\n" +
-    "      </div>\n" +
-    "\n" +
+    "    <div class=\"row\" ng-show=\"activeCalendarType === 'permanent'\">\n" +
+    "      <udb-event-form-opening-hours></udb-event-form-opening-hours>\n" +
     "    </div>\n" +
     "\n" +
     "    <a href=\"#\" ng-click=\"eventFormData.showStep(3)\">Volgende stap</a>\n" +

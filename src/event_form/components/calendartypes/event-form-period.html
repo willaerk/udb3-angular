@@ -1,0 +1,22 @@
+<div id="wanneer-periode">
+  <div class="col-xs-12 col-sm-4">
+    <section class="add-date">
+      <div class="form-group">
+        <p class="module-title">Vanaf</p>
+        <div udb-datepicker highlight-date="2015-8-12" ng-model="eventFormData.startdate"></div>
+      </div>
+    </section>
+  </div>
+
+  <div class="col-xs-12 col-sm-4">
+    <section class="add-date">
+      <div class="form-group">
+        <p class="module-title">Tot en met</p>
+        <div udb-datepicker highlight-date="2015-8-12" ng-model="eventFormData.enddate"></div>
+      </div>
+    </section>
+  </div>
+
+  <udb-event-form-opening-hours></udb-event-form-opening-hours>
+  
+</div>

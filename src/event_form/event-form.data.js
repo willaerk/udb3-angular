@@ -27,6 +27,8 @@ function EventFormDataFactory() {
     place : {},
     type : {},
     theme : {},
+    startDate : '',
+    endDate : '',
     timestamps : [],
     openingHours : [],
 
@@ -35,6 +37,7 @@ function EventFormDataFactory() {
      * @param int stepNumber
      */
     showStep: function(stepNumber) {
+      console.log(this);
       this['showStep' + stepNumber] = true;
     },
 
@@ -110,6 +113,22 @@ function EventFormDataFactory() {
       return this.theme.label ? this.theme.label : '';
     },
 
+    getStartDate : function() {
+      return this.startDate;
+    },
+
+    setStartDate: function(startDate) {
+      this.startDate = startDate;
+    },
+
+    getEndDate : function() {
+      return this.endDate;
+    },
+
+    setEndDate: function(endDate) {
+      this.endDate = endDate;
+    },
+
     /**
      * Get the opening hours.
      */
@@ -143,6 +162,27 @@ function EventFormDataFactory() {
         'showStartHour' : startHour !== '',
         'showEndHour' : endHour !== '',
       });
+
+    },
+
+    /**
+     * Add a timestamp to the timestamps array.
+     */
+    addOpeningHour: function(daysOfWeek, opens, closes) {
+
+      this.openingHours.push({
+        'daysOfWeek' : daysOfWeek,
+        'opens' : opens,
+        'closes' : closes,
+      });
+
+    },
+
+    /**
+     * Remove the openinghour with the given index.
+     */
+    removeOpeningHour: function(index) {
+       this.openingHours.splice(index, 1);
     },
 
     /**
@@ -151,6 +191,8 @@ function EventFormDataFactory() {
     resetCalendar: function() {
       this.openingHours = [];
       this.timestamps = [];
+      this.startDate = '';
+      this.endDate = '';
     },
 
   };

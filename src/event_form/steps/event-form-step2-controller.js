@@ -63,6 +63,9 @@
       if (type === 'single') {
         addTimestamp();
       }
+      else if (type === 'periodic') {
+        EventFormData.addOpeningHour('', '', '');
+      }
 
     }
 

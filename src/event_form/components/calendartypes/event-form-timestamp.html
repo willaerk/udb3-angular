@@ -1,0 +1,40 @@
+<div id="wanneer-dagen" ng-repeat="timestamp in eventFormData.timestamps">
+
+  <div class="col-xs-12 col-sm-4 prototype-step" id="add-date-form">
+    <section class="add-date">
+
+      <div udb-datepicker highlight-date="2015-8-12" ng-model="timestamp.date"></div>
+
+      <div class="row">
+        <div class="col-xs-6">
+          <label>
+            <input type="checkbox" value="" class="beginuur-toevoegen" ng-click="toggleStartHour(timestamp)">
+            Beginuur
+          </label>
+          <div class="beginuur-invullen" ng-show="timestamp.showStartHour">
+            <input type="text" class="form-control uur" placeholder="Bv. 08:00" ng-model="timestamp.startHour" />
+          </div>
+        </div>
+        <div class="col-xs-6 einduur" ng-show="timestamp.showStartHour">
+          <label>
+            <input type="checkbox" value="" class="einduur-toevoegen" ng-click="toggleEndHour(timestamp)">
+            Einduur
+          </label>
+          <div class="einduur-invullen" ng-show="timestamp.showEndHour">
+            <input type="text" class="form-control uur" placeholder="Bv. 23:00" ng-model="timestamp.endHour" />
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+</div>
+
+<div class="col-xs-12 col-sm-4">
+  <div class="add-date">
+    <a href="#" class="add-date-link" ng-click="addTimestamp()">
+      <p id="add-date-plus">+</p>
+      <p id="add-date-label">Dag toevoegen</p>
+    </a>
+  </div>
+</div>

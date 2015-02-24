@@ -4283,8 +4283,8 @@ function EventFormDataFactory() {
      * @param int stepNumber
      */
     showStep: function(stepNumber) {
-      console.log(this);
       this['showStep' + stepNumber] = true;
+      console.log(this);
     },
 
     /**
@@ -4420,6 +4420,7 @@ function EventFormDataFactory() {
         'daysOfWeek' : daysOfWeek,
         'opens' : opens,
         'closes' : closes,
+        'label' : ''
       });
 
     },
@@ -4752,6 +4753,7 @@ function EventFormStep5Directive() {
       { 'label': 'Van ... tot ... ', 'id' : 'periodic' },
       { 'label' : 'Permanent', 'id' : 'permanent' }
     ];
+    $scope.hasOpeningHours = false;
 
     // Scope functions
     $scope.setCalendarType = setCalendarType;
@@ -4759,6 +4761,18 @@ function EventFormStep5Directive() {
     $scope.addTimestamp = addTimestamp;
     $scope.toggleStartHour = toggleStartHour;
     $scope.toggleEndHour = toggleEndHour;
+    $scope.saveOpeninghHourDaySelection = saveOpeninghHourDaySelection;
+
+    // Mapping between machine name of days and real output.
+    var dayNames = {
+      'monday' : 'Maandag',
+      'tuesday' : 'Dinsdag',
+      'wednesday' : 'Woensdag',
+      'thursday' : 'Donderdag',
+      'friday' : 'Vrijdag',
+      'saturday' : 'Zaterdag',
+      'sunday' : 'Zondag'
+    };
 
     /**
      * Click listener on the calendar type buttons.
@@ -4766,6 +4780,7 @@ function EventFormStep5Directive() {
      */
     function setCalendarType(type) {
 
+      EventFormData.showStep(3);
       $scope.activeCalendarType = type;
 
       for (var i = 0; i < $scope.calendarLabels.length; i++) {
@@ -4782,8 +4797,8 @@ function EventFormStep5Directive() {
       }
 
       // A type is choosen, start a complet new calendar, removing old data.
-
       EventFormData.calendarType = type;
+      $scope.hasOpeningHours = false;
       EventFormData.resetCalendar();
 
       if (type === 'single') {
@@ -4840,6 +4855,23 @@ function EventFormStep5Directive() {
       if (!timestamp.showEndHour) {
         timestamp.endHour = '';
       }
+
+    }
+
+    /**
+     * Change listener on the day selection of opening hours.
+     * Create human labels for the day selection.
+     */
+    function saveOpeninghHourDaySelection(index, daysOfWeek) {
+
+      var humanValues = [];
+      if (daysOfWeek instanceof Array) {
+        for (var i in daysOfWeek) {
+          humanValues.push(dayNames[daysOfWeek[i]]);
+        }
+      }
+
+      EventFormData.openingHours[index].label = humanValues.join(', ');
 
     }
 
@@ -7103,12 +7135,12 @@ $templateCache.put('templates/base-job.template.html',
 
 
   $templateCache.put('templates/event-form-period.html',
-    "<div id=\"wanneer-periode\">\n" +
+    "<div id=\"wanneer-periode\" class=\"row\">\n" +
     "  <div class=\"col-xs-12 col-sm-4\">\n" +
     "    <section class=\"add-date\">\n" +
     "      <div class=\"form-group\">\n" +
     "        <p class=\"module-title\">Vanaf</p>\n" +
-    "        <div udb-datepicker highlight-date=\"2015-8-12\" ng-model=\"eventFormData.startdate\"></div>\n" +
+    "        <div udb-datepicker highlight-date=\"2015-8-12\" ng-model=\"eventFormData.startDate\"></div>\n" +
     "      </div>\n" +
     "    </section>\n" +
     "  </div>\n" +
@@ -7117,14 +7149,14 @@ $templateCache.put('templates/base-job.template.html',
     "    <section class=\"add-date\">\n" +
     "      <div class=\"form-group\">\n" +
     "        <p class=\"module-title\">Tot en met</p>\n" +
-    "        <div udb-datepicker highlight-date=\"2015-8-12\" ng-model=\"eventFormData.enddate\"></div>\n" +
+    "        <div udb-datepicker highlight-date=\"2015-8-12\" ng-model=\"eventFormData.endDate\"></div>\n" +
     "      </div>\n" +
     "    </section>\n" +
     "  </div>\n" +
     "\n" +
-    "  <udb-event-form-opening-hours></udb-event-form-opening-hours>\n" +
-    "  \n" +
-    "</div>"
+    "</div>\n" +
+    "\n" +
+    "<udb-event-form-opening-hours></udb-event-form-opening-hours>"
   );
 
 
@@ -7173,25 +7205,22 @@ $templateCache.put('templates/base-job.template.html',
 
 
   $templateCache.put('templates/event-form-openinghours.html',
-    "<div class=\"col-xs-12\">\n" +
+    "<div class=\"col-xs-12\" ng-hide=\"hasOpeningHours\">\n" +
     "  <a href=\"#\" class=\"btn btn-link btn-plus wanneer-openingsuren-link\" data-toggle=\"modal\" data-target=\"#wanneer-openingsuren-toevoegen\">Openingsuren toevoegen</a>\n" +
     "</div>\n" +
     "\n" +
-    "<div class=\"col-xs-12 col-sm-4\">\n" +
-    "  <section class=\"wanneer-openingsuren-resultaat\" style=\"display: none;\">\n" +
+    "<div class=\"col-xs-12 col-sm-4\" ng-show=\"hasOpeningHours\">\n" +
+    "  <section class=\"wanneer-openingsuren-resultaat\">\n" +
     "    <table class=\"table table-condensed \">\n" +
     "      <thead>\n" +
     "      <th>Openingsuren</th>\n" +
     "      <th><a href=\"#\" data-toggle=\"modal\" data-target=\"#wanneer-openingsuren-toevoegen\" class=\"btn btn-default\">Wijzigen</a></th>\n" +
     "      </thead>\n" +
     "      <tbody>\n" +
-    "        <tr><td>maandag</td><td>09:00–18:00</td></tr>\n" +
-    "        <tr><td>dinsdag</td><td>09:00–18:00</td></tr>\n" +
-    "        <tr><td>woensdag</td><td>09:00–12:00</td></tr>\n" +
-    "        <tr><td>donderdag</td><td>09:00–18:00</td></tr>\n" +
-    "        <tr><td>vrijdag</td><td>09:00–18:00</td></tr>\n" +
-    "        <tr><td>zaterdag</td><td>gesloten</td></tr>\n" +
-    "        <tr><td>zondag</td><td>gesloten</td></tr>\n" +
+    "        <tr ng-repeat=\"openingHour in eventFormData.openingHours\">\n" +
+    "          <td>{{ openingHour.label }}</td>\n" +
+    "          <td>{{ openingHour.opens }} – {{ openingHour.closes }}</td>\n" +
+    "         </tr>\n" +
     "      </tbody>\n" +
     "    </table>\n" +
     "  </section>\n" +
@@ -7223,14 +7252,14 @@ $templateCache.put('templates/base-job.template.html',
     "\n" +
     "          <tr ng-repeat=\"(i, openingHour) in eventFormData.openingHours\">\n" +
     "            <td>\n" +
-    "              <select class=\"selectpicker\" multiple udb-multiselect start-label=\"Kies dag(en)\" ng-model=\"openingHour.daysOfWeek\">\n" +
-    "                <option value=\"0\">maandag</option>\n" +
-    "                <option value=\"1\">dinsdag</option>\n" +
-    "                <option value=\"2\">woensdag</option>\n" +
-    "                <option value=\"3\">donderdag</option>\n" +
-    "                <option value=\"4\">vrijdag</option>\n" +
-    "                <option value=\"5\">zaterdag</option>\n" +
-    "                <option value=\"6\">zondag</option>\n" +
+    "              <select class=\"selectpicker\" multiple udb-multiselect start-label=\"Kies dag(en)\" ng-model=\"openingHour.daysOfWeek\" ng-change=\"saveOpeninghHourDaySelection(i, openingHour.daysOfWeek)\">\n" +
+    "                <option value=\"monday\">maandag</option>\n" +
+    "                <option value=\"tuesday\">dinsdag</option>\n" +
+    "                <option value=\"wednesday\">woensdag</option>\n" +
+    "                <option value=\"thursday\">donderdag</option>\n" +
+    "                <option value=\"friday\">vrijdag</option>\n" +
+    "                <option value=\"saturday\">zaterdag</option>\n" +
+    "                <option value=\"sunday\">zondag</option>\n" +
     "              </select>\n" +
     "            </td>\n" +
     "            <td>\n" +
@@ -7252,16 +7281,14 @@ $templateCache.put('templates/base-job.template.html',
     "      </div>\n" +
     "      <div class=\"modal-footer\">\n" +
     "        <button type=\"button\" class=\"btn btn-default\" data-dismiss=\"modal\">Annuleren</button>\n" +
-    "        <button type=\"button\" class=\"btn btn-primary openingsuren-toevoegen\" data-dismiss=\"modal\">Toevoegen</button>\n" +
+    "        <button type=\"button\" class=\"btn btn-primary openingsuren-toevoegen\" data-dismiss=\"modal\" ng-click=\"hasOpeningHours = true\">Toevoegen</button>\n" +
     "      </div>\n" +
     "    </div>\n" +
     "    <!-- /.modal-content -->\n" +
     "  </div>\n" +
     "  <!-- /.modal-dialog -->\n" +
     "</div>\n" +
-    "<!-- /.modal -->\n" +
-    "\n" +
-    "<!-- Button trigger modal -->"
+    "<!-- /.modal -->"
   );
 
 
@@ -7345,7 +7372,7 @@ $templateCache.put('templates/base-job.template.html',
   $templateCache.put('templates/event-form-step2.html',
     "<div ng-controller=\"EventFormStep2Ctrl as EventFormStep2\">\n" +
     "  <a name=\"wanneer\"></a>\n" +
-    "  <section id=\"wanneer\" ng-show=\"!eventFormData.showStep2\">\n" +
+    "  <section id=\"wanneer\" ng-show=\"eventFormData.showStep2\">\n" +
     "    <h2 class=\"title-border\">\n" +
     "      <span class=\"number\">2</span>\n" +
     "      <span ng-show=\"eventFormData.isEvent\">Wanneer vindt dit evenement of deze activiteit plaats?</span>\n" +
@@ -7382,8 +7409,6 @@ $templateCache.put('templates/base-job.template.html',
     "    <div class=\"row\" ng-show=\"activeCalendarType === 'permanent'\">\n" +
     "      <udb-event-form-opening-hours></udb-event-form-opening-hours>\n" +
     "    </div>\n" +
-    "\n" +
-    "    <a href=\"#\" ng-click=\"eventFormData.showStep(3)\">Volgende stap</a>\n" +
     "\n" +
     "  </section>\n" +
     "</div>\n"

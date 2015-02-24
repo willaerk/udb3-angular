@@ -26,6 +26,7 @@
       { 'label': 'Van ... tot ... ', 'id' : 'periodic' },
       { 'label' : 'Permanent', 'id' : 'permanent' }
     ];
+    $scope.hasOpeningHours = false;
 
     // Scope functions
     $scope.setCalendarType = setCalendarType;
@@ -33,6 +34,18 @@
     $scope.addTimestamp = addTimestamp;
     $scope.toggleStartHour = toggleStartHour;
     $scope.toggleEndHour = toggleEndHour;
+    $scope.saveOpeninghHourDaySelection = saveOpeninghHourDaySelection;
+
+    // Mapping between machine name of days and real output.
+    var dayNames = {
+      'monday' : 'Maandag',
+      'tuesday' : 'Dinsdag',
+      'wednesday' : 'Woensdag',
+      'thursday' : 'Donderdag',
+      'friday' : 'Vrijdag',
+      'saturday' : 'Zaterdag',
+      'sunday' : 'Zondag'
+    };
 
     /**
      * Click listener on the calendar type buttons.
@@ -40,6 +53,7 @@
      */
     function setCalendarType(type) {
 
+      EventFormData.showStep(3);
       $scope.activeCalendarType = type;
 
       for (var i = 0; i < $scope.calendarLabels.length; i++) {
@@ -56,8 +70,8 @@
       }
 
       // A type is choosen, start a complet new calendar, removing old data.
-
       EventFormData.calendarType = type;
+      $scope.hasOpeningHours = false;
       EventFormData.resetCalendar();
 
       if (type === 'single') {
@@ -114,6 +128,23 @@
       if (!timestamp.showEndHour) {
         timestamp.endHour = '';
       }
+
+    }
+
+    /**
+     * Change listener on the day selection of opening hours.
+     * Create human labels for the day selection.
+     */
+    function saveOpeninghHourDaySelection(index, daysOfWeek) {
+
+      var humanValues = [];
+      if (daysOfWeek instanceof Array) {
+        for (var i in daysOfWeek) {
+          humanValues.push(dayNames[daysOfWeek[i]]);
+        }
+      }
+
+      EventFormData.openingHours[index].label = humanValues.join(', ');
 
     }
 

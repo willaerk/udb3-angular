@@ -37,8 +37,8 @@ function EventFormDataFactory() {
      * @param int stepNumber
      */
     showStep: function(stepNumber) {
-      console.log(this);
       this['showStep' + stepNumber] = true;
+      console.log(this);
     },
 
     /**
@@ -174,6 +174,7 @@ function EventFormDataFactory() {
         'daysOfWeek' : daysOfWeek,
         'opens' : opens,
         'closes' : closes,
+        'label' : ''
       });
 
     },

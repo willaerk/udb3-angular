@@ -1,6 +1,6 @@
 <div ng-controller="EventFormStep2Ctrl as EventFormStep2">
   <a name="wanneer"></a>
-  <section id="wanneer" ng-show="!eventFormData.showStep2">
+  <section id="wanneer" ng-show="eventFormData.showStep2">
     <h2 class="title-border">
       <span class="number">2</span>
       <span ng-show="eventFormData.isEvent">Wanneer vindt dit evenement of deze activiteit plaats?</span>
@@ -37,8 +37,6 @@
     <div class="row" ng-show="activeCalendarType === 'permanent'">
       <udb-event-form-opening-hours></udb-event-form-opening-hours>
     </div>
-
-    <a href="#" ng-click="eventFormData.showStep(3)">Volgende stap</a>
 
   </section>
 </div>

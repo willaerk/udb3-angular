@@ -7085,7 +7085,7 @@ $templateCache.put('templates/base-job.template.html',
     "      <div class=\"row\" >\n" +
     "        <div class=\"col-xs-12\">\n" +
     "          <label id=\"locatie-label\">Kies een locatie</label>\n" +
-    "          <div id=\"locatie-kiezer\"ng-hide=\"locationSelected\" >\n" +
+    "          <div id=\"locatie-kiezer\" ng-hide=\"locationSelected\" >\n" +
     "            <span style=\"position: relative; display: inline-block; direction: ltr;\" class=\"twitter-typeahead\">\n" +
     "              <input type=\"text\" placeholder=\"Locatie\" ng-click=\"selectLocation()\" ng-model=\"eventFormData.selectedLocation\" typeahead=\"location for location in locationsForCity | filter:$viewValue | limitTo:10\" typeahead-min-length='1' typeahead-on-select='onSelectPart($item, $model, $label)' class=\"form-control\">\n" +
     "            </span>\n" +

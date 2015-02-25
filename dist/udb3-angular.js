@@ -1854,6 +1854,7 @@ angular
 
     return {
       restrict: 'A',
+      require: 'ngModel',
       link: function (scope, elem, attrs, ngModel) {
 
         elem.multiselect({
@@ -1873,6 +1874,81 @@ angular
       }
 
     };
+  }
+
+})();
+// Source: src/core/components/time-autocomplete/time-autocomplete.js
+(function () {
+/**
+ * @ngdoc directive
+ * @name udb.core.directive:udbMultiselect
+ * @description
+ * # directive for bootstrap-multiselect integration
+ */
+angular
+  .module('udb.core')
+  .directive('udbTimeAutocomplete', udbTimeAutocompleteDirective);
+
+  function udbTimeAutocompleteDirective() {
+
+    return {
+      restrict: 'E',
+      require: 'ngModel',
+      scope : {
+        ngModel : '=',
+        cssClass : '@',
+        inputPlaceholder : '@'
+      },
+      templateUrl: 'templates/time-autocomplete.html',
+      link: function(scope, elem, attrs, ngModel) {
+        scope.times = generateTimes();
+        scope.validateHour = validateHour();
+      },
+
+    };
+
+    /**
+     * Generate the time options.
+     */
+    function generateTimes() {
+
+      var startMinute = 60;
+      var increment = 1;
+      var date = new Date(2015, 1, 1, 0, 0);
+      var options = [];
+      var hourLen = 60;
+      var hours = 24;
+
+      for(var i = 0, loopInt = hours * (hourLen/increment); i < loopInt; i++){
+
+        date.setMinutes(date.getMinutes() + increment);
+        var h = date.getHours();
+        var m = date.getMinutes();
+
+        if(('' + h).length === 1){
+            h = '0' + h;
+        }
+
+        if(('' + m).length === 1){
+            m = '0' + m;
+        }
+
+        var label = h + ':' + m;
+        options.push(label);
+      }
+
+      return options;
+
+    }
+
+    /**
+     * Validate the selected hour.
+     */
+    function validateHour(value) {
+      console.log(value);
+    }
+
+
   }
 
 })();
@@ -4284,7 +4360,6 @@ function EventFormDataFactory() {
      */
     showStep: function(stepNumber) {
       this['showStep' + stepNumber] = true;
-      console.log(this);
     },
 
     /**
@@ -4402,9 +4477,9 @@ function EventFormDataFactory() {
     addTimestamp: function(date, startHour, endHour) {
 
       this.timestamps.push({
-        'date' : '',
-        'startHour' : '',
-        'endHour' : '',
+        'date' : date,
+        'startHour' : startHour,
+        'endHour' : endHour,
         'showStartHour' : startHour !== '',
         'showEndHour' : endHour !== '',
       });
@@ -7087,7 +7162,12 @@ function searchDirective() {
 
 // Source: .tmp/udb3-angular.templates.js
 angular.module('udb.core').run(['$templateCache', function($templateCache) {
-$templateCache.put('templates/base-job.template.html',
+$templateCache.put('templates/time-autocomplete.html',
+    "<input type=\"text\" ng-model=\"ngModel\" class=\"{{cssClass}}\" placeholder=\"{{inputPlaceholder}}\" typeahead=\"time for time in times | filter:$viewValue | limitTo:8\" />"
+  );
+
+
+  $templateCache.put('templates/base-job.template.html',
     "<div>\n" +
     "  {{job.getDescription()}} - {{ job.state }}\n" +
     "  <progressbar value=\"job.progress\" type=\"{{giveJobBarType(job)}}\">\n" +
@@ -7175,7 +7255,7 @@ $templateCache.put('templates/base-job.template.html',
     "            Beginuur\n" +
     "          </label>\n" +
     "          <div class=\"beginuur-invullen\" ng-show=\"timestamp.showStartHour\">\n" +
-    "            <input type=\"text\" class=\"form-control uur\" placeholder=\"Bv. 08:00\" ng-model=\"timestamp.startHour\" />\n" +
+    "            <udb-time-autocomplete ng-model=\"timestamp.startHour\" css-class=\"form-control uur\" input-placeholder=\"Bv. 08:00\"></udb-time-autocomplete>\n" +
     "          </div>\n" +
     "        </div>\n" +
     "        <div class=\"col-xs-6 einduur\" ng-show=\"timestamp.showStartHour\">\n" +
@@ -7184,7 +7264,7 @@ $templateCache.put('templates/base-job.template.html',
     "            Einduur\n" +
     "          </label>\n" +
     "          <div class=\"einduur-invullen\" ng-show=\"timestamp.showEndHour\">\n" +
-    "            <input type=\"text\" class=\"form-control uur\" placeholder=\"Bv. 23:00\" ng-model=\"timestamp.endHour\" />\n" +
+    "            <udb-time-autocomplete ng-model=\"timestamp.endHour\" css-class=\"form-control uur\" input-placeholder=\"Bv. 23:00\"></udb-time-autocomplete>\n" +
     "          </div>\n" +
     "        </div>\n" +
     "      </div>\n" +
@@ -7263,13 +7343,13 @@ $templateCache.put('templates/base-job.template.html',
     "              </select>\n" +
     "            </td>\n" +
     "            <td>\n" +
-    "              <input class=\"form-control\" type=\"text\" ng-model=\"openingHour.opens\" />\n" +
+    "              <udb-time-autocomplete ng-model=\"openingHour.opens\" css-class=\"form-control\" input-placeholder=\"\"></udb-time-autocomplete>\n" +
     "            </td>\n" +
     "            <td>\n" +
     "              &nbsp;-&nbsp;\n" +
     "            </td>\n" +
     "            <td>\n" +
-    "              <input class=\"form-control\" type=\"text\" ng-model=\"openingHour.closes\" />\n" +
+    "              <udb-time-autocomplete ng-model=\"openingHour.closes\" css-class=\"form-control\" input-placeholder=\"\"></udb-time-autocomplete>\n" +
     "            </td>\n" +
     "            <td>\n" +
     "              <button type=\"button\" class=\"close\" aria-label=\"Close\" ng-click=\"eventFormData.removeOpeningHour(i)\"><span aria-hidden=\"true\">&times;</span>\n" +

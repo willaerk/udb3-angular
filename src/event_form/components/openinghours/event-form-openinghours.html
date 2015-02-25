@@ -56,13 +56,13 @@
               </select>
             </td>
             <td>
-              <input class="form-control" type="text" ng-model="openingHour.opens" />
+              <udb-time-autocomplete ng-model="openingHour.opens" css-class="form-control" input-placeholder=""></udb-time-autocomplete>
             </td>
             <td>
               &nbsp;-&nbsp;
             </td>
             <td>
-              <input class="form-control" type="text" ng-model="openingHour.closes" />
+              <udb-time-autocomplete ng-model="openingHour.closes" css-class="form-control" input-placeholder=""></udb-time-autocomplete>
             </td>
             <td>
               <button type="button" class="close" aria-label="Close" ng-click="eventFormData.removeOpeningHour(i)"><span aria-hidden="true">&times;</span>

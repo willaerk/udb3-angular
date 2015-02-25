@@ -12,7 +12,7 @@
             Beginuur
           </label>
           <div class="beginuur-invullen" ng-show="timestamp.showStartHour">
-            <input type="text" class="form-control uur" placeholder="Bv. 08:00" ng-model="timestamp.startHour" />
+            <udb-time-autocomplete ng-model="timestamp.startHour" css-class="form-control uur" input-placeholder="Bv. 08:00"></udb-time-autocomplete>
           </div>
         </div>
         <div class="col-xs-6 einduur" ng-show="timestamp.showStartHour">
@@ -21,7 +21,7 @@
             Einduur
           </label>
           <div class="einduur-invullen" ng-show="timestamp.showEndHour">
-            <input type="text" class="form-control uur" placeholder="Bv. 23:00" ng-model="timestamp.endHour" />
+            <udb-time-autocomplete ng-model="timestamp.endHour" css-class="form-control uur" input-placeholder="Bv. 23:00"></udb-time-autocomplete>
           </div>
         </div>
       </div>

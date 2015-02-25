@@ -38,7 +38,6 @@ function EventFormDataFactory() {
      */
     showStep: function(stepNumber) {
       this['showStep' + stepNumber] = true;
-      console.log(this);
     },
 
     /**
@@ -156,9 +155,9 @@ function EventFormDataFactory() {
     addTimestamp: function(date, startHour, endHour) {
 
       this.timestamps.push({
-        'date' : '',
-        'startHour' : '',
-        'endHour' : '',
+        'date' : date,
+        'startHour' : startHour,
+        'endHour' : endHour,
         'showStartHour' : startHour !== '',
         'showEndHour' : endHour !== '',
       });

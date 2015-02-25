@@ -15,6 +15,7 @@ angular
 
     return {
       restrict: 'A',
+      require: 'ngModel',
       link: function (scope, elem, attrs, ngModel) {
 
         elem.multiselect({

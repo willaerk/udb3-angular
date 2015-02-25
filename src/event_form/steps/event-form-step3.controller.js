@@ -36,6 +36,9 @@
     $scope.locationSelected = false;
     $scope.locationAdded = false;
     $scope.newLocation = false;
+    $scope.locationTitleRequired = false;
+    $scope.locationStreetRequired = false;
+    $scope.locationNumberRequired = false;
     $scope.placeValidated = false;
     $scope.placeStreetRequired = false;
     $scope.placeNumberRequired = false;
@@ -67,8 +70,8 @@
 
     // Functions for locations (in case of event)
     function selectLocation($item, $model, $label) {
-        $scope.locationSelected = true;
-        $scope.newLocation = true;
+      $scope.locationSelected = true;
+      $scope.newLocation = true;
     }
 
     function changeLocationSelection() {
@@ -84,22 +87,36 @@
     }
 
     function addLocation() {
+      if (!$scope.eventFormData.locationTitle) {
+        $scope.locationTitleRequired = true;
+      }
+      else if (!$scope.eventFormData.locationStreet) {
+        $scope.locationStreetRequired = true;
+      }
+      else if (!$scope.eventFormData.locationNumber) {
+        $scope.locationNumberRequired = true;
+      }
+      else {
+        $scope.locationTitleRequired = false;
+        $scope.locationStreetRequired = false;
+        $scope.locationNumberRequired = false;
         $scope.locationAdded = true;
         $scope.newLocation = false;
         $scope.locationSelected = true;
         $scope.eventFormData.showStep4 = true;
+      }
     }
 
     function resetAddLocation() {
-        $scope.eventFormData.selectedLocation = '';
-        $scope.eventFormData.locationTitle = '';
-        $scope.eventFormData.locationCategory = '';
-        $scope.eventFormData.locationStreet = '';
-        $scope.eventFormData.locationNumber = '';
-        $scope.eventFormData.locationCity = '';
-        $scope.newLocation = false;
-        $scope.locationSelected = false;
-        $scope.locationAdded = false;
+      $scope.eventFormData.selectedLocation = '';
+      $scope.eventFormData.locationTitle = '';
+      $scope.eventFormData.locationCategory = '';
+      $scope.eventFormData.locationStreet = '';
+      $scope.eventFormData.locationNumber = '';
+      $scope.eventFormData.locationCity = '';
+      $scope.newLocation = false;
+      $scope.locationSelected = false;
+      $scope.locationAdded = false;
     }
 
     function getLocationCategories() {

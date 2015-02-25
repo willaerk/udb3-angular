@@ -48,6 +48,7 @@
               <div class="form-group">
                 <label>Titel</label>
                 <input class="form-control" type="text" ng-model="eventFormData.locationTitle">
+                <span ng-show="locationTitleRequired">Titel is een verplicht veld.</span>
               </div>
 
               <div class="form-group">
@@ -63,12 +64,14 @@
                   <div class="form-group">
                     <label>Straat</label>
                     <input class="form-control" id="locatie-straat" placeholder="Straat" type="text" ng-model="eventFormData.locationStreet">
+                    <span ng-show="locationStreetRequired">Straat is een verplicht veld.</span>
                   </div>
                 </div>
                 <div class="col-xs-3">
                   <div class="form-group">
                     <label>Nummer</label>
                     <input class="form-control" id="locatie-nummer" placeholder="Nummer" type="text" ng-model="eventFormData.locationNumber">
+                    <span ng-show="locationNumberRequired">Nummer is een verplicht veld.</span>
                   </div>
                 </div>
                 <div class="col-xs-12">

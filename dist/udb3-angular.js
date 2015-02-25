@@ -4752,6 +4752,9 @@ function EventFormStep5Directive() {
     $scope.locationSelected = false;
     $scope.locationAdded = false;
     $scope.newLocation = false;
+    $scope.locationTitleRequired = false;
+    $scope.locationStreetRequired = false;
+    $scope.locationNumberRequired = false;
     $scope.placeValidated = false;
     $scope.placeStreetRequired = false;
     $scope.placeNumberRequired = false;
@@ -4783,8 +4786,8 @@ function EventFormStep5Directive() {
 
     // Functions for locations (in case of event)
     function selectLocation($item, $model, $label) {
-        $scope.locationSelected = true;
-        $scope.newLocation = true;
+      $scope.locationSelected = true;
+      $scope.newLocation = true;
     }
 
     function changeLocationSelection() {
@@ -4800,22 +4803,36 @@ function EventFormStep5Directive() {
     }
 
     function addLocation() {
+      if (!$scope.eventFormData.locationTitle) {
+        $scope.locationTitleRequired = true;
+      }
+      else if (!$scope.eventFormData.locationStreet) {
+        $scope.locationStreetRequired = true;
+      }
+      else if (!$scope.eventFormData.locationNumber) {
+        $scope.locationNumberRequired = true;
+      }
+      else {
+        $scope.locationTitleRequired = false;
+        $scope.locationStreetRequired = false;
+        $scope.locationNumberRequired = false;
         $scope.locationAdded = true;
         $scope.newLocation = false;
         $scope.locationSelected = true;
         $scope.eventFormData.showStep4 = true;
+      }
     }
 
     function resetAddLocation() {
-        $scope.eventFormData.selectedLocation = '';
-        $scope.eventFormData.locationTitle = '';
-        $scope.eventFormData.locationCategory = '';
-        $scope.eventFormData.locationStreet = '';
-        $scope.eventFormData.locationNumber = '';
-        $scope.eventFormData.locationCity = '';
-        $scope.newLocation = false;
-        $scope.locationSelected = false;
-        $scope.locationAdded = false;
+      $scope.eventFormData.selectedLocation = '';
+      $scope.eventFormData.locationTitle = '';
+      $scope.eventFormData.locationCategory = '';
+      $scope.eventFormData.locationStreet = '';
+      $scope.eventFormData.locationNumber = '';
+      $scope.eventFormData.locationCity = '';
+      $scope.newLocation = false;
+      $scope.locationSelected = false;
+      $scope.locationAdded = false;
     }
 
     function getLocationCategories() {
@@ -7285,6 +7302,7 @@ $templateCache.put('templates/base-job.template.html',
     "              <div class=\"form-group\">\n" +
     "                <label>Titel</label>\n" +
     "                <input class=\"form-control\" type=\"text\" ng-model=\"eventFormData.locationTitle\">\n" +
+    "                <span ng-show=\"locationTitleRequired\">Titel is een verplicht veld.</span>\n" +
     "              </div>\n" +
     "\n" +
     "              <div class=\"form-group\">\n" +
@@ -7300,12 +7318,14 @@ $templateCache.put('templates/base-job.template.html',
     "                  <div class=\"form-group\">\n" +
     "                    <label>Straat</label>\n" +
     "                    <input class=\"form-control\" id=\"locatie-straat\" placeholder=\"Straat\" type=\"text\" ng-model=\"eventFormData.locationStreet\">\n" +
+    "                    <span ng-show=\"locationStreetRequired\">Straat is een verplicht veld.</span>\n" +
     "                  </div>\n" +
     "                </div>\n" +
     "                <div class=\"col-xs-3\">\n" +
     "                  <div class=\"form-group\">\n" +
     "                    <label>Nummer</label>\n" +
     "                    <input class=\"form-control\" id=\"locatie-nummer\" placeholder=\"Nummer\" type=\"text\" ng-model=\"eventFormData.locationNumber\">\n" +
+    "                    <span ng-show=\"locationNumberRequired\">Nummer is een verplicht veld.</span>\n" +
     "                  </div>\n" +
     "                </div>\n" +
     "                <div class=\"col-xs-12\">\n" +

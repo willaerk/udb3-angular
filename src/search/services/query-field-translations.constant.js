@@ -59,7 +59,7 @@ angular
       'CATEGORY_THEME_NAME' : 'thema',
       'CATEGORY_FACILITY_NAME' : 'voorziening',
       'CATEGORY_TARGETAUDIENCE_NAME' : 'doelgroep',
-      'CATEGORY_FLANDERSREGION_NAME' : 'regio',
+      'CATEGORY_FLANDERSREGION_NAME' : 'gebied',
       'CATEGORY_PUBLICSCOPE_NAME' : 'publieksbereik',
       'PRIVATE' : 'prive',
       'AVAILABLEFROM' : 'datum-beschikbaar'

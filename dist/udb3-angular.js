@@ -4648,12 +4648,8 @@ angular
       'CATEGORY_THEME_NAME' : 'thema',
       'CATEGORY_FACILITY_NAME' : 'voorziening',
       'CATEGORY_TARGETAUDIENCE_NAME' : 'doelgroep',
-      'CATEGORY_FLANDERSREGION_NAME' : 'regio',
+      'CATEGORY_FLANDERSREGION_NAME' : 'gebied',
       'CATEGORY_PUBLICSCOPE_NAME' : 'publieksbereik',
-      'LIKE_COUNT' : 'aantal-likes',
-      'RECOMMEND_COUNT' : 'keren-aanbevolen',
-      'ATTEND_COUNT' : 'aantal-ik-ga',
-      'COMMENT_COUNT' : 'aantal-commentaar',
       'PRIVATE' : 'prive',
       'AVAILABLEFROM' : 'datum-beschikbaar'
     }
@@ -4703,10 +4699,6 @@ angular
     {name: 'category_targetaudience_name', type: 'term'},
     {name: 'category_flandersregion_name', type: 'term'},
     {name: 'category_publicscope_name', type: 'term'},
-    {name: 'like_count', type: 'number'},
-    {name: 'recommend_count', type: 'number'},
-    {name: 'attend_count', type: 'number'},
-    {name: 'comment_count', type: 'number'},
     {name: 'private', type: 'check'},
     {name: 'availablefrom', type: 'date-range'}
   ]);

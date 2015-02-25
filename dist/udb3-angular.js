@@ -2095,7 +2095,8 @@ angular.module('udb.core')
       'organizer': 'Organisator',
       'bookingInfo': 'Prijsinformatie',
       'creator': 'Auteur',
-      'terms': 'Thema',
+      'terms.theme': 'Thema',
+      'terms.eventtype': 'Soort aanbod',
       'created': 'Datum aangemaakt',
       'publisher': 'Auteur',
       'endDate': 'Einddatum',
@@ -2107,6 +2108,7 @@ angular.module('udb.core')
     }
   }
 );
+
 
 // Source: src/core/udb-api.service.js
 /**
@@ -3420,7 +3422,8 @@ function EventExportController($modalInstance, udbApi, eventExporter, queryField
     { name: 'organizer', include: false, sortable: false, excludable: true},
     { name: 'bookingInfo', include: true, sortable: false, excludable: true},
     { name: 'creator', include: false, sortable: false, excludable: true},
-    { name: 'terms', include: true, sortable: false, excludable: true},
+    { name: 'terms.theme', include: true, sortable: false, excludable: true},
+    { name: 'terms.eventtype', include: true, sortable: false, excludable: true},
     { name: 'created', include: false, sortable: false, excludable: true},
     { name: 'endDate', include: false, sortable: false, excludable: true},
     { name: 'startDate', include: false, sortable: false, excludable: true},

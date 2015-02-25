@@ -11,7 +11,7 @@ angular
   .directive('udbQueryEditor', udbQueryEditor);
 
 /* @ngInject */
-function udbQueryEditor(queryFields, LuceneQueryBuilder, taxonomyTerms, fieldTypeTransformers, searchHelper) {
+function udbQueryEditor(queryFields, LuceneQueryBuilder, taxonomyTerms, fieldTypeTransformers, searchHelper, $translate) {
   return {
     templateUrl: 'templates/query-editor.directive.html',
     restrict: 'E',
@@ -30,9 +30,28 @@ function udbQueryEditor(queryFields, LuceneQueryBuilder, taxonomyTerms, fieldTyp
           queryBuilder = LuceneQueryBuilder;
 
       qe.fields = _.chain(queryFields)
-        .map('name')
+        // blacklist fields that should not be shown in the editor by adding them to the array below
         .difference(['category_name'])
         .value();
+
+      // use the first occurrence of a group name to order it against the other groups
+      var orderedGroups = _.chain(qe.fields)
+        .map(function(field) {
+          return field.group;
+        })
+        .uniq()
+        .value();
+
+      _.forEach(qe.fields, function (field) {
+        var fieldName = field.name.toUpperCase(),
+            fieldGroup = 'queryFieldGroup.' + field.group;
+
+        $translate([fieldName, fieldGroup]).then(function (translations) {
+          field.label = translations[fieldName];
+          field.groupIndex = _.indexOf(orderedGroups, field.group);
+          field.groupLabel = translations[fieldGroup];
+        });
+      });
 
       qe.operators = ['AND', 'OR'];
       qe.groupedQueryTree = {

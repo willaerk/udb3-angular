@@ -321,6 +321,15 @@ angular.module('udb.core')
       'sameAs': 'Externe IDs',
       'typicalAgeRange': 'Leeftijd',
       'language': 'Taal'
+    },
+    queryFieldGroup: {
+      'what': 'Wat',
+      'where': 'Waar',
+      'when': 'Wanneer',
+      'input-information': 'Invoerders-informatie',
+      'translations': 'Vertalingen',
+      'other': 'Andere'
+
     }
   }
 );

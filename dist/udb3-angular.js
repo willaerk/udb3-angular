@@ -3894,21 +3894,29 @@ function udbSearchBar(searchHelper, $rootScope) {
         query: '',
         hasErrors: false,
         errors: '',
-        editQuery: function () {
-          $rootScope.$emit('editQuery');
-        }
+        isEditing: false
+      };
+
+      searchBar.editQuery = function () {
+        searchBar.isEditing = true;
+        $rootScope.$emit('startEditingQuery');
+      };
+
+      searchBar.search = function () {
+        searchHelper.setQueryString(searchBar.query);
       };
 
       scope.sb = searchBar;
 
-      scope.$watch('sb.query', function (queryString) {
-        searchHelper.setQueryString(queryString);
+      $rootScope.$on('stopEditingQuery', function () {
+        scope.sb.isEditing = false;
       });
 
       scope.$watch(function () {
         return searchHelper.getQuery();
       }, function (query) {
         scope.sb.query = query.queryString;
+        scope.sb.search();
 
         if (query.errors && query.errors.length) {
           scope.sb.hasErrors = true;
@@ -5418,10 +5426,11 @@ function Search($scope, udbApi, LuceneQueryBuilder, $window, $location, $modal, 
 
     $scope.queryEditorShown = true;
   };
-  $rootScope.$on('editQuery', $scope.editQuery);
+  $rootScope.$on('startEditingQuery', $scope.editQuery);
 
   $scope.hideQueryEditor = function () {
     $scope.queryEditorShown = false;
+    $rootScope.$emit('stopEditingQuery');
   };
 
   $scope.$watch(function () {
@@ -5783,15 +5792,16 @@ $templateCache.put('templates/base-job.template.html',
 
 
   $templateCache.put('templates/search-bar.directive.html',
-    "<form class=\"navbar-form navbar-left udb-header-search\" role=\"search\">\n" +
+    "<form class=\"navbar-form navbar-left udb-header-search\" role=\"search\"\n" +
+    "      ng-class=\"{'has-errors': sb.hasErrors, 'is-editing': sb.isEditing}\">\n" +
     "  <div class=\"form-group has-warning has-feedback\">\n" +
     "    <input type=\"text\" class=\"form-control\" ng-model=\"sb.query\">\n" +
-    "    <i class=\"fa fa-search search-icon\"></i>\n" +
+    "    <i class=\"fa fa-flask editor-icon\" ng-click=\"sb.editQuery()\"></i>\n" +
     "    <i ng-show=\"sb.hasErrors\" class=\"fa fa-warning warning-icon\" tooltip-append-to-body=\"true\"\n" +
     "       tooltip-placement=\"bottom\" tooltip=\"{{sb.errors}}\"></i>\n" +
     "  </div>\n" +
-    "  <button type=\"submit\" class=\"btn udb-query-editor-button\" ng-click=\"sb.editQuery()\">\n" +
-    "    <i class=\"fa fa-flask\"></i>\n" +
+    "  <button type=\"submit\" class=\"btn udb-search-button\" ng-click=\"sb.search()\">\n" +
+    "    <i class=\"fa fa-search\"></i>\n" +
     "  </button>\n" +
     "</form>"
   );

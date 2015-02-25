@@ -24,11 +24,13 @@ function EventFormDataFactory() {
 
     // Properties that will be copied to UdbEvent / UdbPlace.
     name : {},
+    description : {},
     place : {},
     type : {},
     theme : {},
     timestamps : [],
     openingHours : [],
+    ageRange : '',
 
     /**
      * Show the given step.
@@ -58,6 +60,20 @@ function EventFormDataFactory() {
      */
     getName: function(langcode) {
       return this.name[langcode];
+    },
+
+    /**
+     * Set the description for a given langcode.
+     */
+    setDescription: function(description, langcode) {
+      this.description[langcode] = description;
+    },
+
+    /**
+     * Get the description for a given langcode.
+     */
+    getDescription: function(langcode) {
+      return this.description[langcode];
     },
 
     /**
@@ -132,10 +148,23 @@ function EventFormDataFactory() {
     },
 
     /**
+     * Set the age range.
+     */
+    setAgeRange: function(range) {
+      this.ageRange = range;
+    },
+
+    /**
+     * Get the age range.
+     */
+    getAgeRange: function() {
+      return this.ageRange;
+    },
+
+    /**
      * Add a timestamp to the timestamps array.
      */
     addTimestamp: function(date, startHour, endHour) {
-
       this.timestamps.push({
         'date' : '',
         'startHour' : '',

@@ -4189,11 +4189,13 @@ function EventFormDataFactory() {
 
     // Properties that will be copied to UdbEvent / UdbPlace.
     name : {},
+    description : {},
     place : {},
     type : {},
     theme : {},
     timestamps : [],
     openingHours : [],
+    ageRange : '',
 
     /**
      * Show the given step.
@@ -4223,6 +4225,20 @@ function EventFormDataFactory() {
      */
     getName: function(langcode) {
       return this.name[langcode];
+    },
+
+    /**
+     * Set the description for a given langcode.
+     */
+    setDescription: function(description, langcode) {
+      this.description[langcode] = description;
+    },
+
+    /**
+     * Get the description for a given langcode.
+     */
+    getDescription: function(langcode) {
+      return this.description[langcode];
     },
 
     /**
@@ -4297,10 +4313,23 @@ function EventFormDataFactory() {
     },
 
     /**
+     * Set the age range.
+     */
+    setAgeRange: function(range) {
+      this.ageRange = range;
+    },
+
+    /**
+     * Get the age range.
+     */
+    getAgeRange: function() {
+      return this.ageRange;
+    },
+
+    /**
      * Add a timestamp to the timestamps array.
      */
     addTimestamp: function(date, startHour, endHour) {
-
       this.timestamps.push({
         'date' : '',
         'startHour' : '',
@@ -4701,8 +4730,83 @@ function EventFormStep5Directive() {
   function EventFormStep5Controller(udbApi, $scope, EventFormData) {
 
     // Scope vars.
-    // main storage for event form.
-    $scope.eventFormData = EventFormData;
+    $scope.eventFormData = EventFormData; // main storage for event form.
+    $scope.description = EventFormData.getDescription('nl');
+    $scope.descriptionCssClass = $scope.description ? 'state-complete' : 'state-incomplete';
+    $scope.ageRange = 0;
+    $scope.ageCssClass = EventFormData.ageRange ? 'state-complete' : 'state-incomplete';
+    $scope.minAge = '';
+
+    // Scope functions.
+    $scope.saveDescription = saveDescription;
+    $scope.saveAgeRange = saveAgeRange;
+    $scope.changeAgeRange = changeAgeRange;
+    $scope.setAllAges = setAllAges;
+    $scope.resetAgeRange = resetAgeRange;
+
+
+    if (EventFormData.minAge) {
+      $scope.ageCssClass = 'state-complete';
+    }
+
+    /**
+     * Save the description.
+     */
+    function saveDescription() {
+
+      EventFormData.setDescription($scope.description, 'nl');
+
+      // Toggle correct class.
+      if ($scope.description) {
+        $scope.descriptionCssClass = 'state-complete';
+      }
+      else {
+        $scope.descriptionCssClass = 'state-incomplete';
+      }
+
+    }
+
+    /**
+     * Listener on the age range selection.
+     */
+    function changeAgeRange() {
+
+      $scope.ageRange = parseInt($scope.ageRange);
+
+      if ($scope.ageRange > 0) {
+        $scope.ageCssClass = 'state-complete';
+      }
+      else {
+        setAllAges();
+      }
+
+    }
+
+    /**
+     * Save the age range.
+     */
+    function saveAgeRange() {
+
+      $scope.ageCssClass = 'state-complete';
+    }
+
+    /**
+     * Set to all ages.
+     */
+    function setAllAges() {
+      $scope.ageRange = -1;
+      EventFormData.setAgeRange(-1);
+      $scope.ageCssClass = 'state-complete';
+    }
+
+    /**
+     * Reset the age selection.
+     */
+    function resetAgeRange() {
+      $scope.ageRange = 0;
+      $scope.minAge = '';
+      $scope.ageCssClass = 'state-incomplete';
+    }
 
   }
   EventFormStep5Controller.$inject = ["udbApi", "$scope", "EventFormData"];
@@ -7122,13 +7226,96 @@ $templateCache.put('templates/base-job.template.html',
   $templateCache.put('templates/event-form-step5.html',
     "<div ng-controller=\"EventFormStep5Ctrl as EventFormStep5\">\n" +
     "  <a name=\"extra\"></a>\n" +
-    "  <section id=\"extra\" ng-show=\"eventFormData.showStep5\">\n" +
+    "  <section id=\"extra\" ng-show=\"!eventFormData.showStep5\">\n" +
     "\n" +
     "    <h2 class=\"title-border\">\n" +
     "      <span class=\"number\">5</span>\n" +
     "      <span ng-show=\"eventFormData.isEvent\">Laat je evenement extra opvallen</span>\n" +
     "      <span ng-show=\"eventFormData.isPlace\">Laat deze locatie extra opvallen</span>\n" +
     "    </h2>\n" +
+    "\n" +
+    "    <div class=\"row\">\n" +
+    "      <div class=\"col-sm-8\">\n" +
+    "\n" +
+    "        <div class=\"row extra-titel\">\n" +
+    "          <div class=\"extra-task state-complete\">\n" +
+    "            <div class=\"col-sm-3\">\n" +
+    "              <em class=\"extra-task-label\">Titel</em>\n" +
+    "            </div>\n" +
+    "            <div class=\"col-sm-8\">\n" +
+    "              <p id=\"extra-titel-motivator\" ng-bind=\"eventFormData.name.nl\"></p>\n" +
+    "            </div>\n" +
+    "          </div>\n" +
+    "        </div>\n" +
+    "\n" +
+    "        <div class=\"row extra-beschrijving\">\n" +
+    "          <div class=\"extra-task\" ng-class=\"descriptionCssClass\">\n" +
+    "            <div class=\"col-sm-3\">\n" +
+    "              <em class=\"extra-task-label\">Beschrijving</em>\n" +
+    "            </div>\n" +
+    "            <div class=\"col-sm-8\">\n" +
+    "              <section class=\"state incomplete\">\n" +
+    "                <div class=\"row\">\n" +
+    "                  <div class=\"col-sm-6\">\n" +
+    "                    <a class=\"btn btn-default to-filling\" ng-click=\"descriptionCssClass = 'state-filling'\">Tekst toevoegen</a>\n" +
+    "                  </div>\n" +
+    "                </div>\n" +
+    "              </section>\n" +
+    "              <section class=\"state complete\">\n" +
+    "                <p>{{eventFormData.description.nl}} <a class=\"btn btn-link\" ng-click=\"descriptionCssClass = 'state-filling'\">Wijzigen</a>\n" +
+    "                </p>\n" +
+    "              </section>\n" +
+    "              <section class=\"state filling\">\n" +
+    "                <div class=\"form-group\">\n" +
+    "                  <label>Beschrijving</label>\n" +
+    "                  <textarea class=\"form-control\" ng-model=\"description\"></textarea>\n" +
+    "                  <div class=\"tip tip-thema-route\">\n" +
+    "                    <p ng-bind=\"tip\"></p>\n" +
+    "                  </div>\n" +
+    "\n" +
+    "                </div>\n" +
+    "                <div class=\"form-group\">\n" +
+    "                  <a class=\"btn btn-primary to-complete\" ng-click=\"saveDescription()\">Opslaan</a>\n" +
+    "                </div>\n" +
+    "              </section>\n" +
+    "            </div>\n" +
+    "          </div>\n" +
+    "        </div>\n" +
+    "\n" +
+    "        <div class=\"row extra-leeftijd\">\n" +
+    "          <div class=\"extra-task\" ng-class=\"ageCssClass\">\n" +
+    "            <div class=\"col-sm-3\">\n" +
+    "              <em class=\"extra-task-label\">Geschikt voor</em>\n" +
+    "            </div>\n" +
+    "            <div class=\"col-sm-8\">\n" +
+    "              <section>\n" +
+    "                <div class=\"form-group clearfix\">\n" +
+    "                  <select class=\"form-control leeftijd-incomplete-select\" ng-change=\"changeAgeRange()\" ng-model=\"ageRange\" ng-hide=\"ageRange === -1\" style=\"width: 50%; float: left;\">\n" +
+    "                    <option value=\"0\" ng-show=\"ageRange === 0\">Kies een leeftijdscategorie</option>\n" +
+    "                    <option value=\"12\">Kinderen tot 12 jaar</option>\n" +
+    "                    <option value=\"18\">Jongeren tussen 12 en 18 jaar</option>\n" +
+    "                    <option value=\"99\">Volwassenen (+18 jaar)</option>\n" +
+    "                    <option value=\"-1\" ng-show=\"ageRange > 0\">Alle leeftijden</option>\n" +
+    "                  </select>\n" +
+    "                  <a class=\"btn btn-link\" ng-show=\"ageRange === 0\" ng-click=\"setAllAges()\">Alle leeftijden</a>\n" +
+    "                </div>\n" +
+    "                <div class=\"form-inline\" ng-show=\"ageRange > 0\">\n" +
+    "                  <div class=\"form-group\">\n" +
+    "                    <label for=\"min-age\">Vanaf</label>\n" +
+    "                    <input type=\"number\" id=\"min-age\" class=\"form-control\" ng-model=\"minAge\">\n" +
+    "                    <label for=\"min-age\">jaar</label>\n" +
+    "                  </div>\n" +
+    "                </div>\n" +
+    "\n" +
+    "                <p ng-show=\"ageRange === -1\">Alle leeftijden <a href=\"#\" class=\"btn btn-link btn-leeftijd-restore to-filling\" ng-click=\"resetAgeRange()\">Wijzigen</a></p>\n" +
+    "\n" +
+    "              </section>\n" +
+    "            </div>\n" +
+    "          </div>\n" +
+    "        </div>\n" +
+    "\n" +
+    "      </div>\n" +
+    "    </div>\n" +
     "\n" +
     "  </section>\n" +
     "</div>"

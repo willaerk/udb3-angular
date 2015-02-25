@@ -1,12 +1,95 @@
 <div ng-controller="EventFormStep5Ctrl as EventFormStep5">
   <a name="extra"></a>
-  <section id="extra" ng-show="eventFormData.showStep5">
+  <section id="extra" ng-show="!eventFormData.showStep5">
 
     <h2 class="title-border">
       <span class="number">5</span>
       <span ng-show="eventFormData.isEvent">Laat je evenement extra opvallen</span>
       <span ng-show="eventFormData.isPlace">Laat deze locatie extra opvallen</span>
     </h2>
+
+    <div class="row">
+      <div class="col-sm-8">
+
+        <div class="row extra-titel">
+          <div class="extra-task state-complete">
+            <div class="col-sm-3">
+              <em class="extra-task-label">Titel</em>
+            </div>
+            <div class="col-sm-8">
+              <p id="extra-titel-motivator" ng-bind="eventFormData.name.nl"></p>
+            </div>
+          </div>
+        </div>
+
+        <div class="row extra-beschrijving">
+          <div class="extra-task" ng-class="descriptionCssClass">
+            <div class="col-sm-3">
+              <em class="extra-task-label">Beschrijving</em>
+            </div>
+            <div class="col-sm-8">
+              <section class="state incomplete">
+                <div class="row">
+                  <div class="col-sm-6">
+                    <a class="btn btn-default to-filling" ng-click="descriptionCssClass = 'state-filling'">Tekst toevoegen</a>
+                  </div>
+                </div>
+              </section>
+              <section class="state complete">
+                <p>{{eventFormData.description.nl}} <a class="btn btn-link" ng-click="descriptionCssClass = 'state-filling'">Wijzigen</a>
+                </p>
+              </section>
+              <section class="state filling">
+                <div class="form-group">
+                  <label>Beschrijving</label>
+                  <textarea class="form-control" ng-model="description"></textarea>
+                  <div class="tip tip-thema-route">
+                    <p ng-bind="tip"></p>
+                  </div>
+
+                </div>
+                <div class="form-group">
+                  <a class="btn btn-primary to-complete" ng-click="saveDescription()">Opslaan</a>
+                </div>
+              </section>
+            </div>
+          </div>
+        </div>
+
+        <div class="row extra-leeftijd">
+          <div class="extra-task" ng-class="ageCssClass">
+            <div class="col-sm-3">
+              <em class="extra-task-label">Geschikt voor</em>
+            </div>
+            <div class="col-sm-8">
+              <section>
+                <div class="form-group clearfix">
+                  <select class="form-control leeftijd-incomplete-select" ng-change="changeAgeRange()" ng-model="ageRange" ng-hide="ageRange === -1" style="width: 50%; float: left;">
+                    <option value="0" ng-show="ageRange === 0">Kies een leeftijdscategorie</option>
+                    <option value="12">Kinderen tot 12 jaar</option>
+                    <option value="18">Jongeren tussen 12 en 18 jaar</option>
+                    <option value="99">Volwassenen (+18 jaar)</option>
+                    <option value="-1" ng-show="ageRange > 0">Alle leeftijden</option>
+                  </select>
+                  <a class="btn btn-link" ng-show="ageRange === 0" ng-click="setAllAges()">Alle leeftijden</a>
+                </div>
+                <div class="form-inline" ng-show="ageRange > 0">
+                  <div class="form-group">
+                    <label for="min-age">Vanaf</label>
+                    <input type="number" id="min-age" class="form-control" ng-model="minAge">
+                    <label for="min-age">jaar</label>
+                  </div>
+                </div>
+
+                <p ng-show="ageRange === -1">Alle leeftijden <a href="#" class="btn btn-link btn-leeftijd-restore to-filling" ng-click="resetAgeRange()">Wijzigen</a></p>
+
+              </section>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
 
   </section>
 </div>

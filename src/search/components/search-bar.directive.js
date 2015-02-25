@@ -21,21 +21,29 @@ function udbSearchBar(searchHelper, $rootScope) {
         query: '',
         hasErrors: false,
         errors: '',
-        editQuery: function () {
-          $rootScope.$emit('editQuery');
-        }
+        isEditing: false
+      };
+
+      searchBar.editQuery = function () {
+        searchBar.isEditing = true;
+        $rootScope.$emit('startEditingQuery');
+      };
+
+      searchBar.search = function () {
+        searchHelper.setQueryString(searchBar.query);
       };
 
       scope.sb = searchBar;
 
-      scope.$watch('sb.query', function (queryString) {
-        searchHelper.setQueryString(queryString);
+      $rootScope.$on('stopEditingQuery', function () {
+        scope.sb.isEditing = false;
       });
 
       scope.$watch(function () {
         return searchHelper.getQuery();
       }, function (query) {
         scope.sb.query = query.queryString;
+        scope.sb.search();
 
         if (query.errors && query.errors.length) {
           scope.sb.hasErrors = true;

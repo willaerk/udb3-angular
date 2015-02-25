@@ -3473,11 +3473,6 @@ function EventExportController($modalInstance, udbApi, eventExporter, queryField
       description: 'Exporteren naar event-ld om de informatie voor ontwikkelaars beschikbaar te maken.'
     },
     {
-      type: 'csv',
-      label: 'Als tabel',
-      description: 'Met spreadsheetprogramma\'s als Microsoft Excel kun je eenvoudig CSV-bestanden maken en bewerken.'
-    },
-    {
       type: 'ooxml',
       label: 'Office Open XML (Excel)',
       description: 'Het standaard formaat van Excel vanaf Microsoft Office 2007.'

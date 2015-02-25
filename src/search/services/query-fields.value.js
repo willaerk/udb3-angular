@@ -43,10 +43,6 @@ angular
     {name: 'category_targetaudience_name', type: 'term'},
     {name: 'category_flandersregion_name', type: 'term'},
     {name: 'category_publicscope_name', type: 'term'},
-    {name: 'like_count', type: 'number'},
-    {name: 'recommend_count', type: 'number'},
-    {name: 'attend_count', type: 'number'},
-    {name: 'comment_count', type: 'number'},
     {name: 'private', type: 'check'},
     {name: 'availablefrom', type: 'date-range'}
   ]);

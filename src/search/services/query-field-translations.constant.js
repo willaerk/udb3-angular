@@ -61,10 +61,6 @@ angular
       'CATEGORY_TARGETAUDIENCE_NAME' : 'doelgroep',
       'CATEGORY_FLANDERSREGION_NAME' : 'regio',
       'CATEGORY_PUBLICSCOPE_NAME' : 'publieksbereik',
-      'LIKE_COUNT' : 'aantal-likes',
-      'RECOMMEND_COUNT' : 'keren-aanbevolen',
-      'ATTEND_COUNT' : 'aantal-ik-ga',
-      'COMMENT_COUNT' : 'aantal-commentaar',
       'PRIVATE' : 'prive',
       'AVAILABLEFROM' : 'datum-beschikbaar'
     }

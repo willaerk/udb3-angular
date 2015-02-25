@@ -1798,6 +1798,86 @@ function AuthorizationService($q, uitidAuth, udbApi, $location) {
 }
 AuthorizationService.$inject = ["$q", "uitidAuth", "udbApi", "$location"];
 
+// Source: src/core/city-autocomplete.service.js
+/**
+ * @ngdoc service
+ * @name udb.core.CityAutocomplete
+ * @description
+ * Service for city autocompletes.
+ */
+angular
+  .module('udb.core')
+  .service('cityAutocomplete', CityAutocomplete);
+
+/* @ngInject */
+function CityAutocomplete($q, $http, appConfig) {
+
+  /**
+   * Get the cities that match the searched value.
+   */
+
+  this.getCities = function (value) {
+
+    var cities = $q.defer();
+
+    var request = $http.get(appConfig.baseUrl + '/autocomplete/culturefeed/city-suggestion/' + value);
+
+    request.success(function(jsonData) {
+      cities.resolve(jsonData);
+
+    });
+
+    return cities.promise;
+
+  };
+
+  /**
+   *
+   * Get the locations for a city
+   *
+   * @param {type} value
+   * @returns {$q@call;defer.promise}
+   */
+  this.getLocationsForCity = function (value) {
+
+    var locations = $q.defer();
+
+    var request = $http.get(appConfig.baseUrl + '/autocomplete/culturefeed/city-locations-suggestion/' + value);
+
+    request.success(function(jsonData) {
+      locations.resolve(jsonData);
+
+    });
+
+    return locations.promise;
+
+  };
+
+
+  /**
+   *
+   * Get the categories for locations.
+   *
+   * @returns {$q@call;defer.promise}
+   */
+  this.getCategories = function () {
+
+    var categories = $q.defer();
+
+    var request = $http.get(appConfig.baseUrl + '/autocomplete/culturefeed/category-suggestion');
+
+    request.success(function(jsonData) {
+      categories.resolve(jsonData);
+
+    });
+
+    return categories.promise;
+
+  };
+
+}
+CityAutocomplete.$inject = ["$q", "$http", "appConfig"];
+
 // Source: src/core/dutch-translations.constant.js
 /**
  * @ngdoc service
@@ -2227,7 +2307,7 @@ function UdbApi($q, $http, appConfig, $cookieStore, uitidAuth, $cacheFactory, Ud
       deferredEvent.resolve(event);
     } else {
       var eventRequest  = $http.get(
-        appConfig.baseUrl + 'event/' + eventId,
+        appConfig.baseApiUrl + 'event/' + eventId,
         {
           headers: {
             'Accept': 'application/ld+json'
@@ -2304,7 +2384,7 @@ function UdbApi($q, $http, appConfig, $cookieStore, uitidAuth, $cacheFactory, Ud
   };
 
   this.tagEvents = function (eventIds, label) {
-    return $http.post(appConfig.baseUrl + 'events/tag',
+    return $http.post(appConfig.baseApiUrl + 'events/tag',
       {
         'keyword': label,
         'events' : eventIds
@@ -2314,7 +2394,7 @@ function UdbApi($q, $http, appConfig, $cookieStore, uitidAuth, $cacheFactory, Ud
   };
 
   this.tagQuery = function (query, label) {
-    return $http.post(appConfig.baseUrl + 'query/tag',
+    return $http.post(appConfig.baseApiUrl + 'query/tag',
       {
         'keyword': label,
         'query' : query
@@ -2337,7 +2417,7 @@ function UdbApi($q, $http, appConfig, $cookieStore, uitidAuth, $cacheFactory, Ud
       exportData.email = email;
     }
 
-    return $http.post(appConfig.baseUrl + 'events/export/' + format, exportData, defaultApiConfig
+    return $http.post(appConfig.baseApiUrl + 'events/export/' + format, exportData, defaultApiConfig
     );
   };
 
@@ -2347,7 +2427,7 @@ function UdbApi($q, $http, appConfig, $cookieStore, uitidAuth, $cacheFactory, Ud
     translationData[property] = translation;
 
     return $http.post(
-      appConfig.baseUrl + 'event/' + eventId + '/' + language + '/' + property,
+      appConfig.baseApiUrl + 'event/' + eventId + '/' + language + '/' + property,
       translationData,
       defaultApiConfig
     );
@@ -2355,7 +2435,7 @@ function UdbApi($q, $http, appConfig, $cookieStore, uitidAuth, $cacheFactory, Ud
 
   this.tagEvent = function (eventId, label) {
     return $http.post(
-      appConfig.baseUrl + 'event/' + eventId + '/keywords',
+      appConfig.baseApiUrl + 'event/' + eventId + '/keywords',
       { 'keyword': label},
       defaultApiConfig
     );
@@ -2363,14 +2443,14 @@ function UdbApi($q, $http, appConfig, $cookieStore, uitidAuth, $cacheFactory, Ud
 
   this.untagEvent = function (eventId, label) {
     return $http.delete(
-      appConfig.baseUrl + 'event/' + eventId + '/keywords/' + label,
+      appConfig.baseApiUrl + 'event/' + eventId + '/keywords/' + label,
       defaultApiConfig
     );
   };
 
   this.createEvent = function (event) {
     return $http.post(
-      appConfig.baseUrl + 'event',
+      appConfig.baseApiUrl + 'event',
       event,
       defaultApiConfig
     );
@@ -4649,13 +4729,18 @@ function EventFormStep5Directive() {
     .controller('EventFormStep3Ctrl', EventFormStep3Controller);
 
   /* @ngInject */
-  function EventFormStep3Controller($scope, EventFormData) {
+  function EventFormStep3Controller($scope, EventFormData, cityAutocomplete) {
 
     // Scope vars.
     // main storage for event form.
     $scope.eventFormData = EventFormData;
     $scope.eventFormData.selectedCity = '';
     $scope.eventFormData.selectedLocation = '';
+    $scope.eventFormData.locationTitle = '';
+    $scope.eventFormData.locationCategory = '';
+    $scope.eventFormData.locationStreet = '';
+    $scope.eventFormData.locationNumber = '';
+    $scope.eventFormData.locationCity = '';
     $scope.eventFormData.placeStreet = '';
     $scope.eventFormData.placeNumber = '';
     $scope.eventFormData.place = '';
@@ -4665,25 +4750,30 @@ function EventFormStep5Directive() {
     $scope.locationsForCity = [];
     $scope.citySelected = false;
     $scope.locationSelected = false;
-    $scope.addLocation = false;
+    $scope.locationAdded = false;
+    $scope.newLocation = false;
     $scope.placeValidated = false;
+    $scope.placeStreetRequired = false;
+    $scope.placeNumberRequired = false;
+    $scope.cityAutocomplete = cityAutocomplete;
 
-    // Get cities and locations.
-    getCities();
-    getLocationsForCity();
+    getLocationCategories();
 
     // define functions
     $scope.selectCity = selectCity;
     $scope.selectLocation = selectLocation;
     $scope.changeCitySelection = changeCitySelection;
     $scope.changeLocationSelection = changeLocationSelection;
+    $scope.addLocation = addLocation;
+    $scope.resetAddLocation = resetAddLocation;
     $scope.validatePlace = validatePlace;
     $scope.changePlace = changePlace;
 
-
     // Functions for cities.
-    function getCities(){
-      $scope.cities = ['9000 Gent', '2000 Antwerpen'];
+    function selectCity() {
+      $scope.citySelected = true;
+      $scope.eventFormData.place = '';
+      $scope.placeValidated = false;
     }
 
     function changeCitySelection() {
@@ -4691,45 +4781,73 @@ function EventFormStep5Directive() {
       $scope.citySelected = false;
     }
 
-    function selectCity() {
-      $scope.citySelected = true;
-      $scope.eventFormData.place = '';
-      $scope.placeValidated = false;
-    }
-
     // Functions for locations (in case of event)
-    function getLocationsForCity() {
-      $scope.locationsForCity = [];
-    }
-
-    function selectLocation() {
-      if ($scope.locationsForCity.length > 0) {
+    function selectLocation($item, $model, $label) {
         $scope.locationSelected = true;
-      }
-      else {
-        $scope.locationSelected = false;
-        $scope.addLocation = true;
-      }
+        $scope.newLocation = true;
     }
 
     function changeLocationSelection() {
       $scope.eventFormData.selectedLocation = '';
       $scope.locationSelected = false;
+      if ($scope.locationAdded) {
+        $scope.newLocation = true;
+        $scope.eventFormData.showStep4 = false;
+      }
+      else {
+        $scope.newLocation = false;
+      }
+    }
+
+    function addLocation() {
+        $scope.locationAdded = true;
+        $scope.newLocation = false;
+        $scope.locationSelected = true;
+        $scope.eventFormData.showStep4 = true;
+    }
+
+    function resetAddLocation() {
+        $scope.eventFormData.selectedLocation = '';
+        $scope.eventFormData.locationTitle = '';
+        $scope.eventFormData.locationCategory = '';
+        $scope.eventFormData.locationStreet = '';
+        $scope.eventFormData.locationNumber = '';
+        $scope.eventFormData.locationCity = '';
+        $scope.newLocation = false;
+        $scope.locationSelected = false;
+        $scope.locationAdded = false;
+    }
+
+    function getLocationCategories() {
+      var eventPromise = cityAutocomplete.getCategories();
+      eventPromise.then(function (categories) {
+        $scope.categories = categories;
+        console.log(categories);
+      });
     }
 
     // Functions for places (in case of place)
     function validatePlace() {
-      $scope.eventFormData.place = $scope.eventFormData.placeStreet + ' ' + $scope.eventFormData.placeNumber;
-      $scope.placeValidated = true;
-      $scope.eventFormData.showStep4 = true;
+      if (!$scope.eventFormData.placeStreet) {
+        $scope.placeStreetRequired = true;
+      }
+      else if(!$scope.eventFormData.placeNumber) {
+        $scope.placeNumberRequired = true;
+      }
+      else {
+        $scope.eventFormData.place = $scope.eventFormData.placeStreet + ' ' + $scope.eventFormData.placeNumber;
+        $scope.placeValidated = true;
+        $scope.eventFormData.showStep4 = true;
+      }
     }
 
     function changePlace() {
       $scope.placeValidated = false;
       $scope.eventFormData.showStep4 = false;
     }
+
   }
-  EventFormStep3Controller.$inject = ["$scope", "EventFormData"];
+  EventFormStep3Controller.$inject = ["$scope", "EventFormData", "cityAutocomplete"];
 
 })();
 
@@ -7131,7 +7249,7 @@ $templateCache.put('templates/base-job.template.html',
     "        <label for=\"gemeente-autocomplete\" id=\"gemeente-label\"> Kies een gemeente</label>\n" +
     "        <div id=\"gemeente-kiezer\" ng-hide=\"citySelected\">\n" +
     "          <span style=\"position: relative; display: inline-block; direction: ltr;\" class=\"twitter-typeahead\">\n" +
-    "            <input type=\"text\" placeholder=\"Gemeente of postcode\" ng-click=\"selectCity()\" ng-model=\"eventFormData.selectedCity\" typeahead=\"city for city in cities | filter:$viewValue | limitTo:10\" typeahead-min-length='1' typeahead-on-select='onSelectPart($item, $model, $label)' class=\"form-control\">\n" +
+    "            <input type=\"text\" placeholder=\"Gemeente of postcode\" ng-model=\"eventFormData.selectedCity\" typeahead=\"city for city in cityAutocomplete.getCities($viewValue)\"  typeahead-on-select=\"selectCity()\" typeahead-min-length=\"3\" class=\"form-control\" required>\n" +
     "          </span>\n" +
     "        </div>\n" +
     "        <div id=\"gemeente-gekozen\" ng-show=\"citySelected\">\n" +
@@ -7141,14 +7259,13 @@ $templateCache.put('templates/base-job.template.html',
     "      </div>\n" +
     "    </div>\n" +
     "\n" +
-    "\n" +
     "    <div id=\"waar-evenement\" ng-show=\"eventFormData.isEvent && citySelected\">\n" +
     "      <div class=\"row\">\n" +
-    "        <div class=\"col-xs-12\">\n" +
+    "        <div class=\"col-xs-12\" ng-hide=\"newLocation\">\n" +
     "          <label id=\"locatie-label\">Kies een locatie</label>\n" +
-    "          <div id=\"locatie-kiezer\" ng-hide=\"locationSelected\" >\n" +
+    "          <div id=\"locatie-kiezer\" ng-hide=\"locationSelected || locationAdded\" >\n" +
     "            <span style=\"position: relative; display: inline-block; direction: ltr;\" class=\"twitter-typeahead\">\n" +
-    "              <input type=\"text\" placeholder=\"Locatie\" ng-click=\"selectLocation()\" ng-model=\"eventFormData.selectedLocation\" typeahead=\"location for location in locationsForCity | filter:$viewValue | limitTo:10\" typeahead-min-length='1' typeahead-on-select='onSelectPart($item, $model, $label)' class=\"form-control\">\n" +
+    "              <input type=\"text\" placeholder=\"Locatie\" ng-model=\"eventFormData.selectedLocation\" typeahead=\"location for location in cityAutocomplete.getLocationsForCity($viewValue)\" typeahead-on-select=\"selectLocation($item, $model, $label)\" typeahead-min-length=\"3\" class=\"form-control\">\n" +
     "            </span>\n" +
     "          </div>\n" +
     "          <div id=\"locatie-gekozen\" ng-show=\"locationSelected\">\n" +
@@ -7158,21 +7275,23 @@ $templateCache.put('templates/base-job.template.html',
     "        </div>\n" +
     "      </div>\n" +
     "\n" +
-    "      <div class=\"modal fade\" id=\"waar-locatie-toevoegen\" ng-show=\"addLocation\">\n" +
-    "        <div class=\"modal-dialog\">\n" +
-    "          <div class=\"modal-content\">\n" +
-    "            <div class=\"modal-header\">\n" +
-    "              <h4 class=\"modal-title\">Nieuwe locatie toevoegen</h4>\n" +
+    "      <div  id=\"waar-locatie-toevoegen\" ng-show=\"newLocation\">\n" +
+    "        <div >\n" +
+    "          <div >\n" +
+    "            <div >\n" +
+    "              <h4 >Nieuwe locatie toevoegen</h4>\n" +
     "            </div>\n" +
-    "            <div class=\"modal-body\">\n" +
+    "            <div >\n" +
     "              <div class=\"form-group\">\n" +
     "                <label>Titel</label>\n" +
-    "                <input class=\"form-control\" type=\"text\">\n" +
+    "                <input class=\"form-control\" type=\"text\" ng-model=\"eventFormData.locationTitle\">\n" +
     "              </div>\n" +
     "\n" +
     "              <div class=\"form-group\">\n" +
     "                <label>Categorie</label>\n" +
-    "                <select class=\"form-control\" size=\"4\" id=\"locatie-toevoegen-types\"><option value=\"Archeologische site\">Archeologische site</option><option value=\"Bioscoop\">Bioscoop</option><option value=\"Bibliotheek of documentatiecentrum\">Bibliotheek of documentatiecentrum</option><option value=\"Cultuur- of ontmoetingscentrum\">Cultuur- of ontmoetingscentrum</option><option value=\"Discotheek\">Discotheek</option><option value=\"Jeugdhuis of jeugdcentrum\">Jeugdhuis of jeugdcentrum</option><option value=\"Horeca\">Horeca</option><option value=\"Monument\">Monument</option><option value=\"Museum of galerij\">Museum of galerij</option><option value=\"Natuur, park of tuin\">Natuur, park of tuin</option><option value=\"Zaal of expohal\">Zaal of expohal</option><option value=\"School of onderwijscentrum\">School of onderwijscentrum</option><option value=\"Sportcentrum\">Sportcentrum</option><option value=\"Thema en pretpark\">Thema en pretpark</option><option value=\"Winkel\">Winkel</option></select>\n" +
+    "                <select class=\"form-control\" size=\"4\" id=\"locatie-toevoegen-types\" ng-model=\"eventFormData.locationCategory\">\n" +
+    "                  <option ng-repeat=\"category in categories\" value=\"{{ category }}\">{{ category }}</option>\n" +
+    "                </select>\n" +
     "              </div>\n" +
     "\n" +
     "              <div class=\"row\">\n" +
@@ -7180,27 +7299,27 @@ $templateCache.put('templates/base-job.template.html',
     "                <div class=\"col-xs-9\">\n" +
     "                  <div class=\"form-group\">\n" +
     "                    <label>Straat</label>\n" +
-    "                    <input class=\"form-control\" id=\"straat\" placeholder=\"\" type=\"text\">\n" +
+    "                    <input class=\"form-control\" id=\"locatie-straat\" placeholder=\"Straat\" type=\"text\" ng-model=\"eventFormData.locationStreet\">\n" +
     "                  </div>\n" +
     "                </div>\n" +
     "                <div class=\"col-xs-3\">\n" +
     "                  <div class=\"form-group\">\n" +
     "                    <label>Nummer</label>\n" +
-    "                    <input class=\"form-control\" id=\"nummer\" placeholder=\"\" type=\"text\">\n" +
+    "                    <input class=\"form-control\" id=\"locatie-nummer\" placeholder=\"Nummer\" type=\"text\" ng-model=\"eventFormData.locationNumber\">\n" +
     "                  </div>\n" +
     "                </div>\n" +
     "                <div class=\"col-xs-12\">\n" +
     "                  <div class=\"form-group\">\n" +
     "                    <label>Gemeente</label>\n" +
-    "                    <p id=\"waar-locatie-toevoegen-gemeente\"></p>\n" +
+    "                    <p id=\"waar-locatie-toevoegen-gemeente\" ng-bind=\"eventFormData.selectedCity\"></p>\n" +
     "                  </div>\n" +
     "                </div>\n" +
     "\n" +
     "              </div>\n" +
     "            </div>\n" +
-    "            <div class=\"modal-footer\">\n" +
-    "              <button type=\"button\" class=\"btn btn-default\" data-dismiss=\"modal\">Annuleren</button>\n" +
-    "              <button type=\"button\" class=\"btn btn-primary\">Toevoegen</button>\n" +
+    "            <div class=\"\">\n" +
+    "              <button type=\"button\" class=\"btn btn-default\" ng-click=\"resetAddLocation()\">Annuleren</button>\n" +
+    "              <button type=\"button\" class=\"btn btn-primary\" ng-click=\"addLocation()\">Toevoegen</button>\n" +
     "            </div>\n" +
     "          </div><!-- /.modal-content -->\n" +
     "        </div><!-- /.modal-dialog -->\n" +
@@ -7218,12 +7337,14 @@ $templateCache.put('templates/base-job.template.html',
     "            <div class=\"form-group\">\n" +
     "              <label>Straat</label>\n" +
     "              <input class=\"form-control\" id=\"straat\" placeholder=\"\" type=\"text\" ng-model=\"eventFormData.placeStreet\">\n" +
+    "              <span ng-show=\"placeStreetRequired\">Straat is een verplicht veld.</span>\n" +
     "            </div>\n" +
     "          </div>\n" +
     "          <div class=\"col-xs-4 col-lg-2\">\n" +
     "            <div class=\"form-group\">\n" +
     "              <label>Nummer</label>\n" +
-    "              <input class=\"form-control waar-plaats-nummer\" id=\"nummer\" placeholder=\"\" type=\"text\"ng-model=\"eventFormData.placeNumber\" >\n" +
+    "              <input class=\"form-control waar-plaats-nummer\" id=\"nummer\" placeholder=\"\" type=\"text\" ng-model=\"eventFormData.placeNumber\">\n" +
+    "              <span ng-show=\"placeNumberRequired\">Nummer is een verplicht veld.</span>\n" +
     "            </div>\n" +
     "          </div>\n" +
     "        </div>\n" +

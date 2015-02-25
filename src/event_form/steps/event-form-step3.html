@@ -12,7 +12,7 @@
         <label for="gemeente-autocomplete" id="gemeente-label"> Kies een gemeente</label>
         <div id="gemeente-kiezer" ng-hide="citySelected">
           <span style="position: relative; display: inline-block; direction: ltr;" class="twitter-typeahead">
-            <input type="text" placeholder="Gemeente of postcode" ng-click="selectCity()" ng-model="eventFormData.selectedCity" typeahead="city for city in cities | filter:$viewValue | limitTo:10" typeahead-min-length='1' typeahead-on-select='onSelectPart($item, $model, $label)' class="form-control">
+            <input type="text" placeholder="Gemeente of postcode" ng-model="eventFormData.selectedCity" typeahead="city for city in cityAutocomplete.getCities($viewValue)"  typeahead-on-select="selectCity()" typeahead-min-length="3" class="form-control" required>
           </span>
         </div>
         <div id="gemeente-gekozen" ng-show="citySelected">
@@ -22,14 +22,13 @@
       </div>
     </div>
 
-
     <div id="waar-evenement" ng-show="eventFormData.isEvent && citySelected">
       <div class="row">
-        <div class="col-xs-12">
+        <div class="col-xs-12" ng-hide="newLocation">
           <label id="locatie-label">Kies een locatie</label>
-          <div id="locatie-kiezer" ng-hide="locationSelected" >
+          <div id="locatie-kiezer" ng-hide="locationSelected || locationAdded" >
             <span style="position: relative; display: inline-block; direction: ltr;" class="twitter-typeahead">
-              <input type="text" placeholder="Locatie" ng-click="selectLocation()" ng-model="eventFormData.selectedLocation" typeahead="location for location in locationsForCity | filter:$viewValue | limitTo:10" typeahead-min-length='1' typeahead-on-select='onSelectPart($item, $model, $label)' class="form-control">
+              <input type="text" placeholder="Locatie" ng-model="eventFormData.selectedLocation" typeahead="location for location in cityAutocomplete.getLocationsForCity($viewValue)" typeahead-on-select="selectLocation($item, $model, $label)" typeahead-min-length="3" class="form-control">
             </span>
           </div>
           <div id="locatie-gekozen" ng-show="locationSelected">
@@ -39,21 +38,23 @@
         </div>
       </div>
 
-      <div class="modal fade" id="waar-locatie-toevoegen" ng-show="addLocation">
-        <div class="modal-dialog">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h4 class="modal-title">Nieuwe locatie toevoegen</h4>
+      <div  id="waar-locatie-toevoegen" ng-show="newLocation">
+        <div >
+          <div >
+            <div >
+              <h4 >Nieuwe locatie toevoegen</h4>
             </div>
-            <div class="modal-body">
+            <div >
               <div class="form-group">
                 <label>Titel</label>
-                <input class="form-control" type="text">
+                <input class="form-control" type="text" ng-model="eventFormData.locationTitle">
               </div>
 
               <div class="form-group">
                 <label>Categorie</label>
-                <select class="form-control" size="4" id="locatie-toevoegen-types"><option value="Archeologische site">Archeologische site</option><option value="Bioscoop">Bioscoop</option><option value="Bibliotheek of documentatiecentrum">Bibliotheek of documentatiecentrum</option><option value="Cultuur- of ontmoetingscentrum">Cultuur- of ontmoetingscentrum</option><option value="Discotheek">Discotheek</option><option value="Jeugdhuis of jeugdcentrum">Jeugdhuis of jeugdcentrum</option><option value="Horeca">Horeca</option><option value="Monument">Monument</option><option value="Museum of galerij">Museum of galerij</option><option value="Natuur, park of tuin">Natuur, park of tuin</option><option value="Zaal of expohal">Zaal of expohal</option><option value="School of onderwijscentrum">School of onderwijscentrum</option><option value="Sportcentrum">Sportcentrum</option><option value="Thema en pretpark">Thema en pretpark</option><option value="Winkel">Winkel</option></select>
+                <select class="form-control" size="4" id="locatie-toevoegen-types" ng-model="eventFormData.locationCategory">
+                  <option ng-repeat="category in categories" value="{{ category }}">{{ category }}</option>
+                </select>
               </div>
 
               <div class="row">
@@ -61,27 +62,27 @@
                 <div class="col-xs-9">
                   <div class="form-group">
                     <label>Straat</label>
-                    <input class="form-control" id="straat" placeholder="" type="text">
+                    <input class="form-control" id="locatie-straat" placeholder="Straat" type="text" ng-model="eventFormData.locationStreet">
                   </div>
                 </div>
                 <div class="col-xs-3">
                   <div class="form-group">
                     <label>Nummer</label>
-                    <input class="form-control" id="nummer" placeholder="" type="text">
+                    <input class="form-control" id="locatie-nummer" placeholder="Nummer" type="text" ng-model="eventFormData.locationNumber">
                   </div>
                 </div>
                 <div class="col-xs-12">
                   <div class="form-group">
                     <label>Gemeente</label>
-                    <p id="waar-locatie-toevoegen-gemeente"></p>
+                    <p id="waar-locatie-toevoegen-gemeente" ng-bind="eventFormData.selectedCity"></p>
                   </div>
                 </div>
 
               </div>
             </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-default" data-dismiss="modal">Annuleren</button>
-              <button type="button" class="btn btn-primary">Toevoegen</button>
+            <div class="">
+              <button type="button" class="btn btn-default" ng-click="resetAddLocation()">Annuleren</button>
+              <button type="button" class="btn btn-primary" ng-click="addLocation()">Toevoegen</button>
             </div>
           </div><!-- /.modal-content -->
         </div><!-- /.modal-dialog -->
@@ -99,12 +100,14 @@
             <div class="form-group">
               <label>Straat</label>
               <input class="form-control" id="straat" placeholder="" type="text" ng-model="eventFormData.placeStreet">
+              <span ng-show="placeStreetRequired">Straat is een verplicht veld.</span>
             </div>
           </div>
           <div class="col-xs-4 col-lg-2">
             <div class="form-group">
               <label>Nummer</label>
-              <input class="form-control waar-plaats-nummer" id="nummer" placeholder="" type="text"ng-model="eventFormData.placeNumber" >
+              <input class="form-control waar-plaats-nummer" id="nummer" placeholder="" type="text" ng-model="eventFormData.placeNumber">
+              <span ng-show="placeNumberRequired">Nummer is een verplicht veld.</span>
             </div>
           </div>
         </div>

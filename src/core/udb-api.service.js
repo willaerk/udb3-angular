@@ -69,7 +69,7 @@ function UdbApi($q, $http, appConfig, $cookieStore, uitidAuth, $cacheFactory, Ud
       deferredEvent.resolve(event);
     } else {
       var eventRequest  = $http.get(
-        appConfig.baseUrl + 'event/' + eventId,
+        appConfig.baseApiUrl + 'event/' + eventId,
         {
           headers: {
             'Accept': 'application/ld+json'
@@ -146,7 +146,7 @@ function UdbApi($q, $http, appConfig, $cookieStore, uitidAuth, $cacheFactory, Ud
   };
 
   this.tagEvents = function (eventIds, label) {
-    return $http.post(appConfig.baseUrl + 'events/tag',
+    return $http.post(appConfig.baseApiUrl + 'events/tag',
       {
         'keyword': label,
         'events' : eventIds
@@ -156,7 +156,7 @@ function UdbApi($q, $http, appConfig, $cookieStore, uitidAuth, $cacheFactory, Ud
   };
 
   this.tagQuery = function (query, label) {
-    return $http.post(appConfig.baseUrl + 'query/tag',
+    return $http.post(appConfig.baseApiUrl + 'query/tag',
       {
         'keyword': label,
         'query' : query
@@ -179,7 +179,7 @@ function UdbApi($q, $http, appConfig, $cookieStore, uitidAuth, $cacheFactory, Ud
       exportData.email = email;
     }
 
-    return $http.post(appConfig.baseUrl + 'events/export/' + format, exportData, defaultApiConfig
+    return $http.post(appConfig.baseApiUrl + 'events/export/' + format, exportData, defaultApiConfig
     );
   };
 
@@ -189,7 +189,7 @@ function UdbApi($q, $http, appConfig, $cookieStore, uitidAuth, $cacheFactory, Ud
     translationData[property] = translation;
 
     return $http.post(
-      appConfig.baseUrl + 'event/' + eventId + '/' + language + '/' + property,
+      appConfig.baseApiUrl + 'event/' + eventId + '/' + language + '/' + property,
       translationData,
       defaultApiConfig
     );
@@ -197,7 +197,7 @@ function UdbApi($q, $http, appConfig, $cookieStore, uitidAuth, $cacheFactory, Ud
 
   this.tagEvent = function (eventId, label) {
     return $http.post(
-      appConfig.baseUrl + 'event/' + eventId + '/keywords',
+      appConfig.baseApiUrl + 'event/' + eventId + '/keywords',
       { 'keyword': label},
       defaultApiConfig
     );
@@ -205,14 +205,14 @@ function UdbApi($q, $http, appConfig, $cookieStore, uitidAuth, $cacheFactory, Ud
 
   this.untagEvent = function (eventId, label) {
     return $http.delete(
-      appConfig.baseUrl + 'event/' + eventId + '/keywords/' + label,
+      appConfig.baseApiUrl + 'event/' + eventId + '/keywords/' + label,
       defaultApiConfig
     );
   };
 
   this.createEvent = function (event) {
     return $http.post(
-      appConfig.baseUrl + 'event',
+      appConfig.baseApiUrl + 'event',
       event,
       defaultApiConfig
     );

@@ -5779,7 +5779,7 @@ $templateCache.put('templates/base-job.template.html',
     "            <div class=\"checkbox\">\n" +
     "              <label>\n" +
     "                <input type=\"checkbox\" ng-model=\"field.term\"\n" +
-    "                       ng-true-value=\"'TRUE'\" ng-false-value=\"'FALSE'\"> {{field.term}}\n" +
+    "                       ng-true-value=\"'TRUE'\" ng-false-value=\"'FALSE'\"> {{field.term == 'TRUE' ? 'ja' : 'nee'}}\n" +
     "              </label>\n" +
     "            </div>\n" +
     "          </div>\n" +

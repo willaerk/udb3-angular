@@ -57,7 +57,7 @@
             <div class="checkbox">
               <label>
                 <input type="checkbox" ng-model="field.term"
-                       ng-true-value="'TRUE'" ng-false-value="'FALSE'"> {{field.term}}
+                       ng-true-value="'TRUE'" ng-false-value="'FALSE'"> {{field.term == 'TRUE' ? 'ja' : 'nee'}}
               </label>
             </div>
           </div>

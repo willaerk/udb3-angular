@@ -11,7 +11,15 @@ angular
   .directive('udbQueryEditor', udbQueryEditor);
 
 /* @ngInject */
-function udbQueryEditor(queryFields, LuceneQueryBuilder, taxonomyTerms, fieldTypeTransformers, searchHelper, $translate) {
+function udbQueryEditor(
+  queryFields,
+  LuceneQueryBuilder,
+  taxonomyTerms,
+  fieldTypeTransformers,
+  searchHelper,
+  $translate,
+  $rootScope
+) {
   return {
     templateUrl: 'templates/query-editor.directive.html',
     restrict: 'E',
@@ -75,6 +83,11 @@ function udbQueryEditor(queryFields, LuceneQueryBuilder, taxonomyTerms, fieldTyp
        */
       qe.updateQueryString = function () {
         searchHelper.setQueryString(queryBuilder.unparseGroupedTree(qe.groupedQueryTree));
+        $rootScope.$emit('stopEditingQuery');
+      };
+
+      qe.stopEditing = function () {
+        $rootScope.$emit('stopEditingQuery');
       };
 
       /**

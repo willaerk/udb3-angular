@@ -19,6 +19,8 @@ function SearchHelper(LuceneQueryBuilder) {
   this.setQueryString = function (queryString) {
     query = LuceneQueryBuilder.createQuery(queryString);
     LuceneQueryBuilder.isValid(query);
+
+    return query;
   };
 
   this.setQuery = function (searchQuery) {

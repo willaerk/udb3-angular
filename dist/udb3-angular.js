@@ -1796,7 +1796,6 @@ function AuthorizationService($q, uitidAuth, udbApi, $location) {
     }
   };
 }
-AuthorizationService.$inject = ["$q", "uitidAuth", "udbApi", "$location"];
 
 // Source: src/core/dutch-translations.constant.js
 /**
@@ -2155,7 +2154,6 @@ function EventTypes($q, $window, $location, $http, appConfig, $cookieStore) {
   };
 
 }
-EventTypes.$inject = ["$q", "$window", "$location", "$http", "appConfig", "$cookieStore"];
 
 // Source: src/core/udb-api.service.js
 /**
@@ -2381,7 +2379,6 @@ function UdbApi($q, $http, appConfig, $cookieStore, uitidAuth, $cacheFactory, Ud
     );
   };
 }
-UdbApi.$inject = ["$q", "$http", "appConfig", "$cookieStore", "uitidAuth", "$cacheFactory", "UdbEvent"];
 
 // Source: src/core/udb-event.factory.js
 /**
@@ -2921,7 +2918,6 @@ function UitidAuth($window, $location, $http, appConfig, $cookieStore) {
   };
 
 }
-UitidAuth.$inject = ["$window", "$location", "$http", "appConfig", "$cookieStore"];
 
 // Source: src/entry/crud/event-crud-job.factory.js
 /**
@@ -2964,7 +2960,6 @@ function EventCrudJobFactory(BaseJob) {
 
   return (EventCrudJob);
 }
-EventCrudJobFactory.$inject = ["BaseJob"];
 
 // Source: src/entry/crud/event-crud.service.js
 /**
@@ -2997,7 +2992,6 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
     return jobPromise;
   };
 }
-EventCrud.$inject = ["jobLogger", "udbApi", "EventCrudJob"];
 
 // Source: src/entry/logging/base-job.factory.js
 /**
@@ -3162,7 +3156,6 @@ function BaseJobFactory(JobStates) {
 
   return (BaseJob);
 }
-BaseJobFactory.$inject = ["JobStates"];
 
 // Source: src/entry/logging/job-logger.directive.js
 /**
@@ -3219,7 +3212,6 @@ function udbJobLog(jobLogger) {
     }
   };
 }
-udbJobLog.$inject = ["jobLogger"];
 
 // Source: src/entry/logging/job-logger.service.js
 /* jshint sub: true */
@@ -3328,7 +3320,6 @@ function JobLogger(udbSocket, JobStates) {
     console.log('job with id: ' + job.id + ' created');
   };
 }
-JobLogger.$inject = ["udbSocket", "JobStates"];
 
 // Source: src/entry/logging/job-states.constant.js
 /* jshint sub: true */
@@ -3406,7 +3397,6 @@ function UdbSocketFactory (socketFactory, appConfig) {
 
   return socket;
 }
-UdbSocketFactory.$inject = ["socketFactory", "appConfig"];
 
 // Source: src/entry/logging/work-indicator.directive.js
 /**
@@ -3433,7 +3423,6 @@ function udbWorkIndicator ($window, jobLogger) {
     }
   };
 }
-udbWorkIndicator.$inject = ["$window", "jobLogger"];
 
 // Source: src/entry/tagging/event-tag-batch-job.factory.js
 /**
@@ -3485,7 +3474,6 @@ function EventTagBatchJobFactory(BaseJob) {
 
   return (EventTagBatchJob);
 }
-EventTagBatchJobFactory.$inject = ["BaseJob"];
 
 // Source: src/entry/tagging/event-tag-job.factory.js
 /**
@@ -3539,7 +3527,6 @@ function EventTagJobFactory(BaseJob) {
 
   return (EventTagJob);
 }
-EventTagJobFactory.$inject = ["BaseJob"];
 
 // Source: src/entry/tagging/event-tag-modal.controller.js
 /**
@@ -3606,7 +3593,6 @@ function EventTagModalCtrl($scope, $modalInstance, udbApi) {
   $scope.ok = ok;
   $scope.labelNames = '';
 }
-EventTagModalCtrl.$inject = ["$scope", "$modalInstance", "udbApi"];
 
 // Source: src/entry/tagging/event-tagger.service.js
 /**
@@ -3699,7 +3685,6 @@ function EventTagger(jobLogger, udbApi, EventTagJob, EventTagBatchJob, QueryTagJ
 
   };
 }
-EventTagger.$inject = ["jobLogger", "udbApi", "EventTagJob", "EventTagBatchJob", "QueryTagJob"];
 
 // Source: src/entry/tagging/query-tag-job.factory.js
 /**
@@ -3747,7 +3732,6 @@ function QueryTagJobFactory(BaseJob) {
 
   return (QueryTagJob);
 }
-QueryTagJobFactory.$inject = ["BaseJob"];
 
 // Source: src/entry/translation/event-translation-job.factory.js
 /**
@@ -3804,7 +3788,6 @@ function EventTranslationJobFactory(BaseJob) {
 
   return (EventTranslationJob);
 }
-EventTranslationJobFactory.$inject = ["BaseJob"];
 
 // Source: src/entry/translation/event-translator.service.js
 /**
@@ -3845,7 +3828,6 @@ function EventTranslator(jobLogger, udbApi, EventTranslationJob) {
     return jobPromise;
   };
 }
-EventTranslator.$inject = ["jobLogger", "udbApi", "EventTranslationJob"];
 
 // Source: src/event_form/event-form.controller.js
 (function () {
@@ -4130,7 +4112,6 @@ EventTranslator.$inject = ["jobLogger", "udbApi", "EventTranslationJob"];
     }
 
   }
-  EventFormController.$inject = ["udbApi", "$scope", "$controller", "$window", "UdbEvent", "UdbOpeningHours", "UdbPlace", "moment", "eventCrud", "eventTypes", "SearchResultViewer"];
 
 })();
 
@@ -4149,7 +4130,6 @@ angular
 function EventFormDataFactory() {
   return {
 
-    item : {},
     isEvent : true, // Is current item an event.
     isPlace : false, // Is current item a place.
     showStep1 : true,
@@ -4157,6 +4137,14 @@ function EventFormDataFactory() {
     showStep3 : false,
     showStep4 : false,
     showStep5 : false,
+    // Properties that will be copied to UdbEvent / UdbPlace.
+    name : {},
+    place : {},
+    type : {},
+    theme : {},
+    timestamps : [],
+    openingHours : [],
+
     // Properties that will be copied to UdbEvent / UdbPlace.
     name : {},
     place : {},
@@ -4246,13 +4234,6 @@ function EventFormDataFactory() {
     },
 
     /**
-     * Reset the opening hours.
-     */
-    resetOpeningHours: function() {
-      this.openingHours = [];
-    },
-
-    /**
      * Get the opening hours.
      */
     getOpeningHours: function() {
@@ -4271,7 +4252,29 @@ function EventFormDataFactory() {
      */
     getLocation: function() {
       return this.location;
-    }
+    },
+
+    /**
+     * Add a timestamp to the timestamps array.
+     */
+    addTimestamp: function(date, startHour, endHour) {
+
+      this.timestamps.push({
+        'date' : '',
+        'startHour' : '',
+        'endHour' : '',
+        'showStartHour' : startHour !== '',
+        'showEndHour' : endHour !== '',
+      });
+    },
+
+    /**
+     * Reset the calendar.
+     */
+    resetCalendar: function() {
+      this.openingHours = [];
+      this.timestamps = [];
+    },
 
   };
 }
@@ -4557,7 +4560,6 @@ function EventFormStep5Directive() {
     }
 
   }
-  EventFormStep1Controller.$inject = ["$scope", "EventFormData", "UdbEvent", "UdbPlace", "eventTypes"];
 
 })();
 
@@ -4590,7 +4592,6 @@ function EventFormStep5Directive() {
     ];
 
   }
-  EventFormStep2Controller.$inject = ["$scope", "EventFormData", "UdbOpeningHours"];
 
 })();
 
@@ -4615,7 +4616,6 @@ function EventFormStep5Directive() {
     $scope.eventFormData = EventFormData;
 
   }
-  EventFormStep3Controller.$inject = ["$scope", "EventFormData"];
 
 })();
 
@@ -4737,7 +4737,6 @@ function EventFormStep5Directive() {
     }
 
   }
-  EventFormStep4Controller.$inject = ["$scope", "EventFormData", "udbApi", "appConfig", "SearchResultViewer", "$modal"];
 
 })();
 
@@ -4762,7 +4761,6 @@ function EventFormStep5Directive() {
     $scope.eventFormData = EventFormData;
 
   }
-  EventFormStep5Controller.$inject = ["udbApi", "$scope", "EventFormData"];
 
 })();
 
@@ -4815,7 +4813,6 @@ function EventExportJobFactory(BaseJob, JobStates) {
 
   return (EventExportJob);
 }
-EventExportJobFactory.$inject = ["BaseJob", "JobStates"];
 
 // Source: src/export/event-export.controller.js
 /**
@@ -4995,7 +4992,6 @@ function EventExportController($modalInstance, udbApi, eventExporter, queryField
 
   exporter.eventCount = eventExporter.activeExport.eventCount;
 }
-EventExportController.$inject = ["$modalInstance", "udbApi", "eventExporter", "queryFields", "$window"];
 
 // Source: src/export/event-exporter.service.js
 /**
@@ -5046,7 +5042,6 @@ function eventExporter(jobLogger, udbApi, EventExportJob) {
     return jobPromise;
   };
 }
-eventExporter.$inject = ["jobLogger", "udbApi", "EventExportJob"];
 
 // Source: src/search/components/query-editor-daterangepicker.directive.js
 /**
@@ -5098,7 +5093,6 @@ function udbQueryEditorDaterangepicker($translate, datepickerPopupConfig) {
     }
   };
 }
-udbQueryEditorDaterangepicker.$inject = ["$translate", "datepickerPopupConfig"];
 
 angular
   .module('udb.search')
@@ -5294,7 +5288,6 @@ function udbQueryEditor(queryFields, LuceneQueryBuilder, taxonomyTerms, fieldTyp
     }
   };
 }
-udbQueryEditor.$inject = ["queryFields", "LuceneQueryBuilder", "taxonomyTerms", "fieldTypeTransformers", "searchHelper"];
 
 // Source: src/search/components/search-bar.directive.js
 /**
@@ -5355,7 +5348,6 @@ function udbSearchBar(searchHelper, $rootScope) {
     }
   };
 }
-udbSearchBar.$inject = ["searchHelper", "$rootScope"];
 // Source: src/search/filters/currency.filter.js
 /**
  * @ngdoc filter
@@ -6010,7 +6002,6 @@ function LuceneQueryBuilder(LuceneQueryParser, QueryTreeValidator, QueryTreeTran
     return field;
   }
 }
-LuceneQueryBuilder.$inject = ["LuceneQueryParser", "QueryTreeValidator", "QueryTreeTranslator", "queryFields", "taxonomyTerms"];
 
 // Source: src/search/services/query-field-translations.constant.js
 /**
@@ -6199,7 +6190,6 @@ function QueryTreeTranslator(queryFieldTranslations) {
     return translateNode(queryTree, 0);
   };
 }
-QueryTreeTranslator.$inject = ["queryFieldTranslations"];
 
 // Source: src/search/services/query-tree-validator.service.js
 /**
@@ -6250,7 +6240,6 @@ function QueryTreeValidator(queryFields) {
   };
 
 }
-QueryTreeValidator.$inject = ["queryFields"];
 
 // Source: src/search/services/search-hepler.service.js
 /**
@@ -6282,7 +6271,6 @@ function SearchHelper(LuceneQueryBuilder) {
     return query;
   };
 }
-SearchHelper.$inject = ["LuceneQueryBuilder"];
 
 // Source: src/search/services/search-result-viewer.factory.js
 /**
@@ -6634,7 +6622,6 @@ function udbEvent(udbApi, jsonLDLangFilter, eventTranslator, eventTagger) {
 
   return event;
 }
-udbEvent.$inject = ["udbApi", "jsonLDLangFilter", "eventTranslator", "eventTagger"];
 // Source: src/search/ui/search.controller.js
 /**
  * @ngdoc function
@@ -6872,7 +6859,6 @@ function Search($scope, udbApi, LuceneQueryBuilder, $window, $location, $modal, 
   });
 
 }
-Search.$inject = ["$scope", "udbApi", "LuceneQueryBuilder", "$window", "$location", "$modal", "SearchResultViewer", "eventTagger", "searchHelper", "$rootScope", "eventExporter"];
 
 // Source: src/search/ui/search.directive.js
 /**

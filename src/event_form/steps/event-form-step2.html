@@ -10,9 +10,14 @@
     <div class="row">
       <div class="col-xs-12">
         <div class="form-group">
+
           <label class="wanneerkiezer-label">Maak een keuze</label>
           <div class="wanneerkiezer" ng-show="activeCalendarType === ''">
-            <button ng-repeat="calendarLabel in calendarLabels" ng-bind="calendarLabel.label" class="btn btn-default" ng-click="setCalendarType(calendarLabel.id)"></button>
+            <ul class="list-inline button-list">
+              <li ng-repeat="calendarLabel in calendarLabels">
+                <button class="btn btn-default" ng-bind="calendarLabel.label" ng-click="setCalendarType(calendarLabel.id)"></button>
+              </li>
+            </ul>
           </div>
           <div class="wanneer-chosen" ng-hide="activeCalendarType === ''">
             <span class="btn-chosen" ng-bind="activeCalendarLabel"></span><a class="btn btn-link wanneerrestore" href="#" ng-click="resetCalendar()">Wijzigen</a>
@@ -22,51 +27,16 @@
     </div>
 
     <div class="row" ng-show="activeCalendarType === 'single'">
-
-      <div id="wanneer-dagen" ng-repeat="openingHour in item.openingHours">
-
-        <div class="col-xs-12 col-sm-4 prototype-step" id="add-date-form">
-          <section class="add-date">
-
-            <datepicker ng-model="dt" min-date="minDate" show-weeks="true" class="well well-sm"></datepicker>
-
-            <div class="row">
-              <div class="col-xs-6">
-                <label>
-                  <input type="checkbox" value="" class="beginuur-toevoegen">
-                  Beginuur
-                </label>
-                <div class="beginuur-invullen" style="display: none">
-                  <input type="text" class="form-control uur" placeholder="Bv. 08:00"/>
-                </div>
-              </div>
-              <div class="col-xs-6 einduur" style="display: none">
-                <label>
-                  <input type="checkbox" value="" class="einduur-toevoegen">
-                  Einduur
-                </label>
-                <div class="einduur-invullen"  style="display: none">
-                  <input type="text" class="form-control uur" placeholder="Bv. 23:00"/>
-                </div>
-              </div>
-            </div>
-          </section>
-        </div>
-
-      </div>
-
-      <div class="col-xs-12 col-sm-4">
-        <div class="add-date">
-          <a href="#" class="add-date-link" ng-click="addSingleDate()">
-            <p id="add-date-plus" ng-click="addSingleDate()">+</p>
-            <p id="add-date-label" ng-click="addSingleDate()">Dag toevoegen</p>
-          </a>
-        </div>
-      </div>
-
+      <udb-event-form-timestamp></udb-event-form-timestamp>
     </div>
 
-    <a href="#" ng-click="eventFormData.showStep(3)">Volgende stap</a>
+    <div class="row" ng-show="activeCalendarType === 'periodic'">
+      <udb-event-form-period></udb-event-form-period>
+    </div>
+
+    <div class="row" ng-show="activeCalendarType === 'permanent'">
+      <udb-event-form-opening-hours></udb-event-form-opening-hours>
+    </div>
 
   </section>
 </div>

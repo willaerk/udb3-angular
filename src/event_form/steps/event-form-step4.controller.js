@@ -38,11 +38,30 @@
       // Set the name.
       EventFormData.setName($scope.activeTitle, 'nl');
 
+
+      //$scope.eventFormData.selectedLocation
+      //// is Event
+      // http://search-prod.lodgon.com/search/rest/search?q=*&fq=type:event&fq=location_cdbid:81E9C76C-BA61-0F30-45F5CD2279ACEBFC
+      // http://search-prod.lodgon.com/search/rest/detail/event/86E40542-B934-58DD-69AF85AC7FCEC934
+      // http://search-prod.lodgon.com/search/rest/search?q=*&fq=type:event&fq=street:Dr.%20Mathijsenstraat
+      //
+      // IsPlace
+      // location_contactinfo_zipcode
+      //http://search-prod.lodgon.com/search/rest/search?q=*&fq=type:event&fq=zipcode:9000
+      var params = {};
+
+      if ($scope.isEvent) {
+        params = { locationCdbId : '81E9C76C-BA61-0F30-45F5CD2279ACEBFC' };
+      }
+      else {
+        params = { locationZip : '9000' };
+      }
+
       // Load the candidate duplicates asynchronously.
       // Duplicates are found on existing identical properties:
       // - title is the same
       // - on the same location.
-      var promise = udbApi.findEvents($scope.activeTitle);
+      var promise = udbApi.findEvents($scope.activeTitle, 0, params);
 
       $scope.resultViewer.loading = true;
       $scope.duplicatesSearched = true;
@@ -50,7 +69,6 @@
       promise.then(function (data) {
         $scope.resultViewer.setResults(data);
       });
-
     }
 
     /**
@@ -76,10 +94,7 @@
     function previousDuplicate() {
 
       var previousDelta = parseInt($scope.currentDuplicateDelta) - 2;
-      if ($scope.resultViewer.events[previousDelta] === undefined) {
-        angular.element('#dubbeldetectie-voorbeeld').modal('hide');
-      }
-      else {
+      if ($scope.resultViewer.events[previousDelta] !== undefined) {
         var eventId = $scope.resultViewer.events[previousDelta]['@id'].split('/').pop();
         $scope.currentDuplicateId = eventId;
         $scope.currentDuplicateDelta = parseInt(previousDelta) + 1;
@@ -93,10 +108,7 @@
     function nextDuplicate() {
 
       var nextDelta = parseInt($scope.currentDuplicateDelta);
-      if ($scope.resultViewer.events[nextDelta] === undefined) {
-        angular.element('#dubbeldetectie-voorbeeld').modal('hide');
-      }
-      else {
+      if ($scope.resultViewer.events[nextDelta] !== undefined) {
         var eventId = $scope.resultViewer.events[nextDelta]['@id'].split('/').pop();
         $scope.currentDuplicateId = eventId;
         $scope.currentDuplicateDelta = parseInt(nextDelta) + 1;

@@ -25,20 +25,25 @@ function UdbApi($q, $http, appConfig, $cookieStore, uitidAuth, $cacheFactory, Ud
   /**
    * @param {string} queryString - The query used to find events.
    * @param {?number} start - From which event offset the result set should start.
+   * @param {object} conditions
+   *   Extra conditions. E.g. location_zip or location_id.
    * @returns {Promise} A promise that signals a succesful retrieval of
    *  search results or a failure.
    */
-  this.findEvents = function (queryString, start, datetime) {
+  this.findEvents = function (queryString, start, conditions) {
     var deferredEvents = $q.defer(),
         offset = start || 0,
-        dateRange = datetime || null,
         searchParams = {
-          start: offset,
-          dateRange: dateRange
+          start: offset
         };
 
     if(queryString.length) {
       searchParams.query = queryString;
+    }
+    if (conditions !== undefined) {
+      for (var condition in conditions) {
+        searchParams[condition] = conditions[condition];
+      }
     }
 
     var request = $http.get(apiUrl + 'search', {

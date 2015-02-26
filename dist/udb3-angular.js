@@ -2183,20 +2183,25 @@ function UdbApi($q, $http, appConfig, $cookieStore, uitidAuth, $cacheFactory, Ud
   /**
    * @param {string} queryString - The query used to find events.
    * @param {?number} start - From which event offset the result set should start.
+   * @param {object} conditions
+   *   Extra conditions. E.g. location_zip or location_id.
    * @returns {Promise} A promise that signals a succesful retrieval of
    *  search results or a failure.
    */
-  this.findEvents = function (queryString, start, datetime) {
+  this.findEvents = function (queryString, start, conditions) {
     var deferredEvents = $q.defer(),
         offset = start || 0,
-        dateRange = datetime || null,
         searchParams = {
-          start: offset,
-          dateRange: dateRange
+          start: offset
         };
 
     if(queryString.length) {
       searchParams.query = queryString;
+    }
+    if (conditions !== undefined) {
+      for (var condition in conditions) {
+        searchParams[condition] = conditions[condition];
+      }
     }
 
     var request = $http.get(apiUrl + 'search', {
@@ -4653,11 +4658,30 @@ function EventFormStep5Directive() {
       // Set the name.
       EventFormData.setName($scope.activeTitle, 'nl');
 
+
+      //$scope.eventFormData.selectedLocation
+      //// is Event
+      // http://search-prod.lodgon.com/search/rest/search?q=*&fq=type:event&fq=location_cdbid:81E9C76C-BA61-0F30-45F5CD2279ACEBFC
+      // http://search-prod.lodgon.com/search/rest/detail/event/86E40542-B934-58DD-69AF85AC7FCEC934
+      // http://search-prod.lodgon.com/search/rest/search?q=*&fq=type:event&fq=street:Dr.%20Mathijsenstraat
+      //
+      // IsPlace
+      // location_contactinfo_zipcode
+      //http://search-prod.lodgon.com/search/rest/search?q=*&fq=type:event&fq=zipcode:9000
+      var params = {};
+
+      if ($scope.isEvent) {
+        params = { locationCdbId : '81E9C76C-BA61-0F30-45F5CD2279ACEBFC' };
+      }
+      else {
+        params = { locationZip : '9000' };
+      }
+
       // Load the candidate duplicates asynchronously.
       // Duplicates are found on existing identical properties:
       // - title is the same
       // - on the same location.
-      var promise = udbApi.findEvents($scope.activeTitle);
+      var promise = udbApi.findEvents($scope.activeTitle, 0, params);
 
       $scope.resultViewer.loading = true;
       $scope.duplicatesSearched = true;
@@ -4665,7 +4689,6 @@ function EventFormStep5Directive() {
       promise.then(function (data) {
         $scope.resultViewer.setResults(data);
       });
-
     }
 
     /**
@@ -4691,10 +4714,7 @@ function EventFormStep5Directive() {
     function previousDuplicate() {
 
       var previousDelta = parseInt($scope.currentDuplicateDelta) - 2;
-      if ($scope.resultViewer.events[previousDelta] === undefined) {
-        angular.element('#dubbeldetectie-voorbeeld').modal('hide');
-      }
-      else {
+      if ($scope.resultViewer.events[previousDelta] !== undefined) {
         var eventId = $scope.resultViewer.events[previousDelta]['@id'].split('/').pop();
         $scope.currentDuplicateId = eventId;
         $scope.currentDuplicateDelta = parseInt(previousDelta) + 1;
@@ -4708,10 +4728,7 @@ function EventFormStep5Directive() {
     function nextDuplicate() {
 
       var nextDelta = parseInt($scope.currentDuplicateDelta);
-      if ($scope.resultViewer.events[nextDelta] === undefined) {
-        angular.element('#dubbeldetectie-voorbeeld').modal('hide');
-      }
-      else {
+      if ($scope.resultViewer.events[nextDelta] !== undefined) {
         var eventId = $scope.resultViewer.events[nextDelta]['@id'].split('/').pop();
         $scope.currentDuplicateId = eventId;
         $scope.currentDuplicateDelta = parseInt(nextDelta) + 1;
@@ -7164,14 +7181,19 @@ $templateCache.put('templates/base-job.template.html',
     "\n" +
     "    <div class=\"modal fade\" id=\"dubbeldetectie-voorbeeld\" aria-hidden=\"true\" ng-hide=\"currentDuplicateId === ''\">\n" +
     "\n" +
-    "      <div class=\"modal-dialog modal-lg\"\n" +
+    "      <div class=\"modal-dialog modal-lg\">\n" +
+    "        <div class=\"modal-content \"\n" +
     "           ng-repeat=\"event in resultViewer.events\"\n" +
-    "           udb-event=\"event\">\n" +
-    "        <div class=\"modal-content \" ng-show=\"event.id === currentDuplicateId\">\n" +
+    "           udb-event=\"event\"\n" +
+    "           ng-show=\"event.id === currentDuplicateId\">\n" +
     "          <div class=\"modal-header\">\n" +
     "            <div class=\"pull-right\">\n" +
-    "              <button type=\"button\" class=\"btn btn-default\" ng-click=\"previousDuplicate()\">Vorige</button>\n" +
-    "              <button type=\"button\" class=\"btn btn-default\" ng-click=\"nextDuplicate()\">Volgende</button>\n" +
+    "              <button type=\"button\" class=\"btn btn-default\" ng-if=\"currentDuplicateDelta === 1\" data-dismiss=\"modal\">Vorige</button>\n" +
+    "              <button type=\"button\" class=\"btn btn-default\" ng-if=\"currentDuplicateDelta > 1\" ng-click=\"previousDuplicate()\">Vorige</button>\n" +
+    "\n" +
+    "              <button type=\"button\" class=\"btn btn-default\" ng-if=\"currentDuplicateDelta === resultViewer.totalItems\" data-dismiss=\"modal\">Volgende</button>\n" +
+    "              <button type=\"button\" class=\"btn btn-default\" ng-if=\"currentDuplicateDelta < resultViewer.totalItems\" ng-click=\"nextDuplicate()\">Volgende</button>\n" +
+    "\n" +
     "              <button type=\"button\" class=\"close\" data-dismiss=\"modal\" aria-label=\"Close\">\n" +
     "                <span aria-hidden=\"true\">×</span>\n" +
     "              </button>\n" +

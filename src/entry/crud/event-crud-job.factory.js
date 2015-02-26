@@ -14,14 +14,16 @@ angular
 function EventCrudJobFactory(BaseJob) {
 
   /**
-   * @class EventCreationJob
+   * @class EventCrudJob
    * @constructor
    * @param {string} commandId
-   * @param {UdbEvent} event
+   * @param {string} action
+   * @param {UdbEvent|UdbPlace} item
    */
-  var EventCrudJob = function (commandId, event, action) {
+  var EventCrudJob = function (commandId, item, action) {
     BaseJob.call(this, commandId);
-    this.event = event;
+    this.item = item;
+    this.action = action;
   };
 
   EventCrudJob.prototype = Object.create(BaseJob.prototype);
@@ -31,8 +33,14 @@ function EventCrudJobFactory(BaseJob) {
 
     switch (this.action) {
 
-      case 'create':
-        return 'Evenement toevoegen: "' + this.event.name.nl + '".';
+      case 'createEvent':
+        return 'Evenement toevoegen: "' + this.item.name.nl + '".';
+
+      case 'createPlace':
+        return 'Locatie toevoegen: "' + this.item.name.nl + '".';
+
+      case 'updateTypicalAgeRange':
+        return 'Leeftijd aanpassend: "' + this.item.name.nl + '".';
 
     }
 

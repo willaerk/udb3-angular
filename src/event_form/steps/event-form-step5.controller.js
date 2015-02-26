@@ -13,7 +13,10 @@
     .controller('EventFormStep5Ctrl', EventFormStep5Controller);
 
   /* @ngInject */
-  function EventFormStep5Controller(udbApi, $scope, EventFormData) {
+  function EventFormStep5Controller($scope, EventFormData, eventCrud) {
+
+    // Work hardcoded on this id for now.
+    EventFormData.id = '1c4a7e6a-3ed9-450f-80d7-e3439cb72e15';
 
     // Scope vars.
     $scope.eventFormData = EventFormData; // main storage for event form.
@@ -41,6 +44,8 @@
     function saveDescription() {
 
       EventFormData.setDescription($scope.description, 'nl');
+
+      eventCrud.updateDescription(EventFormData, EventFormData.getType(), $scope.description);
 
       // Toggle correct class.
       if ($scope.description) {
@@ -72,6 +77,22 @@
      * Save the age range.
      */
     function saveAgeRange() {
+
+      if ($scope.ageRange > 0) {
+
+        if ($scope.ageRange === 12 || $scope.ageRange === 18) {
+          EventFormData.typicalAgeRange = $scope.minAge + '-' + $scope.ageRange;
+        }
+        else {
+          EventFormData.typicalAgeRange = $scope.ageRange + '-';
+        }
+
+      }
+      else {
+        EventFormData.typicalAgeRange = $scope.ageRange;
+      }
+
+      eventCrud.updateTypicalAgeRange(EventFormData, EventFormData.getType());
 
       $scope.ageCssClass = 'state-complete';
     }

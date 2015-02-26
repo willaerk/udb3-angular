@@ -23,7 +23,7 @@ function EventTranslator(jobLogger, udbApi, EventTranslationJob) {
    * @param {string}    translation  Translation to save
    */
   this.translateProperty = function (event, property, language, translation) {
-    var jobPromise = udbApi.translateEventProperty(event.id, property, language, translation);
+    var jobPromise = udbApi.translateProperty(event.id, 'event', property, language, translation);
 
     jobPromise.success(function (jobData) {
       // TODO get rid of this hack;

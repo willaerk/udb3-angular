@@ -76,7 +76,7 @@
                 <div class="form-inline" ng-show="ageRange > 0">
                   <div class="form-group">
                     <label for="min-age">Vanaf</label>
-                    <input type="number" id="min-age" class="form-control" ng-model="minAge">
+                    <input type="number" id="min-age" class="form-control" ng-model="minAge" ng-model-options="{ updateOn: 'change' }" ng-change="saveAgeRange()">
                     <label for="min-age">jaar</label>
                   </div>
                 </div>

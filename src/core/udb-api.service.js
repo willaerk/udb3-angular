@@ -22,6 +22,8 @@ function UdbApi($q, $http, appConfig, $cookieStore, uitidAuth, $cacheFactory, Ud
       };
   var eventCache = $cacheFactory('eventCache');
 
+  this.mainLanguage = 'nl';
+
   /**
    * @param {string} queryString - The query used to find events.
    * @param {?number} start - From which event offset the result set should start.
@@ -183,16 +185,41 @@ function UdbApi($q, $http, appConfig, $cookieStore, uitidAuth, $cacheFactory, Ud
     );
   };
 
-  this.translateEventProperty = function (eventId, property, language, translation) {
+  this.translateProperty = function (id, type, property, language, translation) {
 
     var translationData = {};
     translationData[property] = translation;
 
     return $http.post(
-      appConfig.baseUrl + 'event/' + eventId + '/' + language + '/' + property,
+      appConfig.baseUrl + type + '/' + id + '/' + language + '/' + property,
       translationData,
       defaultApiConfig
     );
+  };
+
+  /**
+   * Update the property for a given id.
+   *
+   * @param string id
+   *   ID to update
+   * @param string type
+   *   Type of entity to update
+   * @param string property
+   *   Property to update
+   * @param string value
+   *   Value to save
+   */
+  this.updateProperty = function(eventId, type, property, value) {
+
+    var updateData = {};
+    updateData[property] = value;
+
+    return $http.post(
+      appConfig.baseUrl + type + '/' + eventId + '/' + property,
+      updateData,
+      defaultApiConfig
+    );
+
   };
 
   this.tagEvent = function (eventId, label) {
@@ -217,4 +244,5 @@ function UdbApi($q, $http, appConfig, $cookieStore, uitidAuth, $cacheFactory, Ud
       defaultApiConfig
     );
   };
+
 }

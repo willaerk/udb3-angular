@@ -11,7 +11,7 @@ angular
   .factory('EventFormData', EventFormDataFactory);
 
 /* @ngInject */
-function EventFormDataFactory() {
+function EventFormDataFactory(UdbEvent, UdbPlace) {
   return {
 
     isEvent : true, // Is current item an event.
@@ -181,6 +181,13 @@ function EventFormDataFactory() {
       this.openingHours = [];
       this.timestamps = [];
     },
+
+    /**
+     * Get the type that will be saved.
+     */
+    getType: function() {
+      return this.isEvent ? 'event' : 'place';
+    }
 
   };
 }

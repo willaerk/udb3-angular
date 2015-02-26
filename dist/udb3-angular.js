@@ -2180,6 +2180,8 @@ function UdbApi($q, $http, appConfig, $cookieStore, uitidAuth, $cacheFactory, Ud
       };
   var eventCache = $cacheFactory('eventCache');
 
+  this.mainLanguage = 'nl';
+
   /**
    * @param {string} queryString - The query used to find events.
    * @param {?number} start - From which event offset the result set should start.
@@ -2341,16 +2343,41 @@ function UdbApi($q, $http, appConfig, $cookieStore, uitidAuth, $cacheFactory, Ud
     );
   };
 
-  this.translateEventProperty = function (eventId, property, language, translation) {
+  this.translateProperty = function (id, type, property, language, translation) {
 
     var translationData = {};
     translationData[property] = translation;
 
     return $http.post(
-      appConfig.baseUrl + 'event/' + eventId + '/' + language + '/' + property,
+      appConfig.baseUrl + type + '/' + id + '/' + language + '/' + property,
       translationData,
       defaultApiConfig
     );
+  };
+
+  /**
+   * Update the property for a given id.
+   *
+   * @param string id
+   *   ID to update
+   * @param string type
+   *   Type of entity to update
+   * @param string property
+   *   Property to update
+   * @param string value
+   *   Value to save
+   */
+  this.updateProperty = function(eventId, type, property, value) {
+
+    var updateData = {};
+    updateData[property] = value;
+
+    return $http.post(
+      appConfig.baseUrl + type + '/' + eventId + '/' + property,
+      updateData,
+      defaultApiConfig
+    );
+
   };
 
   this.tagEvent = function (eventId, label) {
@@ -2375,6 +2402,7 @@ function UdbApi($q, $http, appConfig, $cookieStore, uitidAuth, $cacheFactory, Ud
       defaultApiConfig
     );
   };
+
 }
 UdbApi.$inject = ["$q", "$http", "appConfig", "$cookieStore", "uitidAuth", "$cacheFactory", "UdbEvent"];
 
@@ -2933,14 +2961,16 @@ angular
 function EventCrudJobFactory(BaseJob) {
 
   /**
-   * @class EventCreationJob
+   * @class EventCrudJob
    * @constructor
    * @param {string} commandId
-   * @param {UdbEvent} event
+   * @param {string} action
+   * @param {UdbEvent|UdbPlace} item
    */
-  var EventCrudJob = function (commandId, event, action) {
+  var EventCrudJob = function (commandId, item, action) {
     BaseJob.call(this, commandId);
-    this.event = event;
+    this.item = item;
+    this.action = action;
   };
 
   EventCrudJob.prototype = Object.create(BaseJob.prototype);
@@ -2950,8 +2980,14 @@ function EventCrudJobFactory(BaseJob) {
 
     switch (this.action) {
 
-      case 'create':
-        return 'Evenement toevoegen: "' + this.event.name.nl + '".';
+      case 'createEvent':
+        return 'Evenement toevoegen: "' + this.item.name.nl + '".';
+
+      case 'createPlace':
+        return 'Locatie toevoegen: "' + this.item.name.nl + '".';
+
+      case 'updateTypicalAgeRange':
+        return 'Leeftijd aanpassend: "' + this.item.name.nl + '".';
 
     }
 
@@ -2978,19 +3014,63 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
   /**
    * Creates a new event and add the job to the logger.
    *
-   * @param {UdbEvent}  event        The event to be created
+   * @param {UdbEvent}  event
+   * The event to be created
    */
   this.createEvent = function (event) {
 
     var jobPromise = udbApi.createEvent(event);
 
     jobPromise.success(function (jobData) {
-      var job = new EventCrudJob(jobData.commandId, event);
+      var job = new EventCrudJob(jobData.commandId, event, 'createEvent');
       jobLogger.addJob(job);
     });
 
     return jobPromise;
   };
+
+  /**
+   * Update the main language description and add it to the job logger.
+   *
+   * @param {UdbEvent|UdbPlace|EventFormData} item
+   * @param {string} type
+   *  Type of item
+   * @returns {EventCrud.updateTypicalAgeRange.jobPromise}
+   */
+  this.updateDescription = function(item, type) {
+
+    var jobPromise = udbApi.translateProperty(item.id, type, 'description', udbApi.mainLanguage, item.description.nl);
+
+    jobPromise.success(function (jobData) {
+      var job = new EventCrudJob(jobData.commandId, item, 'updateTypicalAgeRange');
+      jobLogger.addJob(job);
+    });
+
+    return jobPromise;
+
+  };
+
+  /**
+   * Update the typical age range and add it to the job logger.
+   *
+   * @param {UdbEvent|UdbPlace} item
+   * @param {string} type
+   *  Type of item
+   * @returns {EventCrud.updateTypicalAgeRange.jobPromise}
+   */
+  this.updateTypicalAgeRange = function(item, type) {
+
+    var jobPromise = udbApi.updateProperty(item.id, type, 'typicalAgeRange', item.typicalAgeRange);
+
+    jobPromise.success(function (jobData) {
+      var job = new EventCrudJob(jobData.commandId, item, 'updateTypicalAgeRange');
+      jobLogger.addJob(job);
+    });
+
+    return jobPromise;
+
+  };
+
 }
 EventCrud.$inject = ["jobLogger", "udbApi", "EventCrudJob"];
 
@@ -3825,7 +3905,7 @@ function EventTranslator(jobLogger, udbApi, EventTranslationJob) {
    * @param {string}    translation  Translation to save
    */
   this.translateProperty = function (event, property, language, translation) {
-    var jobPromise = udbApi.translateEventProperty(event.id, property, language, translation);
+    var jobPromise = udbApi.translateProperty(event.id, 'event', property, language, translation);
 
     jobPromise.success(function (jobData) {
       // TODO get rid of this hack;
@@ -4176,7 +4256,7 @@ angular
   .factory('EventFormData', EventFormDataFactory);
 
 /* @ngInject */
-function EventFormDataFactory() {
+function EventFormDataFactory(UdbEvent, UdbPlace) {
   return {
 
     isEvent : true, // Is current item an event.
@@ -4347,8 +4427,16 @@ function EventFormDataFactory() {
       this.timestamps = [];
     },
 
+    /**
+     * Get the type that will be saved.
+     */
+    getType: function() {
+      return this.isEvent ? 'event' : 'place';
+    }
+
   };
 }
+EventFormDataFactory.$inject = ["UdbEvent", "UdbPlace"];
 // Source: src/event_form/event-form.directive.js
 /**
  * @ngdoc directive
@@ -4727,7 +4815,10 @@ function EventFormStep5Directive() {
     .controller('EventFormStep5Ctrl', EventFormStep5Controller);
 
   /* @ngInject */
-  function EventFormStep5Controller(udbApi, $scope, EventFormData) {
+  function EventFormStep5Controller($scope, EventFormData, eventCrud) {
+
+    // Work hardcoded on this id for now.
+    EventFormData.id = '1c4a7e6a-3ed9-450f-80d7-e3439cb72e15';
 
     // Scope vars.
     $scope.eventFormData = EventFormData; // main storage for event form.
@@ -4755,6 +4846,8 @@ function EventFormStep5Directive() {
     function saveDescription() {
 
       EventFormData.setDescription($scope.description, 'nl');
+
+      eventCrud.updateDescription(EventFormData, EventFormData.getType(), $scope.description);
 
       // Toggle correct class.
       if ($scope.description) {
@@ -4787,6 +4880,22 @@ function EventFormStep5Directive() {
      */
     function saveAgeRange() {
 
+      if ($scope.ageRange > 0) {
+
+        if ($scope.ageRange === 12 || $scope.ageRange === 18) {
+          EventFormData.typicalAgeRange = $scope.minAge + '-' + $scope.ageRange;
+        }
+        else {
+          EventFormData.typicalAgeRange = $scope.ageRange + '-';
+        }
+
+      }
+      else {
+        EventFormData.typicalAgeRange = $scope.ageRange;
+      }
+
+      eventCrud.updateTypicalAgeRange(EventFormData, EventFormData.getType());
+
       $scope.ageCssClass = 'state-complete';
     }
 
@@ -4809,7 +4918,7 @@ function EventFormStep5Directive() {
     }
 
   }
-  EventFormStep5Controller.$inject = ["udbApi", "$scope", "EventFormData"];
+  EventFormStep5Controller.$inject = ["$scope", "EventFormData", "eventCrud"];
 
 })();
 
@@ -7302,7 +7411,7 @@ $templateCache.put('templates/base-job.template.html',
     "                <div class=\"form-inline\" ng-show=\"ageRange > 0\">\n" +
     "                  <div class=\"form-group\">\n" +
     "                    <label for=\"min-age\">Vanaf</label>\n" +
-    "                    <input type=\"number\" id=\"min-age\" class=\"form-control\" ng-model=\"minAge\">\n" +
+    "                    <input type=\"number\" id=\"min-age\" class=\"form-control\" ng-model=\"minAge\" ng-model-options=\"{ updateOn: 'change' }\" ng-change=\"saveAgeRange()\">\n" +
     "                    <label for=\"min-age\">jaar</label>\n" +
     "                  </div>\n" +
     "                </div>\n" +

@@ -205,10 +205,11 @@ function Search($scope, udbApi, LuceneQueryBuilder, $window, $location, $modal, 
 
     $scope.queryEditorShown = true;
   };
-  $rootScope.$on('editQuery', $scope.editQuery);
+  $rootScope.$on('startEditingQuery', $scope.editQuery);
 
   $scope.hideQueryEditor = function () {
     $scope.queryEditorShown = false;
+    $rootScope.$emit('stopEditingQuery');
   };
 
   $scope.$watch(function () {

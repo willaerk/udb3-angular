@@ -122,6 +122,13 @@
      */
     function saveEvent() {
       
+      if ($scope.isEvent) {
+        // Copy properties to UdbEvent
+      }
+      else {
+        // Copy properties to UdbPlace
+          
+      }
     }
 
   }

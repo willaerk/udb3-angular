@@ -29,14 +29,6 @@ function EventFormDataFactory() {
     timestamps : [],
     openingHours : [],
 
-    // Properties that will be copied to UdbEvent / UdbPlace.
-    name : {},
-    place : {},
-    type : {},
-    theme : {},
-    timestamps : [],
-    openingHours : [],
-
     /**
      * Show the given step.
      * @param int stepNumber

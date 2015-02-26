@@ -20,6 +20,7 @@
     $scope.eventFormData = EventFormData;
 
     $scope.validateEvent = validateEvent;
+    $scope.saveEvent = saveEvent;
     $scope.duplicatesSearched = false;
     $scope.udb3DashboardUrl = appConfig.udb3DashboardUrl;
     $scope.activeTitle = '';
@@ -114,6 +115,13 @@
         $scope.currentDuplicateDelta = parseInt(nextDelta) + 1;
       }
 
+    }
+
+    /**
+     * Save Event for the first time.
+     */
+    function saveEvent() {
+      
     }
 
   }

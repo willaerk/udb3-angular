@@ -12,11 +12,11 @@
         <label for="gemeente-autocomplete" id="gemeente-label"> Kies een gemeente</label>
         <div id="gemeente-kiezer" ng-hide="citySelected">
           <span style="position: relative; display: inline-block; direction: ltr;" class="twitter-typeahead">
-            <input type="text" placeholder="Gemeente of postcode" ng-model="eventFormData.selectedCity" typeahead="city for city in cityAutocomplete.getCities($viewValue)"  typeahead-on-select="selectCity()" typeahead-min-length="3" class="form-control" required>
+            <input type="text" placeholder="Gemeente of postcode" ng-model="eventFormData.cityLabel" typeahead="city.key as city.label for city in cityAutocomplete.getCities($viewValue)"  typeahead-on-select="selectCity($item, $model, $label)" typeahead-min-length="3" class="form-control" required>
           </span>
         </div>
         <div id="gemeente-gekozen" ng-show="citySelected">
-          <span class="btn-chosen" id="gemeente-gekozen-button" ng-bind="eventFormData.selectedCity"></span>
+          <span class="btn-chosen" id="gemeente-gekozen-button" ng-bind="eventFormData.cityLabel"></span>
           <a href="" class="btn btn-default btn-link" ng-click="changeCitySelection()">Wijzigen</a>
         </div>
       </div>
@@ -24,27 +24,33 @@
 
     <div id="waar-evenement" ng-show="eventFormData.isEvent && citySelected">
       <div class="row">
-        <div class="col-xs-12" ng-hide="newLocation">
+        <div class="col-xs-12">
           <label id="locatie-label">Kies een locatie</label>
           <div id="locatie-kiezer" ng-hide="locationSelected || locationAdded" >
             <span style="position: relative; display: inline-block; direction: ltr;" class="twitter-typeahead">
-              <input type="text" placeholder="Locatie" ng-model="eventFormData.selectedLocation" typeahead="location for location in cityAutocomplete.getLocationsForCity($viewValue)" typeahead-on-select="selectLocation($item, $model, $label)" typeahead-min-length="3" class="form-control">
+              <input type="text" placeholder="Locatie" ng-model="eventFormData.locationLabel" typeahead="location for location in getLocations($viewValue)" typeahead-on-select="selectLocation($item, $model, $label)" typeahead-min-length="3" class="form-control">
+              <div class="plaats-adres-resultaat" ng-show="noLocationsFound">
+                <p>
+                  <span>Locatie niet gevonden?</span>
+                  <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#waar-locatie-toevoegen" ng-click="showAddLocation()">Een locatie toevoegen</button>
+                </p>
+              </div>
             </span>
           </div>
           <div id="locatie-gekozen" ng-show="locationSelected">
-            <span class=" btn-chosen" id="locatie-gekozen-button" ng-bind="eventFormData.selectedLocation"></span>
-            <a href="" class="btn btn-default btn-link" ng-click="changeLocationSelection()">Wijzigen</a>
+            <span class=" btn-chosen" id="locatie-gekozen-button" ng-bind="eventFormData.locationLabel"></span>
+            <button type="button" class="btn btn-default btn-link" data-toggle="modal" data-target="#waar-locatie-toevoegen" ng-click="changeLocationSelection()">Wijzigen</button>
           </div>
         </div>
       </div>
 
-      <div  id="waar-locatie-toevoegen" ng-show="newLocation">
-        <div >
-          <div >
-            <div >
-              <h4 >Nieuwe locatie toevoegen</h4>
+      <div class="modal fade" id="waar-locatie-toevoegen" ng-hide="autoLocationSearch">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h4 class="modal-title">Nieuwe locatie toevoegen</h4>
             </div>
-            <div >
+            <div class="modal-body">
               <div class="form-group">
                 <label>Titel</label>
                 <input class="form-control" type="text" ng-model="eventFormData.locationTitle">
@@ -53,8 +59,8 @@
 
               <div class="form-group">
                 <label>Categorie</label>
-                <select class="form-control" size="4" id="locatie-toevoegen-types" ng-model="eventFormData.locationCategory">
-                  <option ng-repeat="category in categories" value="{{ category }}">{{ category }}</option>
+                <select class="form-control" size="4" id="locatie-toevoegen-types" ng-model="eventFormData.locationCategoryId">
+                  <option ng-repeat="category in categories" value="{{ category.id }}">{{ category.label }}</option>
                 </select>
               </div>
 
@@ -77,14 +83,14 @@
                 <div class="col-xs-12">
                   <div class="form-group">
                     <label>Gemeente</label>
-                    <p id="waar-locatie-toevoegen-gemeente" ng-bind="eventFormData.selectedCity"></p>
+                    <p id="waar-locatie-toevoegen-gemeente" ng-bind="eventFormData.cityLabel"></p>
                   </div>
                 </div>
 
               </div>
             </div>
-            <div class="">
-              <button type="button" class="btn btn-default" ng-click="resetAddLocation()">Annuleren</button>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-default" data-dismiss="modal" ng-click="resetAddLocation()">Annuleren</button>
               <button type="button" class="btn btn-primary" ng-click="addLocation()">Toevoegen</button>
             </div>
           </div><!-- /.modal-content -->
@@ -127,5 +133,18 @@
     </div>
 
   </section>
+  cityId: {{ eventFormData.cityId }} <br>
+  cityLabel: {{ eventFormData.cityLabel }} <br>
+  locationId: {{ eventFormData.locationId }} <br>
+  locationLabel: {{ eventFormData.locationLabel }} <br>
+  locationTitle: {{ eventFormData.locationTitle }} <br>
+  locationCategoryId: {{ eventFormData.locationCategoryId }} <br>
+  locationStreet: {{ eventFormData.locationStreet }} <br>
+  locationNumber: {{ eventFormData.locationNumber }} <br>
+  placeStreet: {{ eventFormData.placeStreet }} <br>
+  placeNumber: {{ eventFormData.placeNumber }} <br>
+  place: {{ eventFormData.place }} <br>
+  locationsForCity: {{ locationsForCity }} <br>
+  noLocationsFound: {{ noLocationsFound }} <br>
 
 </div>

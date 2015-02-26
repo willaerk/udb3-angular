@@ -17,7 +17,7 @@ function CityAutocomplete($q, $http, appConfig) {
    * Get the cities that match the searched value.
    */
 
-  this.getCities = function (value) {
+  this.getCities = function(value) {
 
     var cities = $q.defer();
 
@@ -39,7 +39,7 @@ function CityAutocomplete($q, $http, appConfig) {
    * @param {type} value
    * @returns {$q@call;defer.promise}
    */
-  this.getLocationsForCity = function (value) {
+  this.getLocationsForCity = function(value) {
 
     var locations = $q.defer();
 
@@ -47,32 +47,9 @@ function CityAutocomplete($q, $http, appConfig) {
 
     request.success(function(jsonData) {
       locations.resolve(jsonData);
-
     });
 
     return locations.promise;
-
-  };
-
-
-  /**
-   *
-   * Get the categories for locations.
-   *
-   * @returns {$q@call;defer.promise}
-   */
-  this.getCategories = function () {
-
-    var categories = $q.defer();
-
-    var request = $http.get(appConfig.baseUrl + '/autocomplete/culturefeed/category-suggestion');
-
-    request.success(function(jsonData) {
-      categories.resolve(jsonData);
-
-    });
-
-    return categories.promise;
 
   };
 

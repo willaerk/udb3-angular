@@ -16,7 +16,7 @@
       </div>
       <div class="field-query row" ng-repeat="field in node.nodes">
         <div class="col-sm-4">
-          <select ng-options="fieldOption.name as fieldOption.label group by fieldOption.groupLabel for fieldOption in qe.fields | orderBy:['groupIndex','name']"
+          <select ng-options="field.name as field.label group by field.groupLabel for field in qe.fields | orderBy:['groupIndex','label']"
                   ng-model="field.field" class="form-control" ng-change="qe.updateFieldType(field)">
           </select>
         </div>

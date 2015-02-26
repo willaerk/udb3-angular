@@ -29,10 +29,7 @@ function udbQueryEditor(queryFields, LuceneQueryBuilder, taxonomyTerms, fieldTyp
       var qe = this,
           queryBuilder = LuceneQueryBuilder;
 
-      qe.fields = _.chain(queryFields)
-        // blacklist fields that should not be shown in the editor by adding them to the array below
-        .difference(['category_name'])
-        .value();
+      qe.fields = _.filter(queryFields, 'editable');
 
       // use the first occurrence of a group name to order it against the other groups
       var orderedGroups = _.chain(qe.fields)

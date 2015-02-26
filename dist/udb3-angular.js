@@ -3708,7 +3708,15 @@ angular
   .directive('udbQueryEditor', udbQueryEditor);
 
 /* @ngInject */
-function udbQueryEditor(queryFields, LuceneQueryBuilder, taxonomyTerms, fieldTypeTransformers, searchHelper, $translate) {
+function udbQueryEditor(
+  queryFields,
+  LuceneQueryBuilder,
+  taxonomyTerms,
+  fieldTypeTransformers,
+  searchHelper,
+  $translate,
+  $rootScope
+) {
   return {
     templateUrl: 'templates/query-editor.directive.html',
     restrict: 'E',
@@ -3772,6 +3780,11 @@ function udbQueryEditor(queryFields, LuceneQueryBuilder, taxonomyTerms, fieldTyp
        */
       qe.updateQueryString = function () {
         searchHelper.setQueryString(queryBuilder.unparseGroupedTree(qe.groupedQueryTree));
+        $rootScope.$emit('stopEditingQuery');
+      };
+
+      qe.stopEditing = function () {
+        $rootScope.$emit('stopEditingQuery');
       };
 
       /**
@@ -3890,7 +3903,7 @@ function udbQueryEditor(queryFields, LuceneQueryBuilder, taxonomyTerms, fieldTyp
     }
   };
 }
-udbQueryEditor.$inject = ["queryFields", "LuceneQueryBuilder", "taxonomyTerms", "fieldTypeTransformers", "searchHelper", "$translate"];
+udbQueryEditor.$inject = ["queryFields", "LuceneQueryBuilder", "taxonomyTerms", "fieldTypeTransformers", "searchHelper", "$translate", "$rootScope"];
 
 // Source: src/search/components/search-bar.directive.js
 /**
@@ -3918,8 +3931,12 @@ function udbSearchBar(searchHelper, $rootScope) {
       };
 
       searchBar.editQuery = function () {
-        searchBar.isEditing = true;
-        $rootScope.$emit('startEditingQuery');
+        var query = searchHelper.setQueryString(searchBar.query);
+
+        if(query.errors && !query.errors.length) {
+          $rootScope.$emit('startEditingQuery');
+          searchBar.isEditing = true;
+        }
       };
 
       searchBar.search = function () {
@@ -4886,6 +4903,8 @@ function SearchHelper(LuceneQueryBuilder) {
   this.setQueryString = function (queryString) {
     query = LuceneQueryBuilder.createQuery(queryString);
     LuceneQueryBuilder.isValid(query);
+
+    return query;
   };
 
   this.setQuery = function (searchQuery) {
@@ -5447,21 +5466,21 @@ function Search($scope, udbApi, LuceneQueryBuilder, $window, $location, $modal, 
   $scope.exportEvents = exportEvents;
   $scope.tag = tag;
 
-  $scope.editQuery = function () {
+  $scope.startEditing = function () {
     var query = $scope.activeQuery;
 
     if (query && queryBuilder.isValid(query)) {
       query.groupedQueryTree = queryBuilder.groupQueryTree(query.queryTree);
+      $scope.queryEditorShown = true;
     }
-
-    $scope.queryEditorShown = true;
   };
-  $rootScope.$on('startEditingQuery', $scope.editQuery);
 
-  $scope.hideQueryEditor = function () {
+  $scope.stopEditing = function () {
     $scope.queryEditorShown = false;
-    $rootScope.$emit('stopEditingQuery');
   };
+
+  $rootScope.$on('startEditingQuery', $scope.startEditing);
+  $rootScope.$on('stopEditingQuery', $scope.stopEditing);
 
   $scope.$watch(function () {
     var query = getSearchQuery();
@@ -5804,7 +5823,7 @@ $templateCache.put('templates/base-job.template.html',
     "    </button>\n" +
     "    <div class=\"btn-group pull-right\">\n" +
     "      <button type=\"button\" class=\"btn btn-default\"\n" +
-    "              ng-click=\"hideQueryEditor()\">\n" +
+    "              ng-click=\"qe.stopEditing()\">\n" +
     "        Annuleren\n" +
     "      </button>\n" +
     "      <button type=\"button\" class=\"btn btn-success\"\n" +

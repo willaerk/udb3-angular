@@ -4647,7 +4647,7 @@ function EventFormStep5Directive() {
     .controller('EventFormStep4Ctrl', EventFormStep4Controller);
 
   /* @ngInject */
-  function EventFormStep4Controller($scope, EventFormData, udbApi, appConfig, SearchResultViewer, $modal) {
+  function EventFormStep4Controller($scope, EventFormData, udbApi, appConfig, SearchResultViewer, eventCrud, $modal) {
 
     // Scope vars.
     // main storage for event form.
@@ -4655,6 +4655,8 @@ function EventFormStep5Directive() {
 
     $scope.validateEvent = validateEvent;
     $scope.saveEvent = saveEvent;
+    $scope.lastUpdated = null;
+    
     $scope.duplicatesSearched = false;
     $scope.udb3DashboardUrl = appConfig.udb3DashboardUrl;
     $scope.activeTitle = '';
@@ -4673,7 +4675,6 @@ function EventFormStep5Directive() {
       // Set the name.
       EventFormData.setName($scope.activeTitle, 'nl');
 
-
       //$scope.eventFormData.selectedLocation
       //// is Event
       // http://search-prod.lodgon.com/search/rest/search?q=*&fq=type:event&fq=location_cdbid:81E9C76C-BA61-0F30-45F5CD2279ACEBFC
@@ -4686,9 +4687,11 @@ function EventFormStep5Directive() {
       var params = {};
 
       if ($scope.isEvent) {
+        EventFormData.setLocation({ locationCdbId : '81E9C76C-BA61-0F30-45F5CD2279ACEBFC' });
         params = { locationCdbId : '81E9C76C-BA61-0F30-45F5CD2279ACEBFC' };
       }
       else {
+        EventFormData.setLocation({ locationZip : '9000' });
         params = { locationZip : '9000' };
       }
 
@@ -4702,7 +4705,16 @@ function EventFormStep5Directive() {
       $scope.duplicatesSearched = true;
 
       promise.then(function (data) {
-        $scope.resultViewer.setResults(data);
+        
+        // Set the results for the duplicates modal, 
+        if (data.totalItems > 0) {
+          $scope.resultViewer.setResults(data);
+        }
+        // or save the event immediataly if no duplicates were found.
+        else {
+          saveEvent();
+        }
+        
       });
     }
 
@@ -4756,10 +4768,23 @@ function EventFormStep5Directive() {
      */
     function saveEvent() {
       
+      var eventCrudPromise = null;
+      
+      if ($scope.isEvent) {
+        // Copy properties to UdbEvent
+        eventCrudPromise = eventCrud.createEvent($scope.eventFormData);
+      }
+      else {
+        // Copy properties to UdbPlace
+        eventCrudPromise = eventCrud.createEvent($scope.eventFormData);
+      }
+      
+      $scope.lastUpdated = moment(Date.now()).format('DD/MM/YYYY HH:mm:s');
+       
     }
 
   }
-  EventFormStep4Controller.$inject = ["$scope", "EventFormData", "udbApi", "appConfig", "SearchResultViewer", "$modal"];
+  EventFormStep4Controller.$inject = ["$scope", "EventFormData", "udbApi", "appConfig", "SearchResultViewer", "eventCrud", "$modal"];
 
 })();
 
@@ -7191,8 +7216,8 @@ $templateCache.put('templates/base-job.template.html',
     "      </div>\n" +
     "    </div>\n" +
     "\n" +
-    "    <h3 ng-show=\"duplicatesSearched\">Ben je zeker dat je \"{{ activeTitle }}\" wil toevoegen?</h3>\n" +
-    "    <ul class=\"list-inline\" ng-show=\"duplicatesSearched\">\n" +
+    "    <h3 ng-show=\"duplicatesSearched && resultViewer.totalItems > 0\">Ben je zeker dat je \"{{ activeTitle }}\" wil toevoegen?</h3>\n" +
+    "    <ul class=\"list-inline\" ng-show=\"duplicatesSearched && resultViewer.totalItems > 0\">\n" +
     "      <li>\n" +
     "        <a class=\"btn btn-default\" href=\"{{ udb3DashboardUrl }}\">Nee, keer terug naar dashboard</a>\n" +
     "      </li>\n" +
@@ -7225,56 +7250,58 @@ $templateCache.put('templates/base-job.template.html',
     "          <div class=\"modal-body\">\n" +
     "            <div class=\"panel panel-default preview\">\n" +
     "\n" +
+    "                <div class=\"panel-heading\" style=\"background-image: url({{ event.image }});\">\n" +
+    "                  <ul class=\"list-inline\">\n" +
+    "                    <li><small class=\"label label-default\">{{ event.type }}</small></li>\n" +
+    "                  </ul>\n" +
+    "                  <p class=\"title\">{{ event.getName('nl') }}</p>\n" +
+    "                </div>\n" +
     "\n" +
-    "              <div class=\"panel-heading\" style=\"background-image: url({{ event.image }});\">\n" +
-    "                <ul class=\"list-inline\">\n" +
-    "                  <li><small class=\"label label-default\">{{ event.type }}</small></li>\n" +
-    "                </ul>\n" +
-    "                <p class=\"title\">{{ event.getName('nl') }}</p>\n" +
-    "              </div>\n" +
+    "                <div class=\"panel-body\">\n" +
     "\n" +
-    "            <div class=\"panel-body\">\n" +
+    "                  {{ event.getDescription('nl') }}\n" +
     "\n" +
-    "              {{ event.getDescription('nl') }}\n" +
-    "\n" +
-    "              <table class=\"table table-condended\">\n" +
-    "                <tbody>\n" +
-    "                  <tr>\n" +
-    "                    <td class=\"\"><strong class=\"hidden-xs hidden-sm\">Waar</strong><i class=\"fa fa-map-marker hidden-md hidden-lg\"></i></td>\n" +
-    "                    <td>{{ event.location.name }}</td>\n" +
-    "                  </tr>\n" +
-    "                  <tr>\n" +
-    "                    <td><strong class=\"hidden-xs hidden-sm\">Wanneer</strong><i class=\"fa fa-calendar hidden-md hidden-lg\"></i></td>\n" +
-    "                    <td class=\"cf-when scroll scroll-150\">{{ event.startDate | date: 'dd/MM/yyyy' }}</td>\n" +
-    "                  </tr>\n" +
-    "                  <tr>\n" +
-    "                    <td><strong class=\"hidden-xs hidden-sm\">Organisatie</strong><i class=\"fa fa-building-o hidden-md hidden-lg\"></i></td>\n" +
-    "                    <td>{{ event.organizer.name }}</td>\n" +
-    "                  </tr>\n" +
-    "                  <tr>\n" +
-    "                    <td><strong class=\"hidden-xs hidden-sm\">Prijs</strong><i class=\"fa fa-eur hidden-md hidden-lg\"></i></td>\n" +
-    "                    <td>\n" +
-    "                      <div ng-switch=\"event.pricing\">\n" +
-    "                      <span ng-switch-when=\"free\">gratis</span>\n" +
-    "                      <span ng-switch-when=\"payed\">\n" +
-    "                          <i class=\"fa fa-eur meta icon\"></i><span ng-if=\"event.price\" ng-bind=\"event.price | currency\"></span>\n" +
-    "                      </span>\n" +
-    "                      <span ng-switch-when=\"unknown\">niet ingevoerd</span>\n" +
-    "                  </div>\n" +
-    "                    </td>\n" +
-    "                  </tr>\n" +
-    "                </tbody>\n" +
-    "              </table>\n" +
+    "                  <table class=\"table table-condended\">\n" +
+    "                    <tbody>\n" +
+    "                      <tr>\n" +
+    "                        <td class=\"\"><strong class=\"hidden-xs hidden-sm\">Waar</strong><i class=\"fa fa-map-marker hidden-md hidden-lg\"></i></td>\n" +
+    "                        <td>{{ event.location.name }}</td>\n" +
+    "                      </tr>\n" +
+    "                      <tr>\n" +
+    "                        <td><strong class=\"hidden-xs hidden-sm\">Wanneer</strong><i class=\"fa fa-calendar hidden-md hidden-lg\"></i></td>\n" +
+    "                        <td class=\"cf-when scroll scroll-150\">{{ event.startDate | date: 'dd/MM/yyyy' }}</td>\n" +
+    "                      </tr>\n" +
+    "                      <tr>\n" +
+    "                        <td><strong class=\"hidden-xs hidden-sm\">Organisatie</strong><i class=\"fa fa-building-o hidden-md hidden-lg\"></i></td>\n" +
+    "                        <td>{{ event.organizer.name }}</td>\n" +
+    "                      </tr>\n" +
+    "                      <tr>\n" +
+    "                        <td><strong class=\"hidden-xs hidden-sm\">Prijs</strong><i class=\"fa fa-eur hidden-md hidden-lg\"></i></td>\n" +
+    "                        <td>\n" +
+    "                          <div ng-switch=\"event.pricing\">\n" +
+    "                          <span ng-switch-when=\"free\">gratis</span>\n" +
+    "                          <span ng-switch-when=\"payed\">\n" +
+    "                              <i class=\"fa fa-eur meta icon\"></i><span ng-if=\"event.price\" ng-bind=\"event.price | currency\"></span>\n" +
+    "                          </span>\n" +
+    "                          <span ng-switch-when=\"unknown\">niet ingevoerd</span>\n" +
+    "                      </div>\n" +
+    "                        </td>\n" +
+    "                      </tr>\n" +
+    "                    </tbody>\n" +
+    "                  </table>\n" +
+    "                </div>\n" +
     "            </div>\n" +
+    "\n" +
+    "            <p><em>Ingevoerd door {{ event.organizer.name }} op {{ event.created | date : 'dd/MM/yyyy • HH:mm' }}</em></p>\n" +
+    "\n" +
     "          </div>\n" +
+    "        </div><!-- /.modal-content -->\n" +
     "\n" +
-    "          <p><em>Ingevoerd door {{ event.organizer.name }} op {{ event.created | date : 'dd/MM/yyyy • HH:mm' }}</em></p>\n" +
-    "\n" +
-    "      </div>\n" +
-    "    </div><!-- /.modal-content -->\n" +
-    "\n" +
-    "  </div><!-- /.modal-dialog -->\n" +
-    "</div>\n" +
+    "      </div><!-- /.modal-dialog -->\n" +
+    "    </div>\n" +
+    "    \n" +
+    "    <p ng-show=\"lastUpdated !== ''\"><em>Laatst bewaard op {{ lastUpdated | date : 'dd/MM/yyyy • HH:mm' }}</em></p>\n" +
+    "    \n" +
     "\n" +
     "  </section>\n" +
     "\n" +

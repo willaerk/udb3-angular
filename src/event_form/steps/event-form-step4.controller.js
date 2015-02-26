@@ -13,7 +13,7 @@
     .controller('EventFormStep4Ctrl', EventFormStep4Controller);
 
   /* @ngInject */
-  function EventFormStep4Controller($scope, EventFormData, udbApi, appConfig, SearchResultViewer, $modal) {
+  function EventFormStep4Controller($scope, EventFormData, udbApi, appConfig, SearchResultViewer, eventCrud, $modal) {
 
     // Scope vars.
     // main storage for event form.
@@ -21,6 +21,8 @@
 
     $scope.validateEvent = validateEvent;
     $scope.saveEvent = saveEvent;
+    $scope.lastUpdated = null;
+    
     $scope.duplicatesSearched = false;
     $scope.udb3DashboardUrl = appConfig.udb3DashboardUrl;
     $scope.activeTitle = '';
@@ -39,7 +41,6 @@
       // Set the name.
       EventFormData.setName($scope.activeTitle, 'nl');
 
-
       //$scope.eventFormData.selectedLocation
       //// is Event
       // http://search-prod.lodgon.com/search/rest/search?q=*&fq=type:event&fq=location_cdbid:81E9C76C-BA61-0F30-45F5CD2279ACEBFC
@@ -52,9 +53,11 @@
       var params = {};
 
       if ($scope.isEvent) {
+        EventFormData.setLocation({ locationCdbId : '81E9C76C-BA61-0F30-45F5CD2279ACEBFC' });
         params = { locationCdbId : '81E9C76C-BA61-0F30-45F5CD2279ACEBFC' };
       }
       else {
+        EventFormData.setLocation({ locationZip : '9000' });
         params = { locationZip : '9000' };
       }
 
@@ -68,7 +71,16 @@
       $scope.duplicatesSearched = true;
 
       promise.then(function (data) {
-        $scope.resultViewer.setResults(data);
+        
+        // Set the results for the duplicates modal, 
+        if (data.totalItems > 0) {
+          $scope.resultViewer.setResults(data);
+        }
+        // or save the event immediataly if no duplicates were found.
+        else {
+          saveEvent();
+        }
+        
       });
     }
 
@@ -122,13 +134,19 @@
      */
     function saveEvent() {
       
+      var eventCrudPromise = null;
+      
       if ($scope.isEvent) {
         // Copy properties to UdbEvent
+        eventCrudPromise = eventCrud.createEvent($scope.eventFormData);
       }
       else {
         // Copy properties to UdbPlace
-          
+        eventCrudPromise = eventCrud.createEvent($scope.eventFormData);
       }
+      
+      $scope.lastUpdated = moment(Date.now()).format('DD/MM/YYYY HH:mm:s');
+       
     }
 
   }

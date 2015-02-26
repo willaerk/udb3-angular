@@ -51,8 +51,8 @@
       </div>
     </div>
 
-    <h3 ng-show="duplicatesSearched">Ben je zeker dat je "{{ activeTitle }}" wil toevoegen?</h3>
-    <ul class="list-inline" ng-show="duplicatesSearched">
+    <h3 ng-show="duplicatesSearched && resultViewer.totalItems > 0">Ben je zeker dat je "{{ activeTitle }}" wil toevoegen?</h3>
+    <ul class="list-inline" ng-show="duplicatesSearched && resultViewer.totalItems > 0">
       <li>
         <a class="btn btn-default" href="{{ udb3DashboardUrl }}">Nee, keer terug naar dashboard</a>
       </li>
@@ -85,56 +85,58 @@
           <div class="modal-body">
             <div class="panel panel-default preview">
 
+                <div class="panel-heading" style="background-image: url({{ event.image }});">
+                  <ul class="list-inline">
+                    <li><small class="label label-default">{{ event.type }}</small></li>
+                  </ul>
+                  <p class="title">{{ event.getName('nl') }}</p>
+                </div>
 
-              <div class="panel-heading" style="background-image: url({{ event.image }});">
-                <ul class="list-inline">
-                  <li><small class="label label-default">{{ event.type }}</small></li>
-                </ul>
-                <p class="title">{{ event.getName('nl') }}</p>
-              </div>
+                <div class="panel-body">
 
-            <div class="panel-body">
+                  {{ event.getDescription('nl') }}
 
-              {{ event.getDescription('nl') }}
-
-              <table class="table table-condended">
-                <tbody>
-                  <tr>
-                    <td class=""><strong class="hidden-xs hidden-sm">Waar</strong><i class="fa fa-map-marker hidden-md hidden-lg"></i></td>
-                    <td>{{ event.location.name }}</td>
-                  </tr>
-                  <tr>
-                    <td><strong class="hidden-xs hidden-sm">Wanneer</strong><i class="fa fa-calendar hidden-md hidden-lg"></i></td>
-                    <td class="cf-when scroll scroll-150">{{ event.startDate | date: 'dd/MM/yyyy' }}</td>
-                  </tr>
-                  <tr>
-                    <td><strong class="hidden-xs hidden-sm">Organisatie</strong><i class="fa fa-building-o hidden-md hidden-lg"></i></td>
-                    <td>{{ event.organizer.name }}</td>
-                  </tr>
-                  <tr>
-                    <td><strong class="hidden-xs hidden-sm">Prijs</strong><i class="fa fa-eur hidden-md hidden-lg"></i></td>
-                    <td>
-                      <div ng-switch="event.pricing">
-                      <span ng-switch-when="free">gratis</span>
-                      <span ng-switch-when="payed">
-                          <i class="fa fa-eur meta icon"></i><span ng-if="event.price" ng-bind="event.price | currency"></span>
-                      </span>
-                      <span ng-switch-when="unknown">niet ingevoerd</span>
-                  </div>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+                  <table class="table table-condended">
+                    <tbody>
+                      <tr>
+                        <td class=""><strong class="hidden-xs hidden-sm">Waar</strong><i class="fa fa-map-marker hidden-md hidden-lg"></i></td>
+                        <td>{{ event.location.name }}</td>
+                      </tr>
+                      <tr>
+                        <td><strong class="hidden-xs hidden-sm">Wanneer</strong><i class="fa fa-calendar hidden-md hidden-lg"></i></td>
+                        <td class="cf-when scroll scroll-150">{{ event.startDate | date: 'dd/MM/yyyy' }}</td>
+                      </tr>
+                      <tr>
+                        <td><strong class="hidden-xs hidden-sm">Organisatie</strong><i class="fa fa-building-o hidden-md hidden-lg"></i></td>
+                        <td>{{ event.organizer.name }}</td>
+                      </tr>
+                      <tr>
+                        <td><strong class="hidden-xs hidden-sm">Prijs</strong><i class="fa fa-eur hidden-md hidden-lg"></i></td>
+                        <td>
+                          <div ng-switch="event.pricing">
+                          <span ng-switch-when="free">gratis</span>
+                          <span ng-switch-when="payed">
+                              <i class="fa fa-eur meta icon"></i><span ng-if="event.price" ng-bind="event.price | currency"></span>
+                          </span>
+                          <span ng-switch-when="unknown">niet ingevoerd</span>
+                      </div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
             </div>
+
+            <p><em>Ingevoerd door {{ event.organizer.name }} op {{ event.created | date : 'dd/MM/yyyy • HH:mm' }}</em></p>
+
           </div>
+        </div><!-- /.modal-content -->
 
-          <p><em>Ingevoerd door {{ event.organizer.name }} op {{ event.created | date : 'dd/MM/yyyy • HH:mm' }}</em></p>
-
-      </div>
-    </div><!-- /.modal-content -->
-
-  </div><!-- /.modal-dialog -->
-</div>
+      </div><!-- /.modal-dialog -->
+    </div>
+    
+    <p ng-show="lastUpdated !== ''"><em>Laatst bewaard op {{ lastUpdated | date : 'dd/MM/yyyy • HH:mm' }}</em></p>
+    
 
   </section>
 

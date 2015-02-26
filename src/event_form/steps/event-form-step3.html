@@ -12,7 +12,7 @@
         <label for="gemeente-autocomplete" id="gemeente-label"> Kies een gemeente</label>
         <div id="gemeente-kiezer" ng-hide="citySelected">
           <span style="position: relative; display: inline-block; direction: ltr;" class="twitter-typeahead">
-            <input type="text" placeholder="Gemeente of postcode" ng-model="eventFormData.cityLabel" typeahead="city.key as city.label for city in cityAutocomplete.getCities($viewValue)"  typeahead-on-select="selectCity($item, $model, $label)" typeahead-min-length="3" class="form-control" required>
+            <input type="text" placeholder="Gemeente of postcode" ng-model="eventFormData.cityLabel" typeahead="city.key as city.label for city in cityAutocomplete.getCities($viewValue)"  typeahead-on-select="selectCity($item, $model, $label)" typeahead-min-length="3" class="form-control typeahead" required>
           </span>
         </div>
         <div id="gemeente-gekozen" ng-show="citySelected">
@@ -28,8 +28,8 @@
           <label id="locatie-label">Kies een locatie</label>
           <div id="locatie-kiezer" ng-hide="locationSelected || locationAdded" >
             <span style="position: relative; display: inline-block; direction: ltr;" class="twitter-typeahead">
-              <input type="text" placeholder="Locatie" ng-model="eventFormData.locationLabel" typeahead="location for location in getLocations($viewValue)" typeahead-on-select="selectLocation($item, $model, $label)" typeahead-min-length="3" class="form-control">
-              <div class="plaats-adres-resultaat" ng-show="noLocationsFound">
+              <input type="text" placeholder="Locatie" ng-model="eventFormData.locationLabel" typeahead="location for location in getLocations($viewValue)" typeahead-on-select="selectLocation($item, $model, $label)" typeahead-min-length="3" class="form-control typeahead">
+              <div class="plaats-adres-resultaat dropdown-menu-no-results" ng-show="noLocationsFound">
                 <p>
                   <span>Locatie niet gevonden?</span>
                   <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#waar-locatie-toevoegen" ng-click="showAddLocation()">Een locatie toevoegen</button>
@@ -37,7 +37,7 @@
               </div>
             </span>
           </div>
-          <div id="locatie-gekozen" ng-show="locationSelected">
+          <div id="locatie-gekozen" ng-show="locationSelected" >
             <span class=" btn-chosen" id="locatie-gekozen-button" ng-bind="eventFormData.locationLabel"></span>
             <button type="button" class="btn btn-default btn-link" data-toggle="modal" data-target="#waar-locatie-toevoegen" ng-click="changeLocationSelection()">Wijzigen</button>
           </div>
@@ -133,18 +133,5 @@
     </div>
 
   </section>
-  cityId: {{ eventFormData.cityId }} <br>
-  cityLabel: {{ eventFormData.cityLabel }} <br>
-  locationId: {{ eventFormData.locationId }} <br>
-  locationLabel: {{ eventFormData.locationLabel }} <br>
-  locationTitle: {{ eventFormData.locationTitle }} <br>
-  locationCategoryId: {{ eventFormData.locationCategoryId }} <br>
-  locationStreet: {{ eventFormData.locationStreet }} <br>
-  locationNumber: {{ eventFormData.locationNumber }} <br>
-  placeStreet: {{ eventFormData.placeStreet }} <br>
-  placeNumber: {{ eventFormData.placeNumber }} <br>
-  place: {{ eventFormData.place }} <br>
-  locationsForCity: {{ locationsForCity }} <br>
-  noLocationsFound: {{ noLocationsFound }} <br>
 
 </div>

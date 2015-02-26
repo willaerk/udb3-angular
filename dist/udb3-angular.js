@@ -7277,7 +7277,7 @@ $templateCache.put('templates/base-job.template.html',
     "        <label for=\"gemeente-autocomplete\" id=\"gemeente-label\"> Kies een gemeente</label>\n" +
     "        <div id=\"gemeente-kiezer\" ng-hide=\"citySelected\">\n" +
     "          <span style=\"position: relative; display: inline-block; direction: ltr;\" class=\"twitter-typeahead\">\n" +
-    "            <input type=\"text\" placeholder=\"Gemeente of postcode\" ng-model=\"eventFormData.cityLabel\" typeahead=\"city.key as city.label for city in cityAutocomplete.getCities($viewValue)\"  typeahead-on-select=\"selectCity($item, $model, $label)\" typeahead-min-length=\"3\" class=\"form-control\" required>\n" +
+    "            <input type=\"text\" placeholder=\"Gemeente of postcode\" ng-model=\"eventFormData.cityLabel\" typeahead=\"city.key as city.label for city in cityAutocomplete.getCities($viewValue)\"  typeahead-on-select=\"selectCity($item, $model, $label)\" typeahead-min-length=\"3\" class=\"form-control typeahead\" required>\n" +
     "          </span>\n" +
     "        </div>\n" +
     "        <div id=\"gemeente-gekozen\" ng-show=\"citySelected\">\n" +
@@ -7293,8 +7293,8 @@ $templateCache.put('templates/base-job.template.html',
     "          <label id=\"locatie-label\">Kies een locatie</label>\n" +
     "          <div id=\"locatie-kiezer\" ng-hide=\"locationSelected || locationAdded\" >\n" +
     "            <span style=\"position: relative; display: inline-block; direction: ltr;\" class=\"twitter-typeahead\">\n" +
-    "              <input type=\"text\" placeholder=\"Locatie\" ng-model=\"eventFormData.locationLabel\" typeahead=\"location for location in getLocations($viewValue)\" typeahead-on-select=\"selectLocation($item, $model, $label)\" typeahead-min-length=\"3\" class=\"form-control\">\n" +
-    "              <div class=\"plaats-adres-resultaat\" ng-show=\"noLocationsFound\">\n" +
+    "              <input type=\"text\" placeholder=\"Locatie\" ng-model=\"eventFormData.locationLabel\" typeahead=\"location for location in getLocations($viewValue)\" typeahead-on-select=\"selectLocation($item, $model, $label)\" typeahead-min-length=\"3\" class=\"form-control typeahead\">\n" +
+    "              <div class=\"plaats-adres-resultaat dropdown-menu-no-results\" ng-show=\"noLocationsFound\">\n" +
     "                <p>\n" +
     "                  <span>Locatie niet gevonden?</span>\n" +
     "                  <button type=\"button\" class=\"btn btn-primary\" data-toggle=\"modal\" data-target=\"#waar-locatie-toevoegen\" ng-click=\"showAddLocation()\">Een locatie toevoegen</button>\n" +
@@ -7302,7 +7302,7 @@ $templateCache.put('templates/base-job.template.html',
     "              </div>\n" +
     "            </span>\n" +
     "          </div>\n" +
-    "          <div id=\"locatie-gekozen\" ng-show=\"locationSelected\">\n" +
+    "          <div id=\"locatie-gekozen\" ng-show=\"locationSelected\" >\n" +
     "            <span class=\" btn-chosen\" id=\"locatie-gekozen-button\" ng-bind=\"eventFormData.locationLabel\"></span>\n" +
     "            <button type=\"button\" class=\"btn btn-default btn-link\" data-toggle=\"modal\" data-target=\"#waar-locatie-toevoegen\" ng-click=\"changeLocationSelection()\">Wijzigen</button>\n" +
     "          </div>\n" +
@@ -7398,19 +7398,6 @@ $templateCache.put('templates/base-job.template.html',
     "    </div>\n" +
     "\n" +
     "  </section>\n" +
-    "  cityId: {{ eventFormData.cityId }} <br>\n" +
-    "  cityLabel: {{ eventFormData.cityLabel }} <br>\n" +
-    "  locationId: {{ eventFormData.locationId }} <br>\n" +
-    "  locationLabel: {{ eventFormData.locationLabel }} <br>\n" +
-    "  locationTitle: {{ eventFormData.locationTitle }} <br>\n" +
-    "  locationCategoryId: {{ eventFormData.locationCategoryId }} <br>\n" +
-    "  locationStreet: {{ eventFormData.locationStreet }} <br>\n" +
-    "  locationNumber: {{ eventFormData.locationNumber }} <br>\n" +
-    "  placeStreet: {{ eventFormData.placeStreet }} <br>\n" +
-    "  placeNumber: {{ eventFormData.placeNumber }} <br>\n" +
-    "  place: {{ eventFormData.place }} <br>\n" +
-    "  locationsForCity: {{ locationsForCity }} <br>\n" +
-    "  noLocationsFound: {{ noLocationsFound }} <br>\n" +
     "\n" +
     "</div>"
   );

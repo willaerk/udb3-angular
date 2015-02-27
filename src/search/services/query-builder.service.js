@@ -402,7 +402,7 @@ function LuceneQueryBuilder(LuceneQueryParser, QueryTreeValidator, QueryTreeTran
             }
           }
 
-          if (fieldType.type === 'string') {
+          if (fieldType.type === 'tokenized-string') {
             if (!field.transformer || field.transformer === '=') {
               field.transformer = '+';
             }
@@ -412,7 +412,7 @@ function LuceneQueryBuilder(LuceneQueryParser, QueryTreeValidator, QueryTreeTran
             }
           }
 
-          if (fieldType.type === 'tokenized-string') {
+          if (fieldType.type === 'string') {
             if (!field.transformer || field.transformer === '+') {
               field.transformer = '=';
             }

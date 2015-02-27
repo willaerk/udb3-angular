@@ -12,6 +12,7 @@
     .module('udb.event-form')
     .controller('EventFormCtrl', EventFormController);
 
+
   //EventFormController.$inject = ['udbApi', '$scope', '$controller', '$location', 'UdbEvent', 'UdbOpeningHours', 'UdbPlace', 'moment', 'eventCrud', 'eventTypes'];
   /* @ngInject */
   function EventFormController(udbApi, $scope, $controller, $window, UdbEvent, UdbOpeningHours, UdbPlace, moment,
@@ -34,7 +35,7 @@
 
     var location = new UdbPlace();
     location.setLocality('Gent');
-    location.setPostal(9000);
+    location.setPostal('9000');
     item.setLocation(location);
 
     $scope.item = item;

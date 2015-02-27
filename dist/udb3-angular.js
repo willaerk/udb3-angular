@@ -5019,7 +5019,7 @@ function EventFormStep5Directive() {
         return;
       }
 
-      // A type is choosen, start a complet new calendar, removing old data.
+      // A type is choosen, start a complet new calendar, removing old dat
       EventFormData.calendarType = type;
       $scope.hasOpeningHours = false;
       EventFormData.resetCalendar();
@@ -5027,7 +5027,7 @@ function EventFormStep5Directive() {
       if (type === 'single') {
         addTimestamp();
       }
-      else if (type === 'periodic') {
+      else if (type === 'periodic' || type === 'permanent') {
         EventFormData.addOpeningHour('', '', '');
       }
 
@@ -7785,9 +7785,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "    </section>\n" +
     "  </div>\n" +
     "\n" +
-    "</div>\n" +
-    "\n" +
-    "<udb-event-form-opening-hours></udb-event-form-opening-hours>"
+    "</div>"
   );
 
 
@@ -7996,7 +7994,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "    </div>\n" +
     "\n" +
     "  </section>\n" +
-    "  <a href=\"#\" ng-click=\"eventFormData.showStep(2)\">Volgende stap</a>\n" +
+    "\n" +
     "</div>"
   );
 
@@ -8038,7 +8036,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "      <udb-event-form-period></udb-event-form-period>\n" +
     "    </div>\n" +
     "\n" +
-    "    <div class=\"row\" ng-show=\"activeCalendarType === 'permanent'\">\n" +
+    "    <div class=\"row\" ng-show=\"activeCalendarType === 'permanent' || activeCalendarType === 'periodic'\">\n" +
     "      <udb-event-form-opening-hours></udb-event-form-opening-hours>\n" +
     "    </div>\n" +
     "\n" +

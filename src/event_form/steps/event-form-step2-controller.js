@@ -69,7 +69,7 @@
         return;
       }
 
-      // A type is choosen, start a complet new calendar, removing old data.
+      // A type is choosen, start a complet new calendar, removing old dat
       EventFormData.calendarType = type;
       $scope.hasOpeningHours = false;
       EventFormData.resetCalendar();
@@ -77,7 +77,7 @@
       if (type === 'single') {
         addTimestamp();
       }
-      else if (type === 'periodic') {
+      else if (type === 'periodic' || type === 'permanent') {
         EventFormData.addOpeningHour('', '', '');
       }
 

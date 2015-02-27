@@ -196,7 +196,7 @@ function UdbApi($q, $http, appConfig, $cookieStore, uitidAuth, $cacheFactory, Ud
     translationData[property] = translation;
 
     return $http.post(
-      appConfig.baseApiUrl + 'event/' + eventId + '/' + language + '/' + property,
+      appConfig.baseApiUrl + type + '/' + id + '/' + language + '/' + property,
       translationData,
       defaultApiConfig
     );

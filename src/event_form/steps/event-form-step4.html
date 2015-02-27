@@ -8,7 +8,7 @@
     <div class="row">
       <div class="col-xs-12 col-md-4">
         <div class="form-group-lg">
-          <input type="text" class="form-control" ng-bind="activeTitle">
+          <input type="text" class="form-control" ng-model="activeTitle">
         </div>
       </div>
       <div class="col-xs-12 col-md-8">
@@ -18,7 +18,7 @@
       </div>
     </div>
     <p><a class="btn btn-primary titel-doorgaan" ng-show="activeTitle !== ''" ng-click="validateEvent()">Doorgaan</a></p>
-<a href="#" ng-click="eventFormData.showStep(5)">Volgende stap</a>
+
   </section>
 
   <div class="spinner" style="display: none;">
@@ -26,19 +26,18 @@
   </div>
 
   <a name="dubbeldetectie"></a>
-  <section class="dubbeldetectie" ng-show="activeTitle !== '' || resultViewer.totalItems > 0">
-    <div class="alert alert-info">
-      <p class="h2" style="margin-top: 0;">Vermijd dubbel werk
-      </p><p> We vonden gelijkaardige items. Controleer deze eerder ingevoerde items.</p>
-      <br>
+  <section class="dubbeldetectie" ng-show="activeTitle !== ''">
+
+    <div class="alert alert-info" ng-show="resultViewer.totalItems > 0">
+      <p class="h2" style="margin-top: 0;">Vermijd dubbel werk</p>
+      <p> We vonden gelijkaardige items. Controleer deze eerder ingevoerde items.</p><br />
 
       <div class="row clearfix">
-
         <div class="col-xs-12 col-sm-6 col-md-4 col-lg-3"
              ng-repeat="event in resultViewer.events"
              udb-event="event"
              ng-hide="fetching">
-          <a class="btn btn-tile" data-toggle="modal" data-target="#dubbeldetectie-voorbeeld">
+          <a class="btn btn-tile" ng-click="setActiveDuplicate(event.id)" data-toggle="modal" data-target="#dubbeldetectie-voorbeeld">
             <span>
               <small class="label label-default" ng-bind="event.type"></small><br>
               <strong class="title" ng-bind="event.name"></strong><br>
@@ -51,6 +50,93 @@
 
       </div>
     </div>
+
+    <h3 ng-show="duplicatesSearched && resultViewer.totalItems > 0">Ben je zeker dat je "{{ activeTitle }}" wil toevoegen?</h3>
+    <ul class="list-inline" ng-show="duplicatesSearched && resultViewer.totalItems > 0">
+      <li>
+        <a class="btn btn-default" href="{{ udb3DashboardUrl }}">Nee, keer terug naar dashboard</a>
+      </li>
+      <li>
+        <a class="btn btn-primary dubbeldetectie-doorgaan" ng-click="saveEvent()">Ja, doorgaan met invoeren</a>
+      </li>
+    </ul>
+
+    <div class="modal fade" id="dubbeldetectie-voorbeeld" aria-hidden="true" ng-hide="currentDuplicateId === ''">
+
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content "
+           ng-repeat="event in resultViewer.events"
+           udb-event="event"
+           ng-show="event.id === currentDuplicateId">
+          <div class="modal-header">
+            <div class="pull-right">
+              <button type="button" class="btn btn-default" ng-if="currentDuplicateDelta === 1" data-dismiss="modal">Vorige</button>
+              <button type="button" class="btn btn-default" ng-if="currentDuplicateDelta > 1" ng-click="previousDuplicate()">Vorige</button>
+
+              <button type="button" class="btn btn-default" ng-if="currentDuplicateDelta === resultViewer.totalItems" data-dismiss="modal">Volgende</button>
+              <button type="button" class="btn btn-default" ng-if="currentDuplicateDelta < resultViewer.totalItems" ng-click="nextDuplicate()">Volgende</button>
+
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">×</span>
+              </button>
+            </div>
+            <h4 class="modal-title">Gelijkaardige items <small>Evenement {{ currentDuplicateDelta }} van {{ resultViewer.totalItems }}</small></h4>
+          </div>
+          <div class="modal-body">
+            <div class="panel panel-default preview">
+
+                <div class="panel-heading" style="background-image: url({{ event.image }});">
+                  <ul class="list-inline">
+                    <li><small class="label label-default">{{ event.type }}</small></li>
+                  </ul>
+                  <p class="title">{{ event.getName('nl') }}</p>
+                </div>
+
+                <div class="panel-body">
+
+                  {{ event.getDescription('nl') }}
+
+                  <table class="table table-condended">
+                    <tbody>
+                      <tr>
+                        <td class=""><strong class="hidden-xs hidden-sm">Waar</strong><i class="fa fa-map-marker hidden-md hidden-lg"></i></td>
+                        <td>{{ event.location.name }}</td>
+                      </tr>
+                      <tr>
+                        <td><strong class="hidden-xs hidden-sm">Wanneer</strong><i class="fa fa-calendar hidden-md hidden-lg"></i></td>
+                        <td class="cf-when scroll scroll-150">{{ event.startDate | date: 'dd/MM/yyyy' }}</td>
+                      </tr>
+                      <tr>
+                        <td><strong class="hidden-xs hidden-sm">Organisatie</strong><i class="fa fa-building-o hidden-md hidden-lg"></i></td>
+                        <td>{{ event.organizer.name }}</td>
+                      </tr>
+                      <tr>
+                        <td><strong class="hidden-xs hidden-sm">Prijs</strong><i class="fa fa-eur hidden-md hidden-lg"></i></td>
+                        <td>
+                          <div ng-switch="event.pricing">
+                          <span ng-switch-when="free">gratis</span>
+                          <span ng-switch-when="payed">
+                              <i class="fa fa-eur meta icon"></i><span ng-if="event.price" ng-bind="event.price | currency"></span>
+                          </span>
+                          <span ng-switch-when="unknown">niet ingevoerd</span>
+                      </div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+            </div>
+
+            <p><em>Ingevoerd door {{ event.organizer.name }} op {{ event.created | date : 'dd/MM/yyyy • HH:mm' }}</em></p>
+
+          </div>
+        </div><!-- /.modal-content -->
+
+      </div><!-- /.modal-dialog -->
+    </div>
+    
+    <p ng-show="lastUpdated !== ''"><em>Laatst bewaard op {{ lastUpdated | date : 'dd/MM/yyyy • HH:mm' }}</em></p>
+    
 
   </section>
 

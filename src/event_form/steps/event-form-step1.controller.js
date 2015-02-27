@@ -88,6 +88,10 @@
 
       EventFormData.eventType = type;
 
+      if (!isEvent) {
+        EventFormData.showStep(2);
+      }
+
     }
 
     /**

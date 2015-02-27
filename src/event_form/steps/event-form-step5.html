@@ -43,8 +43,16 @@
                 <div class="form-group">
                   <label>Beschrijving</label>
                   <textarea class="form-control" ng-model="description"></textarea>
-                  <div class="tip tip-thema-route">
-                    <p ng-bind="tip"></p>
+                  <div class="tip" ng-switch="eventFormData.eventType">
+                    <p ng-switch-when="0.17.0.0.0">
+                      Geef hier een wervende omschrijving van de route. Vermeld in deze tekst <strong>hoe</strong> de route wordt afgelegd (per fiets, per boot, ...), de mogelijke tussenstops, de <strong>duur</strong>, <strong>afstand</strong> en hoe de route <strong>begeleid</strong> is (met gids, brochure of wegwijzers).
+                    </p>
+                    <p ng-switch-when="0.7.0.0.0">
+                      Geef hier een wervende omschrijving van de route. Vermeld het max. aantal personen per groepje, hoe de rondleiding wordt georganiseerd (doorlopend, met intervallen of op vaste tijdstippen) en of er speciale aandachtspunten zijn (vb. laarzen aangewezen).
+                    </p>
+                    <p ng-switch-when="0.14.0.0.0">
+                      Geef hier een wervende omschrijving van het monument. Geef ook aan indien het monument slechts beperkt opengesteld is (vb. enkel salons).
+                    </p>
                   </div>
 
                 </div>

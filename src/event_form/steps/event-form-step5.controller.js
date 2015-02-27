@@ -33,7 +33,7 @@
     $scope.setAllAges = setAllAges;
     $scope.resetAgeRange = resetAgeRange;
 
-
+    // Check if we have a minAge set on load.
     if (EventFormData.minAge) {
       $scope.ageCssClass = 'state-complete';
     }
@@ -45,7 +45,10 @@
 
       EventFormData.setDescription($scope.description, 'nl');
 
-      eventCrud.updateDescription(EventFormData, EventFormData.getType(), $scope.description);
+      var promise = eventCrud.updateDescription(EventFormData, EventFormData.getType(), $scope.description);
+      promise.then(function() {
+        updateLastUpdated();
+      });
 
       // Toggle correct class.
       if ($scope.description) {
@@ -92,7 +95,10 @@
         EventFormData.typicalAgeRange = $scope.ageRange;
       }
 
-      eventCrud.updateTypicalAgeRange(EventFormData, EventFormData.getType());
+      var promise = eventCrud.updateTypicalAgeRange(EventFormData, EventFormData.getType());
+      promise.then(function() {
+        updateLastUpdated();
+      });
 
       $scope.ageCssClass = 'state-complete';
     }
@@ -113,6 +119,15 @@
       $scope.ageRange = 0;
       $scope.minAge = '';
       $scope.ageCssClass = 'state-incomplete';
+    }
+
+    /**
+     * Update the last updated time.
+     */
+    function updateLastUpdated() {
+      // Last updated is not in scope. Themers are free to choose where to place it.
+      angular.element('#last-updated').show();
+      angular.element('#last-updated span').html(moment(Date.now()).format('HH:mm'));
     }
 
   }

@@ -54,12 +54,12 @@
           </div>
 
           <div ng-switch-when="check">
-            <div class="checkbox">
-              <label>
-                <input type="checkbox" ng-model="field.term"
-                       ng-true-value="'TRUE'" ng-false-value="'FALSE'"> {{field.term == 'TRUE' ? 'ja' : 'nee'}}
-              </label>
-            </div>
+            <label class="radio-inline">
+              <input type="radio" ng-model="field.term" value="TRUE"> ja
+            </label>
+            <label class="radio-inline">
+              <input type="radio"  ng-model="field.term" value="FALSE"> nee
+            </label>
           </div>
 
           <div ng-switch-when="date-range">

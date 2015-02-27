@@ -5776,11 +5776,16 @@ $templateCache.put('templates/base-job.template.html',
     "          </div>\n" +
     "\n" +
     "          <div ng-switch-when=\"check\">\n" +
-    "            <div class=\"checkbox\">\n" +
-    "              <label>\n" +
-    "                <input type=\"checkbox\" ng-model=\"field.term\"\n" +
-    "                       ng-true-value=\"'TRUE'\" ng-false-value=\"'FALSE'\"> {{field.term == 'TRUE' ? 'ja' : 'nee'}}\n" +
-    "              </label>\n" +
+    "            <label class=\"radio-inline\">\n" +
+    "              <input type=\"radio\" ng-model=\"field.term\" value=\"TRUE\"> ja\n" +
+    "            </label>\n" +
+    "            <label class=\"radio-inline\">\n" +
+    "              <input type=\"radio\"  ng-model=\"field.term\" value=\"FALSE\"> nee\n" +
+    "            </label>\n" +
+    "\n" +
+    "            <div class=\"btn-group\">\n" +
+    "              <label class=\"btn btn-default\" ng-model=\"field.term\" btn-radio=\"'TRUE'\">ja</label>\n" +
+    "              <label class=\"btn btn-default\" ng-model=\"field.term\" btn-radio=\"'FALSE'\">nee</label>\n" +
     "            </div>\n" +
     "          </div>\n" +
     "\n" +

@@ -5782,11 +5782,6 @@ $templateCache.put('templates/base-job.template.html',
     "            <label class=\"radio-inline\">\n" +
     "              <input type=\"radio\"  ng-model=\"field.term\" value=\"FALSE\"> nee\n" +
     "            </label>\n" +
-    "\n" +
-    "            <div class=\"btn-group\">\n" +
-    "              <label class=\"btn btn-default\" ng-model=\"field.term\" btn-radio=\"'TRUE'\">ja</label>\n" +
-    "              <label class=\"btn btn-default\" ng-model=\"field.term\" btn-radio=\"'FALSE'\">nee</label>\n" +
-    "            </div>\n" +
     "          </div>\n" +
     "\n" +
     "          <div ng-switch-when=\"date-range\">\n" +

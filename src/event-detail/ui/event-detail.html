@@ -1,28 +1,85 @@
-<h1>Event id: {{eventId}}</h1>
-
-<div class="row">
-    <div class="col-xs-3">
-        <ul class="nav nav-pills nav-stacked" role="tablist">
-            <li ng-repeat="tab in tabs" role="presentation" class="{{classForTab(tab)}}">
-                <a href="#{{tab.id}}" data-toggle="tab" role="tab">{{tab.header}}</a>
-            </li>
-        </ul>
+<div ng-if="event">
+    <div class="page-header">
+        <h1>{{event.name}}</h1>
     </div>
 
-    <div class="col-xs-9">
-        <div class="tab-content">
-            <div role="tabpanel" class="tab-pane active" id="data">
-                <p>Gegevens hier</p>
-            </div>
+    <div class="row">
+        <div class="col-xs-3">
+            <ul class="nav nav-pills nav-stacked"
+                role="tablist">
+                <li ng-repeat="tab in tabs"
+                    role="presentation"
+                    class="{{classForTab(tab)}}">
+                    <a href="#{{tab.id}}"
+                       data-toggle="tab"
+                       role="tab">{{tab.header}}</a>
+                </li>
+            </ul>
+        </div>
 
-            <div role="tabpanel" class="tab-pane" id="history">
-                <p>Historiek hier</p>
-            </div>
+        <div class="col-xs-9">
+            <div class="tab-content">
+                <div role="tabpanel" class="tab-pane active" id="data">
+                    <div class="panel panel-default">
+                        <table class="table">
+                            <tbody>
+                            <tr>
+                                <td><strong>Titel</strong></td>
+                                <td>{{event.name}}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Type</strong></td>
+                                <td>{{event.type}}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Beschrijving</strong></td>
+                                <td ng-bind-html="event.description"></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Waar</strong></td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Wanneer</strong></td>
+                                <td>{{event.calendarSummary}}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Organisator</strong></td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Prijs</strong></td>
+                                <td></td>
+                            </tr>
+                            <tr ng-class="{muted: !event.typicalAgeRange}">
+                                <td><strong>Geschikt voor</strong></td>
+                                <td>
+                                    <span ng-if="event.typicalAgeRange">{{event.typicalAgeRange}}</span>
+                                    <span ng-if="!event.typicalAgeRange">Geen leeftijdsinformatie</span>
+                                </td>
+                            </tr>
+                            <tr ng-class="{muted: !event.image}">
+                                <td><strong>Afbeelding</strong></td>
+                                <td>
+                                    <img ng-if="event.image" src="{{event.image}}" />
+                                    <span ng-if="!event.image">Geen afbeelding</span>
+                                </td>
+                            </tr>
 
-            <div role="tabpanel" class="tab-pane" id="publication">
-                <p>Publicatie-info hier</p>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div role="tabpanel" class="tab-pane" id="history">
+                    <p>Historiek hier</p>
+                </div>
+
+                <div role="tabpanel" class="tab-pane" id="publication">
+                    <p>Publicatie-info hier</p>
+                </div>
             </div>
         </div>
-    </div>
 
+    </div>
 </div>

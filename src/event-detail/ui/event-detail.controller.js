@@ -12,7 +12,23 @@ angular
     .controller('EventDetailController', EventDetail);
 
 /* @ngInject */
-function EventDetail($scope, $routeParams, $location) {
+function EventDetail($scope, $routeParams, $location, udbApi, jsonLDLangFilter) {
+  $scope.eventId = $routeParams.eventId;
+
+  var eventLoaded = udbApi.getEventById($scope.eventId);
+
+  eventLoaded.then(
+      function (event) {
+        console.log(event);
+
+        $scope.event = jsonLDLangFilter(event, 'nl');
+        console.log($scope.event);
+      },
+      function (reason) {
+        console.log('loading event failed');
+      }
+  );
+
   var getActiveTabId = function() {
     var hash = $location.hash();
 
@@ -25,8 +41,6 @@ function EventDetail($scope, $routeParams, $location) {
   };
 
   var activeTabId = getActiveTabId();
-
-  $scope.eventId = $routeParams.eventId;
 
   $scope.tabs = [
     {

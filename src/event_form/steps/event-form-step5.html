@@ -96,6 +96,37 @@
           </div>
         </div>
 
+        <div class="row extra-organisator">
+          <div class="extra-task" ng-class="organizerCssClass">
+            <div class="col-sm-3">
+              <em class="extra-task-label">Organisatie</em>
+            </div>
+            <div class="col-sm-8">
+              <section class="state incomplete">
+                <a class="btn btn-default to-filling" ng-click="organizerCssClass = 'state-filling'">Organisator(s) toevoegen</a>
+              </section>
+              <section class="state complete">
+                <p>{{ eventFormData.organizer.title}} <a class="btn btn-link to-filling"><button type="button" class="close" ng-click="deleteOrganiser()" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button></a></p>
+              </section>
+              <section class="state filling">
+                <div class="form-group">
+                  <label>Kies een organisatie</label>
+                  <div id="organisator-kiezer">
+                    <span class="twitter-typeahead" style="position: relative; display: inline-block; direction: ltr;">
+                      <input type="text" class="form-control typeahead" id="organisator-autocomplete" ng-model="organizer" typeahead="organizer for organizer in getOrganizers($viewValue)" typeahead-on-select="selectOrganizer()" typeahead-min-length="3" typeahead-loading="loadingOrganizers" typeahead-template-url="templates/organizer-typeahead-template.html"/>
+                    </span>
+                    <div ng-show="emptyOrganizerAutocomplete">
+                      <p class='text-center'>Organisator niet gevonden?</br>
+                        <button type='button' class='btn btn-primary' ng-click="openOrganizerModal()">Nieuwe organisator toevoegen</button>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </section>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
 

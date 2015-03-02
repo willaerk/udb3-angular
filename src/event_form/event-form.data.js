@@ -32,6 +32,7 @@ function EventFormDataFactory(UdbEvent, UdbPlace) {
     timestamps : [],
     openingHours : [],
     ageRange : '',
+    organizer : {},
 
     /**
      * Show the given step.
@@ -228,6 +229,13 @@ function EventFormDataFactory(UdbEvent, UdbPlace) {
      */
     getType: function() {
       return this.isEvent ? 'event' : 'place';
+    },
+
+    /**
+     * Reset the selected organizers.
+     */
+    resetOrganizer: function() {
+      this.organizer = {};
     }
 
   };

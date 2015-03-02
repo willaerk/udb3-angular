@@ -12,7 +12,7 @@ angular
   .service('udbApi', UdbApi);
 
 /* @ngInject */
-function UdbApi($q, $http, appConfig, $cookieStore, uitidAuth, $cacheFactory, UdbEvent) {
+function UdbApi($q, $http, appConfig, $cookieStore, uitidAuth, $cacheFactory, UdbEvent, UdbOrganizer) {
   var apiUrl = appConfig.baseApiUrl;
   var defaultApiConfig = {
         withCredentials: true,
@@ -97,6 +97,38 @@ function UdbApi($q, $http, appConfig, $cookieStore, uitidAuth, $cacheFactory, Ud
   this.getEventByLDId = function (eventLDId) {
     var eventId = eventLDId.split('/').pop();
     return this.getEventById(eventId);
+  };
+
+  this.getOrganizerByLDId = function(organizerLDId) {
+    var organizerId = organizerLDId.split('/').pop();
+    return this.getOrganizerById(organizerId);
+  };
+
+  this.getOrganizerById = function(organizerId) {
+    var deferredOrganizer = $q.defer();
+
+    var organizer = eventCache.get(organizerId);
+
+    if (organizer) {
+      deferredOrganizer.resolve(organizer);
+    } else {
+      var organizerRequest  = $http.get(
+        appConfig.baseApiUrl + 'organizer/' + organizerId,
+        {
+          headers: {
+            'Accept': 'application/ld+json'
+          }
+        });
+
+      organizerRequest.success(function(jsonOrganizer) {
+        var organizer = new UdbOrganizer();
+        organizer.parseJson(jsonOrganizer);
+        eventCache.put(organizerId, organizer);
+        deferredOrganizer.resolve(organizer);
+      });
+    }
+
+    return deferredOrganizer.promise;
   };
 
   /**

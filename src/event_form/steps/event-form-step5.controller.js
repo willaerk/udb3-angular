@@ -13,7 +13,7 @@
     .controller('EventFormStep5Ctrl', EventFormStep5Controller);
 
   /* @ngInject */
-  function EventFormStep5Controller($scope, EventFormData, eventCrud) {
+  function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizers, $modal) {
 
     // Work hardcoded on this id for now.
     EventFormData.id = '1c4a7e6a-3ed9-450f-80d7-e3439cb72e15';
@@ -25,6 +25,10 @@
     $scope.ageRange = 0;
     $scope.ageCssClass = EventFormData.ageRange ? 'state-complete' : 'state-incomplete';
     $scope.minAge = '';
+    $scope.organizerCssClass = EventFormData.organizer.id ? 'state-complete' : 'state-incomplete';
+    $scope.organizer = '';
+    $scope.emptyOrganizerAutocomplete = false;
+    $scope.loadingOrganizers = false;
 
     // Scope functions.
     $scope.saveDescription = saveDescription;
@@ -32,6 +36,11 @@
     $scope.changeAgeRange = changeAgeRange;
     $scope.setAllAges = setAllAges;
     $scope.resetAgeRange = resetAgeRange;
+    $scope.getOrganizers = getOrganizers;
+    $scope.selectOrganizer = selectOrganizer;
+    $scope.deleteOrganiser = deleteOrganiser;
+    $scope.openOrganizerModal = openOrganizerModal;
+
 
     // Check if we have a minAge set on load.
     if (EventFormData.minAge) {
@@ -128,6 +137,67 @@
       // Last updated is not in scope. Themers are free to choose where to place it.
       angular.element('#last-updated').show();
       angular.element('#last-updated span').html(moment(Date.now()).format('HH:mm'));
+    }
+
+    /**
+     * Autocomplete callback for organizers.
+     */
+    function getOrganizers(value) {
+
+      $scope.loadingOrganizers = true;
+
+      return udbOrganizers.suggestOrganizers(value).then(function (organizers) {
+
+        if (organizers.length > 0) {
+          $scope.emptyOrganizerAutocomplete = false;
+        }
+        else {
+          $scope.emptyOrganizerAutocomplete = true;
+        }
+
+        $scope.loadingOrganizers = false;
+
+        return organizers;
+
+      });
+
+    }
+
+    /**
+     * Select listener on the typeahead.
+     */
+    function selectOrganizer() {
+
+      EventFormData.organizer = $scope.organizer;
+
+      $scope.organizerCssClass = 'state-complete';
+      $scope.organizer = '';
+    }
+
+    /**
+     * Delete the selected organiser.
+     */
+    function deleteOrganiser() {
+      $scope.organizerCssClass = 'state-incomplete';
+      EventFormData.resetOrganizer();
+    }
+
+    /**
+     * Open the organizer modal.
+     */
+    function openOrganizerModal() {
+
+        var modalInstance = $modal.open({
+          templateUrl: 'templates/event-form-organizer-modal.html',
+          controller: 'EventFormOrganizerModalCtrl',
+        });
+
+        modalInstance.result.then(function (organizer) {
+          EventFormData.organizer = organizer;
+          $scope.organizerCssClass = 'state-complete';
+          $scope.organizer = '';
+        });
+
     }
 
   }

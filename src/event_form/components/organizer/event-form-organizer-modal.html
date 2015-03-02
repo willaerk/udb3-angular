@@ -1,0 +1,102 @@
+
+<div class="modal-header">
+  <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+  <h4 class="modal-title" ng-hide="organizersFound">Nieuwe organisator toevoegen</h4>
+  <h4 class="modal-title" ng-show="organizersFound">Vermijd dubbel werk</h4>
+</div>
+<div class="modal-body">
+
+  <section ng-hide="organizersFound">
+    <div class="form-group">
+      <label>Naam</label>
+      <input type="text" class="form-control" ng-model="newOrganizer.title">
+      <p class="help-block">De officiële publieke naam van de organisatie.</p>
+    </div>
+
+    <div class="row">
+
+      <div class="col-xs-9">
+        <div class="form-group">
+          <label>Straat</label>
+          <input type="text" class="form-control" ng-model="newOrganizer.street">
+        </div>
+      </div>
+      <div class="col-xs-3">
+        <div class="form-group">
+          <label>Nummer</label>
+          <input type="text" class="form-control" ng-model="newOrganizer.number">
+        </div>
+      </div>
+      <div class="col-xs-9">
+        <div class="form-group">
+          <label>Gemeente</label>
+          <input type="text" class="form-control" ng-model="newOrganizer.city">
+        </div>
+      </div>
+      <div class="col-xs-3">
+        <div class="form-group">
+          <label>Postcode</label>
+          <input type="text" class="form-control" ng-model="newOrganizer.zip">
+        </div>
+      </div>
+
+    </div>
+
+    <h2>Contact</h2>
+
+    <div ng-show="newOrganizer.contact.length === 0">
+      <ul class="list-unstyled">
+        <li><a ng-click="addOrganizerContactInfo('website')">Website toevoegen</a></li>
+        <li><a ng-click="addOrganizerContactInfo('phone')">Telefoonnummer toevoegen</a></li>
+        <li><a ng-click="addOrganizerContactInfo('email')">E-mailadres toevoegen</a></li>
+      </ul>
+    </div>
+
+    <table class="table" ng-show="newOrganizer.contact.length">
+      <tr ng-repeat="(key, info) in newOrganizer.contact">
+        <td>
+          <select class="form-control" ng-model="info.type">
+            <option value="website">Website</option>
+            <option value="phone">Telefoonnummer</option>
+            <option value="email">E-mailadres</option>
+          </select>
+        </td>
+        <td>
+          <input type="text" class="form-control" ng-model="info.value"/>
+        </td>
+        <td>
+          <button type="button" class="close" aria-label="Close" ng-click="deleteOrganizerContactInfo(key)"><span aria-hidden="true">&times;</span></button>
+        </td>
+      </tr>
+      <tr><td colspan="3"><a ng-click="addOrganizerContactInfo('')">Meer contactgegevens toevoegen</a></td></tr>
+    </table>
+
+  </section>
+
+  <section ng-show="organizersFound">
+
+    <div class="alert alert-info">
+      <p>Ben je zeker dat je "{{ newOrganizer.title}}" wil toevoegen als organisator? Dubbele invoer van organisaties is niet toegelaten.</p>
+    </div>
+    <p>We vonden deze gelijkaardige items:</p>
+    <table class="table">
+      <tr ng-repeat="organizer in organizers" udb-organizer="organizer" ng-hide="fetching">
+        <td><strong>{{ organizer.name }} </strong>, {{ organizer.address[0].street }} {{ organizer.address[0].number }}, {{ organizer.address[0].zip }} {{ organizer.address[0].city }}</strong></td>
+        <td><a class="btn btn-default" ng-click="selectOrganizer()">Selecteren</a></td>
+      </tr>
+      <tr>
+        <td>
+          Jij voerde in:<br/>
+          <strong>{{ newOrganizer.title}}</strong>, {{ newOrganizer.street }} {{ newOrganizer.number }} {{ newOrganizer.zip }} {{ newOrganizer.city }}</strong>
+        </td>
+        <td><a class="btn btn-default" ng-click="saveOrganizer()">Toch invoeren</a></td>
+      </tr>
+    </table>
+
+  </section>
+
+</div>
+<div class="modal-footer" ng-hide="organizersFound">
+  <button type="button" class="btn btn-default" data-dismiss="modal">Sluiten</button>
+  <button type="button" class="btn btn-primary organisator-toevoegen-bewaren" ng-click="validateNewOrganizer()" data-target="#extra-organisator-dubbeldetectie">Bewaren</button>
+</div>

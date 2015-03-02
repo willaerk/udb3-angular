@@ -4141,294 +4141,6 @@ function EventFormOpeningHoursDirective() {
     restrict: 'E',
   };
 }
-// Source: src/event_form/event-form.controller.js
-(function () {
-/**
-   * @ngdoc function
-   * @name udbApp.controller:NewEventCtrl
-   * @description
-   * # NewEventCtrl
-   * udbApp controller
-   */
-  angular
-    .module('udb.event-form')
-    .controller('EventFormCtrl', EventFormController);
-
-
-  //EventFormController.$inject = ['udbApi', '$scope', '$controller', '$location', 'UdbEvent', 'UdbOpeningHours', 'UdbPlace', 'moment', 'eventCrud', 'eventTypes'];
-  /* @ngInject */
-  function EventFormController(udbApi, $scope, $controller, $window, UdbEvent, UdbOpeningHours, UdbPlace, moment,
-                               eventCrud, eventTypes, SearchResultViewer) {
-
-    // Hardcoded as UdbEvent for poc.
-    // Scope vars.
-    $scope.showStep1 = true;
-    $scope.showStep2 = false;
-    $scope.showStep3 = false;
-    $scope.showStep4 = false;
-    $scope.showStep5 = false;
-    $scope.lastUpdated = '';
-
-    var item = new UdbEvent();
-
-    // Step 1: Choose event type and theme or a place.
-    setScopeForStep1();
-
-
-    var location = new UdbPlace();
-    location.setLocality('Gent');
-    location.setPostal('9000');
-    item.setLocation(location);
-
-    $scope.item = item;
-
-    $scope.isEvent = true; // Is current item an event.
-    $scope.isPlace = false; // Is current item a place.
-
-    $scope.activeCalendarType = ''; // Current active calendar type.
-    $scope.activeCalendarLabel = '';
-    $scope.calendarLabels = [
-      { 'label': 'Eén of meerdere dagen', 'id' : 'single' },
-      { 'label': 'Van ... tot ... ', 'id' : 'periodic' },
-      { 'label' : 'Permanent', 'id' : 'permanent' }
-    ];
-
-    // Scope functions.
-    $scope.showStep = showStep;
-    $scope.setCalendarType = setCalendarType;
-    $scope.saveItem = saveItem;
-    $scope.validateItem = validateItem;
-
-    /**
-     * Show the given step.
-     * @param int stepNumber
-     */
-    function showStep(stepNumber) {
-      if ($scope.isEvent) {
-        $scope.isPlace = true;
-        $scope.isEvent = false;
-      }
-      else {
-        $scope.isEvent = true;
-        $scope.isPlace = false;
-      }
-      $scope['showStep' + stepNumber] = true;
-    }
-
-    /**
-     * Hide the given step.
-     * @param int stepNumber
-     */
-    function hideStep(stepNumber) {
-      $scope['showStep' + stepNumber] = false;
-    }
-
-    /**
-     * Extend the scope with the variables for step 1.
-     */
-    function setScopeForStep1() {
-
-      // Categories, event types, places.
-      $scope.eventTypeLabels = [];
-      $scope.placeLabels = [];
-      $scope.activeEventType = ''; // Current active event type.
-      $scope.activeEventTypeLabel = ''; // Current active event type label.
-      // Load the categories asynchronously.
-      var eventPromise = eventTypes.getCategories();
-      eventPromise.then(function (categories) {
-        $scope.eventTypeLabels = categories.event;
-        $scope.placeLabels = categories.place;
-      });
-      $scope.setEventType = setEventType;
-      $scope.resetEventType = resetEventType;
-      $scope.toggleEventTypes = toggleEventTypes;
-      $scope.showAllEventTypes = false;
-      $scope.togglePlaces = togglePlaces;
-      $scope.showAllPlaces = false;
-      $scope.eventThemeLabels = [];
-      $scope.activeTheme = '';
-      $scope.activeThemeLabel = '';
-      $scope.setTheme = setTheme;
-      $scope.resetTheme = resetTheme;
-
-    }
-
-    /**
-     * Click listener on the event type buttons.
-     * Activate the selected event type.
-     */
-    function setEventType(type, isEvent) {
-
-      $scope.activeEventType = type;
-
-      if (isEvent) {
-        $scope.isEvent = true;
-        $scope.isPlace = false;
-
-        for (var i = 0; i < $scope.eventTypeLabels.length; i++) {
-          if ($scope.eventTypeLabels[i].id === type) {
-            $scope.activeEventType = $scope.eventTypeLabels[i].id;
-            $scope.activeEventTypeLabel = $scope.eventTypeLabels[i].label;
-
-            $scope.eventThemeLabels = $scope.eventTypeLabels[i].themes;
-            break;
-          }
-        }
-
-      }
-      else {
-        $scope.isEvent = false;
-        $scope.isPlace = true;
-
-        for (var j = 0; j < $scope.placeLabels.length; j++) {
-          if ($scope.placeLabels[j].id === type) {
-            $scope.activeEventType = $scope.placeLabels[j].id;
-            $scope.activeEventTypeLabel = $scope.placeLabels[j].label;
-            break;
-          }
-        }
-
-      }
-
-      // Check if previous event type was the same.
-      // If so, just show the previous entered data.
-      if (item.eventType === type) {
-        return;
-      }
-
-      item.eventType = type;
-
-    }
-
-    /**
-     * Click listener to reset the event type. User can select a new event type.
-     */
-    function resetEventType() {
-      $scope.activeEventType = '';
-      $scope.activeEventTypeLabel = '';
-      $scope.activeTheme = '';
-      $scope.activeThemeLabel = '';
-    }
-
-    /**
-     * Click listener to set the active theme.
-     * @param {string} id
-     * @param {string} label
-     */
-    function setTheme(id, label) {
-
-      $scope.activeTheme = id;
-
-      for (var i = 0; i < $scope.eventThemeLabels.length; i++) {
-        if ($scope.eventThemeLabels[i].id === id) {
-          $scope.activeThemeLabel = $scope.eventThemeLabels[i].label;
-          break;
-        }
-      }
-
-      // Check if previous event theme was the same.
-      // If so, just show the previous entered data.
-      if (item.theme === id) {
-        return;
-      }
-
-      item.setTheme(id, label);
-
-    }
-
-    /**
-     * Click listener to reset the active theme.
-     */
-    function resetTheme() {
-      $scope.activeTheme = '';
-    }
-
-    /**
-     * Click listener to toggle the event types list.
-     */
-    function toggleEventTypes() {
-      $scope.showAllEventTypes = !$scope.showAllEventTypes;
-    }
-
-    /**
-     * Click listener to toggle th places list.
-     */
-    function togglePlaces() {
-      $scope.showAllPlaces = !$scope.showAllPlaces;
-    }
-
-    /**
-     * Click listener on the calendar type buttons.
-     * Activate the selected calendar type.
-     */
-    function setCalendarType(type) {
-
-      $scope.activeCalendarType = type;
-
-      for (var i = 0; i < $scope.calendarLabels.length; i++) {
-        if ($scope.calendarLabels[i].id === type) {
-          $scope.activeCalendarLabel = $scope.calendarLabels[i].label;
-          break;
-        }
-      }
-
-      // Check if previous calendar type was the same.
-      // If so, we don't need to create new openinghours. Just show the previous entered data.
-      if (item.calendarType === type) {
-        return;
-      }
-
-      // A type is choosen, start a complet new calendar, removing old data.
-
-      item.calendarType = type;
-      item.resetOpeningHours();
-
-      if (type === 'single') {
-        addSingleDate();
-      }
-
-    }
-
-    /**
-     * Click listener to reset the calendar. User can select a new calendar type.
-     */
-    function resetCalendar() {
-      $scope.activeCalendarType = '';
-    }
-
-    /**
-     * Add a single date to the item.
-     */
-    function addSingleDate() {
-      item.openingHours.push(new UdbOpeningHours());
-      console.log(item.openingHours);
-    }
-
-    /**
-     * Validate the event / place.
-     */
-    function validateItem() {
-      showStep(5);
-      saveItem();
-    }
-
-    /**
-     * Save the event / place.
-     */
-    function saveItem() {
-
-      if ($scope.isEvent) {
-        eventCrud.createEvent(item);
-      }
-
-      $scope.lastUpdated = moment(Date.now()).format('DD/MM/YYYY HH:mm:s');
-    }
-
-  }
-  EventFormController.$inject = ["udbApi", "$scope", "$controller", "$window", "UdbEvent", "UdbOpeningHours", "UdbPlace", "moment", "eventCrud", "eventTypes", "SearchResultViewer"];
-
-})();
-
 // Source: src/event_form/event-form.data.js
 /**
  * @ngdoc service
@@ -4838,7 +4550,7 @@ function EventFormStep5Directive() {
      * Click listener on the event type buttons.
      * Activate the selected event type.
      */
-    function setEventType(type, isEvent) {
+    function setEventType(type, label, isEvent) {
 
       $scope.activeEventType = type;
 
@@ -4878,6 +4590,7 @@ function EventFormStep5Directive() {
       }
 
       EventFormData.eventType = type;
+      EventFormData.setEventType(type, label);
 
       if (!isEvent) {
         EventFormData.showStep(2);
@@ -5342,13 +5055,23 @@ function EventFormStep5Directive() {
       // location_contactinfo_zipcode
       //http://search-prod.lodgon.com/search/rest/search?q=*&fq=type:event&fq=zipcode:9000
       var params = {};
+      var location = {
+        '@type': 'Event', // 'Place',
+        'name': 'ABC van Museum',
+        'address': {
+            'addressCountry': 'BE',
+            'addressLocality': 'Gent',
+            'postalCode': '9000',
+            'streetAddress': 'Koestraat 28'
+        }
+      };
 
       if ($scope.isEvent) {
-        EventFormData.setLocation({ locationCdbId : '81E9C76C-BA61-0F30-45F5CD2279ACEBFC' });
+        EventFormData.setLocation(location);
         params = { locationCdbId : '81E9C76C-BA61-0F30-45F5CD2279ACEBFC' };
       }
       else {
-        EventFormData.setLocation({ locationZip : '9000' });
+        EventFormData.setLocation(location);
         params = { locationZip : '9000' };
       }
 
@@ -5373,6 +5096,27 @@ function EventFormStep5Directive() {
         }
         
       });
+      //  saveEvent();
+    }
+
+    /**
+     * Save Event for the first time.
+     */
+    function saveEvent() {
+      
+      var eventCrudPromise = null;
+      
+      if ($scope.isEvent) {
+        // Copy properties to UdbEvent
+        eventCrudPromise = eventCrud.createEvent($scope.eventFormData);
+      }
+      else {
+        // Copy properties to UdbPlace
+        eventCrudPromise = eventCrud.createEvent($scope.eventFormData);
+      }
+      
+      $scope.lastUpdated = moment(Date.now()).format('DD/MM/YYYY HH:mm:s');
+       
     }
 
     /**
@@ -5419,27 +5163,7 @@ function EventFormStep5Directive() {
       }
 
     }
-
-    /**
-     * Save Event for the first time.
-     */
-    function saveEvent() {
-      
-      var eventCrudPromise = null;
-      
-      if ($scope.isEvent) {
-        // Copy properties to UdbEvent
-        eventCrudPromise = eventCrud.createEvent($scope.eventFormData);
-      }
-      else {
-        // Copy properties to UdbPlace
-        eventCrudPromise = eventCrud.createEvent($scope.eventFormData);
-      }
-      
-      $scope.lastUpdated = moment(Date.now()).format('DD/MM/YYYY HH:mm:s');
-       
-    }
-
+    
   }
   EventFormStep4Controller.$inject = ["$scope", "EventFormData", "udbApi", "appConfig", "SearchResultViewer", "eventCrud", "$modal"];
 
@@ -7948,7 +7672,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "        <label class=\"event-type-choser-label\">Een activiteit of evenement</label>\n" +
     "        <ul class=\"list-inline\" id=\"step1-events\">\n" +
     "          <li ng-repeat=\"eventTypeLabel in eventTypeLabels\" ng-show=\"eventTypeLabel.primary == true || showAllEventTypes\">\n" +
-    "            <button ng-bind=\"eventTypeLabel.label\" class=\"btn btn-default\" ng-click=\"setEventType(eventTypeLabel.id, true)\"></button>\n" +
+    "            <button ng-bind=\"eventTypeLabel.label\" class=\"btn btn-default\" ng-click=\"setEventType(eventTypeLabel.id, eventTypeLabel.label, true)\"></button>\n" +
     "          </li>\n" +
     "        </ul>\n" +
     "        <p ng-hide=\"showAllEventTypes\">\n" +
@@ -7964,7 +7688,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "        <label class=\"event-type-choser-label\">Een locatie of plaats</label>\n" +
     "        <ul class=\"list-inline\" id=\"step1-places\">\n" +
     "          <li ng-repeat=\"placeLabel in placeLabels\" ng-show=\"placeLabel.primary == true || showAllPlaces\">\n" +
-    "            <button ng-bind=\"placeLabel.label\" class=\"btn btn-default\" ng-click=\"setEventType(placeLabel.id, false)\"></button>\n" +
+    "            <button ng-bind=\"placeLabel.label\" class=\"btn btn-default\" ng-click=\"setEventType(placeLabel.id, placeLabel.label, false)\"></button>\n" +
     "          </li>\n" +
     "        </ul>\n" +
     "        <p ng-hide=\"showAllPlaces\">\n" +
@@ -8181,6 +7905,8 @@ $templateCache.put('templates/time-autocomplete.html',
     "    </div>\n" +
     "\n" +
     "  </section>\n" +
+    "    \n" +
+    "    <a ng-click=\"eventFormData.showStep(4)\">Volgende stap, Jochen</a>\n" +
     "\n" +
     "</div>"
   );

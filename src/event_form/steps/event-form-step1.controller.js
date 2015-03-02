@@ -47,7 +47,7 @@
      * Click listener on the event type buttons.
      * Activate the selected event type.
      */
-    function setEventType(type, isEvent) {
+    function setEventType(type, label, isEvent) {
 
       $scope.activeEventType = type;
 
@@ -87,6 +87,7 @@
       }
 
       EventFormData.eventType = type;
+      EventFormData.setEventType(type, label);
 
       if (!isEvent) {
         EventFormData.showStep(2);

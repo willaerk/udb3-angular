@@ -51,13 +51,23 @@
       // location_contactinfo_zipcode
       //http://search-prod.lodgon.com/search/rest/search?q=*&fq=type:event&fq=zipcode:9000
       var params = {};
+      var location = {
+        '@type': 'Event', // 'Place',
+        'name': 'ABC van Museum',
+        'address': {
+            'addressCountry': 'BE',
+            'addressLocality': 'Gent',
+            'postalCode': '9000',
+            'streetAddress': 'Koestraat 28'
+        }
+      };
 
       if ($scope.isEvent) {
-        EventFormData.setLocation({ locationCdbId : '81E9C76C-BA61-0F30-45F5CD2279ACEBFC' });
+        EventFormData.setLocation(location);
         params = { locationCdbId : '81E9C76C-BA61-0F30-45F5CD2279ACEBFC' };
       }
       else {
-        EventFormData.setLocation({ locationZip : '9000' });
+        EventFormData.setLocation(location);
         params = { locationZip : '9000' };
       }
 
@@ -82,6 +92,27 @@
         }
         
       });
+      //  saveEvent();
+    }
+
+    /**
+     * Save Event for the first time.
+     */
+    function saveEvent() {
+      
+      var eventCrudPromise = null;
+      
+      if ($scope.isEvent) {
+        // Copy properties to UdbEvent
+        eventCrudPromise = eventCrud.createEvent($scope.eventFormData);
+      }
+      else {
+        // Copy properties to UdbPlace
+        eventCrudPromise = eventCrud.createEvent($scope.eventFormData);
+      }
+      
+      $scope.lastUpdated = moment(Date.now()).format('DD/MM/YYYY HH:mm:s');
+       
     }
 
     /**
@@ -128,27 +159,7 @@
       }
 
     }
-
-    /**
-     * Save Event for the first time.
-     */
-    function saveEvent() {
-      
-      var eventCrudPromise = null;
-      
-      if ($scope.isEvent) {
-        // Copy properties to UdbEvent
-        eventCrudPromise = eventCrud.createEvent($scope.eventFormData);
-      }
-      else {
-        // Copy properties to UdbPlace
-        eventCrudPromise = eventCrud.createEvent($scope.eventFormData);
-      }
-      
-      $scope.lastUpdated = moment(Date.now()).format('DD/MM/YYYY HH:mm:s');
-       
-    }
-
+    
   }
 
 })();

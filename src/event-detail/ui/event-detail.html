@@ -1,3 +1,28 @@
-<p>Hello world!</p>
+<h1>Event id: {{eventId}}</h1>
 
-<p>Event id: {{eventId}}</p>
+<div class="row">
+    <div class="col-xs-3">
+        <ul class="nav nav-pills nav-stacked" role="tablist">
+            <li ng-repeat="tab in tabs" role="presentation" class="{{classForTab(tab)}}">
+                <a href="#{{tab.id}}" data-toggle="tab" role="tab">{{tab.header}}</a>
+            </li>
+        </ul>
+    </div>
+
+    <div class="col-xs-9">
+        <div class="tab-content">
+            <div role="tabpanel" class="tab-pane active" id="data">
+                <p>Gegevens hier</p>
+            </div>
+
+            <div role="tabpanel" class="tab-pane" id="history">
+                <p>Historiek hier</p>
+            </div>
+
+            <div role="tabpanel" class="tab-pane" id="publication">
+                <p>Publicatie-info hier</p>
+            </div>
+        </div>
+    </div>
+
+</div>

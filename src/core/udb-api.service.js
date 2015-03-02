@@ -289,6 +289,14 @@ function UdbApi($q, $http, appConfig, $cookieStore, uitidAuth, $cacheFactory, Ud
       defaultApiConfig
     );
   };
-  
+
+  this.createOrganizer = function(organizer) {
+    return $http.post(
+      appConfig.baseApiUrl + 'organizer',
+      organizer,
+      defaultApiConfig
+    );
+  };
+
 
 }

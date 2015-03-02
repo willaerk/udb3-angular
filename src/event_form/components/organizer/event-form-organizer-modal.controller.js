@@ -13,7 +13,7 @@
     .controller('EventFormOrganizerModalCtrl', EventFormOrganizerModalController);
 
   /* @ngInject */
-  function EventFormOrganizerModalController($scope, $modalInstance, udbOrganizers) {
+  function EventFormOrganizerModalController($scope, $modalInstance, udbOrganizers, eventCrud) {
 
     // Scope vars.
     $scope.organizersFound = false;
@@ -24,7 +24,8 @@
       street : '',
       number : '',
       city : '',
-      zip: '',
+      postalCode: '',
+      country : 'Belgium',
       contact: []
     };
 
@@ -33,12 +34,13 @@
     $scope.deleteOrganizerContactInfo = deleteOrganizerContactInfo;
     $scope.validateNewOrganizer = validateNewOrganizer;
     $scope.selectOrganizer = selectOrganizer;
+    $scope.saveOrganizer = saveOrganizer;
 
     /**
      * Add a contact info entry for an organizer.
      */
     function addOrganizerContactInfo(type) {
-      $scope.newOrganiser.contact.push({
+      $scope.newOrganizer.contact.push({
         type : type,
         value : ''
       });
@@ -56,7 +58,7 @@
      */
     function validateNewOrganizer() {
 
-      var promise = udbOrganizers.searchDuplicates($scope.newOrganizer.title, $scope.newOrganizer.zip);
+      var promise = udbOrganizers.searchDuplicates($scope.newOrganizer.name, $scope.newOrganizer.postalCode);
 
       $scope.loading = true;
 
@@ -87,8 +89,12 @@
      * Save the new organizer in db.
      */
     function saveOrganizer() {
-      selectOrganizer($scope.newOrganiser);
-      $modalInstance.close($scope.newOrganiser);
+
+      var promise = eventCrud.createOrganizer($scope.newOrganizer);
+      promise.then(function(jsonResponse) {
+        $scope.newOrganizer.id = jsonResponse.organiserId;
+        selectOrganizer($scope.newOrganizer);
+      });
     }
 
   }

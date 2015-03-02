@@ -42,6 +42,9 @@ function EventCrudJobFactory(BaseJob) {
       case 'updateTypicalAgeRange':
         return 'Leeftijd aanpassend: "' + this.item.name.nl + '".';
 
+      case 'createOrganizer':
+        return 'Organisatie toevoegen: "' + this.item.name + '".';
+
     }
 
   };

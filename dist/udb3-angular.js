@@ -2381,7 +2381,7 @@ angular
   .service('udbApi', UdbApi);
 
 /* @ngInject */
-function UdbApi($q, $http, appConfig, $cookieStore, uitidAuth, $cacheFactory, UdbEvent) {
+function UdbApi($q, $http, appConfig, $cookieStore, uitidAuth, $cacheFactory, UdbEvent, UdbOrganizer) {
   var apiUrl = appConfig.baseApiUrl;
   var defaultApiConfig = {
         withCredentials: true,
@@ -2466,6 +2466,38 @@ function UdbApi($q, $http, appConfig, $cookieStore, uitidAuth, $cacheFactory, Ud
   this.getEventByLDId = function (eventLDId) {
     var eventId = eventLDId.split('/').pop();
     return this.getEventById(eventId);
+  };
+
+  this.getOrganizerByLDId = function(organizerLDId) {
+    var organizerId = organizerLDId.split('/').pop();
+    return this.getOrganizerById(organizerId);
+  };
+
+  this.getOrganizerById = function(organizerId) {
+    var deferredOrganizer = $q.defer();
+
+    var organizer = eventCache.get(organizerId);
+
+    if (organizer) {
+      deferredOrganizer.resolve(organizer);
+    } else {
+      var organizerRequest  = $http.get(
+        appConfig.baseApiUrl + 'organizer/' + organizerId,
+        {
+          headers: {
+            'Accept': 'application/ld+json'
+          }
+        });
+
+      organizerRequest.success(function(jsonOrganizer) {
+        var organizer = new UdbOrganizer();
+        organizer.parseJson(jsonOrganizer);
+        eventCache.put(organizerId, organizer);
+        deferredOrganizer.resolve(organizer);
+      });
+    }
+
+    return deferredOrganizer.promise;
   };
 
   /**
@@ -2626,10 +2658,18 @@ function UdbApi($q, $http, appConfig, $cookieStore, uitidAuth, $cacheFactory, Ud
       defaultApiConfig
     );
   };
-  
+
+  this.createOrganizer = function(organizer) {
+    return $http.post(
+      appConfig.baseApiUrl + 'organizer',
+      organizer,
+      defaultApiConfig
+    );
+  };
+
 
 }
-UdbApi.$inject = ["$q", "$http", "appConfig", "$cookieStore", "uitidAuth", "$cacheFactory", "UdbEvent"];
+UdbApi.$inject = ["$q", "$http", "appConfig", "$cookieStore", "uitidAuth", "$cacheFactory", "UdbEvent", "UdbOrganizer"];
 
 // Source: src/core/udb-event.factory.js
 /**
@@ -2916,6 +2956,148 @@ function UdbOpeningHoursFactory() {
   return (UdbOpeningHours);
 }
 
+// Source: src/core/udb-organizer.directive.js
+/**
+ * @ngdoc directive
+ * @name udb.core.directive:udbOrganizer
+ * @description
+ * # udbOrganizer
+ */
+angular
+  .module('udb.core')
+  .directive('udbOrganizer', udbOrganizer);
+
+/* @ngInject */
+function udbOrganizer(udbApi) {
+  var event = {
+    restrict: 'A',
+    link: function postLink(scope, iElement, iAttrs) {
+
+      // The organizer object that's returned from the server
+      var organizer;
+
+      if (!scope.organizer.title) {
+        scope.fetching = true;
+        var promise = udbApi.getOrganizerByLDId(scope.organizer.id);
+
+        promise.then(function (organizerObject) {
+          scope.organizer = organizerObject;
+          scope.fetching = false;
+        });
+      } else {
+        scope.fetching = false;
+      }
+
+    }
+  };
+
+  return event;
+}
+udbOrganizer.$inject = ["udbApi"];
+// Source: src/core/udb-organizer.factory.js
+/**
+ * @ngdoc service
+ * @name udb.core.UdbOrganizer
+ * @description
+ * # UdbOrganizer
+ * UdbOrganizer factory
+ */
+angular
+  .module('udb.core')
+  .factory('UdbOrganizer', UdbOrganizerFactory);
+
+/* @ngInject */
+function UdbOrganizerFactory() {
+
+  /**
+   * @class UdbOrganizer
+   * @constructor
+   */
+  var UdbOrganizer = function () {
+    this.id = '';
+    this.title = {};
+  };
+
+  UdbOrganizer.prototype = {
+    parseJson: function (jsonOrganizer) {
+      this.id = jsonOrganizer['@id'].split('/').pop();
+      this.name = jsonOrganizer.name || '';
+      this.addresses = jsonOrganizer.addresses || [];
+      this.email = jsonOrganizer.email || [];
+      this.phone = jsonOrganizer.phone || [];
+      this.url = jsonOrganizer.url || [];
+    },
+
+    /**
+     * Set the name of the event for a given langcode.
+     */
+    setName: function(name, langcode) {
+      this.name[langcode] = name;
+    },
+
+    /**
+     * Get the name of the event for a given langcode.
+     */
+    getName: function(langcode) {
+      return this.name[langcode];
+    }
+
+  };
+
+  return (UdbOrganizer);
+}
+
+// Source: src/core/udb-organizers.service.js
+/**
+ * @ngdoc service
+ * @name udb.core.organizers
+ * @description
+ * Service for organizers.
+ */
+angular
+  .module('udb.core')
+  .service('udbOrganizers', UdbOrganizers);
+
+/* @ngInject */
+function UdbOrganizers($q, $http, appConfig) {
+
+  /**
+   * Get the organizers that match the searched value.
+   */
+  this.suggestOrganizers = function(value) {
+
+    var organizers = $q.defer();
+
+    var request = $http.get(appConfig.baseApiUrl + 'organizer/suggest/' + value);
+
+    request.success(function(jsonData) {
+      organizers.resolve(jsonData);
+    });
+
+    return organizers.promise;
+
+  };
+
+  /**
+   * Search for duplicate organizers.
+   */
+  this.searchDuplicates = function(title, zip) {
+
+    var duplicates = $q.defer();
+
+    var request = $http.get(appConfig.baseApiUrl + 'organizer/search-duplicates/' + title + '/' + zip);
+
+    request.success(function(jsonData) {
+      duplicates.resolve(jsonData);
+    });
+
+    return duplicates.promise;
+
+  };
+
+}
+UdbOrganizers.$inject = ["$q", "$http", "appConfig"];
+
 // Source: src/core/udb-place.factory.js
 /**
  * @ngdoc service
@@ -3163,6 +3345,9 @@ function EventCrudJobFactory(BaseJob) {
       case 'updateTypicalAgeRange':
         return 'Leeftijd aanpassend: "' + this.item.name.nl + '".';
 
+      case 'createOrganizer':
+        return 'Organisatie toevoegen: "' + this.item.name + '".';
+
     }
 
   };
@@ -3194,7 +3379,7 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
   this.createEvent = function (event) {
 
     var jobPromise = null;
-    
+
     if (event.isEvent) {
       jobPromise = udbApi.createEvent(event);
     }
@@ -3203,6 +3388,15 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
     }
 
     return jobPromise;
+  };
+
+  /**
+   * Creates a new organizer.
+   */
+  this.createOrganizer = function(organizer) {
+
+    return udbApi.createOrganizer(organizer);
+
   };
 
   /**
@@ -4152,6 +4346,109 @@ function EventFormOpeningHoursDirective() {
     restrict: 'E',
   };
 }
+// Source: src/event_form/components/organizer/event-form-organizer-modal.controller.js
+(function () {
+/**
+   * @ngdoc function
+   * @name udbApp.controller:EventFormOrganizerModalCtrl
+   * @description
+   * # EventFormOrganizerModalCtrl
+   * Modal for adding an organizer.
+   */
+  angular
+    .module('udb.event-form')
+    .controller('EventFormOrganizerModalCtrl', EventFormOrganizerModalController);
+
+  /* @ngInject */
+  function EventFormOrganizerModalController($scope, $modalInstance, udbOrganizers, eventCrud) {
+
+    // Scope vars.
+    $scope.organizersFound = false;
+    $scope.organizers = [];
+
+    $scope.newOrganizer = {
+      name : '',
+      street : '',
+      number : '',
+      city : '',
+      postalCode: '',
+      country : 'Belgium',
+      contact: []
+    };
+
+    // Scope functions.
+    $scope.addOrganizerContactInfo = addOrganizerContactInfo;
+    $scope.deleteOrganizerContactInfo = deleteOrganizerContactInfo;
+    $scope.validateNewOrganizer = validateNewOrganizer;
+    $scope.selectOrganizer = selectOrganizer;
+    $scope.saveOrganizer = saveOrganizer;
+
+    /**
+     * Add a contact info entry for an organizer.
+     */
+    function addOrganizerContactInfo(type) {
+      $scope.newOrganizer.contact.push({
+        type : type,
+        value : ''
+      });
+    }
+
+    /**
+     * Remove a given key of the contact info.
+     */
+    function deleteOrganizerContactInfo(index) {
+      $scope.newOrganizer.contact.splice(index, 1);
+    }
+
+    /**
+     * Validate the new organizer.
+     */
+    function validateNewOrganizer() {
+
+      var promise = udbOrganizers.searchDuplicates($scope.newOrganizer.name, $scope.newOrganizer.postalCode);
+
+      $scope.loading = true;
+
+      promise.then(function (data) {
+
+        // Set the results for the duplicates modal,
+        if (data.length > 0) {
+          $scope.organizersFound = true;
+          $scope.organizers = data;
+        }
+        // or save the event immediataly if no duplicates were found.
+        else {
+          saveOrganizer();
+        }
+
+      });
+
+    }
+
+    /**
+     * Select the organizer that should be used.
+     */
+    function selectOrganizer(organizer) {
+      $modalInstance.close(organizer);
+    }
+
+    /**
+     * Save the new organizer in db.
+     */
+    function saveOrganizer() {
+
+      var promise = eventCrud.createOrganizer($scope.newOrganizer);
+      promise.then(function(jsonResponse) {
+        $scope.newOrganizer.id = jsonResponse.organiserId;
+        selectOrganizer($scope.newOrganizer);
+      });
+    }
+
+  }
+  EventFormOrganizerModalController.$inject = ["$scope", "$modalInstance", "udbOrganizers", "eventCrud"];
+
+})();
+
 // Source: src/event_form/event-form.data.js
 /**
  * @ngdoc service
@@ -4185,6 +4482,7 @@ function EventFormDataFactory(UdbEvent, UdbPlace) {
     timestamps : [],
     openingHours : [],
     ageRange : '',
+    organizer : {},
 
     /**
      * Show the given step.
@@ -4381,6 +4679,13 @@ function EventFormDataFactory(UdbEvent, UdbPlace) {
      */
     getType: function() {
       return this.isEvent ? 'event' : 'place';
+    },
+
+    /**
+     * Reset the selected organizers.
+     */
+    resetOrganizer: function() {
+      this.organizer = {};
     }
 
   };
@@ -5188,7 +5493,7 @@ function EventFormStep5Directive() {
     .controller('EventFormStep5Ctrl', EventFormStep5Controller);
 
   /* @ngInject */
-  function EventFormStep5Controller($scope, EventFormData, eventCrud) {
+  function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizers, $modal) {
 
     // Work hardcoded on this id for now.
     EventFormData.id = '1c4a7e6a-3ed9-450f-80d7-e3439cb72e15';
@@ -5200,6 +5505,10 @@ function EventFormStep5Directive() {
     $scope.ageRange = 0;
     $scope.ageCssClass = EventFormData.ageRange ? 'state-complete' : 'state-incomplete';
     $scope.minAge = '';
+    $scope.organizerCssClass = EventFormData.organizer.id ? 'state-complete' : 'state-incomplete';
+    $scope.organizer = '';
+    $scope.emptyOrganizerAutocomplete = false;
+    $scope.loadingOrganizers = false;
 
     // Scope functions.
     $scope.saveDescription = saveDescription;
@@ -5207,6 +5516,11 @@ function EventFormStep5Directive() {
     $scope.changeAgeRange = changeAgeRange;
     $scope.setAllAges = setAllAges;
     $scope.resetAgeRange = resetAgeRange;
+    $scope.getOrganizers = getOrganizers;
+    $scope.selectOrganizer = selectOrganizer;
+    $scope.deleteOrganiser = deleteOrganiser;
+    $scope.openOrganizerModal = openOrganizerModal;
+
 
     // Check if we have a minAge set on load.
     if (EventFormData.minAge) {
@@ -5305,8 +5619,71 @@ function EventFormStep5Directive() {
       angular.element('#last-updated span').html(moment(Date.now()).format('HH:mm'));
     }
 
+    /**
+     * Autocomplete callback for organizers.
+     */
+    function getOrganizers(value) {
+
+      $scope.loadingOrganizers = true;
+
+      return udbOrganizers.suggestOrganizers(value).then(function (organizers) {
+
+        if (organizers.length > 0) {
+          $scope.emptyOrganizerAutocomplete = false;
+        }
+        else {
+          $scope.emptyOrganizerAutocomplete = true;
+        }
+
+        $scope.loadingOrganizers = false;
+
+        return organizers;
+
+      });
+
+    }
+
+    /**
+     * Select listener on the typeahead.
+     */
+    function selectOrganizer() {
+
+      EventFormData.organizer = $scope.organizer;
+
+      $scope.organizerCssClass = 'state-complete';
+      $scope.organizer = '';
+    }
+
+    /**
+     * Delete the selected organiser.
+     */
+    function deleteOrganiser() {
+      $scope.organizerCssClass = 'state-incomplete';
+      EventFormData.resetOrganizer();
+    }
+
+    /**
+     * Open the organizer modal.
+     */
+    function openOrganizerModal() {
+
+        var modalInstance = $modal.open({
+          templateUrl: 'templates/event-form-organizer-modal.html',
+          controller: 'EventFormOrganizerModalCtrl',
+        });
+
+        modalInstance.result.then(function (organizer) {
+          EventFormData.organizer = organizer;
+          $scope.organizerCssClass = 'state-complete';
+          $scope.organizer = '';
+          console.log(organizer);
+          console.log(EventFormData.organizer);
+        });
+
+    }
+
   }
-  EventFormStep5Controller.$inject = ["$scope", "EventFormData", "eventCrud"];
+  EventFormStep5Controller.$inject = ["$scope", "EventFormData", "eventCrud", "udbOrganizers", "$modal"];
 
 })();
 
@@ -7650,6 +8027,117 @@ $templateCache.put('templates/time-autocomplete.html',
   );
 
 
+  $templateCache.put('templates/event-form-organizer-modal.html',
+    "\n" +
+    "<div class=\"modal-header\">\n" +
+    "  <button type=\"button\" class=\"close\" data-dismiss=\"modal\"><span aria-hidden=\"true\">&times;</span><span class=\"sr-only\">Close</span></button>\n" +
+    "  <h4 class=\"modal-title\" ng-hide=\"organizersFound\">Nieuwe organisator toevoegen</h4>\n" +
+    "  <h4 class=\"modal-title\" ng-show=\"organizersFound\">Vermijd dubbel werk</h4>\n" +
+    "</div>\n" +
+    "<div class=\"modal-body\">\n" +
+    "\n" +
+    "  <section ng-hide=\"organizersFound\">\n" +
+    "    <div class=\"form-group\">\n" +
+    "      <label>Naam</label>\n" +
+    "      <input type=\"text\" class=\"form-control\" ng-model=\"newOrganizer.name\">\n" +
+    "      <p class=\"help-block\">De officiële publieke naam van de organisatie.</p>\n" +
+    "    </div>\n" +
+    "\n" +
+    "    <div class=\"row\">\n" +
+    "\n" +
+    "      <div class=\"col-xs-9\">\n" +
+    "        <div class=\"form-group\">\n" +
+    "          <label>Straat</label>\n" +
+    "          <input type=\"text\" class=\"form-control\" ng-model=\"newOrganizer.street\">\n" +
+    "        </div>\n" +
+    "      </div>\n" +
+    "      <div class=\"col-xs-3\">\n" +
+    "        <div class=\"form-group\">\n" +
+    "          <label>Nummer</label>\n" +
+    "          <input type=\"text\" class=\"form-control\" ng-model=\"newOrganizer.number\">\n" +
+    "        </div>\n" +
+    "      </div>\n" +
+    "      <div class=\"col-xs-9\">\n" +
+    "        <div class=\"form-group\">\n" +
+    "          <label>Gemeente</label>\n" +
+    "          <input type=\"text\" class=\"form-control\" ng-model=\"newOrganizer.city\">\n" +
+    "        </div>\n" +
+    "      </div>\n" +
+    "      <div class=\"col-xs-3\">\n" +
+    "        <div class=\"form-group\">\n" +
+    "          <label>Postcode</label>\n" +
+    "          <input type=\"text\" class=\"form-control\" ng-model=\"newOrganizer.postalCode\">\n" +
+    "        </div>\n" +
+    "      </div>\n" +
+    "\n" +
+    "    </div>\n" +
+    "\n" +
+    "    <h2>Contact</h2>\n" +
+    "\n" +
+    "    <div ng-show=\"newOrganizer.contact.length === 0\">\n" +
+    "      <ul class=\"list-unstyled\">\n" +
+    "        <li><a ng-click=\"addOrganizerContactInfo('website')\">Website toevoegen</a></li>\n" +
+    "        <li><a ng-click=\"addOrganizerContactInfo('phone')\">Telefoonnummer toevoegen</a></li>\n" +
+    "        <li><a ng-click=\"addOrganizerContactInfo('email')\">E-mailadres toevoegen</a></li>\n" +
+    "      </ul>\n" +
+    "    </div>\n" +
+    "\n" +
+    "    <table class=\"table\" ng-show=\"newOrganizer.contact.length\">\n" +
+    "      <tr ng-repeat=\"(key, info) in newOrganizer.contact\">\n" +
+    "        <td>\n" +
+    "          <select class=\"form-control\" ng-model=\"info.type\">\n" +
+    "            <option value=\"website\">Website</option>\n" +
+    "            <option value=\"phone\">Telefoonnummer</option>\n" +
+    "            <option value=\"email\">E-mailadres</option>\n" +
+    "          </select>\n" +
+    "        </td>\n" +
+    "        <td>\n" +
+    "          <input type=\"text\" class=\"form-control\" ng-model=\"info.value\"/>\n" +
+    "        </td>\n" +
+    "        <td>\n" +
+    "          <button type=\"button\" class=\"close\" aria-label=\"Close\" ng-click=\"deleteOrganizerContactInfo(key)\"><span aria-hidden=\"true\">&times;</span></button>\n" +
+    "        </td>\n" +
+    "      </tr>\n" +
+    "      <tr><td colspan=\"3\"><a ng-click=\"addOrganizerContactInfo('')\">Meer contactgegevens toevoegen</a></td></tr>\n" +
+    "    </table>\n" +
+    "\n" +
+    "  </section>\n" +
+    "\n" +
+    "  <section ng-show=\"organizersFound\">\n" +
+    "\n" +
+    "    <div class=\"alert alert-info\">\n" +
+    "      <p>Ben je zeker dat je \"{{ newOrganizer.title}}\" wil toevoegen als organisator? Dubbele invoer van organisaties is niet toegelaten.</p>\n" +
+    "    </div>\n" +
+    "    <p>We vonden deze gelijkaardige items:</p>\n" +
+    "    <table class=\"table\">\n" +
+    "      <tr ng-repeat=\"organizer in organizers\" udb-organizer=\"organizer\" ng-hide=\"fetching\">\n" +
+    "        <td><strong>{{ organizer.name }} </strong>, {{ organizer.address[0].street }} {{ organizer.address[0].number }}, {{ organizer.address[0].postalCode }} {{ organizer.address[0].city }}</strong></td>\n" +
+    "        <td><a class=\"btn btn-default\" ng-click=\"selectOrganizer(organizer)\">Selecteren</a></td>\n" +
+    "      </tr>\n" +
+    "      <tr>\n" +
+    "        <td>\n" +
+    "          Jij voerde in:<br/>\n" +
+    "          <strong>{{ newOrganizer.name}}</strong>, {{ newOrganizer.street }} {{ newOrganizer.number }} {{ newOrganizer.postalCode }} {{ newOrganizer.city }}</strong>\n" +
+    "        </td>\n" +
+    "        <td><a class=\"btn btn-default\" ng-click=\"saveOrganizer()\">Toch invoeren</a></td>\n" +
+    "      </tr>\n" +
+    "    </table>\n" +
+    "\n" +
+    "  </section>\n" +
+    "\n" +
+    "</div>\n" +
+    "<div class=\"modal-footer\" ng-hide=\"organizersFound\">\n" +
+    "  <button type=\"button\" class=\"btn btn-default\" data-dismiss=\"modal\">Sluiten</button>\n" +
+    "  <button type=\"button\" class=\"btn btn-primary organisator-toevoegen-bewaren\" ng-click=\"validateNewOrganizer()\" data-target=\"#extra-organisator-dubbeldetectie\">Bewaren</button>\n" +
+    "</div>"
+  );
+
+
+  $templateCache.put('templates/organizer-typeahead-template.html',
+    "<a>{{match.model.title}}</a>"
+  );
+
+
   $templateCache.put('templates/event-form.html',
     "<div ng-controller=\"EventFormCtrl as eventForm\">\n" +
     "  <udb-event-form-step1></udb-event-form-step1>\n" +
@@ -8158,6 +8646,37 @@ $templateCache.put('templates/time-autocomplete.html',
     "\n" +
     "                <p ng-show=\"ageRange === -1\">Alle leeftijden <a href=\"#\" class=\"btn btn-link btn-leeftijd-restore to-filling\" ng-click=\"resetAgeRange()\">Wijzigen</a></p>\n" +
     "\n" +
+    "              </section>\n" +
+    "            </div>\n" +
+    "          </div>\n" +
+    "        </div>\n" +
+    "\n" +
+    "        <div class=\"row extra-organisator\">\n" +
+    "          <div class=\"extra-task\" ng-class=\"organizerCssClass\">\n" +
+    "            <div class=\"col-sm-3\">\n" +
+    "              <em class=\"extra-task-label\">Organisatie</em>\n" +
+    "            </div>\n" +
+    "            <div class=\"col-sm-8\">\n" +
+    "              <section class=\"state incomplete\">\n" +
+    "                <a class=\"btn btn-default to-filling\" ng-click=\"organizerCssClass = 'state-filling'\">Organisator(s) toevoegen</a>\n" +
+    "              </section>\n" +
+    "              <section class=\"state complete\">\n" +
+    "                <p>{{ eventFormData.organizer.name}} <a class=\"btn btn-link to-filling\"><button type=\"button\" class=\"close\" ng-click=\"deleteOrganiser()\" data-dismiss=\"modal\" aria-label=\"Close\"><span aria-hidden=\"true\">&times;</span></button></a></p>\n" +
+    "              </section>\n" +
+    "              <section class=\"state filling\">\n" +
+    "                <div class=\"form-group\">\n" +
+    "                  <label>Kies een organisatie</label>\n" +
+    "                  <div id=\"organisator-kiezer\">\n" +
+    "                    <span class=\"twitter-typeahead\" style=\"position: relative; display: inline-block; direction: ltr;\">\n" +
+    "                      <input type=\"text\" class=\"form-control typeahead\" id=\"organisator-autocomplete\" ng-model=\"organizer\" typeahead=\"organizer for organizer in getOrganizers($viewValue)\" typeahead-on-select=\"selectOrganizer()\" typeahead-min-length=\"3\" typeahead-loading=\"loadingOrganizers\" typeahead-template-url=\"templates/organizer-typeahead-template.html\"/>\n" +
+    "                    </span>\n" +
+    "                    <div ng-show=\"emptyOrganizerAutocomplete\">\n" +
+    "                      <p class='text-center'>Organisator niet gevonden?</br>\n" +
+    "                        <button type='button' class='btn btn-primary' ng-click=\"openOrganizerModal()\">Nieuwe organisator toevoegen</button>\n" +
+    "                      </p>\n" +
+    "                    </div>\n" +
+    "                  </div>\n" +
+    "                </div>\n" +
     "              </section>\n" +
     "            </div>\n" +
     "          </div>\n" +

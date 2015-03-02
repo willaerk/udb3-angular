@@ -9,7 +9,7 @@
   <section ng-hide="organizersFound">
     <div class="form-group">
       <label>Naam</label>
-      <input type="text" class="form-control" ng-model="newOrganizer.title">
+      <input type="text" class="form-control" ng-model="newOrganizer.name">
       <p class="help-block">De officiële publieke naam van de organisatie.</p>
     </div>
 
@@ -36,7 +36,7 @@
       <div class="col-xs-3">
         <div class="form-group">
           <label>Postcode</label>
-          <input type="text" class="form-control" ng-model="newOrganizer.zip">
+          <input type="text" class="form-control" ng-model="newOrganizer.postalCode">
         </div>
       </div>
 
@@ -81,13 +81,13 @@
     <p>We vonden deze gelijkaardige items:</p>
     <table class="table">
       <tr ng-repeat="organizer in organizers" udb-organizer="organizer" ng-hide="fetching">
-        <td><strong>{{ organizer.name }} </strong>, {{ organizer.address[0].street }} {{ organizer.address[0].number }}, {{ organizer.address[0].zip }} {{ organizer.address[0].city }}</strong></td>
-        <td><a class="btn btn-default" ng-click="selectOrganizer()">Selecteren</a></td>
+        <td><strong>{{ organizer.name }} </strong>, {{ organizer.address[0].street }} {{ organizer.address[0].number }}, {{ organizer.address[0].postalCode }} {{ organizer.address[0].city }}</strong></td>
+        <td><a class="btn btn-default" ng-click="selectOrganizer(organizer)">Selecteren</a></td>
       </tr>
       <tr>
         <td>
           Jij voerde in:<br/>
-          <strong>{{ newOrganizer.title}}</strong>, {{ newOrganizer.street }} {{ newOrganizer.number }} {{ newOrganizer.zip }} {{ newOrganizer.city }}</strong>
+          <strong>{{ newOrganizer.name}}</strong>, {{ newOrganizer.street }} {{ newOrganizer.number }} {{ newOrganizer.postalCode }} {{ newOrganizer.city }}</strong>
         </td>
         <td><a class="btn btn-default" ng-click="saveOrganizer()">Toch invoeren</a></td>
       </tr>

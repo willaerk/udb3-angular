@@ -22,7 +22,7 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
   this.createEvent = function (event) {
 
     var jobPromise = null;
-    
+
     if (event.isEvent) {
       jobPromise = udbApi.createEvent(event);
     }
@@ -31,6 +31,15 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
     }
 
     return jobPromise;
+  };
+
+  /**
+   * Creates a new organizer.
+   */
+  this.createOrganizer = function(organizer) {
+
+    return udbApi.createOrganizer(organizer);
+
   };
 
   /**

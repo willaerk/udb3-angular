@@ -196,6 +196,8 @@
           EventFormData.organizer = organizer;
           $scope.organizerCssClass = 'state-complete';
           $scope.organizer = '';
+          console.log(organizer);
+          console.log(EventFormData.organizer);
         });
 
     }

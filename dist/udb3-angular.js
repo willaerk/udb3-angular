@@ -2619,6 +2619,15 @@ function UdbApi($q, $http, appConfig, $cookieStore, uitidAuth, $cacheFactory, Ud
     );
   };
 
+  this.createPlace = function (event) {
+    return $http.post(
+      appConfig.baseApiUrl + 'place',
+      event,
+      defaultApiConfig
+    );
+  };
+  
+
 }
 UdbApi.$inject = ["$q", "$http", "appConfig", "$cookieStore", "uitidAuth", "$cacheFactory", "UdbEvent"];
 
@@ -3184,12 +3193,14 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
    */
   this.createEvent = function (event) {
 
-    var jobPromise = udbApi.createEvent(event);
-
-    jobPromise.success(function (jobData) {
-      var job = new EventCrudJob(jobData.commandId, event, 'createEvent');
-      jobLogger.addJob(job);
-    });
+    var jobPromise = null;
+    
+    if (event.isEvent) {
+      jobPromise = udbApi.createEvent(event);
+    }
+    else {
+      jobPromise = udbApi.createPlace(event);
+    }
 
     return jobPromise;
   };
@@ -3199,7 +3210,7 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
    *
    * @param {UdbEvent|UdbPlace|EventFormData} item
    * @param {string} type
-   *  Type of item
+   *  Type of item: Event / Place
    * @returns {EventCrud.updateTypicalAgeRange.jobPromise}
    */
   this.updateDescription = function(item, type) {
@@ -5106,14 +5117,8 @@ function EventFormStep5Directive() {
       
       var eventCrudPromise = null;
       
-      if ($scope.isEvent) {
-        // Copy properties to UdbEvent
-        eventCrudPromise = eventCrud.createEvent($scope.eventFormData);
-      }
-      else {
-        // Copy properties to UdbPlace
-        eventCrudPromise = eventCrud.createEvent($scope.eventFormData);
-      }
+      // EventCrud solves the Event or place.
+      eventCrudPromise = eventCrud.createEvent($scope.eventFormData);
       
       $scope.lastUpdated = moment(Date.now()).format('DD/MM/YYYY HH:mm:s');
        

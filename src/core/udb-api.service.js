@@ -250,4 +250,13 @@ function UdbApi($q, $http, appConfig, $cookieStore, uitidAuth, $cacheFactory, Ud
     );
   };
 
+  this.createPlace = function (event) {
+    return $http.post(
+      appConfig.baseApiUrl + 'place',
+      event,
+      defaultApiConfig
+    );
+  };
+  
+
 }

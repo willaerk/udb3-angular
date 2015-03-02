@@ -102,14 +102,8 @@
       
       var eventCrudPromise = null;
       
-      if ($scope.isEvent) {
-        // Copy properties to UdbEvent
-        eventCrudPromise = eventCrud.createEvent($scope.eventFormData);
-      }
-      else {
-        // Copy properties to UdbPlace
-        eventCrudPromise = eventCrud.createEvent($scope.eventFormData);
-      }
+      // EventCrud solves the Event or place.
+      eventCrudPromise = eventCrud.createEvent($scope.eventFormData);
       
       $scope.lastUpdated = moment(Date.now()).format('DD/MM/YYYY HH:mm:s');
        

@@ -21,12 +21,14 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
    */
   this.createEvent = function (event) {
 
-    var jobPromise = udbApi.createEvent(event);
-
-    jobPromise.success(function (jobData) {
-      var job = new EventCrudJob(jobData.commandId, event, 'createEvent');
-      jobLogger.addJob(job);
-    });
+    var jobPromise = null;
+    
+    if (event.isEvent) {
+      jobPromise = udbApi.createEvent(event);
+    }
+    else {
+      jobPromise = udbApi.createPlace(event);
+    }
 
     return jobPromise;
   };
@@ -36,7 +38,7 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
    *
    * @param {UdbEvent|UdbPlace|EventFormData} item
    * @param {string} type
-   *  Type of item
+   *  Type of item: Event / Place
    * @returns {EventCrud.updateTypicalAgeRange.jobPromise}
    */
   this.updateDescription = function(item, type) {

@@ -2226,6 +2226,28 @@ this.getEventByLDId = function (eventLDId) {
   return this.getEventById(eventId);
 };
 
+this.getEventHistoryById = function(eventId) {
+  var eventHistoryLoaded = $q.defer();
+
+  var eventHistoryRequest  = $http.get(
+      appConfig.baseUrl + 'event/' + eventId + '/history',
+      {
+        headers: {
+          'Accept': 'application/json'
+        }
+      });
+
+  eventHistoryRequest.success(function(eventHistory) {
+    eventHistoryLoaded.resolve(eventHistory);
+  });
+
+  eventHistoryRequest.error(function () {
+    eventHistoryLoaded.reject();
+  });
+
+  return eventHistoryLoaded.promise;
+};
+
 /**
  * @returns {Promise} A list of tags wrapped as a promise.
  */
@@ -3390,11 +3412,17 @@ angular
 function EventDetail($scope, $routeParams, $location, udbApi, jsonLDLangFilter, locationTypes) {
   $scope.eventId = $routeParams.eventId;
   $scope.eventIdIsInvalid = false;
+  $scope.eventHistory = [];
 
   var eventLoaded = udbApi.getEventById($scope.eventId);
 
   eventLoaded.then(
       function (event) {
+        var eventHistoryLoaded = udbApi.getEventHistoryById($scope.eventId);
+
+        eventHistoryLoaded.then(function(eventHistory) {
+          $scope.eventHistory = eventHistory;
+        });
         console.log(event);
         $scope.event = jsonLDLangFilter(event, 'nl');
         console.log($scope.event);
@@ -5799,7 +5827,15 @@ $templateCache.put('templates/base-job.template.html',
     "                </div>\n" +
     "\n" +
     "                <div role=\"tabpanel\" class=\"tab-pane\" id=\"history\">\n" +
-    "                    <p>Historiek hier</p>\n" +
+    "                    <div class=\"timeline\">\n" +
+    "                        <dl ng-repeat=\"eventAction in eventHistory\">\n" +
+    "                            <dt ng-bind=\"eventAction.date | date:'dd/MM/yyyy H:mm'\"></dt>\n" +
+    "                            <dd>\n" +
+    "                                {{eventAction.author}}<br/>\n" +
+    "                                {{eventAction.description}}\n" +
+    "                            </dd>\n" +
+    "                        </dl>\n" +
+    "                    </div>\n" +
     "                </div>\n" +
     "\n" +
     "                <div role=\"tabpanel\" class=\"tab-pane\" id=\"publication\">\n" +

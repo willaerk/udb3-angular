@@ -88,6 +88,7 @@ function UdbEventFactory() {
       this.startDate = jsonEvent.startDate;
       this.endDate = jsonEvent.endDate;
       this.url = '/event/' + this.id;
+      this.sameAs = jsonEvent.sameAs;
       if (jsonEvent.typicalAgeRange) {
         this.typicalAgeRange = jsonEvent.typicalAgeRange;
       }

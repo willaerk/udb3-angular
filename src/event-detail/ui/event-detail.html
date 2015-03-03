@@ -92,10 +92,41 @@
                 </div>
 
                 <div role="tabpanel" class="tab-pane" id="publication">
-                    <p>Publicatie-info hier</p>
+                    <div class="panel panel-default">
+                        <table class="table">
+                            <colgroup>
+                                <col style="width:20%"/>
+                                <col style="width:80%"/>
+                            </colgroup>
+                            <tbody>
+                            <tr>
+                                <td><strong>Publicatiedatum</strong></td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Vervaldatum</strong></td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td><strong>ID</strong></td>
+                                <td>
+                                    <ul>
+                                        <li ng-repeat="id in eventIds(event)"
+                                            ng-switch="isUrl(id)">
+                                            <a ng-switch-when="true"
+                                               ng-href="{{id}}"
+                                               ng-bind="id"></a>
+                                            <span ng-switch-when="false"
+                                                  ng-bind="id"></span>
+                                        </li>
+                                    </ul>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
-        </div>
 
+        </div>
     </div>
-</div>

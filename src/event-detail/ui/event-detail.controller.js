@@ -92,4 +92,12 @@ function EventDetail($scope, $routeParams, $location, udbApi, jsonLDLangFilter, 
 
     return eventLocation.join(', ');
   };
+
+  $scope.eventIds = function (event) {
+    return _.union([event.id], event.sameAs);
+  };
+
+  $scope.isUrl = function (potentialUrl) {
+    return /^(https?)/.test(potentialUrl);
+  };
 }

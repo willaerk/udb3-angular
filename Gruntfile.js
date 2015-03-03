@@ -36,6 +36,29 @@ module.exports = function (grunt) {
     return terms;
   };
 
+  var getLocationTypes = function () {
+    var parser = new xml2js.Parser({mergeAttrs: true, explicitArray: false});
+    var xmlBuffer = grunt.file.read('actor-types.xml');
+    var terms = [];
+    parser.parseString(xmlBuffer, function (err, result) {
+      console.dir(result);
+      terms = result.cdbxml.categorisation.term;
+    });
+
+    var locationTypes = [];
+    for (var i = 0; i < terms.length; i++) {
+      if (terms[i].id === '8.15.0.0.0') {
+        for (var j = 0; j < terms[i].term.length; j++) {
+          locationTypes.push(
+              terms[i].term[j].id
+          );
+        }
+      }
+    }
+    console.log(locationTypes);
+    return locationTypes;
+  };
+
   // Define the configuration for all the tasks
   grunt.initConfig({
 
@@ -306,7 +329,8 @@ module.exports = function (grunt) {
         constants: function() {
           return {
             appConfig: {},
-            taxonomyTerms: getTaxonomyTerms()
+            taxonomyTerms: getTaxonomyTerms(),
+            locationTypes: getLocationTypes()
           };
         }
       },
@@ -314,7 +338,8 @@ module.exports = function (grunt) {
         constants: function() {
           return {
             appConfig: {},
-            taxonomyTerms: getTaxonomyTerms()
+            taxonomyTerms: getTaxonomyTerms(),
+            locationTypes: getLocationTypes()
           };
         }
       }
@@ -324,6 +349,10 @@ module.exports = function (grunt) {
       'taxonomy-terms': {
         src: 'http://taxonomy.uitdatabank.be/api/term',
         dest: 'taxonomy-terms.xml'
+      },
+      'actor-types': {
+        src: 'http://taxonomy.uitdatabank.be/api/domain/actortype/classification',
+        dest: 'actor-types.xml'
       }
     },
 
@@ -360,6 +389,7 @@ module.exports = function (grunt) {
   grunt.registerTask('build', [
     'clean:dist',
     'curl:taxonomy-terms',
+    'curl:actor-types',
     'ngconstant:dist',
     'peg',
     'less',

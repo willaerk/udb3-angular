@@ -5857,16 +5857,6 @@ $templateCache.put('templates/base-job.template.html',
     "                                    </span>\n" +
     "                                </td>\n" +
     "                            </tr>\n" +
-    "                            <tr ng-class=\"{muted: !event.endDate}\">\n" +
-    "                                <td><strong>Vervaldatum</strong></td>\n" +
-    "                                <td><span ng-if=\"event.endDate\"\n" +
-    "                                          ng-bind = \"event.endDate | date: 'dd/MM/yyyy'\">\n" +
-    "                                    </span>\n" +
-    "                                    <span ng-if=\"!event.endDate\">\n" +
-    "                                        Geen vervaldatum\n" +
-    "                                    </span>\n" +
-    "                                </td>\n" +
-    "                            </tr>\n" +
     "                            <tr>\n" +
     "                                <td><strong>ID</strong></td>\n" +
     "                                <td>\n" +

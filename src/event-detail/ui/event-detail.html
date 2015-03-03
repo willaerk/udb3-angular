@@ -55,9 +55,9 @@
                                 <td><strong>Wanneer</strong></td>
                                 <td>{{event.calendarSummary}}</td>
                             </tr>
-                            <tr>
+                            <tr ng-class="{muted: !event.organizer}">
                                 <td><strong>Organisator</strong></td>
-                                <td></td>
+                                <td>{{event.organizer.name}}</td>
                             </tr>
                             <tr>
                                 <td><strong>Prijs</strong></td>

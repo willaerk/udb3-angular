@@ -161,4 +161,115 @@ describe('Service: LuceneQueryBuilder', function () {
       expect(queryString).toBe('city:Tienen NOT location_label:"Bibliotheek Tienen"');
     });
   });
+
+  it('Combines OR fields', function () {
+    var groupedTree = {
+      "type": "root",
+      "nodes": [
+        {
+          "type": "group",
+          "operator": "OR",
+          "nodes": [
+            {
+              "field": "city",
+              "term": "Leuven",
+              "fieldType": "string",
+              "transformer": "="
+            },
+            {
+              "field": "city",
+              "term": "Tienen",
+              "fieldType": "string",
+              "transformer": "="
+            }
+          ]
+        }
+      ]
+    };
+
+    var queryString = LuceneQueryBuilder.unparseGroupedTree(groupedTree);
+    expect(queryString).toBe('city:Leuven OR city:Tienen');
+  });
+
+  it('Combines AND groups with a single field', function () {
+    var groupedTree = {
+      "type": "root",
+      "nodes": [
+        {
+          "type": "group",
+          "operator": "OR",
+          "nodes": [
+            {
+              "field": "city",
+              "term": "Leuven",
+              "fieldType": "string",
+              "transformer": "="
+            },
+            {
+              "field": "city",
+              "term": "Tienen",
+              "fieldType": "string",
+              "transformer": "="
+            },
+            {
+              "type": "group",
+              "operator": "AND",
+              "nodes": [
+                {
+                  "field": "category_eventtype_name",
+                  "term": "Concert",
+                  "fieldType": "term",
+                  "transformer": "="
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    };
+
+    var queryString = LuceneQueryBuilder.unparseGroupedTree(groupedTree);
+    expect(queryString).toBe('city:Leuven OR city:Tienen AND category_eventtype_name:Concert');
+  })
+
+  it('Combines AND groups with multiple fields', function () {
+    var groupedTree = {
+      "type": "root",
+      "nodes": [
+        {
+          "type": "group",
+          "operator": "OR",
+          "nodes": [
+            {
+              "field": "city",
+              "term": "Leuven",
+              "fieldType": "string",
+              "transformer": "="
+            },
+            {
+              "type": "group",
+              "operator": "AND",
+              "nodes": [
+                {
+                  "field": "category_eventtype_name",
+                  "term": "Concert",
+                  "fieldType": "term",
+                  "transformer": "="
+                },
+                {
+                  "field": "category_eventtype_name",
+                  "term": "Film",
+                  "fieldType": "term",
+                  "transformer": "="
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    };
+
+    var queryString = LuceneQueryBuilder.unparseGroupedTree(groupedTree);
+    expect(queryString).toBe('city:Leuven AND (category_eventtype_name:Concert OR category_eventtype_name:Film)');
+  })
 });

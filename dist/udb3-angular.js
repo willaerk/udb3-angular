@@ -4387,6 +4387,15 @@ function LuceneQueryBuilder(LuceneQueryParser, QueryTreeValidator, QueryTreeTran
     return queryString;
   };
 
+
+  function printTreeField(field) {
+    if (field.fieldType === 'date-range') {
+      cleanUpDateRangeField(field);
+    }
+    var transformedField = transformField(field);
+    return  transformedField.field + ':' + printTerm(transformedField);
+  }
+
   /**
    * @description
    * Unparse a grouped field information tree to a query string
@@ -4404,27 +4413,43 @@ function LuceneQueryBuilder(LuceneQueryParser, QueryTreeValidator, QueryTreeTran
         var group = node;
 
         _.forEach(group.nodes, function (field, fieldIndex) {
-          if (fieldIndex) {
-            nodeString += ' ' + node.operator + ' ';
-          }
 
-          if (field.fieldType === 'date-range') {
-            cleanUpDateRangeField(field);
+          // check if the field is actually a sub group
+          if(field.type === 'group') {
+
+            var subGroup = field,
+                subGroupString = ' ';
+
+            if(subGroup.nodes.length === 1) {
+              var singleField = subGroup.nodes[0];
+              subGroupString += subGroup.operator + ' ' + printTreeField(singleField);
+            } else {
+              subGroupString += subGroup.operator + ' (';
+              _.forEach(subGroup.nodes, function (field, fieldIndex) {
+                if (fieldIndex) {
+                  subGroupString += ' OR ';
+                }
+                subGroupString += printTreeField(field);
+              });
+              subGroupString += ')';
+            }
+
+            nodeString += subGroupString;
+          } else {
+            if (fieldIndex) {
+              nodeString += ' ' + node.operator + ' ';
+            }
+
+            nodeString += printTreeField(field);
           }
-          var transformedField = transformField(field);
-          nodeString += transformedField.field + ':' + printTerm(transformedField);
         });
 
-        if(group.nodes.length > 1) {
-          nodeString += '(' + nodeString + ')';
+        if(root.nodes.length > 1 && group.nodes.length > 2) {
+          nodeString = '(' + nodeString + ')';
         }
       } else if (node.type === 'field') {
         var field = node.nodes[0];
-        if (field.fieldType === 'date-range') {
-          cleanUpDateRangeField(field);
-        }
-        var transformedField = transformField(field);
-        nodeString = transformedField.field + ':' + printTerm(transformedField);
+        nodeString = printTreeField(field);
       } else {
         console.log('node type not recognized?');
       }

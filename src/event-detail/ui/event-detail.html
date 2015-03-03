@@ -110,9 +110,15 @@
                                     </span>
                                 </td>
                             </tr>
-                            <tr>
+                            <tr ng-class="{muted: !event.endDate}">
                                 <td><strong>Vervaldatum</strong></td>
-                                <td></td>
+                                <td><span ng-if="event.endDate"
+                                          ng-bind = "event.endDate | date: 'dd/MM/yyyy'">
+                                    </span>
+                                    <span ng-if="!event.endDate">
+                                        Geen vervaldatum
+                                    </span>
+                                </td>
                             </tr>
                             <tr>
                                 <td><strong>ID</strong></td>

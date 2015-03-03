@@ -4447,11 +4447,8 @@ function LuceneQueryBuilder(LuceneQueryParser, QueryTreeValidator, QueryTreeTran
         if(root.nodes.length > 1 && group.nodes.length > 2) {
           nodeString = '(' + nodeString + ')';
         }
-      } else if (node.type === 'field') {
-        var field = node.nodes[0];
-        nodeString = printTreeField(field);
       } else {
-        console.log('node type not recognized?');
+        console.log('Expecting a group but found: ' + node.type);
       }
 
       // do not prepend the first node with an operator
@@ -5967,7 +5964,7 @@ $templateCache.put('templates/base-job.template.html',
 
 
   $templateCache.put('templates/query-editor.directive.html',
-    "<div>\n" +
+    "<div class=\"udb-query-editor\">\n" +
     "  <div class=\"panel panel-default\" ng-repeat=\"rootGroup in qe.groupedQueryTree.nodes\">\n" +
     "\n" +
     "    <div class=\"panel-heading\">\n" +

@@ -15,11 +15,17 @@ angular
 function EventDetail($scope, $routeParams, $location, udbApi, jsonLDLangFilter, locationTypes) {
   $scope.eventId = $routeParams.eventId;
   $scope.eventIdIsInvalid = false;
+  $scope.eventHistory = [];
 
   var eventLoaded = udbApi.getEventById($scope.eventId);
 
   eventLoaded.then(
       function (event) {
+        var eventHistoryLoaded = udbApi.getEventHistoryById($scope.eventId);
+
+        eventHistoryLoaded.then(function(eventHistory) {
+          $scope.eventHistory = eventHistory;
+        });
         console.log(event);
         $scope.event = jsonLDLangFilter(event, 'nl');
         console.log($scope.event);

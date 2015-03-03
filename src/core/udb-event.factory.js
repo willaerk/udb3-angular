@@ -92,6 +92,9 @@ function UdbEventFactory() {
       if (jsonEvent.typicalAgeRange) {
         this.typicalAgeRange = jsonEvent.typicalAgeRange;
       }
+      if (jsonEvent.available) {
+        this.available = jsonEvent.available;
+      }
     },
     /**
      * Tag the event with a label or a list of labels

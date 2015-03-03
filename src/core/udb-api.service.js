@@ -79,6 +79,10 @@ this.getEventById = function(eventId) {
       eventCache.put(eventId, event);
       deferredEvent.resolve(event);
     });
+
+    eventRequest.error(function () {
+      deferredEvent.reject();
+    });
   }
 
   return deferredEvent.promise;

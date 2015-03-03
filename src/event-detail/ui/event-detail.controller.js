@@ -47,18 +47,15 @@ function EventDetail($scope, $routeParams, $location, udbApi, jsonLDLangFilter, 
   $scope.tabs = [
     {
       id: 'data',
-      header: 'Gegevens',
-      active: false
+      header: 'Gegevens'
     },
     {
       id: 'history',
-      header: 'Historiek',
-      active: false
+      header: 'Historiek'
     },
     {
       id: 'publication',
-      header: 'Publicatie',
-      active: false
+      header: 'Publicatie'
     }
   ];
 

@@ -5711,134 +5711,129 @@ $templateCache.put('templates/base-job.template.html',
 
   $templateCache.put('templates/event-detail.html',
     "<div ng-if=\"eventIdIsInvalid\">\n" +
-    "    <div class=\"page-header\">\n" +
-    "        <h1>Pagina niet gevonden</h1>\n" +
-    "    </div>\n" +
+    "  <div class=\"page-header\">\n" +
+    "    <h1>Pagina niet gevonden</h1>\n" +
+    "  </div>\n" +
     "\n" +
-    "    <div class=\"row\">\n" +
-    "        <div class=\"col-xs-12\">\n" +
-    "            <p>Deze pagina kon niet gevonden worden.</p>\n" +
-    "        </div>\n" +
+    "  <div class=\"row\">\n" +
+    "    <div class=\"col-xs-12\">\n" +
+    "      <p>Deze pagina kon niet gevonden worden.</p>\n" +
     "    </div>\n" +
+    "  </div>\n" +
     "</div>\n" +
     "\n" +
     "<div ng-if=\"event\">\n" +
-    "    <div class=\"page-header\">\n" +
-    "        <h1>{{event.name}}</h1>\n" +
+    "  <div class=\"page-header\">\n" +
+    "    <h1>{{event.name}}</h1>\n" +
+    "  </div>\n" +
+    "\n" +
+    "  <div class=\"row\">\n" +
+    "    <div class=\"col-xs-3\">\n" +
+    "      <ul class=\"nav nav-pills nav-stacked\">\n" +
+    "        <li ng-repeat=\"tab in tabs\" class=\"{{classForTab(tab)}}\" role=\"tab\">\n" +
+    "          <a href=\"#{{tab.id}}\" data-toggle=\"tab\" role=\"tab\" ng-bind=\"tab.header\"></a>\n" +
+    "        </li>\n" +
+    "      </ul>\n" +
     "    </div>\n" +
     "\n" +
-    "    <div class=\"row\">\n" +
-    "        <div class=\"col-xs-3\">\n" +
-    "            <ul class=\"nav nav-pills nav-stacked\">\n" +
-    "                <li ng-repeat=\"tab in tabs\" class=\"{{classForTab(tab)}}\" role=\"tab\">\n" +
-    "                    <a href=\"#{{tab.id}}\" data-toggle=\"tab\" role=\"tab\" ng-bind=\"tab.header\"></a>\n" +
-    "                </li>\n" +
-    "            </ul>\n" +
+    "    <div class=\"col-xs-9\">\n" +
+    "      <div class=\"tab-pane\" role=\"tabpanel\" ng-show=\"isTabActive('data')\">\n" +
+    "        <div class=\"panel panel-default\">\n" +
+    "          <table class=\"table\">\n" +
+    "            <colgroup>\n" +
+    "              <col style=\"width:20%\"/>\n" +
+    "              <col style=\"width:80%\"/>\n" +
+    "            </colgroup>\n" +
+    "            <tbody>\n" +
+    "            <tr>\n" +
+    "              <td><strong>Titel</strong></td>\n" +
+    "              <td>{{event.name}}</td>\n" +
+    "            </tr>\n" +
+    "            <tr>\n" +
+    "              <td><strong>Type</strong></td>\n" +
+    "              <td>{{event.type}}</td>\n" +
+    "            </tr>\n" +
+    "            <tr>\n" +
+    "              <td><strong>Beschrijving</strong></td>\n" +
+    "              <td ng-bind-html=\"event.description\"></td>\n" +
+    "            </tr>\n" +
+    "            <tr>\n" +
+    "              <td><strong>Waar</strong></td>\n" +
+    "              <td>{{eventLocation(event)}}</td>\n" +
+    "            </tr>\n" +
+    "            <tr>\n" +
+    "              <td><strong>Wanneer</strong></td>\n" +
+    "              <td>{{event.calendarSummary}}</td>\n" +
+    "            </tr>\n" +
+    "            <tr ng-class=\"{muted: !event.organizer}\">\n" +
+    "              <td><strong>Organisator</strong></td>\n" +
+    "              <td>{{event.organizer.name}}</td>\n" +
+    "            </tr>\n" +
+    "            <tr>\n" +
+    "              <td><strong>Prijs</strong></td>\n" +
+    "              <td></td>\n" +
+    "            </tr>\n" +
+    "            <tr ng-class=\"{muted: !event.typicalAgeRange}\">\n" +
+    "              <td><strong>Geschikt voor</strong></td>\n" +
+    "              <td>\n" +
+    "                <span ng-if=\"event.typicalAgeRange\">{{event.typicalAgeRange}}</span>\n" +
+    "                <span ng-if=\"!event.typicalAgeRange\">Geen leeftijdsinformatie</span>\n" +
+    "              </td>\n" +
+    "            </tr>\n" +
+    "            <tr ng-class=\"{muted: !event.image}\">\n" +
+    "              <td><strong>Afbeelding</strong></td>\n" +
+    "              <td>\n" +
+    "                <img ng-if=\"event.image\" src=\"{{event.image}}?maxwidth=400&maxheight=300\"/>\n" +
+    "                <span ng-if=\"!event.image\">Geen afbeelding</span>\n" +
+    "              </td>\n" +
+    "            </tr>\n" +
+    "\n" +
+    "            </tbody>\n" +
+    "          </table>\n" +
     "        </div>\n" +
+    "      </div>\n" +
     "\n" +
-    "        <div class=\"col-xs-9\">\n" +
-    "                <div class=\"tab-pane\" role=\"tabpanel\" ng-show=\"isTabActive('data')\">\n" +
-    "                    <div class=\"panel panel-default\">\n" +
-    "                        <table class=\"table\">\n" +
-    "                            <colgroup>\n" +
-    "                                <col style=\"width:20%\" />\n" +
-    "                                <col style=\"width:80%\" />\n" +
-    "                            </colgroup>\n" +
-    "                            <tbody>\n" +
-    "                            <tr>\n" +
-    "                                <td><strong>Titel</strong></td>\n" +
-    "                                <td>{{event.name}}</td>\n" +
-    "                            </tr>\n" +
-    "                            <tr>\n" +
-    "                                <td><strong>Type</strong></td>\n" +
-    "                                <td>{{event.type}}</td>\n" +
-    "                            </tr>\n" +
-    "                            <tr>\n" +
-    "                                <td><strong>Beschrijving</strong></td>\n" +
-    "                                <td ng-bind-html=\"event.description\"></td>\n" +
-    "                            </tr>\n" +
-    "                            <tr>\n" +
-    "                                <td><strong>Waar</strong></td>\n" +
-    "                                <td>{{eventLocation(event)}}</td>\n" +
-    "                            </tr>\n" +
-    "                            <tr>\n" +
-    "                                <td><strong>Wanneer</strong></td>\n" +
-    "                                <td>{{event.calendarSummary}}</td>\n" +
-    "                            </tr>\n" +
-    "                            <tr ng-class=\"{muted: !event.organizer}\">\n" +
-    "                                <td><strong>Organisator</strong></td>\n" +
-    "                                <td>{{event.organizer.name}}</td>\n" +
-    "                            </tr>\n" +
-    "                            <tr>\n" +
-    "                                <td><strong>Prijs</strong></td>\n" +
-    "                                <td></td>\n" +
-    "                            </tr>\n" +
-    "                            <tr ng-class=\"{muted: !event.typicalAgeRange}\">\n" +
-    "                                <td><strong>Geschikt voor</strong></td>\n" +
-    "                                <td>\n" +
-    "                                    <span ng-if=\"event.typicalAgeRange\">{{event.typicalAgeRange}}</span>\n" +
-    "                                    <span ng-if=\"!event.typicalAgeRange\">Geen leeftijdsinformatie</span>\n" +
-    "                                </td>\n" +
-    "                            </tr>\n" +
-    "                            <tr ng-class=\"{muted: !event.image}\">\n" +
-    "                                <td><strong>Afbeelding</strong></td>\n" +
-    "                                <td>\n" +
-    "                                    <img ng-if=\"event.image\" src=\"{{event.image}}?maxwidth=400&maxheight=300\" />\n" +
-    "                                    <span ng-if=\"!event.image\">Geen afbeelding</span>\n" +
-    "                                </td>\n" +
-    "                            </tr>\n" +
+    "      <div class=\"tab-pane\" role=\"tabpanel\" ng-show=\"isTabActive('history')\">\n" +
+    "        <p>Historiek hier</p>\n" +
+    "      </div>\n" +
     "\n" +
-    "                            </tbody>\n" +
-    "                        </table>\n" +
-    "                    </div>\n" +
-    "                </div>\n" +
-    "\n" +
-    "                <div class=\"tab-pane\" role=\"tabpanel\" ng-show=\"isTabActive('history')\">\n" +
-    "                    <p>Historiek hier</p>\n" +
-    "                </div>\n" +
-    "\n" +
-    "                <div class=\"tab-pane\" role=\"tabpanel\" ng-show=\"isTabActive('publication')\">\n" +
-    "                    <div class=\"panel panel-default\">\n" +
-    "                        <table class=\"table\">\n" +
-    "                            <colgroup>\n" +
-    "                                <col style=\"width:20%\"/>\n" +
-    "                                <col style=\"width:80%\"/>\n" +
-    "                            </colgroup>\n" +
-    "                            <tbody>\n" +
-    "                            <tr ng-class=\"{muted: !event.available}\">\n" +
-    "                                <td><strong>Publicatiedatum</strong></td>\n" +
-    "                                <td>\n" +
-    "                                    <span ng-if=\"event.available\"\n" +
-    "                                          ng-bind = \"event.available | date: 'dd/MM/yyyy'\">\n" +
-    "                                    </span>\n" +
-    "                                    <span ng-if=\"!event.available\">\n" +
-    "                                        Geen publicatiedatum\n" +
-    "                                    </span>\n" +
-    "                                </td>\n" +
-    "                            </tr>\n" +
-    "                            <tr>\n" +
-    "                                <td><strong>ID</strong></td>\n" +
-    "                                <td>\n" +
-    "                                    <ul>\n" +
-    "                                        <li ng-repeat=\"id in eventIds(event)\"\n" +
-    "                                            ng-switch=\"isUrl(id)\">\n" +
-    "                                            <a ng-switch-when=\"true\"\n" +
-    "                                               ng-href=\"{{id}}\"\n" +
-    "                                               ng-bind=\"id\"></a>\n" +
-    "                                            <span ng-switch-when=\"false\"\n" +
-    "                                                  ng-bind=\"id\"></span>\n" +
-    "                                        </li>\n" +
-    "                                    </ul>\n" +
-    "                                </td>\n" +
-    "                            </tr>\n" +
-    "                            </tbody>\n" +
-    "                        </table>\n" +
-    "                    </div>\n" +
-    "                </div>\n" +
-    "\n" +
+    "      <div class=\"tab-pane\" role=\"tabpanel\" ng-show=\"isTabActive('publication')\">\n" +
+    "        <div class=\"panel panel-default\">\n" +
+    "          <table class=\"table\">\n" +
+    "            <colgroup>\n" +
+    "              <col style=\"width:20%\"/>\n" +
+    "              <col style=\"width:80%\"/>\n" +
+    "            </colgroup>\n" +
+    "            <tbody>\n" +
+    "            <tr ng-class=\"{muted: !event.available}\">\n" +
+    "              <td><strong>Publicatiedatum</strong></td>\n" +
+    "              <td>\n" +
+    "                <span ng-if=\"event.available\"\n" +
+    "                      ng-bind=\"event.available | date: 'dd/MM/yyyy'\">\n" +
+    "                </span>\n" +
+    "                <span ng-if=\"!event.available\">\n" +
+    "                    Geen publicatiedatum\n" +
+    "                </span>\n" +
+    "              </td>\n" +
+    "            </tr>\n" +
+    "            <tr>\n" +
+    "              <td><strong>ID</strong></td>\n" +
+    "              <td>\n" +
+    "                <ul>\n" +
+    "                  <li ng-repeat=\"id in eventIds(event)\" ng-switch=\"isUrl(id)\">\n" +
+    "                    <a ng-switch-when=\"true\" ng-href=\"{{id}}\" ng-bind=\"id\"></a>\n" +
+    "                    <span ng-switch-when=\"false\" ng-bind=\"id\"></span>\n" +
+    "                  </li>\n" +
+    "                </ul>\n" +
+    "              </td>\n" +
+    "            </tr>\n" +
+    "            </tbody>\n" +
+    "          </table>\n" +
     "        </div>\n" +
+    "      </div>\n" +
     "    </div>\n" +
-    "  </div>\n"
+    "  </div>\n" +
+    "</div>\n"
   );
 
 

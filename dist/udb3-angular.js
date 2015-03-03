@@ -2435,8 +2435,12 @@ function UdbEventFactory() {
       this.startDate = jsonEvent.startDate;
       this.endDate = jsonEvent.endDate;
       this.url = '/event/' + this.id;
+      this.sameAs = jsonEvent.sameAs;
       if (jsonEvent.typicalAgeRange) {
         this.typicalAgeRange = jsonEvent.typicalAgeRange;
+      }
+      if (jsonEvent.available) {
+        this.available = jsonEvent.available;
       }
     },
     /**
@@ -3462,6 +3466,14 @@ function EventDetail($scope, $routeParams, $location, udbApi, jsonLDLangFilter, 
     }
 
     return eventLocation.join(', ');
+  };
+
+  $scope.eventIds = function (event) {
+    return _.union([event.id], event.sameAs);
+  };
+
+  $scope.isUrl = function (potentialUrl) {
+    return /^(https?)/.test(potentialUrl);
   };
 }
 EventDetail.$inject = ["$scope", "$routeParams", "$location", "udbApi", "jsonLDLangFilter", "locationTypes"];
@@ -5791,13 +5803,51 @@ $templateCache.put('templates/base-job.template.html',
     "                </div>\n" +
     "\n" +
     "                <div role=\"tabpanel\" class=\"tab-pane\" id=\"publication\">\n" +
-    "                    <p>Publicatie-info hier</p>\n" +
+    "                    <div class=\"panel panel-default\">\n" +
+    "                        <table class=\"table\">\n" +
+    "                            <colgroup>\n" +
+    "                                <col style=\"width:20%\"/>\n" +
+    "                                <col style=\"width:80%\"/>\n" +
+    "                            </colgroup>\n" +
+    "                            <tbody>\n" +
+    "                            <tr ng-class=\"{muted: !event.available}\">\n" +
+    "                                <td><strong>Publicatiedatum</strong></td>\n" +
+    "                                <td>\n" +
+    "                                    <span ng-if=\"event.available\"\n" +
+    "                                          ng-bind = \"event.available | date: 'dd/MM/yyyy'\">\n" +
+    "                                    </span>\n" +
+    "                                    <span ng-if=\"!event.available\">\n" +
+    "                                        Geen publicatiedatum\n" +
+    "                                    </span>\n" +
+    "                                </td>\n" +
+    "                            </tr>\n" +
+    "                            <tr>\n" +
+    "                                <td><strong>Vervaldatum</strong></td>\n" +
+    "                                <td></td>\n" +
+    "                            </tr>\n" +
+    "                            <tr>\n" +
+    "                                <td><strong>ID</strong></td>\n" +
+    "                                <td>\n" +
+    "                                    <ul>\n" +
+    "                                        <li ng-repeat=\"id in eventIds(event)\"\n" +
+    "                                            ng-switch=\"isUrl(id)\">\n" +
+    "                                            <a ng-switch-when=\"true\"\n" +
+    "                                               ng-href=\"{{id}}\"\n" +
+    "                                               ng-bind=\"id\"></a>\n" +
+    "                                            <span ng-switch-when=\"false\"\n" +
+    "                                                  ng-bind=\"id\"></span>\n" +
+    "                                        </li>\n" +
+    "                                    </ul>\n" +
+    "                                </td>\n" +
+    "                            </tr>\n" +
+    "                            </tbody>\n" +
+    "                        </table>\n" +
+    "                    </div>\n" +
     "                </div>\n" +
     "            </div>\n" +
-    "        </div>\n" +
     "\n" +
-    "    </div>\n" +
-    "</div>\n"
+    "        </div>\n" +
+    "    </div>\n"
   );
 
 

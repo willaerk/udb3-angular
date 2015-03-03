@@ -77,7 +77,7 @@
                             <tr ng-class="{muted: !event.image}">
                                 <td><strong>Afbeelding</strong></td>
                                 <td>
-                                    <img ng-if="event.image" src="{{event.image}}" />
+                                    <img ng-if="event.image" src="{{event.image}}?maxwidth=400&maxheight=300" />
                                     <span ng-if="!event.image">Geen afbeelding</span>
                                 </td>
                             </tr>

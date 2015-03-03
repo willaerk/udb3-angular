@@ -12,7 +12,7 @@ angular
     .controller('EventDetailController', EventDetail);
 
 /* @ngInject */
-function EventDetail($scope, $routeParams, $location, udbApi, jsonLDLangFilter) {
+function EventDetail($scope, $routeParams, $location, udbApi, jsonLDLangFilter, locationTypes) {
   $scope.eventId = $routeParams.eventId;
   $scope.eventIdIsInvalid = false;
 
@@ -71,4 +71,25 @@ function EventDetail($scope, $routeParams, $location, udbApi, jsonLDLangFilter) 
   $scope.$on('$locationChangeSuccess', function () {
     activeTabId = getActiveTabId();
   });
+
+  $scope.eventLocation = function (event) {
+    var eventLocation = [
+      event.location.name
+    ];
+
+    if (event.location.terms) {
+      angular.forEach(event.location.terms, function (term) {
+        // Only add terms related to locations.
+        if (locationTypes.indexOf(term.id) !== -1) {
+          eventLocation.push(term.label);
+        }
+      });
+    }
+
+    if (event.location.address.addressLocality) {
+      eventLocation.push(event.location.address.addressLocality);
+    }
+
+    return eventLocation.join(', ');
+  };
 }

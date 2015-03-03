@@ -17,21 +17,15 @@
 
     <div class="row">
         <div class="col-xs-3">
-            <ul class="nav nav-pills nav-stacked"
-                role="tablist">
-                <li ng-repeat="tab in tabs"
-                    role="presentation"
-                    class="{{classForTab(tab)}}">
-                    <a href="#{{tab.id}}"
-                       data-toggle="tab"
-                       role="tab">{{tab.header}}</a>
+            <ul class="nav nav-pills nav-stacked">
+                <li ng-repeat="tab in tabs" class="{{classForTab(tab)}}" role="tab">
+                    <a href="#{{tab.id}}" data-toggle="tab" role="tab" ng-bind="tab.header"></a>
                 </li>
             </ul>
         </div>
 
         <div class="col-xs-9">
-            <div class="tab-content">
-                <div role="tabpanel" class="tab-pane active" id="data">
+                <div class="tab-pane" role="tabpanel" ng-show="isTabActive('data')">
                     <div class="panel panel-default">
                         <table class="table">
                             <colgroup>
@@ -87,11 +81,11 @@
                     </div>
                 </div>
 
-                <div role="tabpanel" class="tab-pane" id="history">
+                <div class="tab-pane" role="tabpanel" ng-show="isTabActive('history')">
                     <p>Historiek hier</p>
                 </div>
 
-                <div role="tabpanel" class="tab-pane" id="publication">
+                <div class="tab-pane" role="tabpanel" ng-show="isTabActive('publication')">
                     <div class="panel panel-default">
                         <table class="table">
                             <colgroup>
@@ -129,7 +123,7 @@
                         </table>
                     </div>
                 </div>
-            </div>
 
         </div>
     </div>
+  </div>

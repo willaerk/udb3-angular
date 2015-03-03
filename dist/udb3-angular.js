@@ -3472,6 +3472,10 @@ function EventDetail($scope, $routeParams, $location, udbApi, jsonLDLangFilter, 
   $scope.isUrl = function (potentialUrl) {
     return /^(https?)/.test(potentialUrl);
   };
+
+  $scope.isTabActive = function (tabId) {
+    return tabId === activeTabId;
+  };
 }
 EventDetail.$inject = ["$scope", "$routeParams", "$location", "udbApi", "jsonLDLangFilter", "locationTypes"];
 
@@ -5725,21 +5729,15 @@ $templateCache.put('templates/base-job.template.html',
     "\n" +
     "    <div class=\"row\">\n" +
     "        <div class=\"col-xs-3\">\n" +
-    "            <ul class=\"nav nav-pills nav-stacked\"\n" +
-    "                role=\"tablist\">\n" +
-    "                <li ng-repeat=\"tab in tabs\"\n" +
-    "                    role=\"presentation\"\n" +
-    "                    class=\"{{classForTab(tab)}}\">\n" +
-    "                    <a href=\"#{{tab.id}}\"\n" +
-    "                       data-toggle=\"tab\"\n" +
-    "                       role=\"tab\">{{tab.header}}</a>\n" +
+    "            <ul class=\"nav nav-pills nav-stacked\">\n" +
+    "                <li ng-repeat=\"tab in tabs\" class=\"{{classForTab(tab)}}\" role=\"tab\">\n" +
+    "                    <a href=\"#{{tab.id}}\" data-toggle=\"tab\" role=\"tab\" ng-bind=\"tab.header\"></a>\n" +
     "                </li>\n" +
     "            </ul>\n" +
     "        </div>\n" +
     "\n" +
     "        <div class=\"col-xs-9\">\n" +
-    "            <div class=\"tab-content\">\n" +
-    "                <div role=\"tabpanel\" class=\"tab-pane active\" id=\"data\">\n" +
+    "                <div class=\"tab-pane\" role=\"tabpanel\" ng-show=\"isTabActive('data')\">\n" +
     "                    <div class=\"panel panel-default\">\n" +
     "                        <table class=\"table\">\n" +
     "                            <colgroup>\n" +
@@ -5795,11 +5793,11 @@ $templateCache.put('templates/base-job.template.html',
     "                    </div>\n" +
     "                </div>\n" +
     "\n" +
-    "                <div role=\"tabpanel\" class=\"tab-pane\" id=\"history\">\n" +
+    "                <div class=\"tab-pane\" role=\"tabpanel\" ng-show=\"isTabActive('history')\">\n" +
     "                    <p>Historiek hier</p>\n" +
     "                </div>\n" +
     "\n" +
-    "                <div role=\"tabpanel\" class=\"tab-pane\" id=\"publication\">\n" +
+    "                <div class=\"tab-pane\" role=\"tabpanel\" ng-show=\"isTabActive('publication')\">\n" +
     "                    <div class=\"panel panel-default\">\n" +
     "                        <table class=\"table\">\n" +
     "                            <colgroup>\n" +
@@ -5837,10 +5835,10 @@ $templateCache.put('templates/base-job.template.html',
     "                        </table>\n" +
     "                    </div>\n" +
     "                </div>\n" +
-    "            </div>\n" +
     "\n" +
     "        </div>\n" +
-    "    </div>\n"
+    "    </div>\n" +
+    "  </div>\n"
   );
 
 

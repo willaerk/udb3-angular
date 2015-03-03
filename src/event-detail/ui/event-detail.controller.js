@@ -97,4 +97,8 @@ function EventDetail($scope, $routeParams, $location, udbApi, jsonLDLangFilter, 
   $scope.isUrl = function (potentialUrl) {
     return /^(https?)/.test(potentialUrl);
   };
+
+  $scope.isTabActive = function (tabId) {
+    return tabId === activeTabId;
+  };
 }

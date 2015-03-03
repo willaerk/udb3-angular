@@ -189,8 +189,6 @@ function LuceneQueryBuilder(LuceneQueryParser, QueryTreeValidator, QueryTreeTran
       if (node.type === 'group') {
         var group = node;
 
-        nodeString += '(';
-
         _.forEach(group.nodes, function (field, fieldIndex) {
           if (fieldIndex) {
             nodeString += ' ' + node.operator + ' ';
@@ -203,7 +201,9 @@ function LuceneQueryBuilder(LuceneQueryParser, QueryTreeValidator, QueryTreeTran
           nodeString += transformedField.field + ':' + printTerm(transformedField);
         });
 
-        nodeString += ')';
+        if(group.nodes.length > 1) {
+          nodeString += '(' + nodeString + ')';
+        }
       } else if (node.type === 'field') {
         var field = node.nodes[0];
         if (field.fieldType === 'date-range') {
@@ -216,8 +216,9 @@ function LuceneQueryBuilder(LuceneQueryParser, QueryTreeValidator, QueryTreeTran
       }
 
       // do not prepend the first node with an operator
-      if (nodeIndex) {
-        queryString += ' ' + root.operator + ' ';
+      if (nodeIndex || node.excluded) {
+        var operator = node.excluded ? 'NOT' : 'OR';
+        queryString += ' ' + operator + ' ';
       }
       queryString += nodeString;
     });

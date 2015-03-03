@@ -123,5 +123,42 @@ describe('Service: LuceneQueryBuilder', function () {
       expect(groupedQueryTree.nodes[0].nodes[2].term).toBe('deer');
       expect(groupedQueryTree.nodes[0].nodes[2].fieldType).toBe('string');
     });
+
+
+    it('Excludes and includes groups when unparsing grouped trees', function () {
+      var groupedTree = {
+        "type": "root",
+        "nodes": [
+          {
+            "type": "group",
+            "operator": "NOT",
+            "nodes": [
+              {
+                "field": "city",
+                "fieldType": "string",
+                "transformer": "=",
+                "term": "Tienen"
+              }
+            ]
+          },
+          {
+            "type": "group",
+            "operator": "OR",
+            "nodes": [
+              {
+                "field": "location_label",
+                "term": "Bibliotheek Tienen",
+                "fieldType": "tokenized-string",
+                "transformer": "+"
+              }
+            ],
+            "excluded": true
+          }
+        ]
+      };
+
+      var queryString = LuceneQueryBuilder.unparseGroupedTree(groupedTree);
+      expect(queryString).toBe('city:Tienen NOT location_label:"Bibliotheek Tienen"');
+    });
   });
 });

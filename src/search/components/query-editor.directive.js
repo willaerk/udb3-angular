@@ -60,7 +60,6 @@ function udbQueryEditor(
 
       qe.operators = ['AND', 'OR'];
       qe.groupedQueryTree = {
-        operator: 'OR',
         type: 'root',
         nodes: []
       };

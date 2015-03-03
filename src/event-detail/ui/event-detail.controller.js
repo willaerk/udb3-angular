@@ -14,18 +14,20 @@ angular
 /* @ngInject */
 function EventDetail($scope, $routeParams, $location, udbApi, jsonLDLangFilter) {
   $scope.eventId = $routeParams.eventId;
+  $scope.eventIdIsInvalid = false;
 
   var eventLoaded = udbApi.getEventById($scope.eventId);
 
   eventLoaded.then(
       function (event) {
         console.log(event);
-
         $scope.event = jsonLDLangFilter(event, 'nl');
         console.log($scope.event);
+
+        $scope.eventIdIsInvalid = false;
       },
       function (reason) {
-        console.log('loading event failed');
+        $scope.eventIdIsInvalid = true;
       }
   );
 

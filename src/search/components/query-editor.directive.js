@@ -95,18 +95,17 @@ function udbQueryEditor(
        *
        * @param {number}  groupIndex  The index of the group to add the field to
        */
-      qe.addField = function (groupIndex) {
-        var root = qe.groupedQueryTree;
-        var group = root.nodes[groupIndex];
+      qe.addField = function (group, fieldIndex) {
 
-        var field = {
-          field: 'title',
-          term: '',
-          fieldType: 'tokenized-string',
-          transformer: '+'
-        };
+        var insertIndex = fieldIndex + 1,
+            field = {
+              field: 'title',
+              term: '',
+              fieldType: 'tokenized-string',
+              transformer: '+'
+            };
 
-        group.nodes.push(field);
+        group.nodes.splice(insertIndex, 0, field);
 
         if (group.nodes.length) {
           group.type = 'group';
@@ -116,24 +115,50 @@ function udbQueryEditor(
       /**
        * Remove a field from a group
        *
-       * @param {number}  groupIndex  The index of the group to delete a field from
+       * @param {number}  group  The group to delete a field from
        * @param {number}  fieldIndex  The index of the field to delete
        */
-      qe.removeField = function (groupIndex, fieldIndex) {
-        var root = qe.groupedQueryTree;
-        var group = root.nodes[groupIndex];
-
+      qe.removeField = function (group, fieldIndex) {
         if (qe.canRemoveField()) {
           group.nodes.splice(fieldIndex, 1);
         }
 
-        if (group.nodes.length < 2) {
-          if (group.nodes.length) {
-            group.type = 'field';
-          } else {
-            root.nodes.splice(groupIndex, 1);
-          }
-        }
+        qe.cleanUpGroups();
+      };
+
+      qe.cleanUpGroups = function () {
+        qe.removeEmptyGroups();
+        qe.unwrapSubGroups();
+      };
+
+      qe.unwrapSubGroups = function () {
+        var root = qe.groupedQueryTree;
+
+        _.forEach(root.nodes, function(group) {
+            var firstNode = group.nodes[0];
+
+            if(firstNode.nodes) {
+              var firstNodeChildren = firstNode.nodes;
+              group.nodes.splice(0, 1);
+              _.forEach(firstNodeChildren, function (node, index) {
+                group.nodes.splice(index, 0, node);
+              });
+            }
+        });
+      };
+
+      qe.removeEmptyGroups = function () {
+        var root = qe.groupedQueryTree;
+
+        _.forEach(root.nodes, function(group) {
+            _.remove(group.nodes, function (node) {
+              return node.nodes && node.nodes.length === 0;
+            });
+        });
+      };
+
+      qe.toggleExcludeGroup = function (group) {
+        group.excluded = !group.excluded;
       };
 
       /**
@@ -144,13 +169,28 @@ function udbQueryEditor(
         return !(qe.hasSingleGroup() && (qe.groupedQueryTree.nodes[0].nodes.length === 1));
       };
 
+      qe.canRemoveGroup = function () {
+        return !qe.hasSingleGroup();
+      };
+
+      qe.removeGroup = function (groupIndex) {
+        if(qe.canRemoveGroup()) {
+          var root = qe.groupedQueryTree,
+              group = root.nodes[groupIndex];
+
+          if (qe.canRemoveGroup() && group) {
+            root.nodes.splice(groupIndex, 1);
+          }
+        }
+      };
+
       /**
        * Add a field group
        */
       qe.addGroup = function () {
         var root = qe.groupedQueryTree;
         var group = {
-          type: 'field',
+          type: 'group',
           operator: 'OR',
           nodes: [
             {
@@ -163,6 +203,23 @@ function udbQueryEditor(
         };
 
         root.nodes.push(group);
+      };
+
+      qe.addSubGroup = function (parentGroup, fieldIndex) {
+        var group = {
+          type: 'group',
+          operator: 'AND',
+          nodes: [
+            {
+              field: 'title',
+              term: '',
+              fieldType: 'tokenized-string',
+              transformer: '+'
+            }
+          ]
+        };
+
+        parentGroup.nodes.splice(fieldIndex + 1, 0, group);
       };
 
       qe.updateFieldType = function (field) {

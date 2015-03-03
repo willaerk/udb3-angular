@@ -3696,6 +3696,81 @@ function datepickerPopup() {
   };
 }
 
+// Source: src/search/components/query-editor-field.directive.js
+/**
+ * @ngdoc directive
+ * @name udb.search.directive:udbQueryEditorField
+ * @description
+ * # udbQueryEditorField
+ */
+angular
+  .module('udb.search')
+  .directive('udbQueryEditorField', udbQueryEditorField);
+
+/* @ngInject */
+function udbQueryEditorField() {
+  return {
+    templateUrl: 'templates/query-editor-field.directive.html',
+    restrict: 'E',
+    link: function postLink(scope, element, attrs) {
+
+      function getParentGroup () {
+        var parentGroup;
+
+        if(isSubGroup()) {
+          parentGroup = scope.$parent.field;
+        } else {
+          parentGroup = scope.rootGroup;
+        }
+
+        return parentGroup;
+      }
+
+      function getOperatorClass() {
+        var operatorClass;
+        if(isSubGroup() && scope.$index === 0) {
+          operatorClass = 'AND';
+        } else {
+          operatorClass = scope.$index ? 'OR' : 'FIRST';
+        }
+
+        return operatorClass;
+      }
+
+      function isSubGroup() {
+        var parentGroup = scope.$parent;
+        return parentGroup.field.type === 'group';
+      }
+
+      scope.addField = function (index) {
+        scope.qe.addField(getParentGroup(), index);
+      };
+
+      scope.removeField = function (index) {
+        scope.qe.removeField(getParentGroup(), index);
+      };
+
+      scope.addSubGroup = function (index) {
+        var rootGroup = scope.rootGroup,
+          treeGroupId = _.uniqueId(),
+            group = getParentGroup();
+
+        group.treeGroupId = treeGroupId;
+
+        if(isSubGroup()) {
+          index = _.findIndex(rootGroup.nodes, function (group) {
+            return group.treeGroupId === treeGroupId;
+          });
+        }
+
+        scope.qe.addSubGroup(rootGroup, index);
+      };
+
+      scope.isSubGroup = isSubGroup;
+      scope.getOperatorClass = getOperatorClass;
+    }
+  };
+}
 // Source: src/search/components/query-editor.directive.js
 /**
  * @ngdoc directive
@@ -3792,18 +3867,17 @@ function udbQueryEditor(
        *
        * @param {number}  groupIndex  The index of the group to add the field to
        */
-      qe.addField = function (groupIndex) {
-        var root = qe.groupedQueryTree;
-        var group = root.nodes[groupIndex];
+      qe.addField = function (group, fieldIndex) {
 
-        var field = {
-          field: 'title',
-          term: '',
-          fieldType: 'tokenized-string',
-          transformer: '+'
-        };
+        var insertIndex = fieldIndex + 1,
+            field = {
+              field: 'title',
+              term: '',
+              fieldType: 'tokenized-string',
+              transformer: '+'
+            };
 
-        group.nodes.push(field);
+        group.nodes.splice(insertIndex, 0, field);
 
         if (group.nodes.length) {
           group.type = 'group';
@@ -3813,24 +3887,50 @@ function udbQueryEditor(
       /**
        * Remove a field from a group
        *
-       * @param {number}  groupIndex  The index of the group to delete a field from
+       * @param {number}  group  The group to delete a field from
        * @param {number}  fieldIndex  The index of the field to delete
        */
-      qe.removeField = function (groupIndex, fieldIndex) {
-        var root = qe.groupedQueryTree;
-        var group = root.nodes[groupIndex];
-
+      qe.removeField = function (group, fieldIndex) {
         if (qe.canRemoveField()) {
           group.nodes.splice(fieldIndex, 1);
         }
 
-        if (group.nodes.length < 2) {
-          if (group.nodes.length) {
-            group.type = 'field';
-          } else {
-            root.nodes.splice(groupIndex, 1);
-          }
-        }
+        qe.cleanUpGroups();
+      };
+
+      qe.cleanUpGroups = function () {
+        qe.removeEmptyGroups();
+        qe.unwrapSubGroups();
+      };
+
+      qe.unwrapSubGroups = function () {
+        var root = qe.groupedQueryTree;
+
+        _.forEach(root.nodes, function(group) {
+            var firstNode = group.nodes[0];
+
+            if(firstNode.nodes) {
+              var firstNodeChildren = firstNode.nodes;
+              group.nodes.splice(0, 1);
+              _.forEach(firstNodeChildren, function (node, index) {
+                group.nodes.splice(index, 0, node);
+              });
+            }
+        });
+      };
+
+      qe.removeEmptyGroups = function () {
+        var root = qe.groupedQueryTree;
+
+        _.forEach(root.nodes, function(group) {
+            _.remove(group.nodes, function (node) {
+              return node.nodes && node.nodes.length === 0;
+            });
+        });
+      };
+
+      qe.toggleExcludeGroup = function (group) {
+        group.excluded = !group.excluded;
       };
 
       /**
@@ -3841,13 +3941,28 @@ function udbQueryEditor(
         return !(qe.hasSingleGroup() && (qe.groupedQueryTree.nodes[0].nodes.length === 1));
       };
 
+      qe.canRemoveGroup = function () {
+        return !qe.hasSingleGroup();
+      };
+
+      qe.removeGroup = function (groupIndex) {
+        if(qe.canRemoveGroup()) {
+          var root = qe.groupedQueryTree,
+              group = root.nodes[groupIndex];
+
+          if (qe.canRemoveGroup() && group) {
+            root.nodes.splice(groupIndex, 1);
+          }
+        }
+      };
+
       /**
        * Add a field group
        */
       qe.addGroup = function () {
         var root = qe.groupedQueryTree;
         var group = {
-          type: 'field',
+          type: 'group',
           operator: 'OR',
           nodes: [
             {
@@ -3860,6 +3975,23 @@ function udbQueryEditor(
         };
 
         root.nodes.push(group);
+      };
+
+      qe.addSubGroup = function (parentGroup, fieldIndex) {
+        var group = {
+          type: 'group',
+          operator: 'AND',
+          nodes: [
+            {
+              field: 'title',
+              term: '',
+              fieldType: 'tokenized-string',
+              transformer: '+'
+            }
+          ]
+        };
+
+        parentGroup.nodes.splice(fieldIndex + 1, 0, group);
       };
 
       qe.updateFieldType = function (field) {
@@ -5719,124 +5851,156 @@ $templateCache.put('templates/base-job.template.html',
   );
 
 
-  $templateCache.put('templates/query-editor.directive.html',
-    "<div>\n" +
-    "  <div class=\"field-group\" ng-class=\"{'single-group': (qe.hasSingleGroup())}\">\n" +
-    "    <div class=\"operator\">\n" +
-    "      <select ng-options=\"operator for operator in qe.operators\"\n" +
-    "              ng-model=\"qe.groupedQueryTree.operator\" class=\"form-control\"\n" +
-    "              ng-disabled=\"qe.groupedQueryTree.nodes.length < 2\"></select>\n" +
-    "    </div>\n" +
-    "\n" +
-    "    <div ng-repeat=\"node in qe.groupedQueryTree.nodes\" class=\"field-group {{node.type}}\"\n" +
-    "         ng-style=\"{background: qe.colorScheme[$index]}\">\n" +
-    "      <div class=\"operator\"\n" +
-    "           ng-style=\"{background: qe.colorScheme[$index]}\">\n" +
-    "        <select ng-options=\"operator for operator in qe.operators\"\n" +
-    "                ng-model=\"node.operator\" ng-disabled=\"node.type === 'field'\"\n" +
-    "                class=\"form-control\"></select>\n" +
-    "      </div>\n" +
-    "      <div class=\"field-query row\" ng-repeat=\"field in node.nodes\">\n" +
-    "        <div class=\"col-sm-4\">\n" +
-    "          <select ng-options=\"field.name as field.label group by field.groupLabel for field in qe.fields | orderBy:['groupIndex','label']\"\n" +
-    "                  ng-model=\"field.field\" class=\"form-control\" ng-change=\"qe.updateFieldType(field)\">\n" +
-    "          </select>\n" +
-    "        </div>\n" +
-    "\n" +
-    "        <div class=\"col-sm-3 field-transformer\">\n" +
-    "          <select\n" +
-    "              ng-options=\"transformer + (field.fieldType === 'date-range' ? '_DATE' : '') | translate for transformer in qe.transformers[field.field]\"\n" +
-    "              ng-model=\"field.transformer\" class=\"form-control\">\n" +
-    "          </select>\n" +
-    "        </div>\n" +
-    "\n" +
-    "        <div class=\"col-sm-4 field-query-term\" ng-switch=\"field.fieldType\">\n" +
-    "          <div ng-switch-when=\"string\">\n" +
-    "            <input type=\"text\" ng-model=\"field.term\"\n" +
-    "                   class=\"form-control\"/>\n" +
-    "          </div>\n" +
-    "\n" +
-    "          <div ng-switch-when=\"tokenized-string\">\n" +
-    "            <input type=\"text\" ng-model=\"field.term\"\n" +
-    "                   class=\"form-control\"/>\n" +
-    "          </div>\n" +
-    "\n" +
-    "          <div ng-switch-when=\"term\">\n" +
-    "            <select ng-options=\"term.label as term.label for term in qe.termOptions[field.field]\"\n" +
-    "                    ng-model=\"field.term\" class=\"form-control\">\n" +
-    "              <option value=\"\">-- maak een keuze --</option>\n" +
-    "            </select>\n" +
-    "          </div>\n" +
-    "\n" +
-    "          <div ng-switch-when=\"choice\">\n" +
-    "            <select ng-options=\"'choice.' + option | translate for option in ::qe.termOptions[field.field]\"\n" +
-    "                    ng-model=\"field.term\" class=\"form-control\">\n" +
-    "              <option value=\"\">-- maak een keuze --</option>\n" +
-    "            </select>\n" +
-    "          </div>\n" +
-    "\n" +
-    "          <div ng-switch-when=\"check\">\n" +
-    "            <label class=\"radio-inline\">\n" +
-    "              <input type=\"radio\" ng-model=\"field.term\" value=\"TRUE\"> ja\n" +
-    "            </label>\n" +
-    "            <label class=\"radio-inline\">\n" +
-    "              <input type=\"radio\"  ng-model=\"field.term\" value=\"FALSE\"> nee\n" +
-    "            </label>\n" +
-    "          </div>\n" +
-    "\n" +
-    "          <div ng-switch-when=\"date-range\">\n" +
-    "            <udb-query-editor-daterangepicker>\n" +
-    "            </udb-query-editor-daterangepicker>\n" +
-    "          </div>\n" +
-    "\n" +
-    "          <div ng-switch-when=\"number\" ng-switch=\"field.transformer\">\n" +
-    "            <div ng-switch-when=\"=\">\n" +
-    "              <input type=\"text\" class=\"form-control\" ng-model=\"field.term\"/>\n" +
-    "            </div>\n" +
-    "\n" +
-    "            <div ng-switch-when=\">\">\n" +
-    "              <input type=\"text\" class=\"form-control\" ng-model=\"field.lowerBound\"/>\n" +
-    "            </div>\n" +
-    "\n" +
-    "            <div ng-switch-when=\"<\">\n" +
-    "              <input type=\"text\" class=\"form-control\" ng-model=\"field.upperBound\"/>\n" +
-    "            </div>\n" +
-    "          </div>\n" +
-    "        </div>\n" +
-    "\n" +
-    "        <div class=\"col-sm-1\">\n" +
-    "          <button ng-click=\"qe.removeField($parent.$index, $index)\" ng-disabled=\"!qe.canRemoveField()\"\n" +
-    "                  class=\"btn btn-danger pull-right\" type=\"button\">\n" +
-    "            <i class=\"fa fa-close\"></i>\n" +
-    "          </button>\n" +
-    "        </div>\n" +
-    "      </div>\n" +
-    "\n" +
-    "      <button type=\"button\" class=\"btn btn-default\"\n" +
-    "              ng-click=\"qe.addField($index)\">\n" +
-    "        veld toevoegen\n" +
-    "      </button>\n" +
-    "    </div>\n" +
-    "    <button type=\"button\" class=\"btn btn-default\"\n" +
-    "            ng-click=\"qe.addGroup()\">\n" +
-    "      {{qe.hasSingleGroup() ? 'geavanceerd zoeken' : 'groep toevoegen'}}\n" +
-    "    </button>\n" +
-    "    <div class=\"btn-group pull-right\">\n" +
-    "      <button type=\"button\" class=\"btn btn-default\"\n" +
-    "              ng-click=\"qe.stopEditing()\">\n" +
-    "        Annuleren\n" +
-    "      </button>\n" +
-    "      <button type=\"button\" class=\"btn btn-success\"\n" +
-    "              ng-click=\"qe.updateQueryString()\">\n" +
-    "        Zoek\n" +
-    "      </button>\n" +
+  $templateCache.put('templates/query-editor-field.directive.html',
+    "<div class=\"row voorwaarde qe-field {{ getOperatorClass() }}\">\n" +
+    "  <div class=\"col-md-3\">\n" +
+    "    <div class=\"form-group\">\n" +
+    "      <select\n" +
+    "          ng-options=\"field.name as field.label group by field.groupLabel for field in qe.fields | orderBy:['groupIndex','label']\"\n" +
+    "          ng-model=\"field.field\" class=\"form-control\" ng-change=\"qe.updateFieldType(field)\">\n" +
+    "      </select>\n" +
     "    </div>\n" +
     "\n" +
     "  </div>\n" +
+    "  <div class=\"col-md-3\">\n" +
+    "    <div class=\"form-group\">\n" +
+    "      <select ng-model=\"field.transformer\" class=\"form-control\"\n" +
+    "              ng-options=\"transformer + (field.fieldType === 'date-range' ? '_DATE' : '') | translate for transformer in qe.transformers[field.field]\">\n" +
+    "      </select>\n" +
+    "    </div>\n" +
+    "  </div>\n" +
     "\n" +
-    "</div>\n" +
+    "  <div class=\"col-md-3 field-query-term\" ng-switch=\"field.fieldType\">\n" +
+    "    <div ng-switch-when=\"string\">\n" +
+    "      <input type=\"text\" ng-model=\"field.term\"\n" +
+    "             class=\"form-control\"/>\n" +
+    "    </div>\n" +
+    "    <div ng-switch-when=\"tokenized-string\">\n" +
+    "      <input type=\"text\" ng-model=\"field.term\"\n" +
+    "             class=\"form-control\"/>\n" +
+    "    </div>\n" +
+    "    <div ng-switch-when=\"term\">\n" +
+    "      <select ng-options=\"term.label as term.label for term in qe.termOptions[field.field]\"\n" +
+    "              ng-model=\"field.term\" class=\"form-control\">\n" +
+    "        <option value=\"\">-- maak een keuze --</option>\n" +
+    "      </select>\n" +
+    "    </div>\n" +
     "\n" +
-    "<p ng-show=\"qe.queryFormError\" ng-bind=\"qe.queryFormError\"></p>\n"
+    "    <div ng-switch-when=\"choice\">\n" +
+    "      <select ng-options=\"'choice.' + option | translate for option in ::qe.termOptions[field.field]\"\n" +
+    "              ng-model=\"field.term\" class=\"form-control\">\n" +
+    "        <option value=\"\">-- maak een keuze --</option>\n" +
+    "      </select>\n" +
+    "    </div>\n" +
+    "\n" +
+    "    <div ng-switch-when=\"check\">\n" +
+    "      <label class=\"radio-inline\">\n" +
+    "        <input type=\"radio\" ng-model=\"field.term\" value=\"TRUE\"> ja\n" +
+    "      </label>\n" +
+    "      <label class=\"radio-inline\">\n" +
+    "        <input type=\"radio\" ng-model=\"field.term\" value=\"FALSE\"> nee\n" +
+    "      </label>\n" +
+    "    </div>\n" +
+    "\n" +
+    "    <div ng-switch-when=\"date-range\">\n" +
+    "      <udb-query-editor-daterangepicker>\n" +
+    "      </udb-query-editor-daterangepicker>\n" +
+    "    </div>\n" +
+    "\n" +
+    "    <div ng-switch-when=\"number\" ng-switch=\"field.transformer\">\n" +
+    "      <div ng-switch-when=\"=\">\n" +
+    "        <input type=\"text\" class=\"form-control\" ng-model=\"field.term\"/>\n" +
+    "      </div>\n" +
+    "\n" +
+    "      <div ng-switch-when=\">\">\n" +
+    "        <input type=\"text\" class=\"form-control\" ng-model=\"field.lowerBound\"/>\n" +
+    "      </div>\n" +
+    "\n" +
+    "      <div ng-switch-when=\"<\">\n" +
+    "        <input type=\"text\" class=\"form-control\" ng-model=\"field.upperBound\"/>\n" +
+    "      </div>\n" +
+    "    </div>\n" +
+    "  </div>\n" +
+    "\n" +
+    "  <div class=\"col-md-2 col-xs-8\">\n" +
+    "    <div class=\"form-group\">\n" +
+    "      <div class=\"btn-group btn-group-justified\" role=\"group\">\n" +
+    "        <a type=\"button\" class=\"btn btn-default\" ng-click=\"addSubGroup($index)\"\n" +
+    "           ng-disabled=\"isSubGroup() && !$last\">\n" +
+    "          AND\n" +
+    "        </a>\n" +
+    "        <a type=\"button\" class=\"btn btn-default\" ng-click=\"addField($index)\">\n" +
+    "          OR\n" +
+    "        </a>\n" +
+    "      </div>\n" +
+    "    </div>\n" +
+    "  </div>\n" +
+    "\n" +
+    "  <div class=\"col-md-1 col-xs-4\">\n" +
+    "    <button type=\"button\" class=\"close\" aria-label=\"Close\" ng-click=\"removeField($index)\"\n" +
+    "            ng-show=\"qe.canRemoveField()\">\n" +
+    "      <span aria-hidden=\"true\">×</span>\n" +
+    "    </button>\n" +
+    "  </div>\n" +
+    "</div>"
+  );
+
+
+  $templateCache.put('templates/query-editor.directive.html',
+    "<div>\n" +
+    "  <div class=\"panel panel-default\" ng-repeat=\"rootGroup in qe.groupedQueryTree.nodes\">\n" +
+    "\n" +
+    "    <div class=\"panel-heading\">\n" +
+    "      <div class=\"row\">\n" +
+    "        <div class=\"col-sm-3\">\n" +
+    "          <h3 class=\"panel-title\">Groep <span ng-bind=\"$index + 1\"></span></h3>\n" +
+    "        </div>\n" +
+    "        <div class=\"col-sm-7\">\n" +
+    "          <div class=\"btn-group control-in-uitsluiten\" role=\"group\" aria-label=\"...\">\n" +
+    "            <button type=\"button\" class=\"btn btn-default btn-sm\" ng-click=\"qe.toggleExcludeGroup(rootGroup)\">\n" +
+    "              <span ng-hide=\"rootGroup.excluded\" class=\"fa fa-check-circle\"></span>\n" +
+    "              Insluiten\n" +
+    "            </button>\n" +
+    "            <button type=\"button\" class=\"btn btn-default btn-sm\" ng-click=\"qe.toggleExcludeGroup(rootGroup)\">\n" +
+    "              <span ng-show=\"rootGroup.excluded\" class=\"fa fa-check-circle\"></span>\n" +
+    "              Uitsluiten\n" +
+    "            </button>\n" +
+    "          </div>\n" +
+    "        </div>\n" +
+    "        <div class=\"col-sm-2\">\n" +
+    "          <button type=\"button\" class=\"close\" aria-label=\"Close\"\n" +
+    "              ng-show=\"qe.canRemoveGroup()\" ng-click=\"qe.removeGroup($index)\">\n" +
+    "            <span aria-hidden=\"true\">×</span>\n" +
+    "          </button>\n" +
+    "        </div>\n" +
+    "      </div>\n" +
+    "    </div>\n" +
+    "\n" +
+    "    <div class=\"panel-body\">\n" +
+    "      <div ng-repeat=\"field in rootGroup.nodes\" ng-switch=\"field.type\">\n" +
+    "        <div ng-switch-default>\n" +
+    "          <udb-query-editor-field></udb-query-editor-field>\n" +
+    "        </div>\n" +
+    "\n" +
+    "        <div ng-switch-when=\"group\">\n" +
+    "          <udb-query-editor-field ng-repeat=\"field in field.nodes\"></udb-query-editor-field>\n" +
+    "        </div>\n" +
+    "      </div>\n" +
+    "    </div>\n" +
+    "  </div>\n" +
+    "\n" +
+    "  <button type=\"button\" class=\"btn btn-default\" ng-click=\"qe.addGroup()\">\n" +
+    "    Groep toevoegen\n" +
+    "  </button>\n" +
+    "  <div class=\"pull-right\">\n" +
+    "    <a type=\"button\" class=\"btn btn-link\" ng-click=\"qe.stopEditing()\">\n" +
+    "      Annuleren\n" +
+    "    </a>\n" +
+    "    <button type=\"button\" class=\"btn btn-primary\" ng-click=\"qe.updateQueryString()\">\n" +
+    "      Zoeken\n" +
+    "    </button>\n" +
+    "  </div>\n" +
+    "</div>"
   );
 
 

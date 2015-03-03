@@ -1,117 +1,54 @@
 <div>
-  <div class="field-group" ng-class="{'single-group': (qe.hasSingleGroup())}">
-    <div class="operator">
-      <select ng-options="operator for operator in qe.operators"
-              ng-model="qe.groupedQueryTree.operator" class="form-control"
-              ng-disabled="qe.groupedQueryTree.nodes.length < 2"></select>
-    </div>
+  <div class="panel panel-default" ng-repeat="rootGroup in qe.groupedQueryTree.nodes">
 
-    <div ng-repeat="node in qe.groupedQueryTree.nodes" class="field-group {{node.type}}"
-         ng-style="{background: qe.colorScheme[$index]}">
-      <div class="operator"
-           ng-style="{background: qe.colorScheme[$index]}">
-        <select ng-options="operator for operator in qe.operators"
-                ng-model="node.operator" ng-disabled="node.type === 'field'"
-                class="form-control"></select>
-      </div>
-      <div class="field-query row" ng-repeat="field in node.nodes">
-        <div class="col-sm-4">
-          <select ng-options="field.name as field.label group by field.groupLabel for field in qe.fields | orderBy:['groupIndex','label']"
-                  ng-model="field.field" class="form-control" ng-change="qe.updateFieldType(field)">
-          </select>
+    <div class="panel-heading">
+      <div class="row">
+        <div class="col-sm-3">
+          <h3 class="panel-title">Groep <span ng-bind="$index + 1"></span></h3>
         </div>
-
-        <div class="col-sm-3 field-transformer">
-          <select
-              ng-options="transformer + (field.fieldType === 'date-range' ? '_DATE' : '') | translate for transformer in qe.transformers[field.field]"
-              ng-model="field.transformer" class="form-control">
-          </select>
-        </div>
-
-        <div class="col-sm-4 field-query-term" ng-switch="field.fieldType">
-          <div ng-switch-when="string">
-            <input type="text" ng-model="field.term"
-                   class="form-control"/>
-          </div>
-
-          <div ng-switch-when="tokenized-string">
-            <input type="text" ng-model="field.term"
-                   class="form-control"/>
-          </div>
-
-          <div ng-switch-when="term">
-            <select ng-options="term.label as term.label for term in qe.termOptions[field.field]"
-                    ng-model="field.term" class="form-control">
-              <option value="">-- maak een keuze --</option>
-            </select>
-          </div>
-
-          <div ng-switch-when="choice">
-            <select ng-options="'choice.' + option | translate for option in ::qe.termOptions[field.field]"
-                    ng-model="field.term" class="form-control">
-              <option value="">-- maak een keuze --</option>
-            </select>
-          </div>
-
-          <div ng-switch-when="check">
-            <label class="radio-inline">
-              <input type="radio" ng-model="field.term" value="TRUE"> ja
-            </label>
-            <label class="radio-inline">
-              <input type="radio"  ng-model="field.term" value="FALSE"> nee
-            </label>
-          </div>
-
-          <div ng-switch-when="date-range">
-            <udb-query-editor-daterangepicker>
-            </udb-query-editor-daterangepicker>
-          </div>
-
-          <div ng-switch-when="number" ng-switch="field.transformer">
-            <div ng-switch-when="=">
-              <input type="text" class="form-control" ng-model="field.term"/>
-            </div>
-
-            <div ng-switch-when=">">
-              <input type="text" class="form-control" ng-model="field.lowerBound"/>
-            </div>
-
-            <div ng-switch-when="<">
-              <input type="text" class="form-control" ng-model="field.upperBound"/>
-            </div>
+        <div class="col-sm-7">
+          <div class="btn-group control-in-uitsluiten" role="group" aria-label="...">
+            <button type="button" class="btn btn-default btn-sm" ng-click="qe.toggleExcludeGroup(rootGroup)">
+              <span ng-hide="rootGroup.excluded" class="fa fa-check-circle"></span>
+              Insluiten
+            </button>
+            <button type="button" class="btn btn-default btn-sm" ng-click="qe.toggleExcludeGroup(rootGroup)">
+              <span ng-show="rootGroup.excluded" class="fa fa-check-circle"></span>
+              Uitsluiten
+            </button>
           </div>
         </div>
-
-        <div class="col-sm-1">
-          <button ng-click="qe.removeField($parent.$index, $index)" ng-disabled="!qe.canRemoveField()"
-                  class="btn btn-danger pull-right" type="button">
-            <i class="fa fa-close"></i>
+        <div class="col-sm-2">
+          <button type="button" class="close" aria-label="Close"
+              ng-show="qe.canRemoveGroup()" ng-click="qe.removeGroup($index)">
+            <span aria-hidden="true">×</span>
           </button>
         </div>
       </div>
-
-      <button type="button" class="btn btn-default"
-              ng-click="qe.addField($index)">
-        veld toevoegen
-      </button>
-    </div>
-    <button type="button" class="btn btn-default"
-            ng-click="qe.addGroup()">
-      {{qe.hasSingleGroup() ? 'geavanceerd zoeken' : 'groep toevoegen'}}
-    </button>
-    <div class="btn-group pull-right">
-      <button type="button" class="btn btn-default"
-              ng-click="qe.stopEditing()">
-        Annuleren
-      </button>
-      <button type="button" class="btn btn-success"
-              ng-click="qe.updateQueryString()">
-        Zoek
-      </button>
     </div>
 
+    <div class="panel-body">
+      <div ng-repeat="field in rootGroup.nodes" ng-switch="field.type">
+        <div ng-switch-default>
+          <udb-query-editor-field></udb-query-editor-field>
+        </div>
+
+        <div ng-switch-when="group">
+          <udb-query-editor-field ng-repeat="field in field.nodes"></udb-query-editor-field>
+        </div>
+      </div>
+    </div>
   </div>
 
+  <button type="button" class="btn btn-default" ng-click="qe.addGroup()">
+    Groep toevoegen
+  </button>
+  <div class="pull-right">
+    <a type="button" class="btn btn-link" ng-click="qe.stopEditing()">
+      Annuleren
+    </a>
+    <button type="button" class="btn btn-primary" ng-click="qe.updateQueryString()">
+      Zoeken
+    </button>
+  </div>
 </div>
-
-<p ng-show="qe.queryFormError" ng-bind="qe.queryFormError"></p>

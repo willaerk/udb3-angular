@@ -7,70 +7,74 @@
 <div class="modal-body">
 
   <section ng-hide="organizersFound">
-    <div class="form-group">
-      <label>Naam</label>
-      <input type="text" class="form-control" ng-model="newOrganizer.name">
-      <p class="help-block">De officiële publieke naam van de organisatie.</p>
-    </div>
-
-    <div class="row">
-
-      <div class="col-xs-9">
-        <div class="form-group">
-          <label>Straat</label>
-          <input type="text" class="form-control" ng-model="newOrganizer.street">
-        </div>
-      </div>
-      <div class="col-xs-3">
-        <div class="form-group">
-          <label>Nummer</label>
-          <input type="text" class="form-control" ng-model="newOrganizer.number">
-        </div>
-      </div>
-      <div class="col-xs-9">
-        <div class="form-group">
-          <label>Gemeente</label>
-          <input type="text" class="form-control" ng-model="newOrganizer.city">
-        </div>
-      </div>
-      <div class="col-xs-3">
-        <div class="form-group">
-          <label>Postcode</label>
-          <input type="text" class="form-control" ng-model="newOrganizer.postalCode">
-        </div>
+    <form name="organizerForm" class="css-form" novalidate>
+      <div class="form-group">
+        <label>Naam</label>
+        <input type="text" class="form-control" ng-model="newOrganizer.name" required>
+        <p class="help-block">De officiële publieke naam van de organisatie.</p>
       </div>
 
-    </div>
+      <div class="row">
 
-    <h2>Contact</h2>
+        <div class="col-xs-9">
+          <div class="form-group">
+            <label>Straat</label>
+            <input type="text" class="form-control" ng-model="newOrganizer.street" required>
+          </div>
+        </div>
+        <div class="col-xs-3">
+          <div class="form-group">
+            <label>Nummer</label>
+            <input type="text" class="form-control" ng-model="newOrganizer.number" required>
+          </div>
+        </div>
+        <div class="col-xs-12" ng-show="d">
 
-    <div ng-show="newOrganizer.contact.length === 0">
-      <ul class="list-unstyled">
-        <li><a ng-click="addOrganizerContactInfo('website')">Website toevoegen</a></li>
-        <li><a ng-click="addOrganizerContactInfo('phone')">Telefoonnummer toevoegen</a></li>
-        <li><a ng-click="addOrganizerContactInfo('email')">E-mailadres toevoegen</a></li>
-      </ul>
-    </div>
+        </div>
+        <div class="col-xs-9">
+          <div class="form-group">
+            <label>Gemeente</label>
+            <input type="text" class="form-control" ng-model="newOrganizer.city" required>
+          </div>
+        </div>
+        <div class="col-xs-3">
+          <div class="form-group">
+            <label>Postcode</label>
+            <input type="text" class="form-control" ng-model="newOrganizer.postalCode" required>
+          </div>
+        </div>
 
-    <table class="table" ng-show="newOrganizer.contact.length">
-      <tr ng-repeat="(key, info) in newOrganizer.contact">
-        <td>
-          <select class="form-control" ng-model="info.type">
-            <option value="website">Website</option>
-            <option value="phone">Telefoonnummer</option>
-            <option value="email">E-mailadres</option>
-          </select>
-        </td>
-        <td>
-          <input type="text" class="form-control" ng-model="info.value"/>
-        </td>
-        <td>
-          <button type="button" class="close" aria-label="Close" ng-click="deleteOrganizerContactInfo(key)"><span aria-hidden="true">&times;</span></button>
-        </td>
-      </tr>
-      <tr><td colspan="3"><a ng-click="addOrganizerContactInfo('')">Meer contactgegevens toevoegen</a></td></tr>
-    </table>
+      </div>
 
+      <h2>Contact</h2>
+
+      <div ng-show="newOrganizer.contact.length === 0">
+        <ul class="list-unstyled">
+          <li><a ng-click="addOrganizerContactInfo('website')">Website toevoegen</a></li>
+          <li><a ng-click="addOrganizerContactInfo('phone')">Telefoonnummer toevoegen</a></li>
+          <li><a ng-click="addOrganizerContactInfo('email')">E-mailadres toevoegen</a></li>
+        </ul>
+      </div>
+
+      <table class="table" ng-show="newOrganizer.contact.length">
+        <tr ng-repeat="(key, info) in newOrganizer.contact">
+          <td>
+            <select class="form-control" ng-model="info.type">
+              <option value="website">Website</option>
+              <option value="phone">Telefoonnummer</option>
+              <option value="email">E-mailadres</option>
+            </select>
+          </td>
+          <td>
+            <input type="text" class="form-control" ng-model="info.value"/>
+          </td>
+          <td>
+            <button type="button" class="close" aria-label="Close" ng-click="deleteOrganizerContactInfo(key)"><span aria-hidden="true">&times;</span></button>
+          </td>
+        </tr>
+        <tr><td colspan="3"><a ng-click="addOrganizerContactInfo('')">Meer contactgegevens toevoegen</a></td></tr>
+      </table>
+    </form>
   </section>
 
   <section ng-show="organizersFound">

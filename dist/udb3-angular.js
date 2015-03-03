@@ -3343,7 +3343,10 @@ function EventCrudJobFactory(BaseJob) {
         return 'Locatie toevoegen: "' + this.item.name.nl + '".';
 
       case 'updateTypicalAgeRange':
-        return 'Leeftijd aanpassend: "' + this.item.name.nl + '".';
+        return 'Leeftijd aanpassen: "' + this.item.name.nl + '".';
+
+      case 'updateOrganizer':
+        return 'Organisator aanpassen: "' + this.item.name.nl + '".';
 
       case 'createOrganizer':
         return 'Organisatie toevoegen: "' + this.item.name + '".';
@@ -3434,6 +3437,25 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
 
     jobPromise.success(function (jobData) {
       var job = new EventCrudJob(jobData.commandId, item, 'updateTypicalAgeRange');
+      jobLogger.addJob(job);
+    });
+
+    return jobPromise;
+
+  };
+
+  /**
+   * Update the connected organizer and it to the job logger.
+   *
+   * @param {EventFormData} item
+   * @returns {EventCrud.updateOrganizer.jobPromise}
+   */
+  this.updateOrganizer = function(item) {
+
+    var jobPromise = udbApi.updateProperty(item.id, item.getType(), 'organizer', item.organizer.id);
+
+    jobPromise.success(function (jobData) {
+      var job = new EventCrudJob(jobData.commandId, item, 'updateOrganizer');
       jobLogger.addJob(job);
     });
 
@@ -5521,7 +5543,6 @@ function EventFormStep5Directive() {
     $scope.deleteOrganiser = deleteOrganiser;
     $scope.openOrganizerModal = openOrganizerModal;
 
-
     // Check if we have a minAge set on load.
     if (EventFormData.minAge) {
       $scope.ageCssClass = 'state-complete';
@@ -5647,11 +5668,8 @@ function EventFormStep5Directive() {
      * Select listener on the typeahead.
      */
     function selectOrganizer() {
-
       EventFormData.organizer = $scope.organizer;
-
-      $scope.organizerCssClass = 'state-complete';
-      $scope.organizer = '';
+      saveOrganizer();
     }
 
     /**
@@ -5674,12 +5692,22 @@ function EventFormStep5Directive() {
 
         modalInstance.result.then(function (organizer) {
           EventFormData.organizer = organizer;
-          $scope.organizerCssClass = 'state-complete';
+          saveOrganizer();
           $scope.organizer = '';
-          console.log(organizer);
-          console.log(EventFormData.organizer);
         });
 
+    }
+
+    /**
+     * Save the selected organizer in the backend.
+     */
+    function saveOrganizer() {
+      $scope.organizer = '';
+      var promise = eventCrud.updateOrganizer(EventFormData);
+      promise.then(function() {
+        updateLastUpdated();
+        $scope.organizerCssClass = 'state-complete';
+      });
     }
 
   }
@@ -8037,70 +8065,74 @@ $templateCache.put('templates/time-autocomplete.html',
     "<div class=\"modal-body\">\n" +
     "\n" +
     "  <section ng-hide=\"organizersFound\">\n" +
-    "    <div class=\"form-group\">\n" +
-    "      <label>Naam</label>\n" +
-    "      <input type=\"text\" class=\"form-control\" ng-model=\"newOrganizer.name\">\n" +
-    "      <p class=\"help-block\">De officiële publieke naam van de organisatie.</p>\n" +
-    "    </div>\n" +
-    "\n" +
-    "    <div class=\"row\">\n" +
-    "\n" +
-    "      <div class=\"col-xs-9\">\n" +
-    "        <div class=\"form-group\">\n" +
-    "          <label>Straat</label>\n" +
-    "          <input type=\"text\" class=\"form-control\" ng-model=\"newOrganizer.street\">\n" +
-    "        </div>\n" +
-    "      </div>\n" +
-    "      <div class=\"col-xs-3\">\n" +
-    "        <div class=\"form-group\">\n" +
-    "          <label>Nummer</label>\n" +
-    "          <input type=\"text\" class=\"form-control\" ng-model=\"newOrganizer.number\">\n" +
-    "        </div>\n" +
-    "      </div>\n" +
-    "      <div class=\"col-xs-9\">\n" +
-    "        <div class=\"form-group\">\n" +
-    "          <label>Gemeente</label>\n" +
-    "          <input type=\"text\" class=\"form-control\" ng-model=\"newOrganizer.city\">\n" +
-    "        </div>\n" +
-    "      </div>\n" +
-    "      <div class=\"col-xs-3\">\n" +
-    "        <div class=\"form-group\">\n" +
-    "          <label>Postcode</label>\n" +
-    "          <input type=\"text\" class=\"form-control\" ng-model=\"newOrganizer.postalCode\">\n" +
-    "        </div>\n" +
+    "    <form name=\"organizerForm\" class=\"css-form\" novalidate>\n" +
+    "      <div class=\"form-group\">\n" +
+    "        <label>Naam</label>\n" +
+    "        <input type=\"text\" class=\"form-control\" ng-model=\"newOrganizer.name\" required>\n" +
+    "        <p class=\"help-block\">De officiële publieke naam van de organisatie.</p>\n" +
     "      </div>\n" +
     "\n" +
-    "    </div>\n" +
+    "      <div class=\"row\">\n" +
     "\n" +
-    "    <h2>Contact</h2>\n" +
+    "        <div class=\"col-xs-9\">\n" +
+    "          <div class=\"form-group\">\n" +
+    "            <label>Straat</label>\n" +
+    "            <input type=\"text\" class=\"form-control\" ng-model=\"newOrganizer.street\" required>\n" +
+    "          </div>\n" +
+    "        </div>\n" +
+    "        <div class=\"col-xs-3\">\n" +
+    "          <div class=\"form-group\">\n" +
+    "            <label>Nummer</label>\n" +
+    "            <input type=\"text\" class=\"form-control\" ng-model=\"newOrganizer.number\" required>\n" +
+    "          </div>\n" +
+    "        </div>\n" +
+    "        <div class=\"col-xs-12\" ng-show=\"d\">\n" +
     "\n" +
-    "    <div ng-show=\"newOrganizer.contact.length === 0\">\n" +
-    "      <ul class=\"list-unstyled\">\n" +
-    "        <li><a ng-click=\"addOrganizerContactInfo('website')\">Website toevoegen</a></li>\n" +
-    "        <li><a ng-click=\"addOrganizerContactInfo('phone')\">Telefoonnummer toevoegen</a></li>\n" +
-    "        <li><a ng-click=\"addOrganizerContactInfo('email')\">E-mailadres toevoegen</a></li>\n" +
-    "      </ul>\n" +
-    "    </div>\n" +
+    "        </div>\n" +
+    "        <div class=\"col-xs-9\">\n" +
+    "          <div class=\"form-group\">\n" +
+    "            <label>Gemeente</label>\n" +
+    "            <input type=\"text\" class=\"form-control\" ng-model=\"newOrganizer.city\" required>\n" +
+    "          </div>\n" +
+    "        </div>\n" +
+    "        <div class=\"col-xs-3\">\n" +
+    "          <div class=\"form-group\">\n" +
+    "            <label>Postcode</label>\n" +
+    "            <input type=\"text\" class=\"form-control\" ng-model=\"newOrganizer.postalCode\" required>\n" +
+    "          </div>\n" +
+    "        </div>\n" +
     "\n" +
-    "    <table class=\"table\" ng-show=\"newOrganizer.contact.length\">\n" +
-    "      <tr ng-repeat=\"(key, info) in newOrganizer.contact\">\n" +
-    "        <td>\n" +
-    "          <select class=\"form-control\" ng-model=\"info.type\">\n" +
-    "            <option value=\"website\">Website</option>\n" +
-    "            <option value=\"phone\">Telefoonnummer</option>\n" +
-    "            <option value=\"email\">E-mailadres</option>\n" +
-    "          </select>\n" +
-    "        </td>\n" +
-    "        <td>\n" +
-    "          <input type=\"text\" class=\"form-control\" ng-model=\"info.value\"/>\n" +
-    "        </td>\n" +
-    "        <td>\n" +
-    "          <button type=\"button\" class=\"close\" aria-label=\"Close\" ng-click=\"deleteOrganizerContactInfo(key)\"><span aria-hidden=\"true\">&times;</span></button>\n" +
-    "        </td>\n" +
-    "      </tr>\n" +
-    "      <tr><td colspan=\"3\"><a ng-click=\"addOrganizerContactInfo('')\">Meer contactgegevens toevoegen</a></td></tr>\n" +
-    "    </table>\n" +
+    "      </div>\n" +
     "\n" +
+    "      <h2>Contact</h2>\n" +
+    "\n" +
+    "      <div ng-show=\"newOrganizer.contact.length === 0\">\n" +
+    "        <ul class=\"list-unstyled\">\n" +
+    "          <li><a ng-click=\"addOrganizerContactInfo('website')\">Website toevoegen</a></li>\n" +
+    "          <li><a ng-click=\"addOrganizerContactInfo('phone')\">Telefoonnummer toevoegen</a></li>\n" +
+    "          <li><a ng-click=\"addOrganizerContactInfo('email')\">E-mailadres toevoegen</a></li>\n" +
+    "        </ul>\n" +
+    "      </div>\n" +
+    "\n" +
+    "      <table class=\"table\" ng-show=\"newOrganizer.contact.length\">\n" +
+    "        <tr ng-repeat=\"(key, info) in newOrganizer.contact\">\n" +
+    "          <td>\n" +
+    "            <select class=\"form-control\" ng-model=\"info.type\">\n" +
+    "              <option value=\"website\">Website</option>\n" +
+    "              <option value=\"phone\">Telefoonnummer</option>\n" +
+    "              <option value=\"email\">E-mailadres</option>\n" +
+    "            </select>\n" +
+    "          </td>\n" +
+    "          <td>\n" +
+    "            <input type=\"text\" class=\"form-control\" ng-model=\"info.value\"/>\n" +
+    "          </td>\n" +
+    "          <td>\n" +
+    "            <button type=\"button\" class=\"close\" aria-label=\"Close\" ng-click=\"deleteOrganizerContactInfo(key)\"><span aria-hidden=\"true\">&times;</span></button>\n" +
+    "          </td>\n" +
+    "        </tr>\n" +
+    "        <tr><td colspan=\"3\"><a ng-click=\"addOrganizerContactInfo('')\">Meer contactgegevens toevoegen</a></td></tr>\n" +
+    "      </table>\n" +
+    "    </form>\n" +
     "  </section>\n" +
     "\n" +
     "  <section ng-show=\"organizersFound\">\n" +

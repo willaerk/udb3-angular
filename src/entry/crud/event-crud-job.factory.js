@@ -40,7 +40,10 @@ function EventCrudJobFactory(BaseJob) {
         return 'Locatie toevoegen: "' + this.item.name.nl + '".';
 
       case 'updateTypicalAgeRange':
-        return 'Leeftijd aanpassend: "' + this.item.name.nl + '".';
+        return 'Leeftijd aanpassen: "' + this.item.name.nl + '".';
+
+      case 'updateOrganizer':
+        return 'Organisator aanpassen: "' + this.item.name.nl + '".';
 
       case 'createOrganizer':
         return 'Organisatie toevoegen: "' + this.item.name + '".';

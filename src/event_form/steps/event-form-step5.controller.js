@@ -41,7 +41,6 @@
     $scope.deleteOrganiser = deleteOrganiser;
     $scope.openOrganizerModal = openOrganizerModal;
 
-
     // Check if we have a minAge set on load.
     if (EventFormData.minAge) {
       $scope.ageCssClass = 'state-complete';
@@ -167,11 +166,8 @@
      * Select listener on the typeahead.
      */
     function selectOrganizer() {
-
       EventFormData.organizer = $scope.organizer;
-
-      $scope.organizerCssClass = 'state-complete';
-      $scope.organizer = '';
+      saveOrganizer();
     }
 
     /**
@@ -194,12 +190,22 @@
 
         modalInstance.result.then(function (organizer) {
           EventFormData.organizer = organizer;
-          $scope.organizerCssClass = 'state-complete';
+          saveOrganizer();
           $scope.organizer = '';
-          console.log(organizer);
-          console.log(EventFormData.organizer);
         });
 
+    }
+
+    /**
+     * Save the selected organizer in the backend.
+     */
+    function saveOrganizer() {
+      $scope.organizer = '';
+      var promise = eventCrud.updateOrganizer(EventFormData);
+      promise.then(function() {
+        updateLastUpdated();
+        $scope.organizerCssClass = 'state-complete';
+      });
     }
 
   }

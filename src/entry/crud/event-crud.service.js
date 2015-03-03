@@ -84,4 +84,23 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
 
   };
 
+  /**
+   * Update the connected organizer and it to the job logger.
+   *
+   * @param {EventFormData} item
+   * @returns {EventCrud.updateOrganizer.jobPromise}
+   */
+  this.updateOrganizer = function(item) {
+
+    var jobPromise = udbApi.updateProperty(item.id, item.getType(), 'organizer', item.organizer.id);
+
+    jobPromise.success(function (jobData) {
+      var job = new EventCrudJob(jobData.commandId, item, 'updateOrganizer');
+      jobLogger.addJob(job);
+    });
+
+    return jobPromise;
+
+  };
+
 }

@@ -22,7 +22,7 @@
     $scope.validateEvent = validateEvent;
     $scope.saveEvent = saveEvent;
     $scope.lastUpdated = null;
-    
+
     $scope.duplicatesSearched = false;
     $scope.udb3DashboardUrl = appConfig.udb3DashboardUrl;
     $scope.activeTitle = '';
@@ -52,7 +52,7 @@
       //http://search-prod.lodgon.com/search/rest/search?q=*&fq=type:event&fq=zipcode:9000
       var params = {};
       var location = {
-        '@type': 'Event', // 'Place',
+        '@type': 'Place', // 'Place',
         'name': 'ABC van Museum',
         'address': {
             'addressCountry': 'BE',
@@ -81,8 +81,8 @@
       $scope.duplicatesSearched = true;
 
       promise.then(function (data) {
-        
-        // Set the results for the duplicates modal, 
+
+        // Set the results for the duplicates modal,
         if (data.totalItems > 0) {
           $scope.resultViewer.setResults(data);
         }
@@ -90,7 +90,7 @@
         else {
           saveEvent();
         }
-        
+
       });
       //  saveEvent();
     }
@@ -99,14 +99,14 @@
      * Save Event for the first time.
      */
     function saveEvent() {
-      
+
       var eventCrudPromise = null;
-      
+
       // EventCrud solves the Event or place.
       eventCrudPromise = eventCrud.createEvent($scope.eventFormData);
-      
+
       $scope.lastUpdated = moment(Date.now()).format('DD/MM/YYYY HH:mm:s');
-       
+
     }
 
     /**
@@ -153,7 +153,7 @@
       }
 
     }
-    
+
   }
 
 })();

@@ -3451,7 +3451,7 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
    * @returns {EventCrud.updateOrganizer.jobPromise}
    */
   this.updateOrganizer = function(item) {
-
+    
     var jobPromise = udbApi.updateProperty(item.id, item.getType(), 'organizer', item.organizer.id);
 
     jobPromise.success(function (jobData) {
@@ -5364,7 +5364,7 @@ function EventFormStep5Directive() {
     $scope.validateEvent = validateEvent;
     $scope.saveEvent = saveEvent;
     $scope.lastUpdated = null;
-    
+
     $scope.duplicatesSearched = false;
     $scope.udb3DashboardUrl = appConfig.udb3DashboardUrl;
     $scope.activeTitle = '';
@@ -5393,22 +5393,35 @@ function EventFormStep5Directive() {
       // location_contactinfo_zipcode
       //http://search-prod.lodgon.com/search/rest/search?q=*&fq=type:event&fq=zipcode:9000
       var params = {};
-      var location = {
-        '@type': 'Event', // 'Place',
-        'name': 'ABC van Museum',
-        'address': {
-            'addressCountry': 'BE',
-            'addressLocality': 'Gent',
-            'postalCode': '9000',
-            'streetAddress': 'Koestraat 28'
-        }
-      };
+      var location = {};
 
-      if ($scope.isEvent) {
+      if (EventFormData.isEvent) {
+
+        location = {
+          'id' : '5b4198fc-955a-448d-932b-eccbd20e95ea',
+          'name': 'ABC van Museum',
+          'address': {
+              'addressCountry': 'BE',
+              'addressLocality': 'Gent',
+              'postalCode': '9000',
+              'streetAddress': 'Koestraat 28'
+          }
+        };
+
         EventFormData.setLocation(location);
         params = { locationCdbId : '81E9C76C-BA61-0F30-45F5CD2279ACEBFC' };
       }
       else {
+
+        location = {
+          'address': {
+              'addressCountry': 'BE',
+              'addressLocality': 'Gent',
+              'postalCode': '9000',
+              'streetAddress': 'Koestraat 28'
+          }
+        };
+
         EventFormData.setLocation(location);
         params = { locationZip : '9000' };
       }
@@ -5423,8 +5436,8 @@ function EventFormStep5Directive() {
       $scope.duplicatesSearched = true;
 
       promise.then(function (data) {
-        
-        // Set the results for the duplicates modal, 
+
+        // Set the results for the duplicates modal,
         if (data.totalItems > 0) {
           $scope.resultViewer.setResults(data);
         }
@@ -5432,7 +5445,7 @@ function EventFormStep5Directive() {
         else {
           saveEvent();
         }
-        
+
       });
       //  saveEvent();
     }
@@ -5441,14 +5454,14 @@ function EventFormStep5Directive() {
      * Save Event for the first time.
      */
     function saveEvent() {
-      
+
       var eventCrudPromise = null;
-      
+
       // EventCrud solves the Event or place.
       eventCrudPromise = eventCrud.createEvent($scope.eventFormData);
-      
+
       $scope.lastUpdated = moment(Date.now()).format('DD/MM/YYYY HH:mm:s');
-       
+
     }
 
     /**
@@ -5495,7 +5508,7 @@ function EventFormStep5Directive() {
       }
 
     }
-    
+
   }
   EventFormStep4Controller.$inject = ["$scope", "EventFormData", "udbApi", "appConfig", "SearchResultViewer", "eventCrud", "$modal"];
 

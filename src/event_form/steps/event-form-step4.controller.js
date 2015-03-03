@@ -51,22 +51,35 @@
       // location_contactinfo_zipcode
       //http://search-prod.lodgon.com/search/rest/search?q=*&fq=type:event&fq=zipcode:9000
       var params = {};
-      var location = {
-        '@type': 'Place', // 'Place',
-        'name': 'ABC van Museum',
-        'address': {
-            'addressCountry': 'BE',
-            'addressLocality': 'Gent',
-            'postalCode': '9000',
-            'streetAddress': 'Koestraat 28'
-        }
-      };
+      var location = {};
 
-      if ($scope.isEvent) {
+      if (EventFormData.isEvent) {
+
+        location = {
+          'id' : '5b4198fc-955a-448d-932b-eccbd20e95ea',
+          'name': 'ABC van Museum',
+          'address': {
+              'addressCountry': 'BE',
+              'addressLocality': 'Gent',
+              'postalCode': '9000',
+              'streetAddress': 'Koestraat 28'
+          }
+        };
+
         EventFormData.setLocation(location);
         params = { locationCdbId : '81E9C76C-BA61-0F30-45F5CD2279ACEBFC' };
       }
       else {
+
+        location = {
+          'address': {
+              'addressCountry': 'BE',
+              'addressLocality': 'Gent',
+              'postalCode': '9000',
+              'streetAddress': 'Koestraat 28'
+          }
+        };
+
         EventFormData.setLocation(location);
         params = { locationZip : '9000' };
       }

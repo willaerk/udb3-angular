@@ -91,7 +91,7 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
    * @returns {EventCrud.updateOrganizer.jobPromise}
    */
   this.updateOrganizer = function(item) {
-
+    
     var jobPromise = udbApi.updateProperty(item.id, item.getType(), 'organizer', item.organizer.id);
 
     jobPromise.success(function (jobData) {

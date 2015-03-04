@@ -24,6 +24,15 @@ function EventFormDataFactory(UdbEvent, UdbPlace) {
     // Properties that will be copied to UdbEvent / UdbPlace.
     name : {},
     description : {},
+    location : {
+      'name': '',
+      'address': {
+        'addressCountry': '',
+        'addressLocality': '',
+        'postalCode': '',
+        'streetAddress': ''
+      }
+    },
     place : {},
     type : {},
     theme : {},
@@ -149,6 +158,21 @@ function EventFormDataFactory(UdbEvent, UdbPlace) {
      */
     getOpeningHours: function() {
       return this.openingHours;
+    },
+
+    /**
+     * Reset the location.
+     */
+    resetLocation: function(location) {
+      this.location = {
+        'name': '',
+        'address': {
+          'addressCountry': '',
+          'addressLocality': '',
+          'postalCode': '',
+          'streetAddress': ''
+        }
+      };
     },
 
     /**

@@ -20,6 +20,7 @@
     $scope.loading = false;
     $scope.showValidation = false;
     $scope.organizers = [];
+    
 
     $scope.newOrganizer = {
       name : '',

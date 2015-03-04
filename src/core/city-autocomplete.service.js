@@ -21,7 +21,7 @@ function CityAutocomplete($q, $http, appConfig) {
 
     var cities = $q.defer();
 
-    var request = $http.get(appConfig.baseUrl + '/autocomplete/culturefeed/city-suggestion/' + value);
+    var request = $http.get(appConfig.baseApiUrl + 'city/suggest/' + value);
 
     request.success(function(jsonData) {
       cities.resolve(jsonData);
@@ -39,11 +39,11 @@ function CityAutocomplete($q, $http, appConfig) {
    * @param {type} value
    * @returns {$q@call;defer.promise}
    */
-  this.getLocationsForCity = function(value) {
+  this.getLocationsForCity = function(value, postal) {
 
     var locations = $q.defer();
 
-    var request = $http.get(appConfig.baseUrl + '/autocomplete/culturefeed/city-locations-suggestion/' + value);
+    var request = $http.get(appConfig.baseApiUrl + 'location/suggest/' + value + '/' + postal);
 
     request.success(function(jsonData) {
       locations.resolve(jsonData);

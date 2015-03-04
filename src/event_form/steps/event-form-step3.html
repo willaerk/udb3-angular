@@ -10,29 +10,41 @@
     <div class="row">
       <div class="col-xs-12">
         <label for="gemeente-autocomplete" id="gemeente-label"> Kies een gemeente</label>
-        <div id="gemeente-kiezer" ng-hide="citySelected">
+        <div id="gemeente-kiezer" ng-hide="selectedCity !== ''">
           <span style="position: relative; display: inline-block; direction: ltr;" class="twitter-typeahead">
-            <input type="text" placeholder="Gemeente of postcode" ng-model="eventFormData.cityLabel" typeahead="city.key as city.label for city in cityAutocomplete.getCities($viewValue)"  typeahead-on-select="selectCity($item, $model, $label)" typeahead-min-length="3" class="form-control typeahead" required>
+            <input type="text" 
+                   class="form-control typeahead"
+                   placeholder="Gemeente of postcode" 
+                   ng-model="cityAutocompleteTextField" 
+                   typeahead="city.cityId as city.cityLabel for city in cityAutocomplete.getCities($viewValue)"  
+                   typeahead-on-select="selectCity($item, $model, $label)" 
+                   typeahead-min-length="3" required>
           </span>
         </div>
-        <div id="gemeente-gekozen" ng-show="citySelected">
-          <span class="btn-chosen" id="gemeente-gekozen-button" ng-bind="eventFormData.cityLabel"></span>
+        <div id="gemeente-gekozen" ng-show="selectedCity !== ''">
+          <span class="btn-chosen" id="gemeente-gekozen-button" ng-bind="selectedCity"></span>
           <a href="" class="btn btn-default btn-link" ng-click="changeCitySelection()">Wijzigen</a>
         </div>
       </div>
     </div>
 
-    <div id="waar-evenement" ng-show="eventFormData.isEvent && citySelected">
+    <div id="waar-evenement" ng-show="eventFormData.isEvent && selectedCity !== ''">
       <div class="row">
         <div class="col-xs-12">
           <label id="locatie-label">Kies een locatie</label>
           <div id="locatie-kiezer" ng-hide="locationSelected || locationAdded" >
             <span style="position: relative; display: inline-block; direction: ltr;" class="twitter-typeahead">
-              <input type="text" placeholder="Locatie" ng-model="eventFormData.locationLabel" typeahead="location for location in getLocations($viewValue)" typeahead-on-select="selectLocation($item, $model, $label)" typeahead-min-length="3" class="form-control typeahead">
+              <input type="text" 
+                     placeholder="Locatie" 
+                     class="form-control typeahead"
+                     ng-model="locationAutocompleteTextField" 
+                     typeahead="location for location in getLocations($viewValue)" 
+                     typeahead-on-select="selectLocation($item, $model, $label)" 
+                     typeahead-min-length="3" />
               <div class="plaats-adres-resultaat dropdown-menu-no-results" ng-show="noLocationsFound">
                 <p>
                   <span>Locatie niet gevonden?</span>
-                  <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#waar-locatie-toevoegen" ng-click="showAddLocation()">Een locatie toevoegen</button>
+                  <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#waar-locatie-toevoegen" ng-click="openPlaceModal()">Een locatie toevoegen</button>
                 </p>
               </div>
             </span>
@@ -44,65 +56,10 @@
         </div>
       </div>
 
-      <div class="modal fade" id="waar-locatie-toevoegen" ng-hide="autoLocationSearch">
-        <div class="modal-dialog">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h4 class="modal-title">Nieuwe locatie toevoegen</h4>
-            </div>
-            <div class="modal-body">
-              <div class="form-group">
-                <label>Titel</label>
-                <input class="form-control" type="text" ng-model="eventFormData.locationTitle">
-                <span ng-show="locationTitleRequired">Titel is een verplicht veld.</span>
-              </div>
-
-              <div class="form-group">
-                <label>Categorie</label>
-                <select class="form-control" size="4" id="locatie-toevoegen-types" ng-model="eventFormData.locationCategoryId">
-                  <option ng-repeat="category in categories" value="{{ category.id }}">{{ category.label }}</option>
-                </select>
-              </div>
-
-              <div class="row">
-
-                <div class="col-xs-9">
-                  <div class="form-group">
-                    <label>Straat</label>
-                    <input class="form-control" id="locatie-straat" placeholder="Straat" type="text" ng-model="eventFormData.locationStreet">
-                    <span ng-show="locationStreetRequired">Straat is een verplicht veld.</span>
-                  </div>
-                </div>
-                <div class="col-xs-3">
-                  <div class="form-group">
-                    <label>Nummer</label>
-                    <input class="form-control" id="locatie-nummer" placeholder="Nummer" type="text" ng-model="eventFormData.locationNumber">
-                    <span ng-show="locationNumberRequired">Nummer is een verplicht veld.</span>
-                  </div>
-                </div>
-                <div class="col-xs-12">
-                  <div class="form-group">
-                    <label>Gemeente</label>
-                    <p id="waar-locatie-toevoegen-gemeente" ng-bind="eventFormData.cityLabel"></p>
-                  </div>
-                </div>
-
-              </div>
-            </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-default" data-dismiss="modal" ng-click="resetAddLocation()">Annuleren</button>
-              <button type="button" class="btn btn-primary" ng-click="addLocation()">Toevoegen</button>
-            </div>
-          </div><!-- /.modal-content -->
-        </div><!-- /.modal-dialog -->
-      </div><!-- /.modal -->
-
-      <!-- Button trigger modal -->
-
 
     </div>
 
-    <div id="waar-plaats" ng-show="eventFormData.isPlace && citySelected">
+    <div id="waar-plaats" ng-show="eventFormData.isPlace && selectedCity !== ''">
       <div class="plaats-adres-ingeven" ng-hide="placeValidated" >
         <div class="row">
           <div class="col-xs-8 col-lg-4">
@@ -132,8 +89,6 @@
 
     </div>
 
-  </section>
-    
-    <a ng-click="eventFormData.showStep(4)">Volgende stap, Jochen</a>
+</section>
 
 </div>

@@ -24,7 +24,7 @@
     $scope.lastUpdated = null;
 
     $scope.duplicatesSearched = false;
-    $scope.udb3DashboardUrl = appConfig.udb3DashboardUrl;
+    $scope.udb3DashboardUrl = appConfig.appHomeUrl;
     $scope.activeTitle = '';
     $scope.currentDuplicateId = '';
     $scope.currentDuplicateDelta = 0;
@@ -67,7 +67,7 @@
         };
 
         EventFormData.setLocation(location);
-        params = { locationCdbId : '81E9C76C-BA61-0F30-45F5CD2279ACEBFC' };
+        params = { locationCdbId : location.id };
       }
       else {
 
@@ -81,7 +81,7 @@
         };
 
         EventFormData.setLocation(location);
-        params = { locationZip : '9000' };
+        params = { locationZip : location.address.postalCode };
       }
 
       // Load the candidate duplicates asynchronously.

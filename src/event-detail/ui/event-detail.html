@@ -85,8 +85,8 @@
           <dl ng-repeat="eventAction in eventHistory">
             <dt ng-bind="eventAction.date | date:'dd/MM/yyyy H:mm'"></dt>
             <dd>
-                {{eventAction.author}}<br/>
-                {{eventAction.description}}
+                <span class="author" ng-if="eventAction.author">{{eventAction.author}}</span><br ng-if="eventAction.author"/>
+                <span class="description">{{eventAction.description}}</span>
             </dd>
           </dl>
         </div>

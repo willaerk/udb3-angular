@@ -5825,8 +5825,8 @@ $templateCache.put('templates/base-job.template.html',
     "          <dl ng-repeat=\"eventAction in eventHistory\">\n" +
     "            <dt ng-bind=\"eventAction.date | date:'dd/MM/yyyy H:mm'\"></dt>\n" +
     "            <dd>\n" +
-    "                {{eventAction.author}}<br/>\n" +
-    "                {{eventAction.description}}\n" +
+    "                <span class=\"author\" ng-if=\"eventAction.author\">{{eventAction.author}}</span><br ng-if=\"eventAction.author\"/>\n" +
+    "                <span class=\"description\">{{eventAction.description}}</span>\n" +
     "            </dd>\n" +
     "          </dl>\n" +
     "        </div>\n" +

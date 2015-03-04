@@ -2703,15 +2703,13 @@ angular
   .directive('udbJobLog', udbJobLog);
 
 /* @ngInject */
-function udbJobLog(jobLogger, JobStates) {
+function udbJobLog(jobLogger, JobStates, EventExportJob) {
   return {
     restrict: 'C',
     link: function postLink(scope, element, attrs) {
-      scope.jobs = jobLogger.getJobs();
-
-      scope.hasJobs = function () {
-        return !!_.size(scope.jobs);
-      };
+      scope.getQueuedJobs = jobLogger.getQueuedJobs;
+      scope.getFinishedExportJobs = jobLogger.getFinishedExportJobs;
+      scope.getFailedJobs = jobLogger.getFailedJobs;
 
       scope.giveJobBarType = function (job) {
         var barType = 'info';
@@ -2746,7 +2744,7 @@ function udbJobLog(jobLogger, JobStates) {
     }
   };
 }
-udbJobLog.$inject = ["jobLogger", "JobStates"];
+udbJobLog.$inject = ["jobLogger", "JobStates", "EventExportJob"];
 
 // Source: src/entry/logging/job-logger.service.js
 /* jshint sub: true */
@@ -2763,9 +2761,11 @@ angular
   .service('jobLogger', JobLogger);
 
 /* @ngInject */
-function JobLogger(udbSocket, JobStates) {
-  var jobs = {};
-  var queue = [];
+function JobLogger(udbSocket, JobStates, EventExportJob) {
+  var jobs = [],
+      queuedJobs = [],
+      failedJobs = [],
+      finishedExportJobs = [];
 
   /**
    * Finds a job  by id
@@ -2773,7 +2773,7 @@ function JobLogger(udbSocket, JobStates) {
    * @returns {BaseJob|undefined}
    */
   function findJob (jobId) {
-    return _.find(queue, { id: jobId});
+    return _.find(jobs, { id: jobId});
   }
 
   function jobStarted (data) {
@@ -2782,6 +2782,7 @@ function JobLogger(udbSocket, JobStates) {
     if(job) {
       job.start(data);
       console.log('job with id: ' + job.id + ' started');
+      updateJobLists();
     }
   }
 
@@ -2800,6 +2801,7 @@ function JobLogger(udbSocket, JobStates) {
     if(job) {
       job.finish(data);
       console.log('job with id: ' + job.id + ' finished');
+      updateJobLists();
     }
   }
 
@@ -2809,6 +2811,7 @@ function JobLogger(udbSocket, JobStates) {
     if(job) {
       job.fail(data);
       console.log('job with id: ' + job.id + ' failed');
+      updateJobLists();
     }
   }
 
@@ -2830,6 +2833,20 @@ function JobLogger(udbSocket, JobStates) {
     }
   }
 
+  function updateJobLists() {
+    failedJobs = _.filter(jobs, function(job) {
+      return job.state === JobStates.FAILED;
+    });
+
+    finishedExportJobs = _.filter(jobs, function(job) {
+      return job instanceof EventExportJob && job.state === JobStates.FINISHED;
+    });
+
+    queuedJobs = _.filter(jobs, function(job) {
+      return job.state !== JobStates.FINISHED && job.state !== JobStates.FAILED;
+    });
+  }
+
   udbSocket.on('event_was_tagged', taskFinished);
   udbSocket.on('event_was_not_tagged', taskFailed);
   udbSocket.on('task_completed', taskFinished);
@@ -2838,24 +2855,29 @@ function JobLogger(udbSocket, JobStates) {
   udbSocket.on('job_finished', jobFinished);
   udbSocket.on('job_failed', jobFailed);
 
-  this.getJobs = function () {
-    return queue;
-  };
-
   this.hasActiveJobs = function () {
-    var activeJob = _.find(jobs, function (job) {
-      return job.state !== JobStates.FINISHED && job.state !== JobStates.FAILED;
-    });
-
-    return !!activeJob;
+    return !!queuedJobs.length;
   };
 
   this.addJob = function (job) {
-    queue.unshift(job);
+    jobs.unshift(job);
     console.log('job with id: ' + job.id + ' created');
+    updateJobLists();
+  };
+
+  this.getQueuedJobs = function () {
+    return queuedJobs;
+  };
+
+  this.getFailedJobs = function () {
+    return failedJobs;
+  };
+
+  this.getFinishedExportJobs = function () {
+    return finishedExportJobs;
   };
 }
-JobLogger.$inject = ["udbSocket", "JobStates"];
+JobLogger.$inject = ["udbSocket", "JobStates", "EventExportJob"];
 
 // Source: src/entry/logging/job-states.constant.js
 /* jshint sub: true */

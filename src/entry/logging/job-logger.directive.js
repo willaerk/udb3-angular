@@ -11,15 +11,13 @@ angular
   .directive('udbJobLog', udbJobLog);
 
 /* @ngInject */
-function udbJobLog(jobLogger, JobStates) {
+function udbJobLog(jobLogger, JobStates, EventExportJob) {
   return {
     restrict: 'C',
     link: function postLink(scope, element, attrs) {
-      scope.jobs = jobLogger.getJobs();
-
-      scope.hasJobs = function () {
-        return !!_.size(scope.jobs);
-      };
+      scope.getQueuedJobs = jobLogger.getQueuedJobs;
+      scope.getFinishedExportJobs = jobLogger.getFinishedExportJobs;
+      scope.getFailedJobs = jobLogger.getFailedJobs;
 
       scope.giveJobBarType = function (job) {
         var barType = 'info';

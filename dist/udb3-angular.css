@@ -187,8 +187,8 @@ textarea.resize-vertical {
   margin-bottom: 1em;
 }
 .udb-job-log {
-  width: 260px;
-  left: -260px;
+  width: 320px;
+  left: -320px;
   position: fixed;
   top: 50px;
   bottom: 0;
@@ -219,7 +219,7 @@ body {
   margin-left: 0px;
 }
 body.push-left {
-  margin-left: 260px;
+  margin-left: 320px;
 }
 .field-group {
   background: #eee;

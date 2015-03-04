@@ -5711,7 +5711,7 @@ $templateCache.put('templates/base-job.template.html',
     "      <div class=\"udb-job-block udb-job-block-ready\">\n" +
     "        <p class=\"udb-job-title\">Geëxporteerde documenten</p>\n" +
     "        <ul class=\"list-unstyled udb-job-messages\">\n" +
-    "          <li class=\"alert\" ng-repeat=\"job in getFinishedExportJobs()\" repeat-animation>\n" +
+    "          <li class=\"alert repeat-animation\" ng-repeat=\"job in getFinishedExportJobs()\">\n" +
     "            <udb-job></udb-job>\n" +
     "          </li>\n" +
     "        </ul>\n" +
@@ -5720,7 +5720,7 @@ $templateCache.put('templates/base-job.template.html',
     "      <div class=\"udb-job-block udb-job-block-errors\">\n" +
     "        <p class=\"udb-job-title\">Meldingen <span class=\"badge\" ng-bind=\"getFailedJobs().length\"></span></p>\n" +
     "        <ul class=\"list-unstyled udb-job-messages\">\n" +
-    "          <li class=\"alert\" ng-repeat=\"job in getFailedJobs()\" repeat-animation>\n" +
+    "          <li class=\"alert repeat-animation\" ng-repeat=\"job in getFailedJobs()\">\n" +
     "            <udb-job></udb-job>\n" +
     "          </li>\n" +
     "        </ul>\n" +
@@ -5729,7 +5729,7 @@ $templateCache.put('templates/base-job.template.html',
     "      <div class=\"udb-job-block udb-job-block-pending\">\n" +
     "        <p class=\"udb-job-title\">Bezig</p>\n" +
     "        <ul class=\"list-unstyled udb-job-messages\">\n" +
-    "          <li class=\"alert\" ng-repeat=\"job in getQueuedJobs()\" repeat-animation>\n" +
+    "          <li class=\"alert repeat-animation\" ng-repeat=\"job in getQueuedJobs()\">\n" +
     "            <udb-job></udb-job>\n" +
     "          </li>\n" +
     "        </ul>\n" +

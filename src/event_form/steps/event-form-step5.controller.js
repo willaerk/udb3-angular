@@ -192,6 +192,10 @@
           EventFormData.organizer = organizer;
           saveOrganizer();
           $scope.organizer = '';
+        }, function () {
+          // modal dismissed.
+          $scope.organizer = '';
+          $scope.emptyOrganizerAutocomplete = false;
         });
 
     }

@@ -1,46 +1,54 @@
 
 <div class="modal-header">
-  <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+  <button type="button" class="close" ng-click="cancel()"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
   <h4 class="modal-title" ng-hide="organizersFound">Nieuwe organisator toevoegen</h4>
   <h4 class="modal-title" ng-show="organizersFound">Vermijd dubbel werk</h4>
 </div>
 <div class="modal-body">
 
   <section ng-hide="organizersFound">
-    <form name="organizerForm" class="css-form" novalidate>
-      <div class="form-group">
+    <form name="organizerForm" class="css-form">
+      <div class="form-group" ng-class="{'has-error' : showValidation && organizerForm.name.$error.required }">
         <label>Naam</label>
-        <input type="text" class="form-control" ng-model="newOrganizer.name" required>
+        <input type="text" name="name" class="form-control" ng-model="newOrganizer.name" required>
         <p class="help-block">De officiële publieke naam van de organisatie.</p>
+        <span class="help-block" ng-show="showValidation && organizerForm.name.$error.required">Gelieve een naam in te vullen</span>
       </div>
 
       <div class="row">
 
         <div class="col-xs-9">
-          <div class="form-group">
+          <div class="form-group" ng-class="{'has-error' : showValidation && organizerForm.street.$error.required }">
             <label>Straat</label>
-            <input type="text" class="form-control" ng-model="newOrganizer.street" required>
+            <input type="text" class="form-control" name="street" ng-model="newOrganizer.street" required>
           </div>
         </div>
         <div class="col-xs-3">
-          <div class="form-group">
+          <div class="form-group" ng-class="{'has-error' : showValidation && organizerForm.number.$error.required }">
             <label>Nummer</label>
-            <input type="text" class="form-control" ng-model="newOrganizer.number" required>
+            <input type="text" class="form-control" name="number" ng-model="newOrganizer.number" required>
           </div>
         </div>
-        <div class="col-xs-12" ng-show="d">
-
+        <div class="col-xs-12" ng-show="showValidation && (organizerForm.street.$error.required || organizerForm.number.$error.required)">
+          <div class="form-group has-error">
+            <span class="help-block">Gelieve straat en nummer in te vullen.</span>
+          </div>
         </div>
         <div class="col-xs-9">
-          <div class="form-group">
+          <div class="form-group" ng-class="{'has-error' : showValidation && organizerForm.city.$error.required }">
             <label>Gemeente</label>
-            <input type="text" class="form-control" ng-model="newOrganizer.city" required>
+            <input type="text" class="form-control" name="city" ng-model="newOrganizer.city" required>
           </div>
         </div>
         <div class="col-xs-3">
-          <div class="form-group">
+          <div class="form-group" ng-class="{'has-error' : showValidation && organizerForm.postalCode.$invalid }">
             <label>Postcode</label>
-            <input type="text" class="form-control" ng-model="newOrganizer.postalCode" required>
+            <input type="number" class="form-control" name="postalCode" ng-model="newOrganizer.postalCode" required>
+          </div>
+        </div>
+        <div class="col-xs-12" ng-show="showValidation && (organizerForm.city.$error.required || organizerForm.postalCode.$invalid)">
+          <div class="form-group has-error">
+            <span class="help-block">Gelieve een geldige gemeente en postcode in te vullen.</span>
           </div>
         </div>
 
@@ -80,13 +88,18 @@
   <section ng-show="organizersFound">
 
     <div class="alert alert-info">
-      <p>Ben je zeker dat je "{{ newOrganizer.title}}" wil toevoegen als organisator? Dubbele invoer van organisaties is niet toegelaten.</p>
+      <p>Ben je zeker dat je "{{ newOrganizer.name}}" wil toevoegen als organisator? Dubbele invoer van organisaties is niet toegelaten.</p>
     </div>
     <p>We vonden deze gelijkaardige items:</p>
     <table class="table">
-      <tr ng-repeat="organizer in organizers" udb-organizer="organizer" ng-hide="fetching">
-        <td><strong>{{ organizer.name }} </strong>, {{ organizer.address[0].street }} {{ organizer.address[0].number }}, {{ organizer.address[0].postalCode }} {{ organizer.address[0].city }}</strong></td>
-        <td><a class="btn btn-default" ng-click="selectOrganizer(organizer)">Selecteren</a></td>
+      <tr ng-repeat="organizer in organizers" udb-organizer="organizer">
+        <td colspan="2" ng-show="fetching">
+          <i class="fa fa-circle-o-notch fa-spin"></i>
+        </td>
+        <td ng-hide="fetching">
+          <strong>{{ organizer.name }} </strong>, {{ organizer.address[0].street }} {{ organizer.address[0].number }}, {{ organizer.address[0].postalCode }} {{ organizer.address[0].city }}</strong>
+        </td>
+        <td ng-hide="fetching"><a class="btn btn-default" ng-click="selectOrganizer(organizer)">Selecteren</a></td>
       </tr>
       <tr>
         <td>
@@ -101,6 +114,8 @@
 
 </div>
 <div class="modal-footer" ng-hide="organizersFound">
-  <button type="button" class="btn btn-default" data-dismiss="modal">Sluiten</button>
-  <button type="button" class="btn btn-primary organisator-toevoegen-bewaren" ng-click="validateNewOrganizer()" data-target="#extra-organisator-dubbeldetectie">Bewaren</button>
+  <button type="button" class="btn btn-default" ng-click="cancel()">Sluiten</button>
+  <button type="button" class="btn btn-primary organisator-toevoegen-bewaren" ng-click="validateNewOrganizer()">
+    Bewaren <i class="fa fa-circle-o-notch fa-spin" ng-show="loading"></i>
+  </button>
 </div>

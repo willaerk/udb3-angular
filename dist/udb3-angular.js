@@ -4386,6 +4386,8 @@ function EventFormOpeningHoursDirective() {
 
     // Scope vars.
     $scope.organizersFound = false;
+    $scope.loading = false;
+    $scope.showValidation = false;
     $scope.organizers = [];
 
     $scope.newOrganizer = {
@@ -4399,11 +4401,19 @@ function EventFormOpeningHoursDirective() {
     };
 
     // Scope functions.
+    $scope.cancel = cancel;
     $scope.addOrganizerContactInfo = addOrganizerContactInfo;
     $scope.deleteOrganizerContactInfo = deleteOrganizerContactInfo;
     $scope.validateNewOrganizer = validateNewOrganizer;
     $scope.selectOrganizer = selectOrganizer;
     $scope.saveOrganizer = saveOrganizer;
+
+    /**
+     * Cancel the modal.
+     */
+    function cancel() {
+      $modalInstance.dismiss('cancel');
+    }
 
     /**
      * Add a contact info entry for an organizer.
@@ -4427,6 +4437,12 @@ function EventFormOpeningHoursDirective() {
      */
     function validateNewOrganizer() {
 
+      $scope.showValidation = true;
+      // Forms are automatically known in scope.
+      if (!$scope.organizerForm.$valid) {
+        return;
+      }
+
       var promise = udbOrganizers.searchDuplicates($scope.newOrganizer.name, $scope.newOrganizer.postalCode);
 
       $scope.loading = true;
@@ -4437,6 +4453,7 @@ function EventFormOpeningHoursDirective() {
         if (data.length > 0) {
           $scope.organizersFound = true;
           $scope.organizers = data;
+          $scope.loading = false;
         }
         // or save the event immediataly if no duplicates were found.
         else {
@@ -4459,10 +4476,12 @@ function EventFormOpeningHoursDirective() {
      */
     function saveOrganizer() {
 
+      $scope.loading = true;
       var promise = eventCrud.createOrganizer($scope.newOrganizer);
       promise.then(function(jsonResponse) {
         $scope.newOrganizer.id = jsonResponse.organiserId;
         selectOrganizer($scope.newOrganizer);
+        $scope.loading = false;
       });
     }
 
@@ -5023,9 +5042,9 @@ function EventFormStep5Directive() {
     $scope.activeCalendarType = ''; // Current active calendar type.
     $scope.activeCalendarLabel = '';
     $scope.calendarLabels = [
-      { 'label': 'Eén of meerdere dagen', 'id' : 'single' },
-      { 'label': 'Van ... tot ... ', 'id' : 'periodic' },
-      { 'label' : 'Permanent', 'id' : 'permanent' }
+      { 'label': 'Eén of meerdere dagen', 'id' : 'single', 'eventOnly' : true },
+      { 'label': 'Van ... tot ... ', 'id' : 'periodic', 'eventOnly' : true },
+      { 'label' : 'Permanent', 'id' : 'permanent', 'eventOnly' : false }
     ];
     $scope.hasOpeningHours = false;
 
@@ -5425,7 +5444,8 @@ function EventFormStep5Directive() {
         EventFormData.setLocation(location);
         params = { locationZip : '9000' };
       }
-
+saveEvent();
+return;
       // Load the candidate duplicates asynchronously.
       // Duplicates are found on existing identical properties:
       // - title is the same
@@ -5707,6 +5727,10 @@ function EventFormStep5Directive() {
           EventFormData.organizer = organizer;
           saveOrganizer();
           $scope.organizer = '';
+        }, function () {
+          // modal dismissed.
+          $scope.organizer = '';
+          $scope.emptyOrganizerAutocomplete = false;
         });
 
     }
@@ -8071,47 +8095,55 @@ $templateCache.put('templates/time-autocomplete.html',
   $templateCache.put('templates/event-form-organizer-modal.html',
     "\n" +
     "<div class=\"modal-header\">\n" +
-    "  <button type=\"button\" class=\"close\" data-dismiss=\"modal\"><span aria-hidden=\"true\">&times;</span><span class=\"sr-only\">Close</span></button>\n" +
+    "  <button type=\"button\" class=\"close\" ng-click=\"cancel()\"><span aria-hidden=\"true\">&times;</span><span class=\"sr-only\">Close</span></button>\n" +
     "  <h4 class=\"modal-title\" ng-hide=\"organizersFound\">Nieuwe organisator toevoegen</h4>\n" +
     "  <h4 class=\"modal-title\" ng-show=\"organizersFound\">Vermijd dubbel werk</h4>\n" +
     "</div>\n" +
     "<div class=\"modal-body\">\n" +
     "\n" +
     "  <section ng-hide=\"organizersFound\">\n" +
-    "    <form name=\"organizerForm\" class=\"css-form\" novalidate>\n" +
-    "      <div class=\"form-group\">\n" +
+    "    <form name=\"organizerForm\" class=\"css-form\">\n" +
+    "      <div class=\"form-group\" ng-class=\"{'has-error' : showValidation && organizerForm.name.$error.required }\">\n" +
     "        <label>Naam</label>\n" +
-    "        <input type=\"text\" class=\"form-control\" ng-model=\"newOrganizer.name\" required>\n" +
+    "        <input type=\"text\" name=\"name\" class=\"form-control\" ng-model=\"newOrganizer.name\" required>\n" +
     "        <p class=\"help-block\">De officiële publieke naam van de organisatie.</p>\n" +
+    "        <span class=\"help-block\" ng-show=\"showValidation && organizerForm.name.$error.required\">Gelieve een naam in te vullen</span>\n" +
     "      </div>\n" +
     "\n" +
     "      <div class=\"row\">\n" +
     "\n" +
     "        <div class=\"col-xs-9\">\n" +
-    "          <div class=\"form-group\">\n" +
+    "          <div class=\"form-group\" ng-class=\"{'has-error' : showValidation && organizerForm.street.$error.required }\">\n" +
     "            <label>Straat</label>\n" +
-    "            <input type=\"text\" class=\"form-control\" ng-model=\"newOrganizer.street\" required>\n" +
+    "            <input type=\"text\" class=\"form-control\" name=\"street\" ng-model=\"newOrganizer.street\" required>\n" +
     "          </div>\n" +
     "        </div>\n" +
     "        <div class=\"col-xs-3\">\n" +
-    "          <div class=\"form-group\">\n" +
+    "          <div class=\"form-group\" ng-class=\"{'has-error' : showValidation && organizerForm.number.$error.required }\">\n" +
     "            <label>Nummer</label>\n" +
-    "            <input type=\"text\" class=\"form-control\" ng-model=\"newOrganizer.number\" required>\n" +
+    "            <input type=\"text\" class=\"form-control\" name=\"number\" ng-model=\"newOrganizer.number\" required>\n" +
     "          </div>\n" +
     "        </div>\n" +
-    "        <div class=\"col-xs-12\" ng-show=\"d\">\n" +
-    "\n" +
+    "        <div class=\"col-xs-12\" ng-show=\"showValidation && (organizerForm.street.$error.required || organizerForm.number.$error.required)\">\n" +
+    "          <div class=\"form-group has-error\">\n" +
+    "            <span class=\"help-block\">Gelieve straat en nummer in te vullen.</span>\n" +
+    "          </div>\n" +
     "        </div>\n" +
     "        <div class=\"col-xs-9\">\n" +
-    "          <div class=\"form-group\">\n" +
+    "          <div class=\"form-group\" ng-class=\"{'has-error' : showValidation && organizerForm.city.$error.required }\">\n" +
     "            <label>Gemeente</label>\n" +
-    "            <input type=\"text\" class=\"form-control\" ng-model=\"newOrganizer.city\" required>\n" +
+    "            <input type=\"text\" class=\"form-control\" name=\"city\" ng-model=\"newOrganizer.city\" required>\n" +
     "          </div>\n" +
     "        </div>\n" +
     "        <div class=\"col-xs-3\">\n" +
-    "          <div class=\"form-group\">\n" +
+    "          <div class=\"form-group\" ng-class=\"{'has-error' : showValidation && organizerForm.postalCode.$invalid }\">\n" +
     "            <label>Postcode</label>\n" +
-    "            <input type=\"text\" class=\"form-control\" ng-model=\"newOrganizer.postalCode\" required>\n" +
+    "            <input type=\"number\" class=\"form-control\" name=\"postalCode\" ng-model=\"newOrganizer.postalCode\" required>\n" +
+    "          </div>\n" +
+    "        </div>\n" +
+    "        <div class=\"col-xs-12\" ng-show=\"showValidation && (organizerForm.city.$error.required || organizerForm.postalCode.$invalid)\">\n" +
+    "          <div class=\"form-group has-error\">\n" +
+    "            <span class=\"help-block\">Gelieve een geldige gemeente en postcode in te vullen.</span>\n" +
     "          </div>\n" +
     "        </div>\n" +
     "\n" +
@@ -8151,13 +8183,18 @@ $templateCache.put('templates/time-autocomplete.html',
     "  <section ng-show=\"organizersFound\">\n" +
     "\n" +
     "    <div class=\"alert alert-info\">\n" +
-    "      <p>Ben je zeker dat je \"{{ newOrganizer.title}}\" wil toevoegen als organisator? Dubbele invoer van organisaties is niet toegelaten.</p>\n" +
+    "      <p>Ben je zeker dat je \"{{ newOrganizer.name}}\" wil toevoegen als organisator? Dubbele invoer van organisaties is niet toegelaten.</p>\n" +
     "    </div>\n" +
     "    <p>We vonden deze gelijkaardige items:</p>\n" +
     "    <table class=\"table\">\n" +
-    "      <tr ng-repeat=\"organizer in organizers\" udb-organizer=\"organizer\" ng-hide=\"fetching\">\n" +
-    "        <td><strong>{{ organizer.name }} </strong>, {{ organizer.address[0].street }} {{ organizer.address[0].number }}, {{ organizer.address[0].postalCode }} {{ organizer.address[0].city }}</strong></td>\n" +
-    "        <td><a class=\"btn btn-default\" ng-click=\"selectOrganizer(organizer)\">Selecteren</a></td>\n" +
+    "      <tr ng-repeat=\"organizer in organizers\" udb-organizer=\"organizer\">\n" +
+    "        <td colspan=\"2\" ng-show=\"fetching\">\n" +
+    "          <i class=\"fa fa-circle-o-notch fa-spin\"></i>\n" +
+    "        </td>\n" +
+    "        <td ng-hide=\"fetching\">\n" +
+    "          <strong>{{ organizer.name }} </strong>, {{ organizer.address[0].street }} {{ organizer.address[0].number }}, {{ organizer.address[0].postalCode }} {{ organizer.address[0].city }}</strong>\n" +
+    "        </td>\n" +
+    "        <td ng-hide=\"fetching\"><a class=\"btn btn-default\" ng-click=\"selectOrganizer(organizer)\">Selecteren</a></td>\n" +
     "      </tr>\n" +
     "      <tr>\n" +
     "        <td>\n" +
@@ -8172,8 +8209,10 @@ $templateCache.put('templates/time-autocomplete.html',
     "\n" +
     "</div>\n" +
     "<div class=\"modal-footer\" ng-hide=\"organizersFound\">\n" +
-    "  <button type=\"button\" class=\"btn btn-default\" data-dismiss=\"modal\">Sluiten</button>\n" +
-    "  <button type=\"button\" class=\"btn btn-primary organisator-toevoegen-bewaren\" ng-click=\"validateNewOrganizer()\" data-target=\"#extra-organisator-dubbeldetectie\">Bewaren</button>\n" +
+    "  <button type=\"button\" class=\"btn btn-default\" ng-click=\"cancel()\">Sluiten</button>\n" +
+    "  <button type=\"button\" class=\"btn btn-primary organisator-toevoegen-bewaren\" ng-click=\"validateNewOrganizer()\">\n" +
+    "    Bewaren <i class=\"fa fa-circle-o-notch fa-spin\" ng-show=\"loading\"></i>\n" +
+    "  </button>\n" +
     "</div>"
   );
 
@@ -8278,7 +8317,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "          <label class=\"wanneerkiezer-label\">Maak een keuze</label>\n" +
     "          <div class=\"wanneerkiezer\" ng-show=\"activeCalendarType === ''\">\n" +
     "            <ul class=\"list-inline button-list\">\n" +
-    "              <li ng-repeat=\"calendarLabel in calendarLabels\">\n" +
+    "              <li ng-repeat=\"calendarLabel in calendarLabels\" ng-hide=\"eventFormData.isPlace && calendarLabel.eventOnly\">\n" +
     "                <button class=\"btn btn-default\" ng-bind=\"calendarLabel.label\" ng-click=\"setCalendarType(calendarLabel.id)\"></button>\n" +
     "              </li>\n" +
     "            </ul>\n" +

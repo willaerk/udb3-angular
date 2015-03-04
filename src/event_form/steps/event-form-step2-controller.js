@@ -22,9 +22,9 @@
     $scope.activeCalendarType = ''; // Current active calendar type.
     $scope.activeCalendarLabel = '';
     $scope.calendarLabels = [
-      { 'label': 'Eén of meerdere dagen', 'id' : 'single' },
-      { 'label': 'Van ... tot ... ', 'id' : 'periodic' },
-      { 'label' : 'Permanent', 'id' : 'permanent' }
+      { 'label': 'Eén of meerdere dagen', 'id' : 'single', 'eventOnly' : true },
+      { 'label': 'Van ... tot ... ', 'id' : 'periodic', 'eventOnly' : true },
+      { 'label' : 'Permanent', 'id' : 'permanent', 'eventOnly' : false }
     ];
     $scope.hasOpeningHours = false;
 

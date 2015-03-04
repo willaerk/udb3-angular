@@ -230,7 +230,7 @@ function LuceneQueryBuilder(LuceneQueryParser, QueryTreeValidator, QueryTreeTran
           }
         });
 
-        if(root.nodes.length > 1 && group.nodes.length > 2) {
+        if(root.nodes.length > 1 && group.nodes.length > 1) {
           nodeString = '(' + nodeString + ')';
         }
       } else {

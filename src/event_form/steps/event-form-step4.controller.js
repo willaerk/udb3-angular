@@ -58,33 +58,9 @@
       var location = {};
 
       if (EventFormData.isEvent) {
-
-        location = {
-          'id' : '5b4198fc-955a-448d-932b-eccbd20e95ea',
-          'name': 'ABC van Museum',
-          'address': {
-              'addressCountry': 'BE',
-              'addressLocality': 'Gent',
-              'postalCode': '9000',
-              'streetAddress': 'Koestraat 28'
-          }
-        };
-
-        EventFormData.setLocation(location);
         params = { locationCdbId : location.id };
       }
       else {
-
-        location = {
-          'address': {
-              'addressCountry': 'BE',
-              'addressLocality': 'Gent',
-              'postalCode': '9000',
-              'streetAddress': 'Koestraat 28'
-          }
-        };
-
-        EventFormData.setLocation(location);
         params = { locationZip : location.address.postalCode };
       }
 

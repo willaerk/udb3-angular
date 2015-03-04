@@ -19,10 +19,12 @@ function UdbPlaceFactory() {
    * @constructor
    */
   var UdbPlace = function () {
-    this.name = '';
+    this.name = {};
     this.type = {};
     this.theme = {};
+    this.calendarType = '';
     this.openinghours = [];
+    this.timestamps = [];
     this.address = {
       'addressCountry' : '',
       'addressLocality' : '',

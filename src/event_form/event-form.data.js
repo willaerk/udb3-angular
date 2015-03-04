@@ -25,6 +25,7 @@ function EventFormDataFactory(UdbEvent, UdbPlace) {
     name : {},
     description : {},
     location : {
+      'id' : null,
       'name': '',
       'address': {
         'addressCountry': '',
@@ -165,6 +166,7 @@ function EventFormDataFactory(UdbEvent, UdbPlace) {
      */
     resetLocation: function(location) {
       this.location = {
+        'id' : null,
         'name': '',
         'address': {
           'addressCountry': '',

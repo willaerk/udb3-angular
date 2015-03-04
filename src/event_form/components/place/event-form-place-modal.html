@@ -4,15 +4,16 @@
 <div class="modal-body">
   <div class="form-group">
     <label>Titel</label>
-    <input class="form-control" type="text" ng-model="newPlace.name">
-    <span ng-show="locationTitleRequired">Titel is een verplicht veld.</span>
+    <input class="form-control" type="text" ng-model="newPlace.name" required>
+    <span ng-show="titleRequired">Titel is een verplicht veld.</span>
   </div>
 
   <div class="form-group">
     <label>Categorie</label>
-    <select class="form-control" size="4" id="locatie-toevoegen-types" ng-model="location.categoryId">
+    <select class="form-control" size="4" id="locatie-toevoegen-types" ng-model="newPlace.eventType" required>
       <option ng-repeat="category in categories" value="{{ category.id }}">{{ category.label }}</option>
     </select>
+    <span ng-show="categoryRequired">Categorie is een verplicht veld.</span>
   </div>
 
   <div class="row">
@@ -20,15 +21,15 @@
     <div class="col-xs-9">
       <div class="form-group">
         <label>Straat</label>
-        <input class="form-control" id="locatie-straat" placeholder="Straat" type="text" ng-model="newPlace.address.streetAddress">
-        <span ng-show="locationStreetRequired">Straat is een verplicht veld.</span>
+        <input class="form-control" id="locatie-straat" placeholder="Straat" type="text" ng-model="newPlace.address.streetAddress" required>
+        <span ng-show="streetRequired">Straat is een verplicht veld.</span>
       </div>
     </div>
     <div class="col-xs-3">
       <div class="form-group">
         <label>Nummer</label>
-        <input class="form-control" id="locatie-nummer" placeholder="Nummer" type="text" ng-model="newPlace.address.locationNumber">
-        <span ng-show="locationNumberRequired">Nummer is een verplicht veld.</span>
+        <input class="form-control" id="locatie-nummer" placeholder="Nummer" type="text" ng-model="newPlace.address.locationNumber" required>
+        <span ng-show="numberRequired">Nummer is een verplicht veld.</span>
       </div>
     </div>
     <div class="col-xs-12">

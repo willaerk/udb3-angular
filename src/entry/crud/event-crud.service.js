@@ -32,6 +32,15 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
 
     return jobPromise;
   };
+  
+  /**
+   * Creates a new place.
+   */
+  this.createPlace = function(place) {
+
+    return udbApi.createPlace(place);
+    
+  };
 
   /**
    * Creates a new organizer.

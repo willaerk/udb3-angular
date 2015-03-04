@@ -51,8 +51,6 @@
     $scope.locationStreetRequired = false;
     $scope.locationNumberRequired = false;
     $scope.placeValidated = false;
-    $scope.placeStreetRequired = false;
-    $scope.placeNumberRequired = false;
     $scope.cityAutocomplete = cityAutocomplete;
 
     getLocationCategories();
@@ -63,8 +61,6 @@
     $scope.changeCitySelection = changeCitySelection;
     $scope.changeLocationSelection = changeLocationSelection;
     $scope.showAddLocation = showAddLocation;
-    $scope.addLocation = addLocation;
-    $scope.resetAddLocation = resetAddLocation;
     $scope.validatePlace = validatePlace;
     $scope.changePlace = changePlace;
     $scope.getLocations = getLocations;
@@ -153,49 +149,6 @@
     }
 
     /**
-     * Adds a location.
-     * @returns {undefined}
-     */
-    function addLocation() {
-      if (!$scope.eventFormData.locationTitle) {
-        $scope.locationTitleRequired = true;
-      }
-      else if (!$scope.eventFormData.locationStreet) {
-        $scope.locationStreetRequired = true;
-      }
-      else if (!$scope.eventFormData.locationNumber) {
-        $scope.locationNumberRequired = true;
-      }
-      else {
-        $scope.eventFormData.locationLabel = '';
-        $scope.eventFormData.locationLabel = $scope.eventFormData.locationStreet + ' ' + $scope.eventFormData.locationNumber;
-        $scope.locationTitleRequired = false;
-        $scope.locationStreetRequired = false;
-        $scope.locationNumberRequired = false;
-        $scope.locationAdded = true;
-        $scope.locationSelected = true;
-        $scope.autoLocationSearch  = true;
-        $scope.eventFormData.showStep4 = true;
-      }
-    }
-
-    /**
-     * Reset the location field(s).
-     * @returns {undefined}
-     */
-    function resetAddLocation() {
-      $scope.eventFormData.locationLabel = '';
-      $scope.eventFormData.locationId = '';
-      $scope.eventFormData.locationTitle = '';
-      $scope.eventFormData.locationCategoryId = '';
-      $scope.eventFormData.locationStreet = '';
-      $scope.eventFormData.locationNumber = '';
-      $scope.newLocation = false;
-      $scope.locationSelected = false;
-      $scope.locationAdded = false;
-    }
-
-    /**
      * Get the location categories.
      * @returns {undefined}
      */
@@ -228,26 +181,34 @@
       });
 
       modalInstance.result.then(function (place) {
-        console.warn('Place:');
+        
         console.log(place);
+        // Assign the just saved place to the event form data.
         EventFormData.place = place;
-        //savePlace();
-        $scope.placeId = '';
+        
+        // Assign selection, hide the location field and show the selection.
+        $scope.eventFormData.locationId = place.id;
+        $scope.eventFormData.locationLabel = place.getName('nl');
+        $scope.selectedCity = place.address.postalCode + ' ' + place.address.addressLocality;
+        $scope.locationSelected = true;
+        $scope.locationAdded = true;
+        
+        var location = {
+          'id' : place.id,
+          'name': place.getName('nl'),
+          'address': {
+              'addressCountry': 'BE',
+              'addressLocality': place.address.addressLocality,
+              'postalCode': place.address.postalCode,
+              'streetAddress': place.address.streetAddress
+          }
+        };
+        $scope.eventFormData.setLocation(location);
+        
+        $scope.eventFormData.showStep4 = true;
+      
       });
 
-    }
-
-    /**
-     * Save the selected organizer in the backend.
-     */
-    function savePlace() {
-      console.log('savePlace');
-      /*$scope.organizer = '';
-      var promise = eventCrud.updateOrganizer(EventFormData);
-      promise.then(function() {
-        updateLastUpdated();
-        $scope.organizerCssClass = 'state-complete';
-      });*/
     }
 
     /**

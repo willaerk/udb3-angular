@@ -45,6 +45,11 @@ function udbQueryEditorField() {
         return parentGroup.field.type === 'group';
       }
 
+      function canRemoveField() {
+        var group = scope.rootGroup;
+        return (group.nodes.length > 1);
+      }
+
       scope.addField = function (index) {
         scope.qe.addField(getParentGroup(), index);
       };
@@ -71,6 +76,7 @@ function udbQueryEditorField() {
 
       scope.isSubGroup = isSubGroup;
       scope.getOperatorClass = getOperatorClass;
+      scope.canRemoveField = canRemoveField;
     }
   };
 }

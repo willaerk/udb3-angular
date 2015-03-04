@@ -3742,6 +3742,11 @@ function udbQueryEditorField() {
         return parentGroup.field.type === 'group';
       }
 
+      function canRemoveField() {
+        var group = scope.rootGroup;
+        return (group.nodes.length > 1);
+      }
+
       scope.addField = function (index) {
         scope.qe.addField(getParentGroup(), index);
       };
@@ -3768,6 +3773,7 @@ function udbQueryEditorField() {
 
       scope.isSubGroup = isSubGroup;
       scope.getOperatorClass = getOperatorClass;
+      scope.canRemoveField = canRemoveField;
     }
   };
 }
@@ -3894,7 +3900,7 @@ function udbQueryEditor(
        * @param {number}  fieldIndex  The index of the field to delete
        */
       qe.removeField = function (group, fieldIndex) {
-        if (qe.canRemoveField()) {
+        if (group.nodes.length > 1) {
           group.nodes.splice(fieldIndex, 1);
         }
 
@@ -3934,14 +3940,6 @@ function udbQueryEditor(
 
       qe.toggleExcludeGroup = function (group) {
         group.excluded = !group.excluded;
-      };
-
-      /**
-       * Check if a field can be removed without leaving a single empty group
-       * @return {boolean}
-       */
-      qe.canRemoveField = function () {
-        return !(qe.hasSingleGroup() && (qe.groupedQueryTree.nodes[0].nodes.length === 1));
       };
 
       qe.canRemoveGroup = function () {
@@ -5955,7 +5953,7 @@ $templateCache.put('templates/base-job.template.html',
     "\n" +
     "  <div class=\"col-md-1 col-xs-4\">\n" +
     "    <button type=\"button\" class=\"close\" aria-label=\"Close\" ng-click=\"removeField($index)\"\n" +
-    "            ng-show=\"qe.canRemoveField()\">\n" +
+    "            ng-show=\"canRemoveField()\">\n" +
     "      <span aria-hidden=\"true\">×</span>\n" +
     "    </button>\n" +
     "  </div>\n" +

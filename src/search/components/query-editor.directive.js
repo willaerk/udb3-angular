@@ -122,7 +122,7 @@ function udbQueryEditor(
        * @param {number}  fieldIndex  The index of the field to delete
        */
       qe.removeField = function (group, fieldIndex) {
-        if (qe.canRemoveField()) {
+        if (group.nodes.length > 1) {
           group.nodes.splice(fieldIndex, 1);
         }
 
@@ -162,14 +162,6 @@ function udbQueryEditor(
 
       qe.toggleExcludeGroup = function (group) {
         group.excluded = !group.excluded;
-      };
-
-      /**
-       * Check if a field can be removed without leaving a single empty group
-       * @return {boolean}
-       */
-      qe.canRemoveField = function () {
-        return !(qe.hasSingleGroup() && (qe.groupedQueryTree.nodes[0].nodes.length === 1));
       };
 
       qe.canRemoveGroup = function () {

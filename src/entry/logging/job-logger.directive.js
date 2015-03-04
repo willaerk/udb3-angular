@@ -19,6 +19,7 @@ function udbJobLog(jobLogger, JobStates, EventExportJob) {
       scope.getQueuedJobs = jobLogger.getQueuedJobs;
       scope.getFinishedExportJobs = jobLogger.getFinishedExportJobs;
       scope.getFailedJobs = jobLogger.getFailedJobs;
+      scope.hideJob = jobLogger.hideJob;
 
       scope.giveJobBarType = function (job) {
         var barType = 'info';

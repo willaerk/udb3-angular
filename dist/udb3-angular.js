@@ -2711,6 +2711,7 @@ function udbJobLog(jobLogger, JobStates, EventExportJob) {
       scope.getQueuedJobs = jobLogger.getQueuedJobs;
       scope.getFinishedExportJobs = jobLogger.getFinishedExportJobs;
       scope.getFailedJobs = jobLogger.getFailedJobs;
+      scope.hideJob = jobLogger.hideJob;
 
       scope.giveJobBarType = function (job) {
         var barType = 'info';
@@ -2766,7 +2767,8 @@ function JobLogger(udbSocket, JobStates, EventExportJob) {
   var jobs = [],
       queuedJobs = [],
       failedJobs = [],
-      finishedExportJobs = [];
+      finishedExportJobs = [],
+      hiddenJobs = [];
 
   /**
    * Finds a job  by id
@@ -2835,17 +2837,24 @@ function JobLogger(udbSocket, JobStates, EventExportJob) {
   }
 
   function updateJobLists() {
-    failedJobs = _.filter(jobs, function(job) {
+    var visibleJobs = _.difference(jobs, hiddenJobs);
+
+    failedJobs = _.filter(visibleJobs, function(job) {
       return job.state === JobStates.FAILED;
     });
 
-    finishedExportJobs = _.filter(jobs, function(job) {
+    finishedExportJobs = _.filter(visibleJobs, function(job) {
       return job instanceof EventExportJob && job.state === JobStates.FINISHED;
     });
 
-    queuedJobs = _.filter(jobs, function(job) {
+    queuedJobs = _.filter(visibleJobs, function(job) {
       return job.state !== JobStates.FINISHED && job.state !== JobStates.FAILED;
     });
+  }
+
+  function hideJob(job) {
+    hiddenJobs = _.union(hiddenJobs, [job]);
+    updateJobLists();
   }
 
   udbSocket.on('event_was_tagged', taskFinished);
@@ -2877,6 +2886,8 @@ function JobLogger(udbSocket, JobStates, EventExportJob) {
   this.getFinishedExportJobs = function () {
     return finishedExportJobs;
   };
+
+  this.hideJob = hideJob;
 }
 JobLogger.$inject = ["udbSocket", "JobStates", "EventExportJob"];
 
@@ -5713,6 +5724,7 @@ $templateCache.put('templates/base-job.template.html',
     "        <ul class=\"list-unstyled udb-job-messages\">\n" +
     "          <li class=\"alert repeat-animation\" ng-repeat=\"job in getFinishedExportJobs()\">\n" +
     "            <udb-job></udb-job>\n" +
+    "            <a ng-click=\"hideJob(job)\">Hide Me</a>\n" +
     "          </li>\n" +
     "        </ul>\n" +
     "      </div>\n" +

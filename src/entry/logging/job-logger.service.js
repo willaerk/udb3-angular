@@ -18,7 +18,8 @@ function JobLogger(udbSocket, JobStates, EventExportJob) {
   var jobs = [],
       queuedJobs = [],
       failedJobs = [],
-      finishedExportJobs = [];
+      finishedExportJobs = [],
+      hiddenJobs = [];
 
   /**
    * Finds a job  by id
@@ -87,17 +88,28 @@ function JobLogger(udbSocket, JobStates, EventExportJob) {
   }
 
   function updateJobLists() {
-    failedJobs = _.filter(jobs, function(job) {
+    var visibleJobs = _.difference(jobs, hiddenJobs);
+
+    failedJobs = _.filter(visibleJobs, function(job) {
       return job.state === JobStates.FAILED;
     });
 
-    finishedExportJobs = _.filter(jobs, function(job) {
+    finishedExportJobs = _.filter(visibleJobs, function(job) {
       return job instanceof EventExportJob && job.state === JobStates.FINISHED;
     });
 
-    queuedJobs = _.filter(jobs, function(job) {
+    queuedJobs = _.filter(visibleJobs, function(job) {
       return job.state !== JobStates.FINISHED && job.state !== JobStates.FAILED;
     });
+  }
+
+  /**
+   * Mark a job as hidden
+   * @param {BaseJob} job
+   */
+  function hideJob(job) {
+    hiddenJobs = _.union(hiddenJobs, [job]);
+    updateJobLists();
   }
 
   udbSocket.on('event_was_tagged', taskFinished);
@@ -129,4 +141,6 @@ function JobLogger(udbSocket, JobStates, EventExportJob) {
   this.getFinishedExportJobs = function () {
     return finishedExportJobs;
   };
+
+  this.hideJob = hideJob;
 }

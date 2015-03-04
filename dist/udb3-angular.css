@@ -361,3 +361,7 @@ body {
   max-height: 500px;
   overflow-y: auto;
 }
+.muted td {
+  background-color: #EDEDED;
+  color: #777;
+}

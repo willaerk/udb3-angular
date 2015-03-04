@@ -55,7 +55,7 @@ function udbQueryEditorField() {
       };
 
       scope.removeField = function (index) {
-        scope.qe.removeField(getParentGroup(), index);
+        scope.qe.removeField(getParentGroup(), index, scope.rootGroup);
       };
 
       scope.addSubGroup = function (index) {

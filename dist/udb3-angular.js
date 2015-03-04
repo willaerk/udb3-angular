@@ -3881,7 +3881,7 @@ function udbQueryEditorField() {
       };
 
       scope.removeField = function (index) {
-        scope.qe.removeField(getParentGroup(), index);
+        scope.qe.removeField(getParentGroup(), index, scope.rootGroup);
       };
 
       scope.addSubGroup = function (index) {
@@ -4025,11 +4025,12 @@ function udbQueryEditor(
       /**
        * Remove a field from a group
        *
-       * @param {number}  group  The group to delete a field from
-       * @param {number}  fieldIndex  The index of the field to delete
+       * @param {object}    group       The group to delete a field from
+       * @param {number}    fieldIndex  The index of the field to delete
+       * @param {object=}   rootGroup   The root group of the field to delete
        */
-      qe.removeField = function (group, fieldIndex) {
-        if (group.nodes.length > 1) {
+      qe.removeField = function (group, fieldIndex, rootGroup) {
+        if (rootGroup.nodes.length > 1) {
           group.nodes.splice(fieldIndex, 1);
         }
 

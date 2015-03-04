@@ -10,7 +10,7 @@
 angular
   .module('udb.search')
   .value('fieldTypeTransformers', {
-    'string': ['!', '='],
+    'string': ['=', '!'],
     'tokenized-string': ['+', '-'],
     'choice': ['=', '!'],
     'term': ['=', '!'],

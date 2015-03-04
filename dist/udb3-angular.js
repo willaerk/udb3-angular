@@ -1818,7 +1818,7 @@ angular.module('udb.core')
     },
     '=': 'is gelijk aan',
     '><': 'tussen',
-    '+': 'is geljk aan',
+    '+': 'is gelijk aan',
     '!': 'is niet gelijk aan',
     '-': 'is niet gelijk aan',
     '>': 'is groter of gelijk aan',
@@ -4332,7 +4332,7 @@ function JsonLDLangFilter() {
 angular
   .module('udb.search')
   .value('fieldTypeTransformers', {
-    'string': ['!', '='],
+    'string': ['=', '!'],
     'tokenized-string': ['+', '-'],
     'choice': ['=', '!'],
     'term': ['=', '!'],

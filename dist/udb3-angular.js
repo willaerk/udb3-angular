@@ -2346,7 +2346,9 @@ angular
   .service('eventTypes', EventTypes);
 
 /* @ngInject */
-function EventTypes($q, $window, $location, $http, appConfig, $cookieStore) {
+function EventTypes($q, $window, $location, $http, $cacheFactory, appConfig, $cookieStore) {
+
+  var cache = $cacheFactory('categoriesCache');
 
   /**
    * Get the categories.
@@ -2354,19 +2356,25 @@ function EventTypes($q, $window, $location, $http, appConfig, $cookieStore) {
   this.getCategories = function () {
 
     var deferredEvent = $q.defer();
+    var categories = cache.get('categories');
 
-    var eventTypeRequest = $http.get(appConfig.udb3BaseUrl + '/src/event_form/categories.json');
+    if (categories) {
+      deferredEvent.resolve(categories);
+    } else {
+      var eventTypeRequest = $http.get(appConfig.udb3BaseUrl + '/src/event_form/categories.json');
 
-    eventTypeRequest.success(function(jsonData) {
-      deferredEvent.resolve(jsonData);
-    });
+      eventTypeRequest.success(function(jsonData) {
+        deferredEvent.resolve(jsonData);
+        cache.put('categories', jsonData);
+      });
+    }
 
     return deferredEvent.promise;
 
   };
 
 }
-EventTypes.$inject = ["$q", "$window", "$location", "$http", "appConfig", "$cookieStore"];
+EventTypes.$inject = ["$q", "$window", "$location", "$http", "$cacheFactory", "appConfig", "$cookieStore"];
 
 // Source: src/core/udb-api.service.js
 /**

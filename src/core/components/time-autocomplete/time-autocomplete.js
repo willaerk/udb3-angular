@@ -24,7 +24,6 @@ angular
       templateUrl: 'templates/time-autocomplete.html',
       link: function(scope, elem, attrs, ngModel) {
         scope.times = generateTimes();
-        scope.validateHour = validateHour();
       },
 
     };
@@ -61,13 +60,6 @@ angular
 
       return options;
 
-    }
-
-    /**
-     * Validate the selected hour.
-     */
-    function validateHour(value) {
-      console.log(value);
     }
 
 

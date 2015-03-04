@@ -1959,7 +1959,6 @@ angular
       templateUrl: 'templates/time-autocomplete.html',
       link: function(scope, elem, attrs, ngModel) {
         scope.times = generateTimes();
-        scope.validateHour = validateHour();
       },
 
     };
@@ -1996,13 +1995,6 @@ angular
 
       return options;
 
-    }
-
-    /**
-     * Validate the selected hour.
-     */
-    function validateHour(value) {
-      console.log(value);
     }
 
 
@@ -4996,6 +4988,7 @@ function EventFormStep5Directive() {
       $scope.placeLabels = categories.place;
     });
 
+    $scope.mustRefine = false;
     $scope.showAllEventTypes = false;
     $scope.showAllPlaces = false;
     $scope.eventThemeLabels = [];
@@ -5026,7 +5019,14 @@ function EventFormStep5Directive() {
             $scope.activeEventType = $scope.eventTypeLabels[i].id;
             $scope.activeEventTypeLabel = $scope.eventTypeLabels[i].label;
 
-            $scope.eventThemeLabels = $scope.eventTypeLabels[i].themes;
+            if ($scope.eventTypeLabels[i].themes && $scope.eventTypeLabels[i].themes.length > 0) {
+              $scope.eventThemeLabels = $scope.eventTypeLabels[i].themes;
+              $scope.mustRefine = true;
+            }
+            else {
+              $scope.mustRefine = false;
+            }
+
             break;
           }
         }
@@ -5040,6 +5040,15 @@ function EventFormStep5Directive() {
           if ($scope.placeLabels[j].id === type) {
             $scope.activeEventType = $scope.placeLabels[j].id;
             $scope.activeEventTypeLabel = $scope.placeLabels[j].label;
+
+            if ($scope.eventTypeLabels[j].themes && $scope.eventTypeLabels[j].themes.length > 0) {
+              $scope.eventThemeLabels = $scope.eventTypeLabels[j].themes;
+              $scope.mustRefine = true;
+            }
+            else {
+              $scope.mustRefine = false;
+            }
+
             break;
           }
         }
@@ -5054,8 +5063,9 @@ function EventFormStep5Directive() {
 
       EventFormData.eventType = type;
       EventFormData.setEventType(type, label);
+      EventFormData.theme = {};
 
-      if (!isEvent) {
+      if (!$scope.mustRefine) {
         EventFormData.showStep(2);
       }
 
@@ -5096,6 +5106,7 @@ function EventFormStep5Directive() {
       EventFormData.setTheme(id, label);
 
       EventFormData.showStep(2);
+      $scope.mustRefine = false;
 
     }
 
@@ -5103,6 +5114,7 @@ function EventFormStep5Directive() {
      * Click listener to reset the active theme.
      */
     function resetTheme() {
+      $scope.mustRefine = true;
       $scope.activeTheme = '';
     }
 
@@ -5582,16 +5594,16 @@ function EventFormStep5Directive() {
     // main storage for event form.
     $scope.eventFormData = EventFormData;
 
-    $scope.validateEvent = validateEvent;
-    $scope.saveEvent = saveEvent;
-    $scope.lastUpdated = null;
-
     $scope.duplicatesSearched = false;
+    $scope.saving = false;
+    $scope.error = false;
     $scope.udb3DashboardUrl = appConfig.appHomeUrl;
     $scope.activeTitle = '';
     $scope.currentDuplicateId = '';
     $scope.currentDuplicateDelta = 0;
-    //$scope.event = new UdbEvent();
+
+    $scope.validateEvent = validateEvent;
+    $scope.saveEvent = saveEvent;
     $scope.setActiveDuplicate = setActiveDuplicate;
     $scope.previousDuplicate = previousDuplicate;
     $scope.nextDuplicate = nextDuplicate;
@@ -5601,6 +5613,10 @@ function EventFormStep5Directive() {
      * Validate date after step 4 to enter step 5.
      */
     function validateEvent() {
+
+      $scope.saving = true;
+      $scope.error = false;
+
       // Set the name.
       EventFormData.setName($scope.activeTitle, 'nl');
 
@@ -5660,6 +5676,7 @@ function EventFormStep5Directive() {
 
         // Set the results for the duplicates modal,
         if (data.totalItems > 0) {
+          $scope.saving = false;
           $scope.resultViewer.setResults(data);
         }
         // or save the event immediataly if no duplicates were found.
@@ -5667,8 +5684,12 @@ function EventFormStep5Directive() {
           saveEvent();
         }
 
+      }, function() {
+        // Error while saving.
+        $scope.error = true;
+        $scope.saving = false;
       });
-      //  saveEvent();
+
     }
 
     /**
@@ -5676,13 +5697,32 @@ function EventFormStep5Directive() {
      */
     function saveEvent() {
 
-      var eventCrudPromise = null;
+      $scope.error = false;
+      $scope.saving = true;
 
-      // EventCrud solves the Event or place.
-      eventCrudPromise = eventCrud.createEvent($scope.eventFormData);
+      var eventCrudPromise = eventCrud.createEvent($scope.eventFormData);
+      eventCrudPromise.then(function(jsonResponse) {
+        EventFormData.id = jsonResponse.data.eventId;
 
-      $scope.lastUpdated = moment(Date.now()).format('DD/MM/YYYY HH:mm:s');
+        // Work hardcoded on this event for now.
+        EventFormData.id = '2fa0b713-09ac-4a13-b357-5e5c57294b24';
+        updateLastUpdated();
+        $scope.saving = false;
+      }, function() {
+        // Error while saving.
+        $scope.error = true;
+        $scope.saving = false;
+      });
 
+    }
+
+    /**
+     * Update the last updated time.
+     */
+    function updateLastUpdated() {
+      // Last updated is not in scope. Themers are free to choose where to place it.
+      angular.element('#last-updated').show();
+      angular.element('#last-updated span').html(moment(Date.now()).format('HH:mm'));
     }
 
     /**
@@ -5694,7 +5734,6 @@ function EventFormStep5Directive() {
       for (var duplicateId in $scope.resultViewer.events) {
         var eventId = $scope.resultViewer.events[duplicateId]['@id'].split('/').pop();
         if (eventId === id) {
-          console.log('found ' + id);
           $scope.currentDuplicateId = id;
           $scope.currentDuplicateDelta = parseInt(duplicateId) + 1;
         }
@@ -5752,7 +5791,7 @@ function EventFormStep5Directive() {
   function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizers, $modal) {
 
     // Work hardcoded on this id for now.
-    EventFormData.id = '1c4a7e6a-3ed9-450f-80d7-e3439cb72e15';
+    EventFormData.id = '2fa0b713-09ac-4a13-b357-5e5c57294b24';
 
     // Scope vars.
     $scope.eventFormData = EventFormData; // main storage for event form.
@@ -8529,7 +8568,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "        <a class=\"btn btn-link btn-default\" href=\"\" ng-click=\"resetEventType()\">Wijzigen</a>\n" +
     "      </p>\n" +
     "\n" +
-    "      <div class=\"col-xs-12\" ng-hide=\"activeTheme !== '' || activeEventType === '' || !eventFormData.isEvent\">\n" +
+    "      <div class=\"col-xs-12\" ng-show=\"mustRefine\">\n" +
     "        <label class=\"event-theme-label\" ng-show=\"eventThemeLabels.length\">Verfijn</label>\n" +
     "        <ul class=\"list-inline\">\n" +
     "          <li ng-repeat=\"eventThemeLabel in eventThemeLabels\">\n" +
@@ -8612,12 +8651,12 @@ $templateCache.put('templates/time-autocomplete.html',
     "        <label for=\"gemeente-autocomplete\" id=\"gemeente-label\"> Kies een gemeente</label>\n" +
     "        <div id=\"gemeente-kiezer\" ng-hide=\"selectedCity !== ''\">\n" +
     "          <span style=\"position: relative; display: inline-block; direction: ltr;\" class=\"twitter-typeahead\">\n" +
-    "            <input type=\"text\" \n" +
+    "            <input type=\"text\"\n" +
     "                   class=\"form-control typeahead\"\n" +
-    "                   placeholder=\"Gemeente of postcode\" \n" +
-    "                   ng-model=\"cityAutocompleteTextField\" \n" +
-    "                   typeahead=\"city.cityId as city.cityLabel for city in cityAutocomplete.getCities($viewValue)\"  \n" +
-    "                   typeahead-on-select=\"selectCity($item, $model, $label)\" \n" +
+    "                   placeholder=\"Gemeente of postcode\"\n" +
+    "                   ng-model=\"cityAutocompleteTextField\"\n" +
+    "                   typeahead=\"city.cityId as city.cityLabel for city in cityAutocomplete.getCities($viewValue)\"\n" +
+    "                   typeahead-on-select=\"selectCity($item, $model, $label)\"\n" +
     "                   typeahead-min-length=\"3\" required>\n" +
     "          </span>\n" +
     "        </div>\n" +
@@ -8634,12 +8673,12 @@ $templateCache.put('templates/time-autocomplete.html',
     "          <label id=\"locatie-label\">Kies een locatie</label>\n" +
     "          <div id=\"locatie-kiezer\" ng-hide=\"locationSelected || locationAdded\" >\n" +
     "            <span style=\"position: relative; display: inline-block; direction: ltr;\" class=\"twitter-typeahead\">\n" +
-    "              <input type=\"text\" \n" +
-    "                     placeholder=\"Locatie\" \n" +
+    "              <input type=\"text\"\n" +
+    "                     placeholder=\"Locatie\"\n" +
     "                     class=\"form-control typeahead\"\n" +
-    "                     ng-model=\"locationAutocompleteTextField\" \n" +
-    "                     typeahead=\"location for location in getLocations($viewValue)\" \n" +
-    "                     typeahead-on-select=\"selectLocation($item, $model, $label)\" \n" +
+    "                     ng-model=\"locationAutocompleteTextField\"\n" +
+    "                     typeahead=\"location for location in getLocations($viewValue)\"\n" +
+    "                     typeahead-on-select=\"selectLocation($item, $model, $label)\"\n" +
     "                     typeahead-min-length=\"3\" />\n" +
     "              <div class=\"plaats-adres-resultaat dropdown-menu-no-results\" ng-show=\"noLocationsFound\">\n" +
     "                <p>\n" +
@@ -8688,7 +8727,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "      </div>\n" +
     "\n" +
     "    </div>\n" +
-    "\n" +
+    "  <a ng-click=\"eventFormData.showStep(4)\">volgende</a>\n" +
     "</section>\n" +
     "\n" +
     "</div>"
@@ -8715,7 +8754,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "        </p>\n" +
     "      </div>\n" +
     "    </div>\n" +
-    "    <p><a class=\"btn btn-primary titel-doorgaan\" ng-show=\"activeTitle !== ''\" ng-click=\"validateEvent()\">Doorgaan</a></p>\n" +
+    "    <p><a class=\"btn btn-primary titel-doorgaan\" ng-show=\"activeTitle !== ''\" ng-click=\"validateEvent()\">Doorgaan <i class=\"fa fa-circle-o-notch fa-spin\" ng-show=\"saving\"></i></a></p>\n" +
     "\n" +
     "  </section>\n" +
     "\n" +
@@ -8755,9 +8794,13 @@ $templateCache.put('templates/time-autocomplete.html',
     "        <a class=\"btn btn-default\" href=\"{{ udb3DashboardUrl }}\">Nee, keer terug naar dashboard</a>\n" +
     "      </li>\n" +
     "      <li>\n" +
-    "        <a class=\"btn btn-primary dubbeldetectie-doorgaan\" ng-click=\"saveEvent()\">Ja, doorgaan met invoeren</a>\n" +
+    "        <a class=\"btn btn-primary dubbeldetectie-doorgaan\" ng-click=\"saveEvent()\">Ja, doorgaan met invoeren <i class=\"fa fa-circle-o-notch fa-spin\" ng-show=\"saving\"></i></a>\n" +
     "      </li>\n" +
     "    </ul>\n" +
+    "\n" +
+    "    <div class=\"alert alert-danger\" ng-show=\"error\">\n" +
+    "      Er ging iets fout tijdens het opslaan van je activiteit. Gelieve later opnieuw te proberen.\n" +
+    "    </div>\n" +
     "\n" +
     "    <div class=\"modal fade\" id=\"dubbeldetectie-voorbeeld\" aria-hidden=\"true\" ng-hide=\"currentDuplicateId === ''\">\n" +
     "\n" +
@@ -8832,9 +8875,6 @@ $templateCache.put('templates/time-autocomplete.html',
     "\n" +
     "      </div><!-- /.modal-dialog -->\n" +
     "    </div>\n" +
-    "    \n" +
-    "    <p ng-show=\"lastUpdated !== ''\"><em>Laatst bewaard op {{ lastUpdated | date : 'dd/MM/yyyy • HH:mm' }}</em></p>\n" +
-    "    \n" +
     "\n" +
     "  </section>\n" +
     "\n" +
@@ -8893,7 +8933,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "                      Geef hier een wervende omschrijving van de route. Vermeld in deze tekst <strong>hoe</strong> de route wordt afgelegd (per fiets, per boot, ...), de mogelijke tussenstops, de <strong>duur</strong>, <strong>afstand</strong> en hoe de route <strong>begeleid</strong> is (met gids, brochure of wegwijzers).\n" +
     "                    </p>\n" +
     "                    <p ng-switch-when=\"0.7.0.0.0\">\n" +
-    "                      Geef hier een wervende omschrijving van de route. Vermeld het max. aantal personen per groepje, hoe de rondleiding wordt georganiseerd (doorlopend, met intervallen of op vaste tijdstippen) en of er speciale aandachtspunten zijn (vb. laarzen aangewezen).\n" +
+    "                      Geef hier een wervende omschrijving van de route rondleiding. Vermeld het <strong>max. aantal personen</strong> per groepje, <strong>hoe</strong> de rondleiding wordt georganiseerd (doorlopend, met intervallen of op vaste tijdstippen) en of er <strong>speciale aandachtspunten</strong> zijn (vb. laarzen aangewezen).\n" +
     "                    </p>\n" +
     "                    <p ng-switch-when=\"0.14.0.0.0\">\n" +
     "                      Geef hier een wervende omschrijving van het monument. Geef ook aan indien het monument slechts beperkt opengesteld is (vb. enkel salons).\n" +

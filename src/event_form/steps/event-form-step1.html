@@ -42,7 +42,7 @@
         <a class="btn btn-link btn-default" href="" ng-click="resetEventType()">Wijzigen</a>
       </p>
 
-      <div class="col-xs-12" ng-hide="activeTheme !== '' || activeEventType === '' || !eventFormData.isEvent">
+      <div class="col-xs-12" ng-show="mustRefine">
         <label class="event-theme-label" ng-show="eventThemeLabels.length">Verfijn</label>
         <ul class="list-inline">
           <li ng-repeat="eventThemeLabel in eventThemeLabels">

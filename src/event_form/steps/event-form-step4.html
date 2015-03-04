@@ -17,7 +17,7 @@
         </p>
       </div>
     </div>
-    <p><a class="btn btn-primary titel-doorgaan" ng-show="activeTitle !== ''" ng-click="validateEvent()">Doorgaan</a></p>
+    <p><a class="btn btn-primary titel-doorgaan" ng-show="activeTitle !== ''" ng-click="validateEvent()">Doorgaan <i class="fa fa-circle-o-notch fa-spin" ng-show="saving"></i></a></p>
 
   </section>
 
@@ -57,9 +57,13 @@
         <a class="btn btn-default" href="{{ udb3DashboardUrl }}">Nee, keer terug naar dashboard</a>
       </li>
       <li>
-        <a class="btn btn-primary dubbeldetectie-doorgaan" ng-click="saveEvent()">Ja, doorgaan met invoeren</a>
+        <a class="btn btn-primary dubbeldetectie-doorgaan" ng-click="saveEvent()">Ja, doorgaan met invoeren <i class="fa fa-circle-o-notch fa-spin" ng-show="saving"></i></a>
       </li>
     </ul>
+
+    <div class="alert alert-danger" ng-show="error">
+      Er ging iets fout tijdens het opslaan van je activiteit. Gelieve later opnieuw te proberen.
+    </div>
 
     <div class="modal fade" id="dubbeldetectie-voorbeeld" aria-hidden="true" ng-hide="currentDuplicateId === ''">
 
@@ -134,9 +138,6 @@
 
       </div><!-- /.modal-dialog -->
     </div>
-    
-    <p ng-show="lastUpdated !== ''"><em>Laatst bewaard op {{ lastUpdated | date : 'dd/MM/yyyy • HH:mm' }}</em></p>
-    
 
   </section>
 

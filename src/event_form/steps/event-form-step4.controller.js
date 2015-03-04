@@ -19,16 +19,16 @@
     // main storage for event form.
     $scope.eventFormData = EventFormData;
 
-    $scope.validateEvent = validateEvent;
-    $scope.saveEvent = saveEvent;
-    $scope.lastUpdated = null;
-
     $scope.duplicatesSearched = false;
+    $scope.saving = false;
+    $scope.error = false;
     $scope.udb3DashboardUrl = appConfig.appHomeUrl;
     $scope.activeTitle = '';
     $scope.currentDuplicateId = '';
     $scope.currentDuplicateDelta = 0;
-    //$scope.event = new UdbEvent();
+
+    $scope.validateEvent = validateEvent;
+    $scope.saveEvent = saveEvent;
     $scope.setActiveDuplicate = setActiveDuplicate;
     $scope.previousDuplicate = previousDuplicate;
     $scope.nextDuplicate = nextDuplicate;
@@ -38,6 +38,10 @@
      * Validate date after step 4 to enter step 5.
      */
     function validateEvent() {
+
+      $scope.saving = true;
+      $scope.error = false;
+
       // Set the name.
       EventFormData.setName($scope.activeTitle, 'nl');
 
@@ -97,6 +101,7 @@
 
         // Set the results for the duplicates modal,
         if (data.totalItems > 0) {
+          $scope.saving = false;
           $scope.resultViewer.setResults(data);
         }
         // or save the event immediataly if no duplicates were found.
@@ -104,8 +109,12 @@
           saveEvent();
         }
 
+      }, function() {
+        // Error while saving.
+        $scope.error = true;
+        $scope.saving = false;
       });
-      //  saveEvent();
+
     }
 
     /**
@@ -113,13 +122,32 @@
      */
     function saveEvent() {
 
-      var eventCrudPromise = null;
+      $scope.error = false;
+      $scope.saving = true;
 
-      // EventCrud solves the Event or place.
-      eventCrudPromise = eventCrud.createEvent($scope.eventFormData);
+      var eventCrudPromise = eventCrud.createEvent($scope.eventFormData);
+      eventCrudPromise.then(function(jsonResponse) {
+        EventFormData.id = jsonResponse.data.eventId;
 
-      $scope.lastUpdated = moment(Date.now()).format('DD/MM/YYYY HH:mm:s');
+        // Work hardcoded on this event for now.
+        EventFormData.id = '2fa0b713-09ac-4a13-b357-5e5c57294b24';
+        updateLastUpdated();
+        $scope.saving = false;
+      }, function() {
+        // Error while saving.
+        $scope.error = true;
+        $scope.saving = false;
+      });
 
+    }
+
+    /**
+     * Update the last updated time.
+     */
+    function updateLastUpdated() {
+      // Last updated is not in scope. Themers are free to choose where to place it.
+      angular.element('#last-updated').show();
+      angular.element('#last-updated span').html(moment(Date.now()).format('HH:mm'));
     }
 
     /**
@@ -131,7 +159,6 @@
       for (var duplicateId in $scope.resultViewer.events) {
         var eventId = $scope.resultViewer.events[duplicateId]['@id'].split('/').pop();
         if (eventId === id) {
-          console.log('found ' + id);
           $scope.currentDuplicateId = id;
           $scope.currentDuplicateDelta = parseInt(duplicateId) + 1;
         }

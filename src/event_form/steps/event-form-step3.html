@@ -12,12 +12,12 @@
         <label for="gemeente-autocomplete" id="gemeente-label"> Kies een gemeente</label>
         <div id="gemeente-kiezer" ng-hide="selectedCity !== ''">
           <span style="position: relative; display: inline-block; direction: ltr;" class="twitter-typeahead">
-            <input type="text" 
+            <input type="text"
                    class="form-control typeahead"
-                   placeholder="Gemeente of postcode" 
-                   ng-model="cityAutocompleteTextField" 
-                   typeahead="city.cityId as city.cityLabel for city in cityAutocomplete.getCities($viewValue)"  
-                   typeahead-on-select="selectCity($item, $model, $label)" 
+                   placeholder="Gemeente of postcode"
+                   ng-model="cityAutocompleteTextField"
+                   typeahead="city.cityId as city.cityLabel for city in cityAutocomplete.getCities($viewValue)"
+                   typeahead-on-select="selectCity($item, $model, $label)"
                    typeahead-min-length="3" required>
           </span>
         </div>
@@ -34,12 +34,12 @@
           <label id="locatie-label">Kies een locatie</label>
           <div id="locatie-kiezer" ng-hide="locationSelected || locationAdded" >
             <span style="position: relative; display: inline-block; direction: ltr;" class="twitter-typeahead">
-              <input type="text" 
-                     placeholder="Locatie" 
+              <input type="text"
+                     placeholder="Locatie"
                      class="form-control typeahead"
-                     ng-model="locationAutocompleteTextField" 
-                     typeahead="location for location in getLocations($viewValue)" 
-                     typeahead-on-select="selectLocation($item, $model, $label)" 
+                     ng-model="locationAutocompleteTextField"
+                     typeahead="location for location in getLocations($viewValue)"
+                     typeahead-on-select="selectLocation($item, $model, $label)"
                      typeahead-min-length="3" />
               <div class="plaats-adres-resultaat dropdown-menu-no-results" ng-show="noLocationsFound">
                 <p>
@@ -88,7 +88,7 @@
       </div>
 
     </div>
-
+  <a ng-click="eventFormData.showStep(4)">volgende</a>
 </section>
 
 </div>

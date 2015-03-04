@@ -30,6 +30,7 @@
       $scope.placeLabels = categories.place;
     });
 
+    $scope.mustRefine = false;
     $scope.showAllEventTypes = false;
     $scope.showAllPlaces = false;
     $scope.eventThemeLabels = [];
@@ -60,7 +61,14 @@
             $scope.activeEventType = $scope.eventTypeLabels[i].id;
             $scope.activeEventTypeLabel = $scope.eventTypeLabels[i].label;
 
-            $scope.eventThemeLabels = $scope.eventTypeLabels[i].themes;
+            if ($scope.eventTypeLabels[i].themes && $scope.eventTypeLabels[i].themes.length > 0) {
+              $scope.eventThemeLabels = $scope.eventTypeLabels[i].themes;
+              $scope.mustRefine = true;
+            }
+            else {
+              $scope.mustRefine = false;
+            }
+
             break;
           }
         }
@@ -74,6 +82,15 @@
           if ($scope.placeLabels[j].id === type) {
             $scope.activeEventType = $scope.placeLabels[j].id;
             $scope.activeEventTypeLabel = $scope.placeLabels[j].label;
+
+            if ($scope.eventTypeLabels[j].themes && $scope.eventTypeLabels[j].themes.length > 0) {
+              $scope.eventThemeLabels = $scope.eventTypeLabels[j].themes;
+              $scope.mustRefine = true;
+            }
+            else {
+              $scope.mustRefine = false;
+            }
+
             break;
           }
         }
@@ -88,8 +105,9 @@
 
       EventFormData.eventType = type;
       EventFormData.setEventType(type, label);
+      EventFormData.theme = {};
 
-      if (!isEvent) {
+      if (!$scope.mustRefine) {
         EventFormData.showStep(2);
       }
 
@@ -130,6 +148,7 @@
       EventFormData.setTheme(id, label);
 
       EventFormData.showStep(2);
+      $scope.mustRefine = false;
 
     }
 
@@ -137,6 +156,7 @@
      * Click listener to reset the active theme.
      */
     function resetTheme() {
+      $scope.mustRefine = true;
       $scope.activeTheme = '';
     }
 

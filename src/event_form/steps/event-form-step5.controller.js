@@ -16,7 +16,7 @@
   function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizers, $modal) {
 
     // Work hardcoded on this id for now.
-    EventFormData.id = '1c4a7e6a-3ed9-450f-80d7-e3439cb72e15';
+    EventFormData.id = '2fa0b713-09ac-4a13-b357-5e5c57294b24';
 
     // Scope vars.
     $scope.eventFormData = EventFormData; // main storage for event form.

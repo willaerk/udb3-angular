@@ -2705,7 +2705,8 @@ angular
 /* @ngInject */
 function udbJobLog(jobLogger, JobStates, EventExportJob) {
   return {
-    restrict: 'C',
+    templateUrl: 'templates/job-logger.directive.html',
+    restrict: 'E',
     link: function postLink(scope, element, attrs) {
       scope.getQueuedJobs = jobLogger.getQueuedJobs;
       scope.getFinishedExportJobs = jobLogger.getFinishedExportJobs;
@@ -5699,6 +5700,42 @@ $templateCache.put('templates/base-job.template.html',
     "  <progressbar value=\"job.progress\" type=\"{{giveJobBarType(job)}}\">\n" +
     "    <i ng-show=\"job.warning\" ng-bind=\"job.warning\"></i>\n" +
     "  </progressbar>\n" +
+    "</div>"
+  );
+
+
+  $templateCache.put('templates/job-logger.directive.html',
+    "<div class=\"udb-job-log\" ng-class=\"{'shown': showJobLog}\">\n" +
+    "  <div class=\"row\">\n" +
+    "    <div class=\"col-sm-12\">\n" +
+    "      <div class=\"udb-job-block udb-job-block-ready\">\n" +
+    "        <p class=\"udb-job-title\">Geëxporteerde documenten</p>\n" +
+    "        <ul class=\"list-unstyled udb-job-messages\">\n" +
+    "          <li class=\"alert\" ng-repeat=\"job in getFinishedExportJobs()\" repeat-animation>\n" +
+    "            <udb-job></udb-job>\n" +
+    "          </li>\n" +
+    "        </ul>\n" +
+    "      </div>\n" +
+    "\n" +
+    "      <div class=\"udb-job-block udb-job-block-errors\">\n" +
+    "        <p class=\"udb-job-title\">Meldingen <span class=\"badge\" ng-bind=\"getFailedJobs().length\"></span></p>\n" +
+    "        <ul class=\"list-unstyled udb-job-messages\">\n" +
+    "          <li class=\"alert\" ng-repeat=\"job in getFailedJobs()\" repeat-animation>\n" +
+    "            <udb-job></udb-job>\n" +
+    "          </li>\n" +
+    "        </ul>\n" +
+    "      </div>\n" +
+    "\n" +
+    "      <div class=\"udb-job-block udb-job-block-pending\">\n" +
+    "        <p class=\"udb-job-title\">Bezig</p>\n" +
+    "        <ul class=\"list-unstyled udb-job-messages\">\n" +
+    "          <li class=\"alert\" ng-repeat=\"job in getQueuedJobs()\" repeat-animation>\n" +
+    "            <udb-job></udb-job>\n" +
+    "          </li>\n" +
+    "        </ul>\n" +
+    "      </div>\n" +
+    "    </div>\n" +
+    "  </div>\n" +
     "</div>"
   );
 

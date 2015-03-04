@@ -1,0 +1,32 @@
+<div class="udb-job-log" ng-class="{'shown': showJobLog}">
+  <div class="row">
+    <div class="col-sm-12">
+      <div class="udb-job-block udb-job-block-ready">
+        <p class="udb-job-title">Geëxporteerde documenten</p>
+        <ul class="list-unstyled udb-job-messages">
+          <li class="alert" ng-repeat="job in getFinishedExportJobs()" repeat-animation>
+            <udb-job></udb-job>
+          </li>
+        </ul>
+      </div>
+
+      <div class="udb-job-block udb-job-block-errors">
+        <p class="udb-job-title">Meldingen <span class="badge" ng-bind="getFailedJobs().length"></span></p>
+        <ul class="list-unstyled udb-job-messages">
+          <li class="alert" ng-repeat="job in getFailedJobs()" repeat-animation>
+            <udb-job></udb-job>
+          </li>
+        </ul>
+      </div>
+
+      <div class="udb-job-block udb-job-block-pending">
+        <p class="udb-job-title">Bezig</p>
+        <ul class="list-unstyled udb-job-messages">
+          <li class="alert" ng-repeat="job in getQueuedJobs()" repeat-animation>
+            <udb-job></udb-job>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>

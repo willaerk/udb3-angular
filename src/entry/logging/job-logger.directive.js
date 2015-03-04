@@ -13,7 +13,8 @@ angular
 /* @ngInject */
 function udbJobLog(jobLogger, JobStates, EventExportJob) {
   return {
-    restrict: 'C',
+    templateUrl: 'templates/job-logger.directive.html',
+    restrict: 'E',
     link: function postLink(scope, element, attrs) {
       scope.getQueuedJobs = jobLogger.getQueuedJobs;
       scope.getFinishedExportJobs = jobLogger.getFinishedExportJobs;

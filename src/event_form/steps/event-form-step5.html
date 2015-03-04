@@ -25,7 +25,7 @@
         <div class="row extra-beschrijving">
           <div class="extra-task" ng-class="descriptionCssClass">
             <div class="col-sm-3">
-              <em class="extra-task-label">Beschrijving</em>
+              <em class="extra-task-label">Beschrijving</em> <i class="fa fa-circle-o-notch fa-spin" ng-show="savingDescription"></i>
             </div>
             <div class="col-sm-8">
               <section class="state incomplete">
@@ -59,6 +59,11 @@
                 <div class="form-group">
                   <a class="btn btn-primary to-complete" ng-click="saveDescription()">Opslaan</a>
                 </div>
+
+                <div ng-show="descriptionError" class="alert alert-danger">
+                  Er ging iets fout bij het opslaan van de beschrijving.
+                </div>
+
               </section>
             </div>
           </div>
@@ -67,7 +72,7 @@
         <div class="row extra-leeftijd">
           <div class="extra-task" ng-class="ageCssClass">
             <div class="col-sm-3">
-              <em class="extra-task-label">Geschikt voor</em>
+              <em class="extra-task-label">Geschikt voor</em>                 <i class="fa fa-circle-o-notch fa-spin" ng-show="savingAgeRange"></i>
             </div>
             <div class="col-sm-8">
               <section>
@@ -81,7 +86,7 @@
                   </select>
                   <a class="btn btn-link" ng-show="ageRange === 0" ng-click="setAllAges()">Alle leeftijden</a>
                 </div>
-                <div class="form-inline" ng-show="ageRange > 0">
+                <div class="form-inline form-group" ng-show="ageRange > 0">
                   <div class="form-group">
                     <label for="min-age">Vanaf</label>
                     <input type="number" id="min-age" class="form-control" ng-model="minAge" ng-model-options="{ updateOn: 'change' }" ng-change="saveAgeRange()">
@@ -91,6 +96,10 @@
 
                 <p ng-show="ageRange === -1">Alle leeftijden <a href="#" class="btn btn-link btn-leeftijd-restore to-filling" ng-click="resetAgeRange()">Wijzigen</a></p>
 
+                <div ng-show="ageRangeError" class="alert alert-danger">
+                  Er ging iets fout bij het opslaan van de leeftijd.
+                </div>
+
               </section>
             </div>
           </div>
@@ -99,7 +108,7 @@
         <div class="row extra-organisator">
           <div class="extra-task" ng-class="organizerCssClass">
             <div class="col-sm-3">
-              <em class="extra-task-label">Organisatie</em>
+              <em class="extra-task-label">Organisatie</em> <i class="fa fa-circle-o-notch fa-spin" ng-show="savingOrganizer"></i>
             </div>
             <div class="col-sm-8">
               <section class="state incomplete">
@@ -123,6 +132,9 @@
                   </div>
                 </div>
               </section>
+              <div ng-show="organizerError" class="alert alert-danger">
+                Er ging iets fout bij het opslaan van de organisator.
+              </div>
             </div>
           </div>
         </div>

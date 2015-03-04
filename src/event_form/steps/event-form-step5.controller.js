@@ -16,12 +16,22 @@
   function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizers, $modal) {
 
     // Work hardcoded on this id for now.
+    // Event
     EventFormData.id = '2fa0b713-09ac-4a13-b357-5e5c57294b24';
+
+    // Place
+    EventFormData.id = 'ad461033-839d-4383-98ab-50afb650da14';
+    EventFormData.isEvent = false;
+    EventFormData.isPlace = true;
 
     // Scope vars.
     $scope.eventFormData = EventFormData; // main storage for event form.
     $scope.description = EventFormData.getDescription('nl');
     $scope.descriptionCssClass = $scope.description ? 'state-complete' : 'state-incomplete';
+    $scope.savingDescription = false;
+    $scope.descriptionError = false;
+    $scope.savingAgeRange = false;
+    $scope.ageRangeError = false;
     $scope.ageRange = 0;
     $scope.ageCssClass = EventFormData.ageRange ? 'state-complete' : 'state-incomplete';
     $scope.minAge = '';
@@ -29,6 +39,8 @@
     $scope.organizer = '';
     $scope.emptyOrganizerAutocomplete = false;
     $scope.loadingOrganizers = false;
+    $scope.organizerError = false;
+    $scope.savingOrganizer = false;
 
     // Scope functions.
     $scope.saveDescription = saveDescription;
@@ -51,20 +63,31 @@
      */
     function saveDescription() {
 
+      $scope.savingDescription = true;
+      $scope.descriptionError = false;
+
       EventFormData.setDescription($scope.description, 'nl');
 
       var promise = eventCrud.updateDescription(EventFormData, EventFormData.getType(), $scope.description);
       promise.then(function() {
-        updateLastUpdated();
-      });
 
-      // Toggle correct class.
-      if ($scope.description) {
-        $scope.descriptionCssClass = 'state-complete';
-      }
-      else {
-        $scope.descriptionCssClass = 'state-incomplete';
-      }
+        $scope.savingDescription = false;
+        updateLastUpdated();
+
+        // Toggle correct class.
+        if ($scope.description) {
+          $scope.descriptionCssClass = 'state-complete';
+        }
+        else {
+          $scope.descriptionCssClass = 'state-incomplete';
+        }
+
+      },
+      // Error occured, show message.
+      function() {
+        $scope.savingDescription = false;
+        $scope.descriptionError = true;
+      });
 
     }
 
@@ -89,6 +112,9 @@
      */
     function saveAgeRange() {
 
+      $scope.savingAgeRange = true;
+      $scope.ageRangeError = false;
+
       if ($scope.ageRange > 0) {
 
         if ($scope.ageRange === 12 || $scope.ageRange === 18) {
@@ -105,10 +131,15 @@
 
       var promise = eventCrud.updateTypicalAgeRange(EventFormData, EventFormData.getType());
       promise.then(function() {
+        $scope.savingAgeRange = false;
         updateLastUpdated();
+        $scope.ageCssClass = 'state-complete';
+      }, function() {
+        // Error occured.
+        $scope.savingAgeRange = false;
+        $scope.ageRangeError = true;
       });
 
-      $scope.ageCssClass = 'state-complete';
     }
 
     /**
@@ -204,11 +235,19 @@
      * Save the selected organizer in the backend.
      */
     function saveOrganizer() {
+
+      $scope.organizerError = false;
+      $scope.savingOrganizer = true;
+
       $scope.organizer = '';
       var promise = eventCrud.updateOrganizer(EventFormData);
       promise.then(function() {
         updateLastUpdated();
         $scope.organizerCssClass = 'state-complete';
+        $scope.savingOrganizer = false;
+      }, function() {
+        $scope.organizerError = true;
+        $scope.savingOrganizer = false;
       });
     }
 

@@ -128,9 +128,6 @@
       var eventCrudPromise = eventCrud.createEvent($scope.eventFormData);
       eventCrudPromise.then(function(jsonResponse) {
         EventFormData.id = jsonResponse.data.eventId;
-
-        // Work hardcoded on this event for now.
-        EventFormData.id = '2fa0b713-09ac-4a13-b357-5e5c57294b24';
         updateLastUpdated();
         $scope.saving = false;
       }, function() {

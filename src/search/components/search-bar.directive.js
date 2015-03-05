@@ -25,12 +25,8 @@ function udbSearchBar(searchHelper, $rootScope) {
       };
 
       searchBar.editQuery = function () {
-        var query = searchHelper.setQueryString(searchBar.query);
-
-        if(query.errors && !query.errors.length) {
-          $rootScope.$emit('startEditingQuery');
-          searchBar.isEditing = true;
-        }
+        $rootScope.$emit('startEditingQuery');
+        searchBar.isEditing = true;
       };
 
       searchBar.search = function () {

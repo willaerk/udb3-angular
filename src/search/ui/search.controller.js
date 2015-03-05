@@ -197,12 +197,7 @@ function Search($scope, udbApi, LuceneQueryBuilder, $window, $location, $modal, 
   $scope.tag = tag;
 
   $scope.startEditing = function () {
-    var query = $scope.activeQuery;
-
-    if (query && queryBuilder.isValid(query)) {
-      query.groupedQueryTree = queryBuilder.groupQueryTree(query.queryTree);
-      $scope.queryEditorShown = true;
-    }
+    $scope.queryEditorShown = true;
   };
 
   $scope.stopEditing = function () {

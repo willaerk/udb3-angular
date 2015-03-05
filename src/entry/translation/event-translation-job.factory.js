@@ -41,7 +41,20 @@ function EventTranslationJobFactory(BaseJob, JobStates) {
     if(this.state === JobStates.FAILED) {
       description = 'Vertalen van evenement mislukt';
     } else {
-      description = 'Vertaal ' + job.property + ' van "' + job.event.name.nl + '"';
+      var propertyName;
+
+      switch (job.property) {
+        case 'name':
+          propertyName = 'titel';
+          break;
+        case 'description':
+          propertyName = 'omschrijving';
+          break;
+        default:
+          propertyName = job.property;
+      }
+
+      description = 'Vertaal ' + propertyName + ' van "' + job.event.name.nl + '"';
     }
 
     return description;

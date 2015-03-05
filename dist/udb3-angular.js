@@ -5691,8 +5691,7 @@ angular.module('udb.core').run(['$templateCache', function($templateCache) {
 $templateCache.put('templates/base-job.template.html',
     "<p>\n" +
     "  <ins>\n" +
-    "    <span ng-bind=\"::job.created\"></span>\n" +
-    "    <i class=\"fa fa-circle-o-notch fa-spin udb-job-busy\"\n" +
+    "    <span ng-bind=\"::job.created | date:'HH:mm'\"></span> <i class=\"fa fa-circle-o-notch fa-spin udb-job-busy\"\n" +
     "       ng-show=\"job.state === 'started'\"></i>\n" +
     "  </ins>\n" +
     "  <span class=\"udb-job-description\" ng-bind=\"::job.getDescription()\"></span>\n" +
@@ -5706,7 +5705,7 @@ $templateCache.put('templates/base-job.template.html',
     "    <span aria-hidden=\"true\">×</span>\n" +
     "  </button>\n" +
     "  <ins>\n" +
-    "    <span ng-bind=\"::job.created\"></span>\n" +
+    "    <span ng-bind=\"::job.created | date:'HH:mm'\"></span>\n" +
     "  </ins>\n" +
     "  <span ng-bind=\"job.getDescription()\"></span>\n" +
     "</p>\n"
@@ -6010,8 +6009,7 @@ $templateCache.put('templates/base-job.template.html',
     "    <span aria-hidden=\"true\">×</span>\n" +
     "  </button>\n" +
     "  <ins>\n" +
-    "    <span ng-bind=\"::job.created\"></span>\n" +
-    "    <i class=\"fa fa-check-circle udb-job-success\"></i>\n" +
+    "    <span ng-bind=\"::job.created | date:'HH:mm'\"></span> <i class=\"fa fa-check-circle udb-job-success\"></i>\n" +
     "  </ins>\n" +
     "  <span class=\"udb-job-description\" ng-bind=\"::job.getDescription()\"></span>\n" +
     "  <a role=\"button\" target=\"_blank\" class=\"btn btn-default\" ng-href=\"{{job.exportUrl}}\">\n" +

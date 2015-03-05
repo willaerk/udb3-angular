@@ -2,6 +2,8 @@
   <button type="button" class="close udb-hide-job-button" ng-click="hideJob(job)" aria-label="Close">
     <span aria-hidden="true">×</span>
   </button>
-  <span ng-bind="::job.created"></span>
+  <ins>
+    <span ng-bind="::job.created"></span>
+  </ins>
   <span ng-bind="job.getDescription()"></span>
 </p>

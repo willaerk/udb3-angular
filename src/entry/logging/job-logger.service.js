@@ -88,19 +88,13 @@ function JobLogger(udbSocket, JobStates, EventExportJob) {
   }
 
   function updateJobLists() {
-    var visibleJobs = _.difference(jobs, hiddenJobs);
+    var visibleJobs = _.difference(jobs, hiddenJobs),
+        newJobs = _.filter(visibleJobs, {state: JobStates.CREATED}),
+        activeJobs = _.filter(visibleJobs, {state: JobStates.STARTED});
 
-    failedJobs = _.filter(visibleJobs, function(job) {
-      return job.state === JobStates.FAILED;
-    });
-
-    finishedExportJobs = _.filter(visibleJobs, function(job) {
-      return job instanceof EventExportJob && job.state === JobStates.FINISHED;
-    });
-
-    queuedJobs = _.filter(visibleJobs, function(job) {
-      return job.state !== JobStates.FINISHED && job.state !== JobStates.FAILED;
-    });
+    failedJobs = _.filter(visibleJobs, {state: JobStates.FAILED});
+    finishedExportJobs = _.filter(visibleJobs, {state: JobStates.FINISHED});
+    queuedJobs = activeJobs.concat(newJobs);
   }
 
   /**

@@ -2852,6 +2852,10 @@ function JobLogger(udbSocket, JobStates, EventExportJob) {
     });
   }
 
+  /**
+   * Mark a job as hidden
+   * @param {BaseJob} job
+   */
   function hideJob(job) {
     hiddenJobs = _.union(hiddenJobs, [job]);
     updateJobLists();
@@ -3533,21 +3537,43 @@ function EventExportJobFactory(BaseJob, JobStates) {
    * @constructor
    * @param commandId
    */
-  var EventExportJob = function (commandId, eventCount) {
+  var EventExportJob = function (commandId, eventCount, format) {
     BaseJob.call(this, commandId);
     this.exportUrl = '';
     this.eventCount = eventCount;
+    this.format = format;
   };
 
   EventExportJob.prototype = Object.create(BaseJob.prototype);
   EventExportJob.prototype.constructor = EventExportJob;
 
   EventExportJob.prototype.getTemplateName = function () {
-    return 'export-job';
+    var templateName;
+
+    switch (this.state) {
+      case JobStates.FINISHED:
+        templateName = 'export-job';
+        break;
+      case JobStates.FAILED:
+        templateName = 'failed-job';
+        break;
+      default:
+        templateName = 'base-job';
+    }
+
+    return templateName;
   };
 
   EventExportJob.prototype.getDescription = function() {
-    return 'exporting events';
+    var description = '';
+
+    if(this.state === JobStates.FAILED) {
+      description = 'Exporteren van evenementen mislukt';
+    } else {
+      description = 'Document .' + this.format + ' met ' + this.eventCount + ' evenementen';
+    }
+
+    return description;
   };
 
   EventExportJob.prototype.info = function (jobData) {
@@ -3781,7 +3807,7 @@ function eventExporter(jobLogger, udbApi, EventExportJob) {
     var jobPromise = udbApi.exportEvents(queryString, email, format, properties, perDay, selection);
 
     jobPromise.success(function (jobData) {
-      var job = new EventExportJob(jobData.commandId, eventCount);
+      var job = new EventExportJob(jobData.commandId, eventCount, format);
       jobLogger.addJob(job);
       job.start();
     });
@@ -5715,6 +5741,17 @@ $templateCache.put('templates/base-job.template.html',
   );
 
 
+  $templateCache.put('templates/failed-job.template.html',
+    "<p>\n" +
+    "  <button type=\"button\" class=\"close udb-hide-job-button\" ng-click=\"hideJob(job)\" aria-label=\"Close\">\n" +
+    "    <span aria-hidden=\"true\">×</span>\n" +
+    "  </button>\n" +
+    "  <ins>14:58</ins>\n" +
+    "  <span ng-bind=\"job.getDescription()\"></span>\n" +
+    "</p>\n"
+  );
+
+
   $templateCache.put('templates/job-logger.directive.html',
     "<div class=\"udb-job-log\" ng-class=\"{'shown': showJobLog}\">\n" +
     "  <div class=\"row\">\n" +
@@ -5724,7 +5761,6 @@ $templateCache.put('templates/base-job.template.html',
     "        <ul class=\"list-unstyled udb-job-messages\">\n" +
     "          <li class=\"alert repeat-animation\" ng-repeat=\"job in getFinishedExportJobs()\">\n" +
     "            <udb-job></udb-job>\n" +
-    "            <a ng-click=\"hideJob(job)\">Hide Me</a>\n" +
     "          </li>\n" +
     "        </ul>\n" +
     "      </div>\n" +
@@ -6008,15 +6044,17 @@ $templateCache.put('templates/base-job.template.html',
 
 
   $templateCache.put('templates/export-job.template.html',
-    "<div>\n" +
-    "  {{::job.getDescription()}} - {{ job.state }} - <b>{{job.completedTaskCount}} / {{::job.getTaskCount()}}</b>\n" +
-    "  <span ng-show=\"job.state === 'finished'\">\n" +
-    "    <a target=\"_blank\" ng-href=\"{{job.exportUrl}}\" download>Downloaden</a>\n" +
-    "  </span>\n" +
-    "  <progressbar value=\"job.progress\" type=\"{{giveJobBarType(job)}}\">\n" +
-    "    <i ng-show=\"job.warning\" ng-bind=\"job.warning\"></i>\n" +
-    "  </progressbar>\n" +
-    "</div>"
+    "<p>\n" +
+    "  <button type=\"button\" class=\"close udb-hide-job-button\" ng-click=\"hideJob(job)\" aria-label=\"Close\">\n" +
+    "    <span aria-hidden=\"true\">×</span>\n" +
+    "  </button>\n" +
+    "  <ins>\n" +
+    "    <span ng-bind=\"::job.created\"></span>\n" +
+    "    <i class=\"fa fa-check-circle udb-job-success\"></i>\n" +
+    "  </ins>\n" +
+    "  <span class=\"udb-job-description\" ng-bind=\"::job.getDescription()\"></span>\n" +
+    "  <a role=\"button\" target=\"_blank\" class=\"btn btn-default\" ng-href=\"{{job.exportUrl}}\">Downloaden</a>\n" +
+    "</p>"
   );
 
 

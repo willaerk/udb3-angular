@@ -40,7 +40,7 @@ function eventExporter(jobLogger, udbApi, EventExportJob) {
     var jobPromise = udbApi.exportEvents(queryString, email, format, properties, perDay, selection);
 
     jobPromise.success(function (jobData) {
-      var job = new EventExportJob(jobData.commandId, eventCount);
+      var job = new EventExportJob(jobData.commandId, eventCount, format);
       jobLogger.addJob(job);
       job.start();
     });

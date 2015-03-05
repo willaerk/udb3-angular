@@ -19,21 +19,43 @@ function EventExportJobFactory(BaseJob, JobStates) {
    * @constructor
    * @param commandId
    */
-  var EventExportJob = function (commandId, eventCount) {
+  var EventExportJob = function (commandId, eventCount, format) {
     BaseJob.call(this, commandId);
     this.exportUrl = '';
     this.eventCount = eventCount;
+    this.format = format;
   };
 
   EventExportJob.prototype = Object.create(BaseJob.prototype);
   EventExportJob.prototype.constructor = EventExportJob;
 
   EventExportJob.prototype.getTemplateName = function () {
-    return 'export-job';
+    var templateName;
+
+    switch (this.state) {
+      case JobStates.FINISHED:
+        templateName = 'export-job';
+        break;
+      case JobStates.FAILED:
+        templateName = 'failed-job';
+        break;
+      default:
+        templateName = 'base-job';
+    }
+
+    return templateName;
   };
 
   EventExportJob.prototype.getDescription = function() {
-    return 'exporting events';
+    var description = '';
+
+    if(this.state === JobStates.FAILED) {
+      description = 'Exporteren van evenementen mislukt';
+    } else {
+      description = 'Document .' + this.format + ' met ' + this.eventCount + ' evenementen';
+    }
+
+    return description;
   };
 
   EventExportJob.prototype.info = function (jobData) {

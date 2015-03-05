@@ -5905,7 +5905,7 @@ $templateCache.put('templates/base-job.template.html',
     "    <div class=\"col-xs-3\">\n" +
     "      <ul class=\"nav nav-pills nav-stacked\">\n" +
     "        <li ng-repeat=\"tab in tabs\" class=\"{{classForTab(tab)}}\" role=\"tab\">\n" +
-    "          <a href=\"#{{tab.id}}\" data-toggle=\"tab\" role=\"tab\" ng-bind=\"tab.header\"></a>\n" +
+    "          <a href=\"#{{tab.id}}\" role=\"tab\" ng-bind=\"tab.header\"></a>\n" +
     "        </li>\n" +
     "      </ul>\n" +
     "    </div>\n" +

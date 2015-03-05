@@ -93,7 +93,9 @@ function JobLogger(udbSocket, JobStates, EventExportJob) {
         activeJobs = _.filter(visibleJobs, {state: JobStates.STARTED});
 
     failedJobs = _.filter(visibleJobs, {state: JobStates.FAILED});
-    finishedExportJobs = _.filter(visibleJobs, {state: JobStates.FINISHED});
+    finishedExportJobs = _.filter(visibleJobs, function(job) {
+      return job instanceof EventExportJob && job.state === JobStates.FINISHED;
+    });
     queuedJobs = activeJobs.concat(newJobs);
   }
 

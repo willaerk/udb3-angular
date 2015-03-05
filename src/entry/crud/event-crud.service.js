@@ -32,14 +32,14 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
 
     return jobPromise;
   };
-  
+
   /**
    * Creates a new place.
    */
   this.createPlace = function(place) {
 
     return udbApi.createPlace(place);
-    
+
   };
 
   /**
@@ -100,11 +100,30 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
    * @returns {EventCrud.updateOrganizer.jobPromise}
    */
   this.updateOrganizer = function(item) {
-    
+
     var jobPromise = udbApi.updateProperty(item.id, item.getType(), 'organizer', item.organizer.id);
 
     jobPromise.success(function (jobData) {
       var job = new EventCrudJob(jobData.commandId, item, 'updateOrganizer');
+      jobLogger.addJob(job);
+    });
+
+    return jobPromise;
+
+  };
+
+  /**
+   * Delete the organizer for the event / place.
+   *
+   * @param item
+   * @returns {EventCrud.updateOrganizer.jobPromise}
+   */
+  this.deleteOfferOrganizer = function(item) {
+
+    var jobPromise = udbApi.deleteOfferOrganizer(item.id, item.getType(), item.organizer);
+
+    jobPromise.success(function (jobData) {
+      var job = new EventCrudJob(jobData.commandId, item, 'deleteOrganizer');
       jobLogger.addJob(job);
     });
 

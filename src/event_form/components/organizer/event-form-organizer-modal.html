@@ -21,6 +21,7 @@
           <div class="form-group" ng-class="{'has-error' : showValidation && organizerForm.street.$error.required }">
             <label>Straat</label>
             <input type="text" class="form-control" name="street" ng-model="newOrganizer.street" required>
+            <span class="help-block" ng-show="showValidation && (organizerForm.street.$error.required || organizerForm.number.$error.required)">Gelieve straat en nummer in te vullen.</span>
           </div>
         </div>
         <div class="col-xs-3">
@@ -29,26 +30,17 @@
             <input type="text" class="form-control" name="number" ng-model="newOrganizer.number" required>
           </div>
         </div>
-        <div class="col-xs-12" ng-show="showValidation && (organizerForm.street.$error.required || organizerForm.number.$error.required)">
-          <div class="form-group has-error">
-            <span class="help-block">Gelieve straat en nummer in te vullen.</span>
-          </div>
-        </div>
         <div class="col-xs-9">
           <div class="form-group" ng-class="{'has-error' : showValidation && organizerForm.city.$error.required }">
             <label>Gemeente</label>
             <input type="text" class="form-control" name="city" ng-model="newOrganizer.city" required>
+            <span class="help-block" ng-show="showValidation && (organizerForm.city.$error.required || organizerForm.postalCode.$invalid)">Gelieve een geldige gemeente en postcode in te vullen.</span>
           </div>
         </div>
         <div class="col-xs-3">
           <div class="form-group" ng-class="{'has-error' : showValidation && organizerForm.postalCode.$invalid }">
             <label>Postcode</label>
             <input type="number" class="form-control" name="postalCode" ng-model="newOrganizer.postalCode" required>
-          </div>
-        </div>
-        <div class="col-xs-12" ng-show="showValidation && (organizerForm.city.$error.required || organizerForm.postalCode.$invalid)">
-          <div class="form-group has-error">
-            <span class="help-block">Gelieve een geldige gemeente en postcode in te vullen.</span>
           </div>
         </div>
 
@@ -58,23 +50,24 @@
 
       <div ng-show="newOrganizer.contact.length === 0">
         <ul class="list-unstyled">
-          <li><a ng-click="addOrganizerContactInfo('website')">Website toevoegen</a></li>
+          <li><a ng-click="addOrganizerContactInfo('url')">Website toevoegen</a></li>
           <li><a ng-click="addOrganizerContactInfo('phone')">Telefoonnummer toevoegen</a></li>
           <li><a ng-click="addOrganizerContactInfo('email')">E-mailadres toevoegen</a></li>
         </ul>
       </div>
 
       <table class="table" ng-show="newOrganizer.contact.length">
-        <tr ng-repeat="(key, info) in newOrganizer.contact">
+        <tr ng-repeat="(key, info) in newOrganizer.contact" ng-model="info" udb-contact-info-validation ng-class="{'has-error' : infoErrorMessage !== '' }">
           <td>
-            <select class="form-control" ng-model="info.type">
-              <option value="website">Website</option>
+            <select class="form-control" ng-model="info.type" ng-change="clearInfo();">
+              <option value="url">Website</option>
               <option value="phone">Telefoonnummer</option>
               <option value="email">E-mailadres</option>
             </select>
           </td>
           <td>
-            <input type="text" class="form-control" ng-model="info.value"/>
+            <input type="text" class="form-control" ng-model="info.value" name="contact[{{key}}]" ng-change="validateInfo(key)" ng-model-options="{ updateOn: 'blur' }"/>
+            <span class="help-block" ng-hide="infoErrorMessage === ''" ng-bind="infoErrorMessage"></span>
           </td>
           <td>
             <button type="button" class="close" aria-label="Close" ng-click="deleteOrganizerContactInfo(key)"><span aria-hidden="true">&times;</span></button>
@@ -97,7 +90,8 @@
           <i class="fa fa-circle-o-notch fa-spin"></i>
         </td>
         <td ng-hide="fetching">
-          <strong>{{ organizer.name }} </strong>, {{ organizer.address[0].street }} {{ organizer.address[0].number }}, {{ organizer.address[0].postalCode }} {{ organizer.address[0].city }}</strong>
+          {{ organizer }}
+          <strong>{{ organizer.name }} </strong>, {{ organizer.addresses[0].streetAddress }}, {{ organizer.addresses[0].postalCode }} {{ organizer.addresses[0].addressLocality }}</strong>
         </td>
         <td ng-hide="fetching"><a class="btn btn-default" ng-click="selectOrganizer(organizer)">Selecteren</a></td>
       </tr>
@@ -111,6 +105,10 @@
     </table>
 
   </section>
+
+  <div class="alert alert-danger" ng-show="error">
+    Er ging iets fout tijdens het opslaan van je organisatie.
+  </div>
 
 </div>
 <div class="modal-footer" ng-hide="organizersFound">

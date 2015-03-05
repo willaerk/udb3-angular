@@ -290,6 +290,9 @@ function UdbApi($q, $http, appConfig, $cookieStore, uitidAuth, $cacheFactory, Ud
     );
   };
 
+  /**
+   * Create a new organizer.
+   */
   this.createOrganizer = function(organizer) {
     return $http.post(
       appConfig.baseApiUrl + 'organizer',
@@ -298,5 +301,19 @@ function UdbApi($q, $http, appConfig, $cookieStore, uitidAuth, $cacheFactory, Ud
     );
   };
 
+  /**
+   * Delete the organizer for an offer.
+   */
+  this.deleteOfferOrganizer = function(id, type, organizerId) {
+
+    var updateData = {};
+    updateData.organizerId = organizerId;
+
+    return $http.delete(
+      appConfig.baseApiUrl + type + '/' + id +'/organizer/' + organizerId,
+      updateData,
+      defaultApiConfig
+    );
+  };
 
 }

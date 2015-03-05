@@ -48,6 +48,9 @@ function EventCrudJobFactory(BaseJob) {
       case 'createOrganizer':
         return 'Organisatie toevoegen: "' + this.item.name + '".';
 
+      case 'deleteOrganizer':
+        return 'Organisatie verwijderen: "' + this.item.name + '".';
+
     }
 
   };

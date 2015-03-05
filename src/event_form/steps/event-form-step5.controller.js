@@ -50,7 +50,7 @@
     $scope.resetAgeRange = resetAgeRange;
     $scope.getOrganizers = getOrganizers;
     $scope.selectOrganizer = selectOrganizer;
-    $scope.deleteOrganiser = deleteOrganiser;
+    $scope.deleteOrganizer = deleteOrganizer;
     $scope.openOrganizerModal = openOrganizerModal;
 
     // Check if we have a minAge set on load.
@@ -204,9 +204,21 @@
     /**
      * Delete the selected organiser.
      */
-    function deleteOrganiser() {
-      $scope.organizerCssClass = 'state-incomplete';
-      EventFormData.resetOrganizer();
+    function deleteOrganizer() {
+
+      $scope.organizerError = false;
+
+      var promise = eventCrud.deleteOfferOrganizer(EventFormData);
+      promise.then(function() {
+        updateLastUpdated();
+        $scope.organizerCssClass = 'state-incomplete';
+        EventFormData.resetOrganizer();
+        $scope.savingOrganizer = false;
+      }, function() {
+        $scope.organizerError = true;
+        $scope.savingOrganizer = false;
+      });
+
     }
 
     /**
@@ -227,6 +239,12 @@
           // modal dismissed.
           $scope.organizer = '';
           $scope.emptyOrganizerAutocomplete = false;
+          if (EventFormData.organizer.id) {
+            $scope.organizerCssClass = 'state-complete';
+          }
+          else {
+            $scope.organizerCssClass = 'state-incomplete';
+          }
         });
 
     }

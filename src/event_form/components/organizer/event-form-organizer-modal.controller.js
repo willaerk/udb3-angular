@@ -18,9 +18,10 @@
     // Scope vars.
     $scope.organizersFound = false;
     $scope.loading = false;
+    $scope.error = false;
     $scope.showValidation = false;
     $scope.organizers = [];
-    
+
 
     $scope.newOrganizer = {
       name : '',
@@ -77,6 +78,7 @@
 
       var promise = udbOrganizers.searchDuplicates($scope.newOrganizer.name, $scope.newOrganizer.postalCode);
 
+      $scope.error = false;
       $scope.loading = true;
 
       promise.then(function (data) {
@@ -92,6 +94,9 @@
           saveOrganizer();
         }
 
+      }, function() {
+        $scope.error = true;
+        $scope.loading = false;
       });
 
     }
@@ -109,10 +114,15 @@
     function saveOrganizer() {
 
       $scope.loading = true;
+      $scope.error = false;
+
       var promise = eventCrud.createOrganizer($scope.newOrganizer);
       promise.then(function(jsonResponse) {
-        $scope.newOrganizer.id = jsonResponse.organiserId;
+        $scope.newOrganizer.id = jsonResponse.data.organizerId;
         selectOrganizer($scope.newOrganizer);
+        $scope.loading = false;
+      }, function() {
+        $scope.error = true;
         $scope.loading = false;
       });
     }

@@ -93,6 +93,28 @@ this.getEventByLDId = function (eventLDId) {
   return this.getEventById(eventId);
 };
 
+this.getEventHistoryById = function(eventId) {
+  var eventHistoryLoaded = $q.defer();
+
+  var eventHistoryRequest  = $http.get(
+      appConfig.baseUrl + 'event/' + eventId + '/history',
+      {
+        headers: {
+          'Accept': 'application/json'
+        }
+      });
+
+  eventHistoryRequest.success(function(eventHistory) {
+    eventHistoryLoaded.resolve(eventHistory);
+  });
+
+  eventHistoryRequest.error(function () {
+    eventHistoryLoaded.reject();
+  });
+
+  return eventHistoryLoaded.promise;
+};
+
 /**
  * @returns {Promise} A list of tags wrapped as a promise.
  */

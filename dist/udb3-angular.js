@@ -2226,6 +2226,28 @@ this.getEventByLDId = function (eventLDId) {
   return this.getEventById(eventId);
 };
 
+this.getEventHistoryById = function(eventId) {
+  var eventHistoryLoaded = $q.defer();
+
+  var eventHistoryRequest  = $http.get(
+      appConfig.baseUrl + 'event/' + eventId + '/history',
+      {
+        headers: {
+          'Accept': 'application/json'
+        }
+      });
+
+  eventHistoryRequest.success(function(eventHistory) {
+    eventHistoryLoaded.resolve(eventHistory);
+  });
+
+  eventHistoryRequest.error(function () {
+    eventHistoryLoaded.reject();
+  });
+
+  return eventHistoryLoaded.promise;
+};
+
 /**
  * @returns {Promise} A list of tags wrapped as a promise.
  */
@@ -3409,14 +3431,18 @@ angular
 function EventDetail($scope, $routeParams, $location, udbApi, jsonLDLangFilter, locationTypes) {
   $scope.eventId = $routeParams.eventId;
   $scope.eventIdIsInvalid = false;
+  $scope.eventHistory = [];
 
   var eventLoaded = udbApi.getEventById($scope.eventId);
 
   eventLoaded.then(
       function (event) {
-        console.log(event);
+        var eventHistoryLoaded = udbApi.getEventHistoryById($scope.eventId);
+
+        eventHistoryLoaded.then(function(eventHistory) {
+          $scope.eventHistory = eventHistory;
+        });
         $scope.event = jsonLDLangFilter(event, 'nl');
-        console.log($scope.event);
 
         $scope.eventIdIsInvalid = false;
       },
@@ -5962,7 +5988,7 @@ $templateCache.put('templates/base-job.template.html',
     "    <div class=\"col-xs-3\">\n" +
     "      <ul class=\"nav nav-pills nav-stacked\">\n" +
     "        <li ng-repeat=\"tab in tabs\" class=\"{{classForTab(tab)}}\" role=\"tab\">\n" +
-    "          <a href=\"#{{tab.id}}\" data-toggle=\"tab\" role=\"tab\" ng-bind=\"tab.header\"></a>\n" +
+    "          <a href=\"#{{tab.id}}\" role=\"tab\" ng-bind=\"tab.header\"></a>\n" +
     "        </li>\n" +
     "      </ul>\n" +
     "    </div>\n" +
@@ -6018,14 +6044,21 @@ $templateCache.put('templates/base-job.template.html',
     "                <span ng-if=\"!event.image\">Geen afbeelding</span>\n" +
     "              </td>\n" +
     "            </tr>\n" +
-    "\n" +
     "            </tbody>\n" +
     "          </table>\n" +
     "        </div>\n" +
     "      </div>\n" +
     "\n" +
-    "      <div class=\"tab-pane\" role=\"tabpanel\" ng-show=\"isTabActive('history')\">\n" +
-    "        <p>Historiek hier</p>\n" +
+    "      <div role=\"tabpanel\" class=\"tab-pane\" ng-show=\"isTabActive('history')\">\n" +
+    "        <div class=\"timeline\">\n" +
+    "          <dl ng-repeat=\"eventAction in eventHistory\">\n" +
+    "            <dt ng-bind=\"eventAction.date | date:'dd/MM/yyyy H:mm'\"></dt>\n" +
+    "            <dd>\n" +
+    "                <span class=\"author\" ng-if=\"eventAction.author\">{{eventAction.author}}</span><br ng-if=\"eventAction.author\"/>\n" +
+    "                <span class=\"description\">{{eventAction.description}}</span>\n" +
+    "            </dd>\n" +
+    "          </dl>\n" +
+    "        </div>\n" +
     "      </div>\n" +
     "\n" +
     "      <div class=\"tab-pane\" role=\"tabpanel\" ng-show=\"isTabActive('publication')\">\n" +

@@ -1,6 +1,7 @@
 <div ng-controller="EventFormStep3Ctrl as EventFormStep3">
 
 <section id="waar" ng-show="eventFormData.showStep3">
+  <form name="step3Form" class="css-form">
     <h2 class="title-border">
       <span class="number">3</span>
       <span ng-show="eventFormData.isEvent">Waar vindt dit evenement of deze activiteit plaats?</span>
@@ -9,7 +10,7 @@
 
     <div class="row">
       <div class="col-xs-12">
-        <label for="gemeente-autocomplete" id="gemeente-label"> Kies een gemeente</label>
+        <label for="gemeente-autocomplete" id="gemeente-label" ng-hide="selectedCity !== ''"> Kies een gemeente</label>
         <div id="gemeente-kiezer" ng-hide="selectedCity !== ''">
           <span style="position: relative; display: inline-block; direction: ltr;" class="twitter-typeahead">
             <input type="text"
@@ -18,7 +19,7 @@
                    ng-model="cityAutocompleteTextField"
                    typeahead="city.cityId as city.cityLabel for city in cityAutocomplete.getCities($viewValue)"
                    typeahead-on-select="selectCity($item, $model, $label)"
-                   typeahead-min-length="3" required>
+                   typeahead-min-length="3">
           </span>
         </div>
         <div id="gemeente-gekozen" ng-show="selectedCity !== ''">
@@ -31,17 +32,17 @@
     <div id="waar-evenement" ng-show="eventFormData.isEvent && selectedCity !== ''">
       <div class="row">
         <div class="col-xs-12">
-          <label id="locatie-label">Kies een locatie</label>
-          <div id="locatie-kiezer" ng-hide="locationSelected || locationAdded" >
+          <label id="locatie-label" ng-show="selectedLocation === ''">Kies een locatie</label>
+          <div id="locatie-kiezer" ng-show="selectedLocation === ''">
             <span style="position: relative; display: inline-block; direction: ltr;" class="twitter-typeahead">
               <input type="text"
                      placeholder="Locatie"
                      class="form-control typeahead"
                      ng-model="locationAutocompleteTextField"
-                     typeahead="location for location in getLocations($viewValue)"
+                     typeahead="location.id as location.title for location in getLocations($viewValue)"
                      typeahead-on-select="selectLocation($item, $model, $label)"
                      typeahead-min-length="3" />
-              <div class="plaats-adres-resultaat dropdown-menu-no-results" ng-show="noLocationsFound">
+              <div class="plaats-adres-resultaat dropdown-menu-no-results" ng-show="locationsForCity.length === 0 && locationAutocompleteTextField !== ''">
                 <p>
                   <span>Locatie niet gevonden?</span>
                   <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#waar-locatie-toevoegen" ng-click="openPlaceModal()">Een locatie toevoegen</button>
@@ -49,8 +50,8 @@
               </div>
             </span>
           </div>
-          <div id="locatie-gekozen" ng-show="locationSelected" >
-            <span class=" btn-chosen" id="locatie-gekozen-button" ng-bind="eventFormData.locationLabel"></span>
+          <div id="locatie-gekozen" ng-show="selectedLocation !== ''" >
+            <span class=" btn-chosen" id="locatie-gekozen-button" ng-bind="selectedLocation"></span>
             <button type="button" class="btn btn-default btn-link" data-toggle="modal" data-target="#waar-locatie-toevoegen" ng-click="changeLocationSelection()">Wijzigen</button>
           </div>
         </div>
@@ -60,35 +61,36 @@
     </div>
 
     <div id="waar-plaats" ng-show="eventFormData.isPlace && selectedCity !== ''">
-      <div class="plaats-adres-ingeven" ng-hide="placeValidated" >
+      <div class="plaats-adres-ingeven" ng-hide="selectedLocation !== ''" >
         <div class="row">
           <div class="col-xs-8 col-lg-4">
-            <div class="form-group">
+            <div class="form-group" ng-class="{'has-error' : showValidation && step3Form.street.$error.required }">
               <label>Straat</label>
-              <input class="form-control" id="straat" placeholder="" type="text" ng-model="eventFormData.placeStreet">
-              <span ng-show="placeStreetRequired">Straat is een verplicht veld.</span>
+              <input class="form-control" id="straat" name="street" placeholder="" type="text" ng-model="eventFormData.placeStreet" required>
+              <span class="help-block" ng-show="showValidation && step3Form.street.$error.required">Straat is een verplicht veld.</span>
+              <span class="help-block" ng-show="showValidation && step3Form.number.$error.required">Nummer is een verplicht veld.</span>
             </div>
           </div>
           <div class="col-xs-4 col-lg-2">
-            <div class="form-group">
+            <div class="form-group" ng-class="{'has-error' : showValidation && step3Form.number.$error.required }">
               <label>Nummer</label>
-              <input class="form-control waar-plaats-nummer" id="nummer" placeholder="" type="text" ng-model="eventFormData.placeNumber">
-              <span ng-show="placeNumberRequired">Nummer is een verplicht veld.</span>
+              <input class="form-control waar-plaats-nummer" id="nummer" name="number" placeholder="" type="text" ng-model="eventFormData.placeNumber" required>
             </div>
           </div>
         </div>
         <a class="btn btn-primary plaats-ok" ng-click="validatePlace()">OK</a>
       </div>
 
-      <div class="plaats-adres-resultaat" ng-show="placeValidated">
+      <div class="plaats-adres-resultaat" ng-show="selectedLocation !== ''">
         <p>
-          <span class="btn-chosen" ng-bind="eventFormData.place"></span>
-          <a class="btn btn-link plaats-adres-wijzigen"ng-click="changePlace()">Wijzigen</a>
+          <span class="btn-chosen" ng-bind="selectedLocation"></span>
+          <a class="btn btn-link plaats-adres-wijzigen"ng-click="changeStreetAddress()">Wijzigen</a>
         </p>
       </div>
 
     </div>
-  <a ng-click="eventFormData.showStep(4)">volgende</a>
+    
+  </form>
 </section>
 
 </div>

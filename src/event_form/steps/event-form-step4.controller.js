@@ -55,7 +55,7 @@
       // location_contactinfo_zipcode
       //http://search-prod.lodgon.com/search/rest/search?q=*&fq=type:event&fq=zipcode:9000
       var params = {};
-      var location = {};
+      var location = EventFormData.getLocation();
 
       if (EventFormData.isEvent) {
         params = { locationCdbId : location.id };

@@ -11,7 +11,7 @@
       <div class="col-xs-12">
         <div class="form-group">
 
-          <label class="wanneerkiezer-label">Maak een keuze</label>
+          <label class="wanneerkiezer-label" ng-show="activeCalendarType === ''">Maak een keuze</label>
           <div class="wanneerkiezer" ng-show="activeCalendarType === ''">
             <ul class="list-inline button-list">
               <li ng-repeat="calendarLabel in calendarLabels" ng-hide="eventFormData.isPlace && calendarLabel.eventOnly">

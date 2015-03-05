@@ -26,6 +26,7 @@
     $scope.locationAutocompleteTextField = '';
     
     $scope.selectedCity = '';
+    $scope.selectedLocation = '';
     $scope.placeStreetAddress = '';
     $scope.placeLocationNumber = '';
     $scope.openPlaceModal = openPlaceModal;
@@ -39,18 +40,12 @@
         'streetAddress': ''
       }
     };
+    
+    // Validation.
+    $scope.showValidation = false;
 
     // Convenient scope variables for current controller (in multistep).
     $scope.locationsForCity = [];
-    
-    $scope.noLocationsFound = false;
-    $scope.locationSelected = false;
-    $scope.locationAdded = false;
-    $scope.autoLocationSearch = true;
-    $scope.locationTitleRequired = false;
-    $scope.locationStreetRequired = false;
-    $scope.locationNumberRequired = false;
-    $scope.placeValidated = false;
     $scope.cityAutocomplete = cityAutocomplete;
 
     getLocationCategories();
@@ -60,9 +55,8 @@
     $scope.selectLocation = selectLocation;
     $scope.changeCitySelection = changeCitySelection;
     $scope.changeLocationSelection = changeLocationSelection;
-    $scope.showAddLocation = showAddLocation;
     $scope.validatePlace = validatePlace;
-    $scope.changePlace = changePlace;
+    $scope.changeStreetAddress = changeStreetAddress;
     $scope.getLocations = getLocations;
 
     /**
@@ -71,10 +65,15 @@
      */
     function selectCity($item, $model, $label) {
       
-      EventFormData.location.address.postalCode = $item.zip;
-      EventFormData.location.address.addressLocality = $item.name;
+      EventFormData.resetLocation();
+      var location = $scope.eventFormData.getLocation();
+      location.address.postalCode = $item.zip;
+      location.address.addressLocality = $item.name;
+      EventFormData.setLocation(location);
+      
+      $scope.cityAutocompleteTextField = '';
       $scope.selectedCity = $label;
-      $scope.placeValidated = false;
+      $scope.selectedLocation = '';
       
     }
 
@@ -85,9 +84,50 @@
     function changeCitySelection() {
       
       EventFormData.resetLocation();
-      $scope.placeValidated = false;
       $scope.selectedCity = '';
-      $scope.eventFormData.showStep4 = false;
+      $scope.selectedLocation = '';
+      $scope.cityAutocompleteTextField = '';
+      $scope.locationAutocompleteTextField = '';
+      EventFormData.showStep4 = false;
+      
+    }
+
+    /**
+     * Select location.
+     * @returns {undefined}
+     */
+    function selectLocation($item, $model, $label) {
+      
+      // Assign selection, hide the location field and show the selection.
+      $scope.selectedLocation = $label;
+      $scope.locationAutocompleteTextField = '';
+
+      var location = EventFormData.getLocation();
+      location.id = $model;
+      location.name = $label;
+      EventFormData.setLocation(location);
+        
+      EventFormData.showStep4 = true;
+      
+    }
+
+    /**
+     * Change selected location.
+     * @returns {undefined}
+     */
+    function changeLocationSelection() {
+      
+      // Reset only the location data of the location.
+      var location = EventFormData.getLocation();
+      location.id = '';
+      location.name = '';
+      EventFormData.setLocation(location);
+      
+      //$scope.selectedCity = '';
+      $scope.selectedLocation = '';
+      $scope.locationAutocompleteTextField = '';
+      
+      EventFormData.showStep4 = false;
       
     }
 
@@ -100,52 +140,11 @@
       var eventPromise = cityAutocomplete.getLocationsForCity($viewValue, EventFormData.location.address.postalCode);
       eventPromise.then(function (locations) {
         $scope.locationsForCity = locations;
+        return $scope.locationsForCity;
       });
-      if ($scope.locationsForCity.length > 0) {
-        $scope.noLocationsFound = false;
-      }
-      else {
-        $scope.noLocationsFound = true;
-      }
       
-      return $scope.locationsForCity;
+      return eventPromise;
       
-    }
-
-    /**
-     * Select location.
-     * @returns {undefined}
-     */
-    function selectLocation($item, $model, $label) {
-      $scope.eventFormData.locationId = $model;
-      $scope.eventFormData.locationLabel = $label;
-      $scope.locationSelected = true;
-      $scope.eventFormData.showStep4 = true;
-    }
-
-    /**
-     * Change selected location.
-     * @returns {undefined}
-     */
-    function changeLocationSelection() {
-      $scope.eventFormData.locationId = '';
-      $scope.eventFormData.locationLabel = '';
-      $scope.eventFormData.showStep4 = false;
-      if ($scope.locationAdded) {
-        $scope.autoLocationSearch  = false;
-      }
-      else {
-        $scope.autoLocationSearch  = true;
-        $scope.locationSelected = false;
-      }
-    }
-
-    /**
-     * Show a location.
-     * @returns {undefined}
-     */
-    function showAddLocation () {
-      $scope.autoLocationSearch  = false;
     }
 
     /**
@@ -153,19 +152,18 @@
      * @returns {undefined}
      */
     function getLocationCategories() {
+      
       var eventPromise = eventTypes.getCategories();
       eventPromise.then(function (categories) {
         $scope.categories = categories.place;
       });
+      
     }
 
     /**
      * Open the organizer modal.
      */
     function openPlaceModal() {
-      
-      // Old vars.
-      showAddLocation();
 
       var modalInstance = $modal.open({
         templateUrl: 'templates/event-form-place-modal.html',
@@ -182,16 +180,12 @@
 
       modalInstance.result.then(function (place) {
         
-        console.log(place);
         // Assign the just saved place to the event form data.
         EventFormData.place = place;
         
         // Assign selection, hide the location field and show the selection.
-        $scope.eventFormData.locationId = place.id;
-        $scope.eventFormData.locationLabel = place.getName('nl');
         $scope.selectedCity = place.address.postalCode + ' ' + place.address.addressLocality;
-        $scope.locationSelected = true;
-        $scope.locationAdded = true;
+        $scope.selectedLocation = place.getName('nl');
         
         var location = {
           'id' : place.id,
@@ -203,9 +197,9 @@
               'streetAddress': place.address.streetAddress
           }
         };
-        $scope.eventFormData.setLocation(location);
+        EventFormData.setLocation(location);
         
-        $scope.eventFormData.showStep4 = true;
+        EventFormData.showStep4 = true;
       
       });
 
@@ -216,26 +210,40 @@
      * @returns {undefined}
      */
     function validatePlace() {
-      if (!$scope.eventFormData.placeStreet) {
-        $scope.placeStreetRequired = true;
+      
+      // Forms are automatically known in scope.
+      $scope.showValidation = true;
+      if (!$scope.step3Form.$valid) {
+        return;
       }
-      else if(!$scope.eventFormData.placeNumber) {
-        $scope.placeNumberRequired = true;
-      }
-      else {
-        $scope.eventFormData.place = $scope.eventFormData.placeStreet + ' ' + $scope.eventFormData.placeNumber;
-        $scope.placeValidated = true;
-        $scope.eventFormData.showStep4 = true;
-      }
+      
+      var location = EventFormData.getLocation();
+      location.address.addressCountry = 'BE';
+      location.address.streetAddress = EventFormData.placeStreet + ' ' + EventFormData.placeNumber;
+      EventFormData.setLocation(location);
+      
+      $scope.selectedLocation = location.address.streetAddress;
+      
+      EventFormData.showStep4 = true;
+      
     }
 
     /**
-     * Change Place
+     * Change StreetAddress
      * @returns {undefined}
      */
-    function changePlace() {
-      $scope.placeValidated = false;
-      $scope.eventFormData.showStep4 = false;
+    function changeStreetAddress() {
+      
+      // Reset only the street/number data of the location.
+      var location = EventFormData.getLocation();
+      location.address.addressCountry = '';
+      location.address.streetAddress = '';
+      EventFormData.setLocation(location);
+      
+      $scope.selectedLocation = '';
+      
+      EventFormData.showStep4 = false;
+      
     }
 
   }

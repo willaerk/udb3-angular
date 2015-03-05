@@ -2,44 +2,46 @@
   <h4 class="modal-title">Nieuwe locatie toevoegen</h4>
 </div>
 <div class="modal-body">
-  <div class="form-group">
-    <label>Titel</label>
-    <input class="form-control" type="text" ng-model="newPlace.name" required>
-    <span ng-show="titleRequired">Titel is een verplicht veld.</span>
-  </div>
-
-  <div class="form-group">
-    <label>Categorie</label>
-    <select class="form-control" size="4" id="locatie-toevoegen-types" ng-model="newPlace.eventType" required>
-      <option ng-repeat="category in categories" value="{{ category.id }}">{{ category.label }}</option>
-    </select>
-    <span ng-show="categoryRequired">Categorie is een verplicht veld.</span>
-  </div>
-
-  <div class="row">
-
-    <div class="col-xs-9">
-      <div class="form-group">
-        <label>Straat</label>
-        <input class="form-control" id="locatie-straat" placeholder="Straat" type="text" ng-model="newPlace.address.streetAddress" required>
-        <span ng-show="streetRequired">Straat is een verplicht veld.</span>
-      </div>
-    </div>
-    <div class="col-xs-3">
-      <div class="form-group">
-        <label>Nummer</label>
-        <input class="form-control" id="locatie-nummer" placeholder="Nummer" type="text" ng-model="newPlace.address.locationNumber" required>
-        <span ng-show="numberRequired">Nummer is een verplicht veld.</span>
-      </div>
-    </div>
-    <div class="col-xs-12">
-      <div class="form-group">
-        <label>Gemeente</label>
-        <p id="waar-locatie-toevoegen-gemeente" ng-bind="newPlace.address.addressLocality"></p>
-      </div>
+  <form name="placeForm" class="css-form">
+    <div class="form-group" ng-class="{'has-error' : showValidation && placeForm.name.$error.required }">
+      <label>Titel</label>
+      <input class="form-control" type="text" ng-model="newPlace.name" name="name" required>
+      <span class="help-block" ng-show="showValidation && placeForm.name.$error.required">Titel is een verplicht veld.</span>
     </div>
 
-  </div>
+    <div class="form-group" ng-class="{'has-error' : showValidation && placeForm.eventType.$error.required }">
+      <label>Categorie</label>
+      <select class="form-control" size="4" name="eventType" id="locatie-toevoegen-types" ng-model="newPlace.eventType" required>
+        <option ng-repeat="category in categories" value="{{ category.id }}">{{ category.label }}</option>
+      </select>
+      <span class="help-block" ng-show="showValidation && placeForm.eventType.$error.required">Categorie is een verplicht veld.</span>
+    </div>
+
+    <div class="row">
+
+      <div class="col-xs-9">
+        <div class="form-group" ng-class="{'has-error' : showValidation && placeForm.address_streetAddress.$error.required }">
+          <label>Straat</label>
+          <input class="form-control" id="locatie-straat" placeholder="Straat" name="address_streetAddress" type="text" ng-model="newPlace.address.streetAddress" required>
+          <span class="help-block" ng-show="showValidation && placeForm.address_streetAddress.$error.required">Straat is een verplicht veld.</span>
+          <span class="help-block" ng-show="showValidation && placeForm.address_locationNumber.$error.required">Nummer is een verplicht veld.</span>
+        </div>
+      </div>
+      <div class="col-xs-3">
+        <div class="form-group" ng-class="{'has-error' : showValidation && placeForm.address_locationNumber.$error.required }">
+          <label>Nummer</label>
+          <input class="form-control" id="locatie-nummer" placeholder="Nummer" name="address_locationNumber" type="text" ng-model="newPlace.address.locationNumber" required>
+        </div>
+      </div>
+      <div class="col-xs-12">
+        <div class="form-group">
+          <label>Gemeente</label>
+          <p id="waar-locatie-toevoegen-gemeente" ng-bind="newPlace.address.addressLocality"></p>
+        </div>
+      </div>
+
+    </div>
+  </form>
 </div>
 <div class="modal-footer">
   <button type="button" class="btn btn-default" data-dismiss="modal" ng-click="resetAddLocation()">Annuleren</button>

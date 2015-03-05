@@ -20,12 +20,7 @@
     
     // Scope vars.
     $scope.newPlace = getDefaultPlace();
-    
-    $scope.titleRequired = false;
-    $scope.streetRequired = false;
-    $scope.numberRequired = false;
-    $scope.categoryRequired = false;
-    $scope.placeValid = false;
+    $scope.showValidation = false;
 
     // Scope functions.
     $scope.addLocation = addLocation;
@@ -44,8 +39,8 @@
           addressLocality: $scope.location.address.addressLocality,
           postalCode: $scope.location.address.postalCode,
           streetAddress: '',
-          locationNumber : 0,
-          country : 'Belgium'
+          locationNumber : '',
+          country : 'BE'
         }
       };
     }
@@ -69,28 +64,14 @@
      */
     function addLocation() {
       
-      $scope.placeValid = true;
-
-      if ($scope.newPlace.name === '') {
-        $scope.titleRequired = true;
-        $scope.placeValid = false;
-      }
-      if ($scope.newPlace.address.streetAddress === '') {
-        $scope.streetRequired = true;
-        $scope.placeValid = false;
-      }
-      if ($scope.newPlace.address.locationNumber === '') {
-        $scope.numberRequired = true;
-        $scope.placeValid = false;
-      }
-      if ($scope.newPlace.eventType === '') {
-        $scope.categoryRequired = true;
-        $scope.placeValid = false;
+      // Forms are automatically known in scope.
+      $scope.showValidation = true;
+      if (!$scope.placeForm.$valid) {
+        return;
       }
       
-      if ($scope.placeValid) {
-        savePlace();
-      }
+      savePlace();
+      
     }
 
     /**
@@ -124,8 +105,7 @@
 
       var promise = eventCrud.createPlace(udbPlace);
       promise.then(function(jsonResponse) {
-        udbPlace.id = jsonResponse.placeId;
-        console.warn(udbPlace);
+        udbPlace.id = jsonResponse.data.placeId;
         selectPlace(udbPlace);
       });
     }

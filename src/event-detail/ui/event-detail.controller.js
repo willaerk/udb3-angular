@@ -26,9 +26,7 @@ function EventDetail($scope, $routeParams, $location, udbApi, jsonLDLangFilter, 
         eventHistoryLoaded.then(function(eventHistory) {
           $scope.eventHistory = eventHistory;
         });
-        console.log(event);
         $scope.event = jsonLDLangFilter(event, 'nl');
-        console.log($scope.event);
 
         $scope.eventIdIsInvalid = false;
       },

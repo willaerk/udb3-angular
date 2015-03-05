@@ -30,10 +30,6 @@ function QueryTagJobFactory(BaseJob) {
   QueryTagJob.prototype = Object.create(BaseJob.prototype);
   QueryTagJob.prototype.constructor = QueryTagJob;
 
-  QueryTagJob.prototype.getTemplateName = function () {
-    return 'batch-job';
-  };
-
   QueryTagJob.prototype.getTaskCount = function () {
     return this.eventCount;
   };

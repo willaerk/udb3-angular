@@ -1,5 +1,8 @@
-<div>
-  {{job.getDescription()}} - {{ job.state }}
-  <progressbar value="job.progress" type="{{giveJobBarType(job)}}">
-  </progressbar>
-</div>
+<p>
+  <ins>
+    <span ng-bind="::job.created"></span>
+    <i class="fa fa-circle-o-notch fa-spin udb-job-busy"
+       ng-show="job.state === 'started'"></i>
+  </ins>
+  <span class="udb-job-description" ng-bind="::job.getDescription()"></span>
+</p>

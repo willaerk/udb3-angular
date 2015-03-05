@@ -2614,7 +2614,15 @@ function BaseJobFactory(JobStates) {
    * @return {string}
    */
   BaseJob.prototype.getTemplateName = function () {
-    return 'base-job';
+    var templateName;
+
+    if(this.state === JobStates.FAILED) {
+      templateName = 'failed-job';
+    } else {
+      templateName = 'base-job';
+    }
+
+    return templateName;
   };
 
   /**
@@ -2712,37 +2720,6 @@ function udbJobLog(jobLogger, JobStates, EventExportJob) {
       scope.getFinishedExportJobs = jobLogger.getFinishedExportJobs;
       scope.getFailedJobs = jobLogger.getFailedJobs;
       scope.hideJob = jobLogger.hideJob;
-
-      scope.giveJobBarType = function (job) {
-        var barType = 'info';
-
-        if(job.getTaskCount()) {
-          var failedTasks = _.filter(job.tasks, function (task) {
-            return typeof task.state !== 'undefined' && task.state === 'failed';
-          });
-
-          if(failedTasks.length) {
-            barType = 'warning';
-            job.warning = failedTasks.length + ' mislukt';
-          } else if(job.progress === 100) {
-            barType = 'success';
-          }
-        } else if (job.getTemplateName() === 'base-job'){
-          if(job.state === JobStates.STARTED) {
-            barType = 'info';
-          }
-
-          if(job.state === JobStates.FAILED) {
-            barType = 'danger';
-          }
-
-          if(job.state === JobStates.FINISHED) {
-            barType = 'success';
-          }
-        }
-
-        return barType;
-      };
     }
   };
 }
@@ -3039,10 +3016,6 @@ function EventTagBatchJobFactory(BaseJob) {
     });
   };
 
-  EventTagBatchJob.prototype.getTemplateName = function () {
-    return 'batch-job';
-  };
-
   EventTagBatchJob.prototype.getDescription = function() {
     var job = this;
     return 'Tag ' + job.events.length + ' evenementen met label "' + job.label + '".';
@@ -3096,10 +3069,6 @@ function EventTagJobFactory(BaseJob) {
     }
 
     return description;
-  };
-
-  EventTagJob.prototype.getTemplateName = function () {
-    return 'base-job';
   };
 
   return (EventTagJob);
@@ -3296,10 +3265,6 @@ function QueryTagJobFactory(BaseJob) {
 
   QueryTagJob.prototype = Object.create(BaseJob.prototype);
   QueryTagJob.prototype.constructor = QueryTagJob;
-
-  QueryTagJob.prototype.getTemplateName = function () {
-    return 'batch-job';
-  };
 
   QueryTagJob.prototype.getTaskCount = function () {
     return this.eventCount;
@@ -5723,21 +5688,14 @@ function searchDirective() {
 // Source: .tmp/udb3-angular.templates.js
 angular.module('udb.core').run(['$templateCache', function($templateCache) {
 $templateCache.put('templates/base-job.template.html',
-    "<div>\n" +
-    "  {{job.getDescription()}} - {{ job.state }}\n" +
-    "  <progressbar value=\"job.progress\" type=\"{{giveJobBarType(job)}}\">\n" +
-    "  </progressbar>\n" +
-    "</div>"
-  );
-
-
-  $templateCache.put('templates/batch-job.template.html',
-    "<div>\n" +
-    "  {{::job.getDescription()}} - {{ job.state }} - <b>{{job.completedTaskCount}} / {{::job.getTaskCount()}}</b>\n" +
-    "  <progressbar value=\"job.progress\" type=\"{{giveJobBarType(job)}}\">\n" +
-    "    <i ng-show=\"job.warning\" ng-bind=\"job.warning\"></i>\n" +
-    "  </progressbar>\n" +
-    "</div>"
+    "<p>\n" +
+    "  <ins>\n" +
+    "    <span ng-bind=\"::job.created\"></span>\n" +
+    "    <i class=\"fa fa-circle-o-notch fa-spin udb-job-busy\"\n" +
+    "       ng-show=\"job.state === 'started'\"></i>\n" +
+    "  </ins>\n" +
+    "  <span class=\"udb-job-description\" ng-bind=\"::job.getDescription()\"></span>\n" +
+    "</p>"
   );
 
 
@@ -5746,7 +5704,7 @@ $templateCache.put('templates/base-job.template.html',
     "  <button type=\"button\" class=\"close udb-hide-job-button\" ng-click=\"hideJob(job)\" aria-label=\"Close\">\n" +
     "    <span aria-hidden=\"true\">×</span>\n" +
     "  </button>\n" +
-    "  <ins>14:58</ins>\n" +
+    "  <span ng-bind=\"::job.created\"></span>\n" +
     "  <span ng-bind=\"job.getDescription()\"></span>\n" +
     "</p>\n"
   );
@@ -6053,7 +6011,9 @@ $templateCache.put('templates/base-job.template.html',
     "    <i class=\"fa fa-check-circle udb-job-success\"></i>\n" +
     "  </ins>\n" +
     "  <span class=\"udb-job-description\" ng-bind=\"::job.getDescription()\"></span>\n" +
-    "  <a role=\"button\" target=\"_blank\" class=\"btn btn-default\" ng-href=\"{{job.exportUrl}}\">Downloaden</a>\n" +
+    "  <a role=\"button\" target=\"_blank\" class=\"btn btn-default\" ng-href=\"{{job.exportUrl}}\">\n" +
+    "    Downloaden\n" +
+    "  </a>\n" +
     "</p>"
   );
 

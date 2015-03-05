@@ -38,10 +38,6 @@ function EventTagBatchJobFactory(BaseJob) {
     });
   };
 
-  EventTagBatchJob.prototype.getTemplateName = function () {
-    return 'batch-job';
-  };
-
   EventTagBatchJob.prototype.getDescription = function() {
     var job = this;
     return 'Tag ' + job.events.length + ' evenementen met label "' + job.label + '".';

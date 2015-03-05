@@ -235,6 +235,9 @@ textarea.resize-vertical {
 .udb-job-success {
   color: #5cb85c;
 }
+.udb-job-busy {
+  color: #5bc0de;
+}
 .udb-job-description {
   display: block;
 }

@@ -3017,9 +3017,9 @@ function EventTagBatchJobFactory(BaseJob, JobStates) {
         description;
 
     if(this.state === JobStates.FAILED) {
-      description = 'Taggen van evenementen mislukt';
+      description = 'Labelen van evenementen mislukt';
     } else {
-      description = 'Tag ' + job.events.length + ' items met "' + job.label + '"';
+      description = 'Label ' + job.events.length + ' items met "' + job.label + '"';
     }
 
     return description;
@@ -3067,12 +3067,12 @@ function EventTagJobFactory(BaseJob, JobStates) {
         description;
 
     if(job.state === JobStates.FAILED) {
-      description = 'Taggen van evenement mislukt';
+      description = 'Labelen van evenement mislukt';
     } else {
       if(job.untag) {
-        description = 'Verwijder tag "' + job.label + '" van "' + job.event.name.nl + '"';
+        description = 'Verwijder label "' + job.label + '" van "' + job.event.name.nl + '"';
       } else {
-        description = 'Tag "' + job.event.name.nl + '" met "' + job.label + '"';
+        description = 'Label "' + job.event.name.nl + '" met "' + job.label + '"';
       }
     }
 

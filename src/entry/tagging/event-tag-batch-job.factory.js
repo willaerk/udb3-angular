@@ -43,9 +43,9 @@ function EventTagBatchJobFactory(BaseJob, JobStates) {
         description;
 
     if(this.state === JobStates.FAILED) {
-      description = 'Taggen van evenementen mislukt';
+      description = 'Labelen van evenementen mislukt';
     } else {
-      description = 'Tag ' + job.events.length + ' items met "' + job.label + '"';
+      description = 'Label ' + job.events.length + ' items met "' + job.label + '"';
     }
 
     return description;

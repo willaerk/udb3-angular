@@ -37,12 +37,12 @@ function EventTagJobFactory(BaseJob, JobStates) {
         description;
 
     if(job.state === JobStates.FAILED) {
-      description = 'Taggen van evenement mislukt';
+      description = 'Labelen van evenement mislukt';
     } else {
       if(job.untag) {
-        description = 'Verwijder tag "' + job.label + '" van "' + job.event.name.nl + '"';
+        description = 'Verwijder label "' + job.label + '" van "' + job.event.name.nl + '"';
       } else {
-        description = 'Tag "' + job.event.name.nl + '" met "' + job.label + '"';
+        description = 'Label "' + job.event.name.nl + '" met "' + job.label + '"';
       }
     }
 

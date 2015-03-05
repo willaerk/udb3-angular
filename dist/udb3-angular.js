@@ -2614,7 +2614,15 @@ function BaseJobFactory(JobStates) {
    * @return {string}
    */
   BaseJob.prototype.getTemplateName = function () {
-    return 'base-job';
+    var templateName;
+
+    if(this.state === JobStates.FAILED) {
+      templateName = 'failed-job';
+    } else {
+      templateName = 'base-job';
+    }
+
+    return templateName;
   };
 
   /**
@@ -2703,50 +2711,19 @@ angular
   .directive('udbJobLog', udbJobLog);
 
 /* @ngInject */
-function udbJobLog(jobLogger, JobStates) {
+function udbJobLog(jobLogger, JobStates, EventExportJob) {
   return {
-    restrict: 'C',
+    templateUrl: 'templates/job-logger.directive.html',
+    restrict: 'E',
     link: function postLink(scope, element, attrs) {
-      scope.jobs = jobLogger.getJobs();
-
-      scope.hasJobs = function () {
-        return !!_.size(scope.jobs);
-      };
-
-      scope.giveJobBarType = function (job) {
-        var barType = 'info';
-
-        if(job.getTaskCount()) {
-          var failedTasks = _.filter(job.tasks, function (task) {
-            return typeof task.state !== 'undefined' && task.state === 'failed';
-          });
-
-          if(failedTasks.length) {
-            barType = 'warning';
-            job.warning = failedTasks.length + ' mislukt';
-          } else if(job.progress === 100) {
-            barType = 'success';
-          }
-        } else if (job.getTemplateName() === 'base-job'){
-          if(job.state === JobStates.STARTED) {
-            barType = 'info';
-          }
-
-          if(job.state === JobStates.FAILED) {
-            barType = 'danger';
-          }
-
-          if(job.state === JobStates.FINISHED) {
-            barType = 'success';
-          }
-        }
-
-        return barType;
-      };
+      scope.getQueuedJobs = jobLogger.getQueuedJobs;
+      scope.getFinishedExportJobs = jobLogger.getFinishedExportJobs;
+      scope.getFailedJobs = jobLogger.getFailedJobs;
+      scope.hideJob = jobLogger.hideJob;
     }
   };
 }
-udbJobLog.$inject = ["jobLogger", "JobStates"];
+udbJobLog.$inject = ["jobLogger", "JobStates", "EventExportJob"];
 
 // Source: src/entry/logging/job-logger.service.js
 /* jshint sub: true */
@@ -2763,9 +2740,12 @@ angular
   .service('jobLogger', JobLogger);
 
 /* @ngInject */
-function JobLogger(udbSocket, JobStates) {
-  var jobs = {};
-  var queue = [];
+function JobLogger(udbSocket, JobStates, EventExportJob) {
+  var jobs = [],
+      queuedJobs = [],
+      failedJobs = [],
+      finishedExportJobs = [],
+      hiddenJobs = [];
 
   /**
    * Finds a job  by id
@@ -2773,7 +2753,7 @@ function JobLogger(udbSocket, JobStates) {
    * @returns {BaseJob|undefined}
    */
   function findJob (jobId) {
-    return _.find(queue, { id: jobId});
+    return _.find(jobs, { id: jobId});
   }
 
   function jobStarted (data) {
@@ -2782,6 +2762,7 @@ function JobLogger(udbSocket, JobStates) {
     if(job) {
       job.start(data);
       console.log('job with id: ' + job.id + ' started');
+      updateJobLists();
     }
   }
 
@@ -2800,6 +2781,7 @@ function JobLogger(udbSocket, JobStates) {
     if(job) {
       job.finish(data);
       console.log('job with id: ' + job.id + ' finished');
+      updateJobLists();
     }
   }
 
@@ -2809,6 +2791,7 @@ function JobLogger(udbSocket, JobStates) {
     if(job) {
       job.fail(data);
       console.log('job with id: ' + job.id + ' failed');
+      updateJobLists();
     }
   }
 
@@ -2830,6 +2813,27 @@ function JobLogger(udbSocket, JobStates) {
     }
   }
 
+  function updateJobLists() {
+    var visibleJobs = _.difference(jobs, hiddenJobs),
+        newJobs = _.filter(visibleJobs, {state: JobStates.CREATED}),
+        activeJobs = _.filter(visibleJobs, {state: JobStates.STARTED});
+
+    failedJobs = _.filter(visibleJobs, {state: JobStates.FAILED});
+    finishedExportJobs = _.filter(visibleJobs, function(job) {
+      return job instanceof EventExportJob && job.state === JobStates.FINISHED;
+    });
+    queuedJobs = activeJobs.concat(newJobs);
+  }
+
+  /**
+   * Mark a job as hidden
+   * @param {BaseJob} job
+   */
+  function hideJob(job) {
+    hiddenJobs = _.union(hiddenJobs, [job]);
+    updateJobLists();
+  }
+
   udbSocket.on('event_was_tagged', taskFinished);
   udbSocket.on('event_was_not_tagged', taskFailed);
   udbSocket.on('task_completed', taskFinished);
@@ -2838,24 +2842,31 @@ function JobLogger(udbSocket, JobStates) {
   udbSocket.on('job_finished', jobFinished);
   udbSocket.on('job_failed', jobFailed);
 
-  this.getJobs = function () {
-    return queue;
-  };
-
   this.hasActiveJobs = function () {
-    var activeJob = _.find(jobs, function (job) {
-      return job.state !== JobStates.FINISHED && job.state !== JobStates.FAILED;
-    });
-
-    return !!activeJob;
+    return !!queuedJobs.length;
   };
 
   this.addJob = function (job) {
-    queue.unshift(job);
+    jobs.unshift(job);
     console.log('job with id: ' + job.id + ' created');
+    updateJobLists();
   };
+
+  this.getQueuedJobs = function () {
+    return queuedJobs;
+  };
+
+  this.getFailedJobs = function () {
+    return failedJobs;
+  };
+
+  this.getFinishedExportJobs = function () {
+    return finishedExportJobs;
+  };
+
+  this.hideJob = hideJob;
 }
-JobLogger.$inject = ["udbSocket", "JobStates"];
+JobLogger.$inject = ["udbSocket", "JobStates", "EventExportJob"];
 
 // Source: src/entry/logging/job-states.constant.js
 /* jshint sub: true */
@@ -2975,7 +2986,7 @@ angular
   .factory('EventTagBatchJob', EventTagBatchJobFactory);
 
 /* @ngInject */
-function EventTagBatchJobFactory(BaseJob) {
+function EventTagBatchJobFactory(BaseJob, JobStates) {
 
   /**
    * @class EventTagBatchJob
@@ -3001,18 +3012,22 @@ function EventTagBatchJobFactory(BaseJob) {
     });
   };
 
-  EventTagBatchJob.prototype.getTemplateName = function () {
-    return 'batch-job';
-  };
-
   EventTagBatchJob.prototype.getDescription = function() {
-    var job = this;
-    return 'Tag ' + job.events.length + ' evenementen met label "' + job.label + '".';
+    var job = this,
+        description;
+
+    if(this.state === JobStates.FAILED) {
+      description = 'Labelen van evenementen mislukt';
+    } else {
+      description = 'Label ' + job.events.length + ' items met "' + job.label + '"';
+    }
+
+    return description;
   };
 
   return (EventTagBatchJob);
 }
-EventTagBatchJobFactory.$inject = ["BaseJob"];
+EventTagBatchJobFactory.$inject = ["BaseJob", "JobStates"];
 
 // Source: src/entry/tagging/event-tag-job.factory.js
 /**
@@ -3027,7 +3042,7 @@ angular
   .factory('EventTagJob', EventTagJobFactory);
 
 /* @ngInject */
-function EventTagJobFactory(BaseJob) {
+function EventTagJobFactory(BaseJob, JobStates) {
 
   /**
    * @class EventTagJob
@@ -3051,22 +3066,22 @@ function EventTagJobFactory(BaseJob) {
     var job = this,
         description;
 
-    if(job.untag) {
-      description = 'Verwijder label "' + job.label + '" van "' + job.event.name.nl + '".';
+    if(job.state === JobStates.FAILED) {
+      description = 'Labelen van evenement mislukt';
     } else {
-      description = 'Tag "' + job.event.name.nl + '" met label "' + job.label + '".';
+      if(job.untag) {
+        description = 'Verwijder label "' + job.label + '" van "' + job.event.name.nl + '"';
+      } else {
+        description = 'Label "' + job.event.name.nl + '" met "' + job.label + '"';
+      }
     }
 
     return description;
   };
 
-  EventTagJob.prototype.getTemplateName = function () {
-    return 'base-job';
-  };
-
   return (EventTagJob);
 }
-EventTagJobFactory.$inject = ["BaseJob"];
+EventTagJobFactory.$inject = ["BaseJob", "JobStates"];
 
 // Source: src/entry/tagging/event-tag-modal.controller.js
 /**
@@ -3259,10 +3274,6 @@ function QueryTagJobFactory(BaseJob) {
   QueryTagJob.prototype = Object.create(BaseJob.prototype);
   QueryTagJob.prototype.constructor = QueryTagJob;
 
-  QueryTagJob.prototype.getTemplateName = function () {
-    return 'batch-job';
-  };
-
   QueryTagJob.prototype.getTaskCount = function () {
     return this.eventCount;
   };
@@ -3289,7 +3300,7 @@ angular
   .factory('EventTranslationJob', EventTranslationJobFactory);
 
 /* @ngInject */
-function EventTranslationJobFactory(BaseJob) {
+function EventTranslationJobFactory(BaseJob, JobStates) {
 
   /**
    * @class EventTranslationJob
@@ -3313,17 +3324,25 @@ function EventTranslationJobFactory(BaseJob) {
 
   EventTranslationJob.prototype.getDescription = function() {
     var job = this,
-        description;
+      description;
 
-    switch (job.property) {
-      case 'name':
-        description = 'Vertaal naam van evenement "' + job.event.name.nl + '".';
-        break;
-      case 'description':
-        description = 'Vertaal omschrijving van evenement "' + job.event.name.nl + '".';
-        break;
-      default:
-        description = 'Vertaal "' + job.property + '" van evenement "' + job.event.name.nl + '".';
+    if(this.state === JobStates.FAILED) {
+      description = 'Vertalen van evenement mislukt';
+    } else {
+      var propertyName;
+
+      switch (job.property) {
+        case 'name':
+          propertyName = 'titel';
+          break;
+        case 'description':
+          propertyName = 'omschrijving';
+          break;
+        default:
+          propertyName = job.property;
+      }
+
+      description = 'Vertaal ' + propertyName + ' van "' + job.event.name.nl + '"';
     }
 
     return description;
@@ -3331,7 +3350,7 @@ function EventTranslationJobFactory(BaseJob) {
 
   return (EventTranslationJob);
 }
-EventTranslationJobFactory.$inject = ["BaseJob"];
+EventTranslationJobFactory.$inject = ["BaseJob", "JobStates"];
 
 // Source: src/entry/translation/event-translator.service.js
 /**
@@ -3499,21 +3518,44 @@ function EventExportJobFactory(BaseJob, JobStates) {
    * @constructor
    * @param commandId
    */
-  var EventExportJob = function (commandId, eventCount) {
+  var EventExportJob = function (commandId, eventCount, format) {
     BaseJob.call(this, commandId);
     this.exportUrl = '';
     this.eventCount = eventCount;
+    this.format = format;
   };
 
   EventExportJob.prototype = Object.create(BaseJob.prototype);
   EventExportJob.prototype.constructor = EventExportJob;
 
   EventExportJob.prototype.getTemplateName = function () {
-    return 'export-job';
+    var templateName;
+
+    switch (this.state) {
+      case JobStates.FINISHED:
+        templateName = 'export-job';
+        break;
+      case JobStates.FAILED:
+        templateName = 'failed-job';
+        break;
+      default:
+        templateName = 'base-job';
+    }
+
+    return templateName;
   };
 
   EventExportJob.prototype.getDescription = function() {
-    return 'exporting events';
+    var description = '';
+
+    if(this.state === JobStates.FAILED) {
+      description = 'Exporteren van evenementen mislukt';
+    } else {
+      var exportExtension = this.exportUrl.split('.').pop();
+      description = 'Document .' + exportExtension + ' met ' + this.eventCount + ' evenementen';
+    }
+
+    return description;
   };
 
   EventExportJob.prototype.info = function (jobData) {
@@ -3747,7 +3789,7 @@ function eventExporter(jobLogger, udbApi, EventExportJob) {
     var jobPromise = udbApi.exportEvents(queryString, email, format, properties, perDay, selection);
 
     jobPromise.success(function (jobData) {
-      var job = new EventExportJob(jobData.commandId, eventCount);
+      var job = new EventExportJob(jobData.commandId, eventCount, format);
       jobLogger.addJob(job);
       job.start();
     });
@@ -5811,20 +5853,61 @@ function searchDirective() {
 // Source: .tmp/udb3-angular.templates.js
 angular.module('udb.core').run(['$templateCache', function($templateCache) {
 $templateCache.put('templates/base-job.template.html',
-    "<div>\n" +
-    "  {{job.getDescription()}} - {{ job.state }}\n" +
-    "  <progressbar value=\"job.progress\" type=\"{{giveJobBarType(job)}}\">\n" +
-    "  </progressbar>\n" +
-    "</div>"
+    "<p>\n" +
+    "  <ins>\n" +
+    "    <span ng-bind=\"::job.created | date:'HH:mm'\"></span> <i class=\"fa fa-circle-o-notch fa-spin udb-job-busy\"\n" +
+    "       ng-show=\"job.state === 'started'\"></i>\n" +
+    "  </ins>\n" +
+    "  <span class=\"udb-job-description\" ng-bind=\"::job.getDescription()\"></span>\n" +
+    "</p>"
   );
 
 
-  $templateCache.put('templates/batch-job.template.html',
-    "<div>\n" +
-    "  {{::job.getDescription()}} - {{ job.state }} - <b>{{job.completedTaskCount}} / {{::job.getTaskCount()}}</b>\n" +
-    "  <progressbar value=\"job.progress\" type=\"{{giveJobBarType(job)}}\">\n" +
-    "    <i ng-show=\"job.warning\" ng-bind=\"job.warning\"></i>\n" +
-    "  </progressbar>\n" +
+  $templateCache.put('templates/failed-job.template.html',
+    "<p>\n" +
+    "  <button type=\"button\" class=\"close udb-hide-job-button\" ng-click=\"hideJob(job)\" aria-label=\"Close\">\n" +
+    "    <span aria-hidden=\"true\">×</span>\n" +
+    "  </button>\n" +
+    "  <ins>\n" +
+    "    <span ng-bind=\"::job.created | date:'HH:mm'\"></span>\n" +
+    "  </ins>\n" +
+    "  <span ng-bind=\"job.getDescription()\"></span>\n" +
+    "</p>\n"
+  );
+
+
+  $templateCache.put('templates/job-logger.directive.html',
+    "<div class=\"udb-job-log\" ng-class=\"{'shown': showJobLog}\">\n" +
+    "  <div class=\"row\">\n" +
+    "    <div class=\"col-sm-12\">\n" +
+    "      <div class=\"udb-job-block udb-job-block-ready\">\n" +
+    "        <p class=\"udb-job-title\">Geëxporteerde documenten</p>\n" +
+    "        <ul class=\"list-unstyled udb-job-messages\">\n" +
+    "          <li class=\"alert repeat-animation\" ng-repeat=\"job in getFinishedExportJobs()\">\n" +
+    "            <udb-job></udb-job>\n" +
+    "          </li>\n" +
+    "        </ul>\n" +
+    "      </div>\n" +
+    "\n" +
+    "      <div class=\"udb-job-block udb-job-block-errors\">\n" +
+    "        <p class=\"udb-job-title\">Meldingen <span class=\"badge\" ng-bind=\"getFailedJobs().length\"></span></p>\n" +
+    "        <ul class=\"list-unstyled udb-job-messages\">\n" +
+    "          <li class=\"alert repeat-animation\" ng-repeat=\"job in getFailedJobs()\">\n" +
+    "            <udb-job></udb-job>\n" +
+    "          </li>\n" +
+    "        </ul>\n" +
+    "      </div>\n" +
+    "\n" +
+    "      <div class=\"udb-job-block udb-job-block-pending\">\n" +
+    "        <p class=\"udb-job-title\">Bezig</p>\n" +
+    "        <ul class=\"list-unstyled udb-job-messages\">\n" +
+    "          <li class=\"alert repeat-animation\" ng-repeat=\"job in getQueuedJobs()\">\n" +
+    "            <udb-job></udb-job>\n" +
+    "          </li>\n" +
+    "        </ul>\n" +
+    "      </div>\n" +
+    "    </div>\n" +
+    "  </div>\n" +
     "</div>"
   );
 
@@ -6085,15 +6168,18 @@ $templateCache.put('templates/base-job.template.html',
 
 
   $templateCache.put('templates/export-job.template.html',
-    "<div>\n" +
-    "  {{::job.getDescription()}} - {{ job.state }} - <b>{{job.completedTaskCount}} / {{::job.getTaskCount()}}</b>\n" +
-    "  <span ng-show=\"job.state === 'finished'\">\n" +
-    "    <a target=\"_blank\" ng-href=\"{{job.exportUrl}}\" download>Downloaden</a>\n" +
-    "  </span>\n" +
-    "  <progressbar value=\"job.progress\" type=\"{{giveJobBarType(job)}}\">\n" +
-    "    <i ng-show=\"job.warning\" ng-bind=\"job.warning\"></i>\n" +
-    "  </progressbar>\n" +
-    "</div>"
+    "<p>\n" +
+    "  <button type=\"button\" class=\"close udb-hide-job-button\" ng-click=\"hideJob(job)\" aria-label=\"Close\">\n" +
+    "    <span aria-hidden=\"true\">×</span>\n" +
+    "  </button>\n" +
+    "  <ins>\n" +
+    "    <span ng-bind=\"::job.created | date:'HH:mm'\"></span> <i class=\"fa fa-check-circle udb-job-success\"></i>\n" +
+    "  </ins>\n" +
+    "  <span class=\"udb-job-description\" ng-bind=\"::job.getDescription()\"></span>\n" +
+    "  <a role=\"button\" target=\"_blank\" class=\"btn btn-default\" ng-href=\"{{job.exportUrl}}\">\n" +
+    "    Downloaden\n" +
+    "  </a>\n" +
+    "</p>"
   );
 
 

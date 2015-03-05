@@ -12,7 +12,7 @@ angular
   .factory('EventTranslationJob', EventTranslationJobFactory);
 
 /* @ngInject */
-function EventTranslationJobFactory(BaseJob) {
+function EventTranslationJobFactory(BaseJob, JobStates) {
 
   /**
    * @class EventTranslationJob
@@ -36,17 +36,25 @@ function EventTranslationJobFactory(BaseJob) {
 
   EventTranslationJob.prototype.getDescription = function() {
     var job = this,
-        description;
+      description;
 
-    switch (job.property) {
-      case 'name':
-        description = 'Vertaal naam van evenement "' + job.event.name.nl + '".';
-        break;
-      case 'description':
-        description = 'Vertaal omschrijving van evenement "' + job.event.name.nl + '".';
-        break;
-      default:
-        description = 'Vertaal "' + job.property + '" van evenement "' + job.event.name.nl + '".';
+    if(this.state === JobStates.FAILED) {
+      description = 'Vertalen van evenement mislukt';
+    } else {
+      var propertyName;
+
+      switch (job.property) {
+        case 'name':
+          propertyName = 'titel';
+          break;
+        case 'description':
+          propertyName = 'omschrijving';
+          break;
+        default:
+          propertyName = job.property;
+      }
+
+      description = 'Vertaal ' + propertyName + ' van "' + job.event.name.nl + '"';
     }
 
     return description;

@@ -2984,7 +2984,7 @@ angular
   .factory('EventTagBatchJob', EventTagBatchJobFactory);
 
 /* @ngInject */
-function EventTagBatchJobFactory(BaseJob) {
+function EventTagBatchJobFactory(BaseJob, JobStates) {
 
   /**
    * @class EventTagBatchJob
@@ -3011,13 +3011,21 @@ function EventTagBatchJobFactory(BaseJob) {
   };
 
   EventTagBatchJob.prototype.getDescription = function() {
-    var job = this;
-    return 'Tag ' + job.events.length + ' evenementen met label "' + job.label + '".';
+    var job = this,
+        description;
+
+    if(this.state === JobStates.FAILED) {
+      description = 'Taggen van evenementen mislukt';
+    } else {
+      description = 'Tag ' + job.events.length + ' items met "' + job.label + '"';
+    }
+
+    return description;
   };
 
   return (EventTagBatchJob);
 }
-EventTagBatchJobFactory.$inject = ["BaseJob"];
+EventTagBatchJobFactory.$inject = ["BaseJob", "JobStates"];
 
 // Source: src/entry/tagging/event-tag-job.factory.js
 /**
@@ -3032,7 +3040,7 @@ angular
   .factory('EventTagJob', EventTagJobFactory);
 
 /* @ngInject */
-function EventTagJobFactory(BaseJob) {
+function EventTagJobFactory(BaseJob, JobStates) {
 
   /**
    * @class EventTagJob
@@ -3056,10 +3064,14 @@ function EventTagJobFactory(BaseJob) {
     var job = this,
         description;
 
-    if(job.untag) {
-      description = 'Verwijder label "' + job.label + '" van "' + job.event.name.nl + '".';
+    if(job.state === JobStates.FAILED) {
+      description = 'Taggen van evenement mislukt';
     } else {
-      description = 'Tag "' + job.event.name.nl + '" met label "' + job.label + '".';
+      if(job.untag) {
+        description = 'Verwijder tag "' + job.label + '" van "' + job.event.name.nl + '"';
+      } else {
+        description = 'Tag "' + job.event.name.nl + '" met "' + job.label + '"';
+      }
     }
 
     return description;
@@ -3067,7 +3079,7 @@ function EventTagJobFactory(BaseJob) {
 
   return (EventTagJob);
 }
-EventTagJobFactory.$inject = ["BaseJob"];
+EventTagJobFactory.$inject = ["BaseJob", "JobStates"];
 
 // Source: src/entry/tagging/event-tag-modal.controller.js
 /**
@@ -3286,7 +3298,7 @@ angular
   .factory('EventTranslationJob', EventTranslationJobFactory);
 
 /* @ngInject */
-function EventTranslationJobFactory(BaseJob) {
+function EventTranslationJobFactory(BaseJob, JobStates) {
 
   /**
    * @class EventTranslationJob
@@ -3310,17 +3322,12 @@ function EventTranslationJobFactory(BaseJob) {
 
   EventTranslationJob.prototype.getDescription = function() {
     var job = this,
-        description;
+      description;
 
-    switch (job.property) {
-      case 'name':
-        description = 'Vertaal naam van evenement "' + job.event.name.nl + '".';
-        break;
-      case 'description':
-        description = 'Vertaal omschrijving van evenement "' + job.event.name.nl + '".';
-        break;
-      default:
-        description = 'Vertaal "' + job.property + '" van evenement "' + job.event.name.nl + '".';
+    if(this.state === JobStates.FAILED) {
+      description = 'Vertalen van evenement mislukt';
+    } else {
+      description = 'Vertaal ' + job.property + ' van "' + job.event.name.nl + '"';
     }
 
     return description;
@@ -3328,7 +3335,7 @@ function EventTranslationJobFactory(BaseJob) {
 
   return (EventTranslationJob);
 }
-EventTranslationJobFactory.$inject = ["BaseJob"];
+EventTranslationJobFactory.$inject = ["BaseJob", "JobStates"];
 
 // Source: src/entry/translation/event-translator.service.js
 /**

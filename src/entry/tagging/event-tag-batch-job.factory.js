@@ -12,7 +12,7 @@ angular
   .factory('EventTagBatchJob', EventTagBatchJobFactory);
 
 /* @ngInject */
-function EventTagBatchJobFactory(BaseJob) {
+function EventTagBatchJobFactory(BaseJob, JobStates) {
 
   /**
    * @class EventTagBatchJob
@@ -39,8 +39,16 @@ function EventTagBatchJobFactory(BaseJob) {
   };
 
   EventTagBatchJob.prototype.getDescription = function() {
-    var job = this;
-    return 'Tag ' + job.events.length + ' evenementen met label "' + job.label + '".';
+    var job = this,
+        description;
+
+    if(this.state === JobStates.FAILED) {
+      description = 'Taggen van evenementen mislukt';
+    } else {
+      description = 'Tag ' + job.events.length + ' items met "' + job.label + '"';
+    }
+
+    return description;
   };
 
   return (EventTagBatchJob);

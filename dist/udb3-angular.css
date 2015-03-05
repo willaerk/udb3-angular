@@ -221,39 +221,33 @@ body {
 body.push-left {
   margin-left: 260px;
 }
-.field-group {
-  background: #eee;
-  margin-bottom: 5px;
-  position: relative;
-  padding: 5px;
+.udb-query-editor {
+  padding-top: 24px;
 }
-.field-group .operator {
-  width: 100px;
-  position: absolute;
-  left: -100px;
-  top: 0;
-  bottom: 0;
-  text-align: center;
-  background: #e9e9e9;
-  padding: 15px;
+.OR.qe-field:before {
+  color: #ccc;
+  font-size: 11px;
+  font-weight: bold;
+  margin: -10px 0 4px 45px;
+  text-transform: uppercase;
+  clear: both;
+  display: block;
+  text-indent: -30px;
+  content: "OR";
 }
-.field-group .operator select {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 70px;
-}
-.field-group {
-  margin-left: 100px;
-}
-.field-query {
-  margin-bottom: 5px;
-}
-.field-group.single-group {
-  margin-left: 0;
-}
-.field-group.single-group > .operator {
-  display: none;
+.AND.qe-field:before {
+  background-color: #fff;
+  border-bottom: 1px solid #ccc;
+  color: #aaa;
+  content: "AND";
+  display: block;
+  font-size: 12px;
+  font-weight: bold;
+  line-height: 0;
+  margin: 12px 0 24px 45px;
+  padding-right: 6px;
+  text-indent: -30px;
+  text-transform: uppercase;
 }
 .udb-work-indicator {
   width: 40px;

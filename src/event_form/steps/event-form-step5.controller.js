@@ -255,6 +255,7 @@
      */
     function saveOrganizer() {
 
+      $scope.emptyOrganizerAutocomplete = false;
       $scope.organizerError = false;
       $scope.savingOrganizer = true;
 

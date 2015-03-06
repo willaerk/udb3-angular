@@ -306,12 +306,10 @@ function UdbApi($q, $http, appConfig, $cookieStore, uitidAuth, $cacheFactory, Ud
    */
   this.deleteOfferOrganizer = function(id, type, organizerId) {
 
-    var updateData = {};
-    updateData.organizerId = organizerId;
 
     return $http.delete(
       appConfig.baseApiUrl + type + '/' + id +'/organizer/' + organizerId,
-      updateData,
+      {},
       defaultApiConfig
     );
   };

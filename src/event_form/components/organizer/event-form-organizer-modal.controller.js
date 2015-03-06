@@ -17,7 +17,7 @@
 
     // Scope vars.
     $scope.organizersFound = false;
-    $scope.loading = false;
+    $scope.saving = false;
     $scope.error = false;
     $scope.showValidation = false;
     $scope.organizers = [];
@@ -79,7 +79,7 @@
       var promise = udbOrganizers.searchDuplicates($scope.newOrganizer.name, $scope.newOrganizer.postalCode);
 
       $scope.error = false;
-      $scope.loading = true;
+      $scope.saving = true;
 
       promise.then(function (data) {
 
@@ -87,7 +87,7 @@
         if (data.length > 0) {
           $scope.organizersFound = true;
           $scope.organizers = data;
-          $scope.loading = false;
+          $scope.saving = false;
         }
         // or save the event immediataly if no duplicates were found.
         else {
@@ -96,7 +96,7 @@
 
       }, function() {
         $scope.error = true;
-        $scope.loading = false;
+        $scope.saving = false;
       });
 
     }
@@ -113,17 +113,17 @@
      */
     function saveOrganizer() {
 
-      $scope.loading = true;
+      $scope.saving = true;
       $scope.error = false;
 
       var promise = eventCrud.createOrganizer($scope.newOrganizer);
       promise.then(function(jsonResponse) {
         $scope.newOrganizer.id = jsonResponse.data.organizerId;
         selectOrganizer($scope.newOrganizer);
-        $scope.loading = false;
+        $scope.saving = false;
       }, function() {
         $scope.error = true;
-        $scope.loading = false;
+        $scope.saving = false;
       });
     }
 

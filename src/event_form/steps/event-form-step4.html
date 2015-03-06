@@ -8,7 +8,7 @@
     <div class="row">
       <div class="col-xs-12 col-md-4">
         <div class="form-group-lg">
-          <input type="text" class="form-control" ng-model="activeTitle">
+          <input type="text" class="form-control" ng-model="activeTitle" ng-change="setTitle()">
         </div>
       </div>
       <div class="col-xs-12 col-md-8">
@@ -38,10 +38,24 @@
              udb-event="event"
              ng-hide="fetching">
           <a class="btn btn-tile" ng-click="setActiveDuplicate(event.id)" data-toggle="modal" data-target="#dubbeldetectie-voorbeeld">
-            <span>
               <small class="label label-default" ng-bind="event.type"></small><br>
               <strong class="title" ng-bind="event.name"></strong><br>
-               {{ event.location.name }} - Van {{ event.startDate | date: 'dd/MM' }} tot {{ event.endDate | date: 'dd/MM' }}<br>
+               {{ event.location.name }} -
+               <ng-switch on="event.calendarType">
+                 <span ng-switch-when="single">
+                    {{ event.startDate | date: 'dd/MM' }}
+                 </span>
+                 <span ng-switch-when="multiple">
+                    Van {{ event.startDate | date: 'dd/MM' }} tot {{ event.endDate | date: 'dd/MM' }}
+                 </span>
+                 <span ng-switch-when="period">
+                    Van {{ event.startDate | date: 'dd/MM' }} tot {{ event.endDate | date: 'dd/MM' }}
+                 </span>
+                 <span ng-switch-when="permanent">
+                    Permanent
+                 </span>
+               </ng-switch>
+               <br>
               <small class="preview-corner"></small>
               <i class="fa fa-eye preview-icon"></i>
             </span>
@@ -60,6 +74,10 @@
         <a class="btn btn-primary dubbeldetectie-doorgaan" ng-click="saveEvent()">Ja, doorgaan met invoeren <i class="fa fa-circle-o-notch fa-spin" ng-show="saving"></i></a>
       </li>
     </ul>
+
+    <div class="alert alert-warning" ng-show="infoMissing">
+      Gelieve alle info in te vullen vooraleer je kan opslaan.
+    </div>
 
     <div class="alert alert-danger" ng-show="error">
       Er ging iets fout tijdens het opslaan van je activiteit. Gelieve later opnieuw te proberen.
@@ -108,7 +126,22 @@
                       </tr>
                       <tr>
                         <td><strong class="hidden-xs hidden-sm">Wanneer</strong><i class="fa fa-calendar hidden-md hidden-lg"></i></td>
-                        <td class="cf-when scroll scroll-150">{{ event.startDate | date: 'dd/MM/yyyy' }}</td>
+                        <td class="cf-when scroll scroll-150">
+                          <ng-switch on="event.calendarType">
+                            <span ng-switch-when="single">
+                               {{ event.startDate | date: 'dd/MM/yyyy' }}
+                            </span>
+                            <span ng-switch-when="multiple">
+                               Van {{ event.startDate | date: 'dd/MM/yyyy' }} tot {{ event.endDate | date: 'dd/MM/yyyy' }}
+                            </span>
+                            <span ng-switch-when="period">
+                               Van {{ event.startDate | date: 'dd/MM/yyyy' }} tot {{ event.endDate | date: 'dd/MM/yyyy' }}
+                            </span>
+                            <span ng-switch-when="permanent">
+                               Permanent
+                            </span>
+                          </ng-switch>
+                        </td>
                       </tr>
                       <tr>
                         <td><strong class="hidden-xs hidden-sm">Organisatie</strong><i class="fa fa-building-o hidden-md hidden-lg"></i></td>

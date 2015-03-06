@@ -1,6 +1,6 @@
 <div ng-controller="EventFormStep5Ctrl as EventFormStep5">
   <a name="extra"></a>
-  <section id="extra" ng-show="!eventFormData.showStep5">
+  <section id="extra" ng-show="eventFormData.showStep5">
 
     <h2 class="title-border">
       <span class="number">5</span>
@@ -72,12 +72,12 @@
         <div class="row extra-leeftijd">
           <div class="extra-task" ng-class="ageCssClass">
             <div class="col-sm-3">
-              <em class="extra-task-label">Geschikt voor</em>                 <i class="fa fa-circle-o-notch fa-spin" ng-show="savingAgeRange"></i>
+              <em class="extra-task-label">Geschikt voor</em><i class="fa fa-circle-o-notch fa-spin" ng-show="savingAgeRange"></i>
             </div>
             <div class="col-sm-8">
               <section>
-                <div class="form-group clearfix">
-                  <select class="form-control leeftijd-incomplete-select" ng-change="changeAgeRange()" ng-model="ageRange" ng-hide="ageRange === -1" style="width: 50%; float: left;">
+                <div class="form-group clearfix" ng-hide="ageRange === -1">
+                  <select class="form-control leeftijd-incomplete-select" ng-change="changeAgeRange()" ng-model="ageRange" style="width: 50%; float: left;">
                     <option value="0" ng-show="ageRange === 0">Kies een leeftijdscategorie</option>
                     <option value="12">Kinderen tot 12 jaar</option>
                     <option value="18">Jongeren tussen 12 en 18 jaar</option>

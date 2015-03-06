@@ -18,13 +18,20 @@
     // Scope vars.
     // main storage for event form.
     $scope.eventFormData = EventFormData;
-    
+
     // Autocomplete model field for the City/Postal code.
     $scope.cityAutocompleteTextField = '';
-    
+
     // Autocomplete model field for the Location.
     $scope.locationAutocompleteTextField = '';
-    
+
+    // Autocomplete helper vars.
+    $scope.searchingCities = false;
+    $scope.cityAutoCompleteError = false;
+    $scope.searchingLocation = false;
+    $scope.locationAutoCompleteError = false;
+    $scope.locationsSearched = false;
+
     $scope.selectedCity = '';
     $scope.selectedLocation = '';
     $scope.placeStreetAddress = '';
@@ -40,17 +47,17 @@
         'streetAddress': ''
       }
     };
-    
+
     // Validation.
     $scope.showValidation = false;
 
     // Convenient scope variables for current controller (in multistep).
     $scope.locationsForCity = [];
-    $scope.cityAutocomplete = cityAutocomplete;
 
     getLocationCategories();
 
     // Scope functions.
+    $scope.getCities = getCities;
     $scope.selectCity = selectCity;
     $scope.selectLocation = selectLocation;
     $scope.changeCitySelection = changeCitySelection;
@@ -60,21 +67,40 @@
     $scope.getLocations = getLocations;
 
     /**
+     * Automplete function for cities.
+     */
+    function getCities(value) {
+
+      $scope.searchingCities = true;
+      $scope.cityAutoCompleteError = false;
+
+      var promise = cityAutocomplete.getCities(value, EventFormData.location.address.postalCode);
+      return promise.then(function (cities) {
+        $scope.searchingCities = false;
+        return cities.data;
+      }, function() {
+        $scope.searchingCities = false;
+        $scope.cityAutoCompleteError = true;
+        return [];
+      });
+    }
+
+    /**
      * Select City.
      * @returns {undefined}
      */
     function selectCity($item, $model, $label) {
-      
+
       EventFormData.resetLocation();
       var location = $scope.eventFormData.getLocation();
       location.address.postalCode = $item.zip;
       location.address.addressLocality = $item.name;
       EventFormData.setLocation(location);
-      
+
       $scope.cityAutocompleteTextField = '';
       $scope.selectedCity = $label;
       $scope.selectedLocation = '';
-      
+
     }
 
     /**
@@ -82,14 +108,14 @@
      * @returns {undefined}
      */
     function changeCitySelection() {
-      
+
       EventFormData.resetLocation();
       $scope.selectedCity = '';
       $scope.selectedLocation = '';
       $scope.cityAutocompleteTextField = '';
       $scope.locationAutocompleteTextField = '';
       EventFormData.showStep4 = false;
-      
+
     }
 
     /**
@@ -97,7 +123,7 @@
      * @returns {undefined}
      */
     function selectLocation($item, $model, $label) {
-      
+
       // Assign selection, hide the location field and show the selection.
       $scope.selectedLocation = $label;
       $scope.locationAutocompleteTextField = '';
@@ -106,9 +132,9 @@
       location.id = $model;
       location.name = $label;
       EventFormData.setLocation(location);
-        
+
       EventFormData.showStep4 = true;
-      
+
     }
 
     /**
@@ -116,19 +142,19 @@
      * @returns {undefined}
      */
     function changeLocationSelection() {
-      
+
       // Reset only the location data of the location.
       var location = EventFormData.getLocation();
       location.id = '';
       location.name = '';
       EventFormData.setLocation(location);
-      
+
       //$scope.selectedCity = '';
       $scope.selectedLocation = '';
       $scope.locationAutocompleteTextField = '';
-      
+
       EventFormData.showStep4 = false;
-      
+
     }
 
     /**
@@ -136,15 +162,23 @@
      * @returns {undefined}
      */
     function getLocations($viewValue) {
-      
-      var eventPromise = cityAutocomplete.getLocationsForCity($viewValue, EventFormData.location.address.postalCode);
-      eventPromise.then(function (locations) {
-        $scope.locationsForCity = locations;
+
+      $scope.searchingLocation = true;
+      $scope.locationAutoCompleteError = false;
+
+      var promise = cityAutocomplete.getLocationsForCity($viewValue, EventFormData.location.address.postalCode);
+      return promise.then(function (cities) {
+        $scope.locationsForCity = cities.data;
+        $scope.locationsSearched = true;
+        $scope.searchingLocation = false;
         return $scope.locationsForCity;
+      }, function() {
+        $scope.locationsSearched = false;
+        $scope.searchingLocation = false;
+        $scope.locationAutoCompleteError = true;
+        return [];
       });
-      
-      return eventPromise;
-      
+
     }
 
     /**
@@ -152,12 +186,12 @@
      * @returns {undefined}
      */
     function getLocationCategories() {
-      
+
       var eventPromise = eventTypes.getCategories();
       eventPromise.then(function (categories) {
         $scope.categories = categories.place;
       });
-      
+
     }
 
     /**
@@ -179,14 +213,14 @@
       });
 
       modalInstance.result.then(function (place) {
-        
+
         // Assign the just saved place to the event form data.
         EventFormData.place = place;
-        
+
         // Assign selection, hide the location field and show the selection.
         $scope.selectedCity = place.address.postalCode + ' ' + place.address.addressLocality;
         $scope.selectedLocation = place.getName('nl');
-        
+
         var location = {
           'id' : place.id,
           'name': place.getName('nl'),
@@ -198,9 +232,9 @@
           }
         };
         EventFormData.setLocation(location);
-        
+
         EventFormData.showStep4 = true;
-      
+
       });
 
     }
@@ -210,22 +244,22 @@
      * @returns {undefined}
      */
     function validatePlace() {
-      
+
       // Forms are automatically known in scope.
       $scope.showValidation = true;
       if (!$scope.step3Form.$valid) {
         return;
       }
-      
+
       var location = EventFormData.getLocation();
       location.address.addressCountry = 'BE';
       location.address.streetAddress = EventFormData.placeStreet + ' ' + EventFormData.placeNumber;
       EventFormData.setLocation(location);
-      
+
       $scope.selectedLocation = location.address.streetAddress;
-      
+
       EventFormData.showStep4 = true;
-      
+
     }
 
     /**
@@ -233,17 +267,17 @@
      * @returns {undefined}
      */
     function changeStreetAddress() {
-      
+
       // Reset only the street/number data of the location.
       var location = EventFormData.getLocation();
       location.address.addressCountry = '';
       location.address.streetAddress = '';
       EventFormData.setLocation(location);
-      
+
       $scope.selectedLocation = '';
-      
+
       EventFormData.showStep4 = false;
-      
+
     }
 
   }

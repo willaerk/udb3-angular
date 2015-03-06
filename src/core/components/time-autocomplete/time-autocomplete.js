@@ -34,7 +34,7 @@ angular
     function generateTimes() {
 
       var startMinute = 60;
-      var increment = 1;
+      var increment = 15;
       var date = new Date(2015, 1, 1, 0, 0);
       var options = [];
       var hourLen = 60;

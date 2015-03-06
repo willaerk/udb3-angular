@@ -103,6 +103,7 @@
       }
       else {
         setAllAges();
+        saveAgeRange();
       }
 
     }

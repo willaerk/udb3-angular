@@ -18,18 +18,7 @@ function CityAutocomplete($q, $http, appConfig) {
    */
 
   this.getCities = function(value) {
-
-    var cities = $q.defer();
-
-    var request = $http.get(appConfig.baseApiUrl + 'city/suggest/' + value);
-
-    request.success(function(jsonData) {
-      cities.resolve(jsonData);
-
-    });
-
-    return cities.promise;
-
+    return $http.get(appConfig.baseApiUrl + 'city/suggest/' + value);
   };
 
   /**
@@ -40,17 +29,7 @@ function CityAutocomplete($q, $http, appConfig) {
    * @returns {$q@call;defer.promise}
    */
   this.getLocationsForCity = function(value, postal) {
-
-    var locations = $q.defer();
-
-    var request = $http.get(appConfig.baseApiUrl + 'location/suggest/' + value + '/' + postal);
-
-    request.success(function(jsonData) {
-      locations.resolve(jsonData);
-    });
-
-    return locations.promise;
-
+    return $http.get(appConfig.baseApiUrl + 'location/suggest/' + value + '/' + postal);
   };
 
 }

@@ -120,7 +120,7 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
    */
   this.deleteOfferOrganizer = function(item) {
 
-    var jobPromise = udbApi.deleteOfferOrganizer(item.id, item.getType(), item.organizer);
+    var jobPromise = udbApi.deleteOfferOrganizer(item.id, item.getType(), item.organizer.id);
 
     jobPromise.success(function (jobData) {
       var job = new EventCrudJob(jobData.commandId, item, 'deleteOrganizer');

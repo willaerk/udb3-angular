@@ -19,6 +19,7 @@
     // main storage for event form.
     $scope.eventFormData = EventFormData;
 
+    $scope.infoMissing = false;
     $scope.duplicatesSearched = false;
     $scope.saving = false;
     $scope.error = false;
@@ -27,6 +28,7 @@
     $scope.currentDuplicateId = '';
     $scope.currentDuplicateDelta = 0;
 
+    $scope.setTitle = setTitle;
     $scope.validateEvent = validateEvent;
     $scope.saveEvent = saveEvent;
     $scope.setActiveDuplicate = setActiveDuplicate;
@@ -35,15 +37,44 @@
     $scope.resultViewer = new SearchResultViewer();
 
     /**
+     * Set the title
+     */
+    function setTitle() {
+      // Set the name.
+      EventFormData.setName($scope.activeTitle, 'nl');
+    }
+
+    /**
      * Validate date after step 4 to enter step 5.
      */
     function validateEvent() {
 
+      // First check if all data is correct.
+      $scope.infoMissing = false;
+      if (EventFormData.calendarType === 'single' && EventFormData.timestamps[0].date === '') {
+        $scope.infoMissing = true;
+      }
+      else if (EventFormData.calendarType === 'periodic' && (EventFormData.startDate === '' || EventFormData.endDate === '')) {
+        $scope.infoMissing = true;
+      }
+
+      if (!EventFormData.type.id) {
+        $scope.infoMissing = true;
+      }
+
+      if (EventFormData.isEvent && !EventFormData.location.id) {
+        $scope.infoMissing = true;
+      }
+      else if (EventFormData.isPlace && !EventFormData.placeStreet) {
+        $scope.infoMissing = true;
+      }
+
+      if ($scope.infoMissing) {
+        return;
+      }
+
       $scope.saving = true;
       $scope.error = false;
-
-      // Set the name.
-      EventFormData.setName($scope.activeTitle, 'nl');
 
       //$scope.eventFormData.selectedLocation
       //// is Event
@@ -103,9 +134,18 @@
 
       var eventCrudPromise = eventCrud.createEvent($scope.eventFormData);
       eventCrudPromise.then(function(jsonResponse) {
-        EventFormData.id = jsonResponse.data.eventId;
+        if (EventFormData.isEvent) {
+          EventFormData.id = jsonResponse.data.eventId;
+        }
+        else {
+          EventFormData.id = jsonResponse.data.placeId;
+        }
+
         updateLastUpdated();
         $scope.saving = false;
+        $scope.resultViewer = new SearchResultViewer();
+        EventFormData.showStep(5);
+
       }, function() {
         // Error while saving.
         $scope.error = true;

@@ -10,17 +10,20 @@
 
     <div class="row">
       <div class="col-xs-12">
-        <label for="gemeente-autocomplete" id="gemeente-label" ng-hide="selectedCity !== ''"> Kies een gemeente</label>
+        <label for="gemeente-autocomplete" id="gemeente-label" ng-hide="selectedCity !== ''">Kies een gemeente <i class="fa fa-circle-o-notch fa-spin" ng-show="searchingCities"></i></label>
         <div id="gemeente-kiezer" ng-hide="selectedCity !== ''">
           <span style="position: relative; display: inline-block; direction: ltr;" class="twitter-typeahead">
             <input type="text"
                    class="form-control typeahead"
                    placeholder="Gemeente of postcode"
                    ng-model="cityAutocompleteTextField"
-                   typeahead="city.cityId as city.cityLabel for city in cityAutocomplete.getCities($viewValue)"
+                   typeahead="city.cityId as city.cityLabel for city in getCities($viewValue)"
                    typeahead-on-select="selectCity($item, $model, $label)"
                    typeahead-min-length="3">
           </span>
+          <div class="alert alert-danger" ng-show="cityAutoCompleteError">
+            <span class="help-block">Er was een probleem tijdens het ophalen van de steden</span>
+          </div>
         </div>
         <div id="gemeente-gekozen" ng-show="selectedCity !== ''">
           <span class="btn-chosen" id="gemeente-gekozen-button" ng-bind="selectedCity"></span>
@@ -32,7 +35,7 @@
     <div id="waar-evenement" ng-show="eventFormData.isEvent && selectedCity !== ''">
       <div class="row">
         <div class="col-xs-12">
-          <label id="locatie-label" ng-show="selectedLocation === ''">Kies een locatie</label>
+          <label id="locatie-label" ng-show="selectedLocation === ''">Kies een locatie <i class="fa fa-circle-o-notch fa-spin" ng-show="searchingLocation"></i></label>
           <div id="locatie-kiezer" ng-show="selectedLocation === ''">
             <span style="position: relative; display: inline-block; direction: ltr;" class="twitter-typeahead">
               <input type="text"
@@ -42,13 +45,16 @@
                      typeahead="location.id as location.title for location in getLocations($viewValue)"
                      typeahead-on-select="selectLocation($item, $model, $label)"
                      typeahead-min-length="3" />
-              <div class="plaats-adres-resultaat dropdown-menu-no-results" ng-show="locationsForCity.length === 0 && locationAutocompleteTextField !== ''">
-                <p>
-                  <span>Locatie niet gevonden?</span>
-                  <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#waar-locatie-toevoegen" ng-click="openPlaceModal()">Een locatie toevoegen</button>
-                </p>
-              </div>
             </span>
+            <div class="plaats-adres-resultaat dropdown-menu-no-results" ng-show="locationsForCity.length === 0 && locationsSearched">
+              <p class="text-center typeahead-no-results">
+                Locatie niet gevonden?<br />
+                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#waar-locatie-toevoegen" ng-click="openPlaceModal()">Een locatie toevoegen</button>
+              </p>
+            </div>
+            <div class="alert alert-danger" ng-show="locationAutoCompleteError">
+              <span class="help-block">Er was een probleem tijdens het ophalen van de locaties</span>
+            </div>
           </div>
           <div id="locatie-gekozen" ng-show="selectedLocation !== ''" >
             <span class=" btn-chosen" id="locatie-gekozen-button" ng-bind="selectedLocation"></span>
@@ -89,7 +95,7 @@
       </div>
 
     </div>
-    
+
   </form>
 </section>
 

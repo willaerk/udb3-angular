@@ -38,6 +38,11 @@
           <label>Gemeente</label>
           <p id="waar-locatie-toevoegen-gemeente" ng-bind="newPlace.address.addressLocality"></p>
         </div>
+        
+        <div class="alert alert-danger" ng-show="error">
+          Er ging iets fout tijdens het opslaan van je locatie.
+        </div>
+
       </div>
 
     </div>
@@ -45,5 +50,5 @@
 </div>
 <div class="modal-footer">
   <button type="button" class="btn btn-default" data-dismiss="modal" ng-click="resetAddLocation()">Annuleren</button>
-  <button type="button" class="btn btn-primary" ng-click="addLocation()">Toevoegen</button>
+  <button type="button" class="btn btn-primary" ng-click="addLocation()">Toevoegen <i class="fa fa-circle-o-notch fa-spin" ng-show="saving"></i></button>
 </div>

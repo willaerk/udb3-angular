@@ -1817,18 +1817,7 @@ function CityAutocomplete($q, $http, appConfig) {
    */
 
   this.getCities = function(value) {
-
-    var cities = $q.defer();
-
-    var request = $http.get(appConfig.baseApiUrl + 'city/suggest/' + value);
-
-    request.success(function(jsonData) {
-      cities.resolve(jsonData);
-
-    });
-
-    return cities.promise;
-
+    return $http.get(appConfig.baseApiUrl + 'city/suggest/' + value);
   };
 
   /**
@@ -1839,17 +1828,7 @@ function CityAutocomplete($q, $http, appConfig) {
    * @returns {$q@call;defer.promise}
    */
   this.getLocationsForCity = function(value, postal) {
-
-    var locations = $q.defer();
-
-    var request = $http.get(appConfig.baseApiUrl + 'location/suggest/' + value + '/' + postal);
-
-    request.success(function(jsonData) {
-      locations.resolve(jsonData);
-    });
-
-    return locations.promise;
-
+    return $http.get(appConfig.baseApiUrl + 'location/suggest/' + value + '/' + postal);
   };
 
 }
@@ -1969,7 +1948,7 @@ angular
     function generateTimes() {
 
       var startMinute = 60;
-      var increment = 1;
+      var increment = 15;
       var date = new Date(2015, 1, 1, 0, 0);
       var options = [];
       var hourLen = 60;
@@ -2675,12 +2654,10 @@ function UdbApi($q, $http, appConfig, $cookieStore, uitidAuth, $cacheFactory, Ud
    */
   this.deleteOfferOrganizer = function(id, type, organizerId) {
 
-    var updateData = {};
-    updateData.organizerId = organizerId;
 
     return $http.delete(
-      appConfig.baseApiUrl + type + '/' + id +'/organizer',
-      updateData,
+      appConfig.baseApiUrl + type + '/' + id +'/organizer/' + organizerId,
+      {},
       defaultApiConfig
     );
   };
@@ -3502,7 +3479,7 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
    */
   this.deleteOfferOrganizer = function(item) {
 
-    var jobPromise = udbApi.deleteOfferOrganizer(item.id, item.getType(), item.organizer);
+    var jobPromise = udbApi.deleteOfferOrganizer(item.id, item.getType(), item.organizer.id);
 
     jobPromise.success(function (jobData) {
       var job = new EventCrudJob(jobData.commandId, item, 'deleteOrganizer');
@@ -4499,7 +4476,7 @@ function EventFormOpeningHoursDirective() {
 
     // Scope vars.
     $scope.organizersFound = false;
-    $scope.loading = false;
+    $scope.saving = false;
     $scope.error = false;
     $scope.showValidation = false;
     $scope.organizers = [];
@@ -4561,7 +4538,7 @@ function EventFormOpeningHoursDirective() {
       var promise = udbOrganizers.searchDuplicates($scope.newOrganizer.name, $scope.newOrganizer.postalCode);
 
       $scope.error = false;
-      $scope.loading = true;
+      $scope.saving = true;
 
       promise.then(function (data) {
 
@@ -4569,7 +4546,7 @@ function EventFormOpeningHoursDirective() {
         if (data.length > 0) {
           $scope.organizersFound = true;
           $scope.organizers = data;
-          $scope.loading = false;
+          $scope.saving = false;
         }
         // or save the event immediataly if no duplicates were found.
         else {
@@ -4578,7 +4555,7 @@ function EventFormOpeningHoursDirective() {
 
       }, function() {
         $scope.error = true;
-        $scope.loading = false;
+        $scope.saving = false;
       });
 
     }
@@ -4595,17 +4572,17 @@ function EventFormOpeningHoursDirective() {
      */
     function saveOrganizer() {
 
-      $scope.loading = true;
+      $scope.saving = true;
       $scope.error = false;
 
       var promise = eventCrud.createOrganizer($scope.newOrganizer);
       promise.then(function(jsonResponse) {
         $scope.newOrganizer.id = jsonResponse.data.organizerId;
         selectOrganizer($scope.newOrganizer);
-        $scope.loading = false;
+        $scope.saving = false;
       }, function() {
         $scope.error = true;
-        $scope.loading = false;
+        $scope.saving = false;
       });
     }
 
@@ -4632,20 +4609,17 @@ function EventFormOpeningHoursDirective() {
 
     $scope.categories = categories;
     $scope.location = location;
-    
+
     // Scope vars.
     $scope.newPlace = getDefaultPlace();
-    
-    $scope.titleRequired = false;
-    $scope.streetRequired = false;
-    $scope.numberRequired = false;
-    $scope.categoryRequired = false;
-    $scope.placeValid = false;
+    $scope.showValidation = false;
+    $scope.saving = false;
+    $scope.error = false;
 
     // Scope functions.
     $scope.addLocation = addLocation;
     $scope.resetAddLocation = resetAddLocation;
-    
+
     /**
      * Get the default Place data
      * @returns {undefined}
@@ -4659,60 +4633,49 @@ function EventFormOpeningHoursDirective() {
           addressLocality: $scope.location.address.addressLocality,
           postalCode: $scope.location.address.postalCode,
           streetAddress: '',
-          locationNumber : 0,
-          country : 'Belgium'
+          locationNumber : '',
+          country : 'BE'
         }
       };
     }
-    
+
     /**
      * Reset the location field(s).
      * @returns {undefined}
      */
     function resetAddLocation() {
-      
+
       // Clear the current place data.
       $scope.newPlace = getDefaultPlace();
-      
+
       // Close the modal.
       $modalInstance.close($scope.newPlace);
-      
+
     }
     /**
      * Adds a location.
      * @returns {undefined}
      */
     function addLocation() {
-      
-      $scope.placeValid = true;
 
-      if ($scope.newPlace.name === '') {
-        $scope.titleRequired = true;
-        $scope.placeValid = false;
+      // Forms are automatically known in scope.
+      $scope.showValidation = true;
+      if (!$scope.placeForm.$valid) {
+        return;
       }
-      if ($scope.newPlace.address.streetAddress === '') {
-        $scope.streetRequired = true;
-        $scope.placeValid = false;
-      }
-      if ($scope.newPlace.address.locationNumber === '') {
-        $scope.numberRequired = true;
-        $scope.placeValid = false;
-      }
-      if ($scope.newPlace.eventType === '') {
-        $scope.categoryRequired = true;
-        $scope.placeValid = false;
-      }
-      
-      if ($scope.placeValid) {
-        savePlace();
-      }
+
+      savePlace();
+
     }
 
     /**
      * Save the new place in db.
      */
     function savePlace() {
-        
+
+      $scope.saving = true;
+      $scope.error = false;
+
       // Convert this place data to a Udb-place.
       var eventTypeLabel = '';
       for (var i = 0; i < $scope.categories.length; i++) {
@@ -4721,7 +4684,7 @@ function EventFormOpeningHoursDirective() {
           break;
         }
       }
-        
+
       var udbPlace = new UdbPlace();
       udbPlace.name = {nl : $scope.newPlace.name};
       udbPlace.calendarType = 'permanent';
@@ -4739,16 +4702,20 @@ function EventFormOpeningHoursDirective() {
 
       var promise = eventCrud.createPlace(udbPlace);
       promise.then(function(jsonResponse) {
-        udbPlace.id = jsonResponse.placeId;
-        console.warn(udbPlace);
+        udbPlace.id = jsonResponse.data.placeId;
         selectPlace(udbPlace);
+        $scope.saving = true;
+        $scope.error = false;
+      }, function() {
+        $scope.saving = false;
+        $scope.error = true;
       });
     }
 
     /**
      * Select the place that should be used.
-     * 
-     * @param {string} place 
+     *
+     * @param {string} place
      *   Name of the place
      */
     function selectPlace(place) {
@@ -5507,14 +5474,22 @@ function EventFormStep5Directive() {
     // Scope vars.
     // main storage for event form.
     $scope.eventFormData = EventFormData;
-    
+
     // Autocomplete model field for the City/Postal code.
     $scope.cityAutocompleteTextField = '';
-    
+
     // Autocomplete model field for the Location.
     $scope.locationAutocompleteTextField = '';
-    
+
+    // Autocomplete helper vars.
+    $scope.searchingCities = false;
+    $scope.cityAutoCompleteError = false;
+    $scope.searchingLocation = false;
+    $scope.locationAutoCompleteError = false;
+    $scope.locationsSearched = false;
+
     $scope.selectedCity = '';
+    $scope.selectedLocation = '';
     $scope.placeStreetAddress = '';
     $scope.placeLocationNumber = '';
     $scope.openPlaceModal = openPlaceModal;
@@ -5529,42 +5504,59 @@ function EventFormStep5Directive() {
       }
     };
 
+    // Validation.
+    $scope.showValidation = false;
+
     // Convenient scope variables for current controller (in multistep).
     $scope.locationsForCity = [];
-    
-    $scope.noLocationsFound = false;
-    $scope.locationSelected = false;
-    $scope.locationAdded = false;
-    $scope.autoLocationSearch = true;
-    $scope.locationTitleRequired = false;
-    $scope.locationStreetRequired = false;
-    $scope.locationNumberRequired = false;
-    $scope.placeValidated = false;
-    $scope.cityAutocomplete = cityAutocomplete;
 
     getLocationCategories();
 
     // Scope functions.
+    $scope.getCities = getCities;
     $scope.selectCity = selectCity;
     $scope.selectLocation = selectLocation;
     $scope.changeCitySelection = changeCitySelection;
     $scope.changeLocationSelection = changeLocationSelection;
-    $scope.showAddLocation = showAddLocation;
     $scope.validatePlace = validatePlace;
-    $scope.changePlace = changePlace;
+    $scope.changeStreetAddress = changeStreetAddress;
     $scope.getLocations = getLocations;
+
+    /**
+     * Automplete function for cities.
+     */
+    function getCities(value) {
+
+      $scope.searchingCities = true;
+      $scope.cityAutoCompleteError = false;
+
+      var promise = cityAutocomplete.getCities(value, EventFormData.location.address.postalCode);
+      return promise.then(function (cities) {
+        $scope.searchingCities = false;
+        return cities.data;
+      }, function() {
+        $scope.searchingCities = false;
+        $scope.cityAutoCompleteError = true;
+        return [];
+      });
+    }
 
     /**
      * Select City.
      * @returns {undefined}
      */
     function selectCity($item, $model, $label) {
-      
-      EventFormData.location.address.postalCode = $item.zip;
-      EventFormData.location.address.addressLocality = $item.name;
+
+      EventFormData.resetLocation();
+      var location = $scope.eventFormData.getLocation();
+      location.address.postalCode = $item.zip;
+      location.address.addressLocality = $item.name;
+      EventFormData.setLocation(location);
+
+      $scope.cityAutocompleteTextField = '';
       $scope.selectedCity = $label;
-      $scope.placeValidated = false;
-      
+      $scope.selectedLocation = '';
+
     }
 
     /**
@@ -5572,33 +5564,14 @@ function EventFormStep5Directive() {
      * @returns {undefined}
      */
     function changeCitySelection() {
-      
-      EventFormData.resetLocation();
-      $scope.placeValidated = false;
-      $scope.selectedCity = '';
-      $scope.eventFormData.showStep4 = false;
-      
-    }
 
-    /**
-     * Get locations for Event.
-     * @returns {undefined}
-     */
-    function getLocations($viewValue) {
-      
-      var eventPromise = cityAutocomplete.getLocationsForCity($viewValue, EventFormData.location.address.postalCode);
-      eventPromise.then(function (locations) {
-        $scope.locationsForCity = locations;
-      });
-      if ($scope.locationsForCity.length > 0) {
-        $scope.noLocationsFound = false;
-      }
-      else {
-        $scope.noLocationsFound = true;
-      }
-      
-      return $scope.locationsForCity;
-      
+      EventFormData.resetLocation();
+      $scope.selectedCity = '';
+      $scope.selectedLocation = '';
+      $scope.cityAutocompleteTextField = '';
+      $scope.locationAutocompleteTextField = '';
+      EventFormData.showStep4 = false;
+
     }
 
     /**
@@ -5606,10 +5579,18 @@ function EventFormStep5Directive() {
      * @returns {undefined}
      */
     function selectLocation($item, $model, $label) {
-      $scope.eventFormData.locationId = $model;
-      $scope.eventFormData.locationLabel = $label;
-      $scope.locationSelected = true;
-      $scope.eventFormData.showStep4 = true;
+
+      // Assign selection, hide the location field and show the selection.
+      $scope.selectedLocation = $label;
+      $scope.locationAutocompleteTextField = '';
+
+      var location = EventFormData.getLocation();
+      location.id = $model;
+      location.name = $label;
+      EventFormData.setLocation(location);
+
+      EventFormData.showStep4 = true;
+
     }
 
     /**
@@ -5617,24 +5598,43 @@ function EventFormStep5Directive() {
      * @returns {undefined}
      */
     function changeLocationSelection() {
-      $scope.eventFormData.locationId = '';
-      $scope.eventFormData.locationLabel = '';
-      $scope.eventFormData.showStep4 = false;
-      if ($scope.locationAdded) {
-        $scope.autoLocationSearch  = false;
-      }
-      else {
-        $scope.autoLocationSearch  = true;
-        $scope.locationSelected = false;
-      }
+
+      // Reset only the location data of the location.
+      var location = EventFormData.getLocation();
+      location.id = '';
+      location.name = '';
+      EventFormData.setLocation(location);
+
+      //$scope.selectedCity = '';
+      $scope.selectedLocation = '';
+      $scope.locationAutocompleteTextField = '';
+
+      EventFormData.showStep4 = false;
+
     }
 
     /**
-     * Show a location.
+     * Get locations for Event.
      * @returns {undefined}
      */
-    function showAddLocation () {
-      $scope.autoLocationSearch  = false;
+    function getLocations($viewValue) {
+
+      $scope.searchingLocation = true;
+      $scope.locationAutoCompleteError = false;
+
+      var promise = cityAutocomplete.getLocationsForCity($viewValue, EventFormData.location.address.postalCode);
+      return promise.then(function (cities) {
+        $scope.locationsForCity = cities.data;
+        $scope.locationsSearched = true;
+        $scope.searchingLocation = false;
+        return $scope.locationsForCity;
+      }, function() {
+        $scope.locationsSearched = false;
+        $scope.searchingLocation = false;
+        $scope.locationAutoCompleteError = true;
+        return [];
+      });
+
     }
 
     /**
@@ -5642,19 +5642,18 @@ function EventFormStep5Directive() {
      * @returns {undefined}
      */
     function getLocationCategories() {
+
       var eventPromise = eventTypes.getCategories();
       eventPromise.then(function (categories) {
         $scope.categories = categories.place;
       });
+
     }
 
     /**
      * Open the organizer modal.
      */
     function openPlaceModal() {
-      
-      // Old vars.
-      showAddLocation();
 
       var modalInstance = $modal.open({
         templateUrl: 'templates/event-form-place-modal.html',
@@ -5670,18 +5669,14 @@ function EventFormStep5Directive() {
       });
 
       modalInstance.result.then(function (place) {
-        
-        console.log(place);
+
         // Assign the just saved place to the event form data.
         EventFormData.place = place;
-        
+
         // Assign selection, hide the location field and show the selection.
-        $scope.eventFormData.locationId = place.id;
-        $scope.eventFormData.locationLabel = place.getName('nl');
         $scope.selectedCity = place.address.postalCode + ' ' + place.address.addressLocality;
-        $scope.locationSelected = true;
-        $scope.locationAdded = true;
-        
+        $scope.selectedLocation = place.getName('nl');
+
         var location = {
           'id' : place.id,
           'name': place.getName('nl'),
@@ -5692,10 +5687,10 @@ function EventFormStep5Directive() {
               'streetAddress': place.address.streetAddress
           }
         };
-        $scope.eventFormData.setLocation(location);
-        
-        $scope.eventFormData.showStep4 = true;
-      
+        EventFormData.setLocation(location);
+
+        EventFormData.showStep4 = true;
+
       });
 
     }
@@ -5705,26 +5700,40 @@ function EventFormStep5Directive() {
      * @returns {undefined}
      */
     function validatePlace() {
-      if (!$scope.eventFormData.placeStreet) {
-        $scope.placeStreetRequired = true;
+
+      // Forms are automatically known in scope.
+      $scope.showValidation = true;
+      if (!$scope.step3Form.$valid) {
+        return;
       }
-      else if(!$scope.eventFormData.placeNumber) {
-        $scope.placeNumberRequired = true;
-      }
-      else {
-        $scope.eventFormData.place = $scope.eventFormData.placeStreet + ' ' + $scope.eventFormData.placeNumber;
-        $scope.placeValidated = true;
-        $scope.eventFormData.showStep4 = true;
-      }
+
+      var location = EventFormData.getLocation();
+      location.address.addressCountry = 'BE';
+      location.address.streetAddress = EventFormData.placeStreet + ' ' + EventFormData.placeNumber;
+      EventFormData.setLocation(location);
+
+      $scope.selectedLocation = location.address.streetAddress;
+
+      EventFormData.showStep4 = true;
+
     }
 
     /**
-     * Change Place
+     * Change StreetAddress
      * @returns {undefined}
      */
-    function changePlace() {
-      $scope.placeValidated = false;
-      $scope.eventFormData.showStep4 = false;
+    function changeStreetAddress() {
+
+      // Reset only the street/number data of the location.
+      var location = EventFormData.getLocation();
+      location.address.addressCountry = '';
+      location.address.streetAddress = '';
+      EventFormData.setLocation(location);
+
+      $scope.selectedLocation = '';
+
+      EventFormData.showStep4 = false;
+
     }
 
   }
@@ -5752,6 +5761,7 @@ function EventFormStep5Directive() {
     // main storage for event form.
     $scope.eventFormData = EventFormData;
 
+    $scope.infoMissing = false;
     $scope.duplicatesSearched = false;
     $scope.saving = false;
     $scope.error = false;
@@ -5760,6 +5770,7 @@ function EventFormStep5Directive() {
     $scope.currentDuplicateId = '';
     $scope.currentDuplicateDelta = 0;
 
+    $scope.setTitle = setTitle;
     $scope.validateEvent = validateEvent;
     $scope.saveEvent = saveEvent;
     $scope.setActiveDuplicate = setActiveDuplicate;
@@ -5768,15 +5779,44 @@ function EventFormStep5Directive() {
     $scope.resultViewer = new SearchResultViewer();
 
     /**
+     * Set the title
+     */
+    function setTitle() {
+      // Set the name.
+      EventFormData.setName($scope.activeTitle, 'nl');
+    }
+
+    /**
      * Validate date after step 4 to enter step 5.
      */
     function validateEvent() {
 
+      // First check if all data is correct.
+      $scope.infoMissing = false;
+      if (EventFormData.calendarType === 'single' && EventFormData.timestamps[0].date === '') {
+        $scope.infoMissing = true;
+      }
+      else if (EventFormData.calendarType === 'periodic' && (EventFormData.startDate === '' || EventFormData.endDate === '')) {
+        $scope.infoMissing = true;
+      }
+
+      if (!EventFormData.type.id) {
+        $scope.infoMissing = true;
+      }
+
+      if (EventFormData.isEvent && !EventFormData.location.id) {
+        $scope.infoMissing = true;
+      }
+      else if (EventFormData.isPlace && !EventFormData.placeStreet) {
+        $scope.infoMissing = true;
+      }
+
+      if ($scope.infoMissing) {
+        return;
+      }
+
       $scope.saving = true;
       $scope.error = false;
-
-      // Set the name.
-      EventFormData.setName($scope.activeTitle, 'nl');
 
       //$scope.eventFormData.selectedLocation
       //// is Event
@@ -5788,7 +5828,7 @@ function EventFormStep5Directive() {
       // location_contactinfo_zipcode
       //http://search-prod.lodgon.com/search/rest/search?q=*&fq=type:event&fq=zipcode:9000
       var params = {};
-      var location = {};
+      var location = EventFormData.getLocation();
 
       if (EventFormData.isEvent) {
         params = { locationCdbId : location.id };
@@ -5836,9 +5876,18 @@ function EventFormStep5Directive() {
 
       var eventCrudPromise = eventCrud.createEvent($scope.eventFormData);
       eventCrudPromise.then(function(jsonResponse) {
-        EventFormData.id = jsonResponse.data.eventId;
+        if (EventFormData.isEvent) {
+          EventFormData.id = jsonResponse.data.eventId;
+        }
+        else {
+          EventFormData.id = jsonResponse.data.placeId;
+        }
+
         updateLastUpdated();
         $scope.saving = false;
+        $scope.resultViewer = new SearchResultViewer();
+        EventFormData.showStep(5);
+
       }, function() {
         // Error while saving.
         $scope.error = true;
@@ -6009,6 +6058,7 @@ function EventFormStep5Directive() {
       }
       else {
         setAllAges();
+        saveAgeRange();
       }
 
     }
@@ -8637,7 +8687,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "<div class=\"modal-footer\" ng-hide=\"organizersFound\">\n" +
     "  <button type=\"button\" class=\"btn btn-default\" ng-click=\"cancel()\">Sluiten</button>\n" +
     "  <button type=\"button\" class=\"btn btn-primary organisator-toevoegen-bewaren\" ng-click=\"validateNewOrganizer()\">\n" +
-    "    Bewaren <i class=\"fa fa-circle-o-notch fa-spin\" ng-show=\"loading\"></i>\n" +
+    "    Bewaren <i class=\"fa fa-circle-o-notch fa-spin\" ng-show=\"saving\"></i>\n" +
     "  </button>\n" +
     "</div>"
   );
@@ -8653,48 +8703,55 @@ $templateCache.put('templates/time-autocomplete.html',
     "  <h4 class=\"modal-title\">Nieuwe locatie toevoegen</h4>\n" +
     "</div>\n" +
     "<div class=\"modal-body\">\n" +
-    "  <div class=\"form-group\">\n" +
-    "    <label>Titel</label>\n" +
-    "    <input class=\"form-control\" type=\"text\" ng-model=\"newPlace.name\" required>\n" +
-    "    <span ng-show=\"titleRequired\">Titel is een verplicht veld.</span>\n" +
-    "  </div>\n" +
-    "\n" +
-    "  <div class=\"form-group\">\n" +
-    "    <label>Categorie</label>\n" +
-    "    <select class=\"form-control\" size=\"4\" id=\"locatie-toevoegen-types\" ng-model=\"newPlace.eventType\" required>\n" +
-    "      <option ng-repeat=\"category in categories\" value=\"{{ category.id }}\">{{ category.label }}</option>\n" +
-    "    </select>\n" +
-    "    <span ng-show=\"categoryRequired\">Categorie is een verplicht veld.</span>\n" +
-    "  </div>\n" +
-    "\n" +
-    "  <div class=\"row\">\n" +
-    "\n" +
-    "    <div class=\"col-xs-9\">\n" +
-    "      <div class=\"form-group\">\n" +
-    "        <label>Straat</label>\n" +
-    "        <input class=\"form-control\" id=\"locatie-straat\" placeholder=\"Straat\" type=\"text\" ng-model=\"newPlace.address.streetAddress\" required>\n" +
-    "        <span ng-show=\"streetRequired\">Straat is een verplicht veld.</span>\n" +
-    "      </div>\n" +
-    "    </div>\n" +
-    "    <div class=\"col-xs-3\">\n" +
-    "      <div class=\"form-group\">\n" +
-    "        <label>Nummer</label>\n" +
-    "        <input class=\"form-control\" id=\"locatie-nummer\" placeholder=\"Nummer\" type=\"text\" ng-model=\"newPlace.address.locationNumber\" required>\n" +
-    "        <span ng-show=\"numberRequired\">Nummer is een verplicht veld.</span>\n" +
-    "      </div>\n" +
-    "    </div>\n" +
-    "    <div class=\"col-xs-12\">\n" +
-    "      <div class=\"form-group\">\n" +
-    "        <label>Gemeente</label>\n" +
-    "        <p id=\"waar-locatie-toevoegen-gemeente\" ng-bind=\"newPlace.address.addressLocality\"></p>\n" +
-    "      </div>\n" +
+    "  <form name=\"placeForm\" class=\"css-form\">\n" +
+    "    <div class=\"form-group\" ng-class=\"{'has-error' : showValidation && placeForm.name.$error.required }\">\n" +
+    "      <label>Titel</label>\n" +
+    "      <input class=\"form-control\" type=\"text\" ng-model=\"newPlace.name\" name=\"name\" required>\n" +
+    "      <span class=\"help-block\" ng-show=\"showValidation && placeForm.name.$error.required\">Titel is een verplicht veld.</span>\n" +
     "    </div>\n" +
     "\n" +
-    "  </div>\n" +
+    "    <div class=\"form-group\" ng-class=\"{'has-error' : showValidation && placeForm.eventType.$error.required }\">\n" +
+    "      <label>Categorie</label>\n" +
+    "      <select class=\"form-control\" size=\"4\" name=\"eventType\" id=\"locatie-toevoegen-types\" ng-model=\"newPlace.eventType\" required>\n" +
+    "        <option ng-repeat=\"category in categories\" value=\"{{ category.id }}\">{{ category.label }}</option>\n" +
+    "      </select>\n" +
+    "      <span class=\"help-block\" ng-show=\"showValidation && placeForm.eventType.$error.required\">Categorie is een verplicht veld.</span>\n" +
+    "    </div>\n" +
+    "\n" +
+    "    <div class=\"row\">\n" +
+    "\n" +
+    "      <div class=\"col-xs-9\">\n" +
+    "        <div class=\"form-group\" ng-class=\"{'has-error' : showValidation && placeForm.address_streetAddress.$error.required }\">\n" +
+    "          <label>Straat</label>\n" +
+    "          <input class=\"form-control\" id=\"locatie-straat\" placeholder=\"Straat\" name=\"address_streetAddress\" type=\"text\" ng-model=\"newPlace.address.streetAddress\" required>\n" +
+    "          <span class=\"help-block\" ng-show=\"showValidation && placeForm.address_streetAddress.$error.required\">Straat is een verplicht veld.</span>\n" +
+    "          <span class=\"help-block\" ng-show=\"showValidation && placeForm.address_locationNumber.$error.required\">Nummer is een verplicht veld.</span>\n" +
+    "        </div>\n" +
+    "      </div>\n" +
+    "      <div class=\"col-xs-3\">\n" +
+    "        <div class=\"form-group\" ng-class=\"{'has-error' : showValidation && placeForm.address_locationNumber.$error.required }\">\n" +
+    "          <label>Nummer</label>\n" +
+    "          <input class=\"form-control\" id=\"locatie-nummer\" placeholder=\"Nummer\" name=\"address_locationNumber\" type=\"text\" ng-model=\"newPlace.address.locationNumber\" required>\n" +
+    "        </div>\n" +
+    "      </div>\n" +
+    "      <div class=\"col-xs-12\">\n" +
+    "        <div class=\"form-group\">\n" +
+    "          <label>Gemeente</label>\n" +
+    "          <p id=\"waar-locatie-toevoegen-gemeente\" ng-bind=\"newPlace.address.addressLocality\"></p>\n" +
+    "        </div>\n" +
+    "        \n" +
+    "        <div class=\"alert alert-danger\" ng-show=\"error\">\n" +
+    "          Er ging iets fout tijdens het opslaan van je locatie.\n" +
+    "        </div>\n" +
+    "\n" +
+    "      </div>\n" +
+    "\n" +
+    "    </div>\n" +
+    "  </form>\n" +
     "</div>\n" +
     "<div class=\"modal-footer\">\n" +
     "  <button type=\"button\" class=\"btn btn-default\" data-dismiss=\"modal\" ng-click=\"resetAddLocation()\">Annuleren</button>\n" +
-    "  <button type=\"button\" class=\"btn btn-primary\" ng-click=\"addLocation()\">Toevoegen</button>\n" +
+    "  <button type=\"button\" class=\"btn btn-primary\" ng-click=\"addLocation()\">Toevoegen <i class=\"fa fa-circle-o-notch fa-spin\" ng-show=\"saving\"></i></button>\n" +
     "</div>"
   );
 
@@ -8757,7 +8814,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "\n" +
     "      <div class=\"col-xs-12\" ng-show=\"mustRefine\">\n" +
     "        <label class=\"event-theme-label\" ng-show=\"eventThemeLabels.length\">Verfijn</label>\n" +
-    "        <ul class=\"list-inline\">\n" +
+    "        <ul class=\"list-inline\" id=\"step2-list\">\n" +
     "          <li ng-repeat=\"eventThemeLabel in eventThemeLabels\">\n" +
     "            <button ng-bind=\"eventThemeLabel.label\" class=\"btn btn-default\" ng-click=\"setTheme(eventThemeLabel.id, eventThemeLabel.label)\"></button>\n" +
     "          </li>\n" +
@@ -8791,7 +8848,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "      <div class=\"col-xs-12\">\n" +
     "        <div class=\"form-group\">\n" +
     "\n" +
-    "          <label class=\"wanneerkiezer-label\">Maak een keuze</label>\n" +
+    "          <label class=\"wanneerkiezer-label\" ng-show=\"activeCalendarType === ''\">Maak een keuze</label>\n" +
     "          <div class=\"wanneerkiezer\" ng-show=\"activeCalendarType === ''\">\n" +
     "            <ul class=\"list-inline button-list\">\n" +
     "              <li ng-repeat=\"calendarLabel in calendarLabels\" ng-hide=\"eventFormData.isPlace && calendarLabel.eventOnly\">\n" +
@@ -8827,6 +8884,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "<div ng-controller=\"EventFormStep3Ctrl as EventFormStep3\">\n" +
     "\n" +
     "<section id=\"waar\" ng-show=\"eventFormData.showStep3\">\n" +
+    "  <form name=\"step3Form\" class=\"css-form\">\n" +
     "    <h2 class=\"title-border\">\n" +
     "      <span class=\"number\">3</span>\n" +
     "      <span ng-show=\"eventFormData.isEvent\">Waar vindt dit evenement of deze activiteit plaats?</span>\n" +
@@ -8835,17 +8893,20 @@ $templateCache.put('templates/time-autocomplete.html',
     "\n" +
     "    <div class=\"row\">\n" +
     "      <div class=\"col-xs-12\">\n" +
-    "        <label for=\"gemeente-autocomplete\" id=\"gemeente-label\"> Kies een gemeente</label>\n" +
+    "        <label for=\"gemeente-autocomplete\" id=\"gemeente-label\" ng-hide=\"selectedCity !== ''\">Kies een gemeente <i class=\"fa fa-circle-o-notch fa-spin\" ng-show=\"searchingCities\"></i></label>\n" +
     "        <div id=\"gemeente-kiezer\" ng-hide=\"selectedCity !== ''\">\n" +
     "          <span style=\"position: relative; display: inline-block; direction: ltr;\" class=\"twitter-typeahead\">\n" +
     "            <input type=\"text\"\n" +
     "                   class=\"form-control typeahead\"\n" +
     "                   placeholder=\"Gemeente of postcode\"\n" +
     "                   ng-model=\"cityAutocompleteTextField\"\n" +
-    "                   typeahead=\"city.cityId as city.cityLabel for city in cityAutocomplete.getCities($viewValue)\"\n" +
+    "                   typeahead=\"city.cityId as city.cityLabel for city in getCities($viewValue)\"\n" +
     "                   typeahead-on-select=\"selectCity($item, $model, $label)\"\n" +
-    "                   typeahead-min-length=\"3\" required>\n" +
+    "                   typeahead-min-length=\"3\">\n" +
     "          </span>\n" +
+    "          <div class=\"alert alert-danger\" ng-show=\"cityAutoCompleteError\">\n" +
+    "            <span class=\"help-block\">Er was een probleem tijdens het ophalen van de steden</span>\n" +
+    "          </div>\n" +
     "        </div>\n" +
     "        <div id=\"gemeente-gekozen\" ng-show=\"selectedCity !== ''\">\n" +
     "          <span class=\"btn-chosen\" id=\"gemeente-gekozen-button\" ng-bind=\"selectedCity\"></span>\n" +
@@ -8857,26 +8918,29 @@ $templateCache.put('templates/time-autocomplete.html',
     "    <div id=\"waar-evenement\" ng-show=\"eventFormData.isEvent && selectedCity !== ''\">\n" +
     "      <div class=\"row\">\n" +
     "        <div class=\"col-xs-12\">\n" +
-    "          <label id=\"locatie-label\">Kies een locatie</label>\n" +
-    "          <div id=\"locatie-kiezer\" ng-hide=\"locationSelected || locationAdded\" >\n" +
+    "          <label id=\"locatie-label\" ng-show=\"selectedLocation === ''\">Kies een locatie <i class=\"fa fa-circle-o-notch fa-spin\" ng-show=\"searchingLocation\"></i></label>\n" +
+    "          <div id=\"locatie-kiezer\" ng-show=\"selectedLocation === ''\">\n" +
     "            <span style=\"position: relative; display: inline-block; direction: ltr;\" class=\"twitter-typeahead\">\n" +
     "              <input type=\"text\"\n" +
     "                     placeholder=\"Locatie\"\n" +
     "                     class=\"form-control typeahead\"\n" +
     "                     ng-model=\"locationAutocompleteTextField\"\n" +
-    "                     typeahead=\"location for location in getLocations($viewValue)\"\n" +
+    "                     typeahead=\"location.id as location.title for location in getLocations($viewValue)\"\n" +
     "                     typeahead-on-select=\"selectLocation($item, $model, $label)\"\n" +
     "                     typeahead-min-length=\"3\" />\n" +
-    "              <div class=\"plaats-adres-resultaat dropdown-menu-no-results\" ng-show=\"noLocationsFound\">\n" +
-    "                <p>\n" +
-    "                  <span>Locatie niet gevonden?</span>\n" +
-    "                  <button type=\"button\" class=\"btn btn-primary\" data-toggle=\"modal\" data-target=\"#waar-locatie-toevoegen\" ng-click=\"openPlaceModal()\">Een locatie toevoegen</button>\n" +
-    "                </p>\n" +
-    "              </div>\n" +
     "            </span>\n" +
+    "            <div class=\"plaats-adres-resultaat dropdown-menu-no-results\" ng-show=\"locationsForCity.length === 0 && locationsSearched\">\n" +
+    "              <p class=\"text-center typeahead-no-results\">\n" +
+    "                Locatie niet gevonden?<br />\n" +
+    "                <button type=\"button\" class=\"btn btn-primary\" data-toggle=\"modal\" data-target=\"#waar-locatie-toevoegen\" ng-click=\"openPlaceModal()\">Een locatie toevoegen</button>\n" +
+    "              </p>\n" +
+    "            </div>\n" +
+    "            <div class=\"alert alert-danger\" ng-show=\"locationAutoCompleteError\">\n" +
+    "              <span class=\"help-block\">Er was een probleem tijdens het ophalen van de locaties</span>\n" +
+    "            </div>\n" +
     "          </div>\n" +
-    "          <div id=\"locatie-gekozen\" ng-show=\"locationSelected\" >\n" +
-    "            <span class=\" btn-chosen\" id=\"locatie-gekozen-button\" ng-bind=\"eventFormData.locationLabel\"></span>\n" +
+    "          <div id=\"locatie-gekozen\" ng-show=\"selectedLocation !== ''\" >\n" +
+    "            <span class=\" btn-chosen\" id=\"locatie-gekozen-button\" ng-bind=\"selectedLocation\"></span>\n" +
     "            <button type=\"button\" class=\"btn btn-default btn-link\" data-toggle=\"modal\" data-target=\"#waar-locatie-toevoegen\" ng-click=\"changeLocationSelection()\">Wijzigen</button>\n" +
     "          </div>\n" +
     "        </div>\n" +
@@ -8886,35 +8950,36 @@ $templateCache.put('templates/time-autocomplete.html',
     "    </div>\n" +
     "\n" +
     "    <div id=\"waar-plaats\" ng-show=\"eventFormData.isPlace && selectedCity !== ''\">\n" +
-    "      <div class=\"plaats-adres-ingeven\" ng-hide=\"placeValidated\" >\n" +
+    "      <div class=\"plaats-adres-ingeven\" ng-hide=\"selectedLocation !== ''\" >\n" +
     "        <div class=\"row\">\n" +
     "          <div class=\"col-xs-8 col-lg-4\">\n" +
-    "            <div class=\"form-group\">\n" +
+    "            <div class=\"form-group\" ng-class=\"{'has-error' : showValidation && step3Form.street.$error.required }\">\n" +
     "              <label>Straat</label>\n" +
-    "              <input class=\"form-control\" id=\"straat\" placeholder=\"\" type=\"text\" ng-model=\"eventFormData.placeStreet\">\n" +
-    "              <span ng-show=\"placeStreetRequired\">Straat is een verplicht veld.</span>\n" +
+    "              <input class=\"form-control\" id=\"straat\" name=\"street\" placeholder=\"\" type=\"text\" ng-model=\"eventFormData.placeStreet\" required>\n" +
+    "              <span class=\"help-block\" ng-show=\"showValidation && step3Form.street.$error.required\">Straat is een verplicht veld.</span>\n" +
+    "              <span class=\"help-block\" ng-show=\"showValidation && step3Form.number.$error.required\">Nummer is een verplicht veld.</span>\n" +
     "            </div>\n" +
     "          </div>\n" +
     "          <div class=\"col-xs-4 col-lg-2\">\n" +
-    "            <div class=\"form-group\">\n" +
+    "            <div class=\"form-group\" ng-class=\"{'has-error' : showValidation && step3Form.number.$error.required }\">\n" +
     "              <label>Nummer</label>\n" +
-    "              <input class=\"form-control waar-plaats-nummer\" id=\"nummer\" placeholder=\"\" type=\"text\" ng-model=\"eventFormData.placeNumber\">\n" +
-    "              <span ng-show=\"placeNumberRequired\">Nummer is een verplicht veld.</span>\n" +
+    "              <input class=\"form-control waar-plaats-nummer\" id=\"nummer\" name=\"number\" placeholder=\"\" type=\"text\" ng-model=\"eventFormData.placeNumber\" required>\n" +
     "            </div>\n" +
     "          </div>\n" +
     "        </div>\n" +
     "        <a class=\"btn btn-primary plaats-ok\" ng-click=\"validatePlace()\">OK</a>\n" +
     "      </div>\n" +
     "\n" +
-    "      <div class=\"plaats-adres-resultaat\" ng-show=\"placeValidated\">\n" +
+    "      <div class=\"plaats-adres-resultaat\" ng-show=\"selectedLocation !== ''\">\n" +
     "        <p>\n" +
-    "          <span class=\"btn-chosen\" ng-bind=\"eventFormData.place\"></span>\n" +
-    "          <a class=\"btn btn-link plaats-adres-wijzigen\"ng-click=\"changePlace()\">Wijzigen</a>\n" +
+    "          <span class=\"btn-chosen\" ng-bind=\"selectedLocation\"></span>\n" +
+    "          <a class=\"btn btn-link plaats-adres-wijzigen\"ng-click=\"changeStreetAddress()\">Wijzigen</a>\n" +
     "        </p>\n" +
     "      </div>\n" +
     "\n" +
     "    </div>\n" +
-    "  <a ng-click=\"eventFormData.showStep(4)\">volgende</a>\n" +
+    "\n" +
+    "  </form>\n" +
     "</section>\n" +
     "\n" +
     "</div>"
@@ -8932,7 +8997,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "    <div class=\"row\">\n" +
     "      <div class=\"col-xs-12 col-md-4\">\n" +
     "        <div class=\"form-group-lg\">\n" +
-    "          <input type=\"text\" class=\"form-control\" ng-model=\"activeTitle\">\n" +
+    "          <input type=\"text\" class=\"form-control\" ng-model=\"activeTitle\" ng-change=\"setTitle()\">\n" +
     "        </div>\n" +
     "      </div>\n" +
     "      <div class=\"col-xs-12 col-md-8\">\n" +
@@ -8962,10 +9027,24 @@ $templateCache.put('templates/time-autocomplete.html',
     "             udb-event=\"event\"\n" +
     "             ng-hide=\"fetching\">\n" +
     "          <a class=\"btn btn-tile\" ng-click=\"setActiveDuplicate(event.id)\" data-toggle=\"modal\" data-target=\"#dubbeldetectie-voorbeeld\">\n" +
-    "            <span>\n" +
     "              <small class=\"label label-default\" ng-bind=\"event.type\"></small><br>\n" +
     "              <strong class=\"title\" ng-bind=\"event.name\"></strong><br>\n" +
-    "               {{ event.location.name }} - Van {{ event.startDate | date: 'dd/MM' }} tot {{ event.endDate | date: 'dd/MM' }}<br>\n" +
+    "               {{ event.location.name }} -\n" +
+    "               <ng-switch on=\"event.calendarType\">\n" +
+    "                 <span ng-switch-when=\"single\">\n" +
+    "                    {{ event.startDate | date: 'dd/MM' }}\n" +
+    "                 </span>\n" +
+    "                 <span ng-switch-when=\"multiple\">\n" +
+    "                    Van {{ event.startDate | date: 'dd/MM' }} tot {{ event.endDate | date: 'dd/MM' }}\n" +
+    "                 </span>\n" +
+    "                 <span ng-switch-when=\"period\">\n" +
+    "                    Van {{ event.startDate | date: 'dd/MM' }} tot {{ event.endDate | date: 'dd/MM' }}\n" +
+    "                 </span>\n" +
+    "                 <span ng-switch-when=\"permanent\">\n" +
+    "                    Permanent\n" +
+    "                 </span>\n" +
+    "               </ng-switch>\n" +
+    "               <br>\n" +
     "              <small class=\"preview-corner\"></small>\n" +
     "              <i class=\"fa fa-eye preview-icon\"></i>\n" +
     "            </span>\n" +
@@ -8984,6 +9063,10 @@ $templateCache.put('templates/time-autocomplete.html',
     "        <a class=\"btn btn-primary dubbeldetectie-doorgaan\" ng-click=\"saveEvent()\">Ja, doorgaan met invoeren <i class=\"fa fa-circle-o-notch fa-spin\" ng-show=\"saving\"></i></a>\n" +
     "      </li>\n" +
     "    </ul>\n" +
+    "\n" +
+    "    <div class=\"alert alert-warning\" ng-show=\"infoMissing\">\n" +
+    "      Gelieve alle info in te vullen vooraleer je kan opslaan.\n" +
+    "    </div>\n" +
     "\n" +
     "    <div class=\"alert alert-danger\" ng-show=\"error\">\n" +
     "      Er ging iets fout tijdens het opslaan van je activiteit. Gelieve later opnieuw te proberen.\n" +
@@ -9032,7 +9115,22 @@ $templateCache.put('templates/time-autocomplete.html',
     "                      </tr>\n" +
     "                      <tr>\n" +
     "                        <td><strong class=\"hidden-xs hidden-sm\">Wanneer</strong><i class=\"fa fa-calendar hidden-md hidden-lg\"></i></td>\n" +
-    "                        <td class=\"cf-when scroll scroll-150\">{{ event.startDate | date: 'dd/MM/yyyy' }}</td>\n" +
+    "                        <td class=\"cf-when scroll scroll-150\">\n" +
+    "                          <ng-switch on=\"event.calendarType\">\n" +
+    "                            <span ng-switch-when=\"single\">\n" +
+    "                               {{ event.startDate | date: 'dd/MM/yyyy' }}\n" +
+    "                            </span>\n" +
+    "                            <span ng-switch-when=\"multiple\">\n" +
+    "                               Van {{ event.startDate | date: 'dd/MM/yyyy' }} tot {{ event.endDate | date: 'dd/MM/yyyy' }}\n" +
+    "                            </span>\n" +
+    "                            <span ng-switch-when=\"period\">\n" +
+    "                               Van {{ event.startDate | date: 'dd/MM/yyyy' }} tot {{ event.endDate | date: 'dd/MM/yyyy' }}\n" +
+    "                            </span>\n" +
+    "                            <span ng-switch-when=\"permanent\">\n" +
+    "                               Permanent\n" +
+    "                            </span>\n" +
+    "                          </ng-switch>\n" +
+    "                        </td>\n" +
     "                      </tr>\n" +
     "                      <tr>\n" +
     "                        <td><strong class=\"hidden-xs hidden-sm\">Organisatie</strong><i class=\"fa fa-building-o hidden-md hidden-lg\"></i></td>\n" +
@@ -9072,7 +9170,7 @@ $templateCache.put('templates/time-autocomplete.html',
   $templateCache.put('templates/event-form-step5.html',
     "<div ng-controller=\"EventFormStep5Ctrl as EventFormStep5\">\n" +
     "  <a name=\"extra\"></a>\n" +
-    "  <section id=\"extra\" ng-show=\"!eventFormData.showStep5\">\n" +
+    "  <section id=\"extra\" ng-show=\"eventFormData.showStep5\">\n" +
     "\n" +
     "    <h2 class=\"title-border\">\n" +
     "      <span class=\"number\">5</span>\n" +
@@ -9144,12 +9242,12 @@ $templateCache.put('templates/time-autocomplete.html',
     "        <div class=\"row extra-leeftijd\">\n" +
     "          <div class=\"extra-task\" ng-class=\"ageCssClass\">\n" +
     "            <div class=\"col-sm-3\">\n" +
-    "              <em class=\"extra-task-label\">Geschikt voor</em>                 <i class=\"fa fa-circle-o-notch fa-spin\" ng-show=\"savingAgeRange\"></i>\n" +
+    "              <em class=\"extra-task-label\">Geschikt voor</em><i class=\"fa fa-circle-o-notch fa-spin\" ng-show=\"savingAgeRange\"></i>\n" +
     "            </div>\n" +
     "            <div class=\"col-sm-8\">\n" +
     "              <section>\n" +
-    "                <div class=\"form-group clearfix\">\n" +
-    "                  <select class=\"form-control leeftijd-incomplete-select\" ng-change=\"changeAgeRange()\" ng-model=\"ageRange\" ng-hide=\"ageRange === -1\" style=\"width: 50%; float: left;\">\n" +
+    "                <div class=\"form-group clearfix\" ng-hide=\"ageRange === -1\">\n" +
+    "                  <select class=\"form-control leeftijd-incomplete-select\" ng-change=\"changeAgeRange()\" ng-model=\"ageRange\" style=\"width: 50%; float: left;\">\n" +
     "                    <option value=\"0\" ng-show=\"ageRange === 0\">Kies een leeftijdscategorie</option>\n" +
     "                    <option value=\"12\">Kinderen tot 12 jaar</option>\n" +
     "                    <option value=\"18\">Jongeren tussen 12 en 18 jaar</option>\n" +

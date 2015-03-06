@@ -44,7 +44,7 @@
 
       <div class="col-xs-12" ng-show="mustRefine">
         <label class="event-theme-label" ng-show="eventThemeLabels.length">Verfijn</label>
-        <ul class="list-inline">
+        <ul class="list-inline" id="step2-list">
           <li ng-repeat="eventThemeLabel in eventThemeLabels">
             <button ng-bind="eventThemeLabel.label" class="btn btn-default" ng-click="setTheme(eventThemeLabel.id, eventThemeLabel.label)"></button>
           </li>

@@ -6026,10 +6026,10 @@ $templateCache.put('templates/base-job.template.html',
     "              <td><strong>Organisator</strong></td>\n" +
     "              <td>{{event.organizer.name}}</td>\n" +
     "            </tr>\n" +
-    "            <tr>\n" +
+    "            <!--<tr>\n" +
     "              <td><strong>Prijs</strong></td>\n" +
     "              <td></td>\n" +
-    "            </tr>\n" +
+    "            </tr>-->\n" +
     "            <tr ng-class=\"{muted: !event.typicalAgeRange}\">\n" +
     "              <td><strong>Geschikt voor</strong></td>\n" +
     "              <td>\n" +

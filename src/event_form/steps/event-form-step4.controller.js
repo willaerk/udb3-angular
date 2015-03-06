@@ -23,7 +23,7 @@
     $scope.duplicatesSearched = false;
     $scope.saving = false;
     $scope.error = false;
-    $scope.udb3DashboardUrl = appConfig.appHomeUrl;
+    $scope.udb3DashboardUrl = appConfig.udb3BaseUrl;
     $scope.activeTitle = '';
     $scope.currentDuplicateId = '';
     $scope.currentDuplicateDelta = 0;

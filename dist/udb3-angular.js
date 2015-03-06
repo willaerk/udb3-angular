@@ -2332,7 +2332,7 @@ function EventTypes($q, $window, $location, $http, $cacheFactory, appConfig, $co
     if (categories) {
       deferredEvent.resolve(categories);
     } else {
-      var eventTypeRequest = $http.get(appConfig.udb3BaseUrl + '/src/event_form/categories.json');
+      var eventTypeRequest = $http.get(appConfig.udb3JsBaseUrl + '/src/event_form/categories.json');
 
       eventTypeRequest.success(function(jsonData) {
         deferredEvent.resolve(jsonData);
@@ -5765,7 +5765,7 @@ function EventFormStep5Directive() {
     $scope.duplicatesSearched = false;
     $scope.saving = false;
     $scope.error = false;
-    $scope.udb3DashboardUrl = appConfig.appHomeUrl;
+    $scope.udb3DashboardUrl = appConfig.udb3BaseUrl;
     $scope.activeTitle = '';
     $scope.currentDuplicateId = '';
     $scope.currentDuplicateDelta = 0;

@@ -26,7 +26,7 @@ function EventTypes($q, $window, $location, $http, $cacheFactory, appConfig, $co
     if (categories) {
       deferredEvent.resolve(categories);
     } else {
-      var eventTypeRequest = $http.get(appConfig.udb3BaseUrl + '/src/event_form/categories.json');
+      var eventTypeRequest = $http.get(appConfig.udb3JsBaseUrl + '/src/event_form/categories.json');
 
       eventTypeRequest.success(function(jsonData) {
         deferredEvent.resolve(jsonData);

@@ -11,7 +11,7 @@
     <div class="row">
       <div class="col-sm-8">
 
-        <div class="row extra-titel">
+        <div class="row extra-titnieel">
           <div class="extra-task state-complete">
             <div class="col-sm-3">
               <em class="extra-task-label">Titel</em>
@@ -119,16 +119,21 @@
               </section>
               <section class="state filling">
                 <div class="form-group">
-                  <label>Kies een organisatie</label>
+                  <label>Kies een organisatie <i class="fa fa-circle-o-notch fa-spin" ng-show="loadingOrganizers"></i></label>
                   <div id="organisator-kiezer">
                     <span class="twitter-typeahead" style="position: relative; display: inline-block; direction: ltr;">
-                      <input type="text" class="form-control typeahead" id="organisator-autocomplete" ng-model="organizer" typeahead="organizer for organizer in getOrganizers($viewValue)" typeahead-on-select="selectOrganizer()" typeahead-min-length="3" typeahead-loading="loadingOrganizers" typeahead-template-url="templates/organizer-typeahead-template.html"/>
+                      <input type="text" class="form-control typeahead" id="organisator-autocomplete"
+                             ng-model="organizer"
+                             typeahead="organizer for organizer in getOrganizers($viewValue)"
+                             typeahead-on-select="selectOrganizer()"
+                             typeahead-min-length="3"
+                             typeahead-template-url="templates/organizer-typeahead-template.html"/>
+                      <div class="dropdown-menu-no-results" ng-show="emptyOrganizerAutocomplete">
+                        <p class='text-center'>Organisator niet gevonden?</br>
+                          <button type='button' class='btn btn-primary' ng-click="openOrganizerModal()">Nieuwe organisator toevoegen</button>
+                        </p>
+                      </div>
                     </span>
-                    <div ng-show="emptyOrganizerAutocomplete">
-                      <p class='text-center'>Organisator niet gevonden?</br>
-                        <button type='button' class='btn btn-primary' ng-click="openOrganizerModal()">Nieuwe organisator toevoegen</button>
-                      </p>
-                    </div>
                   </div>
                 </div>
               </section>

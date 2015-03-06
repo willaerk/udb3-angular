@@ -8928,13 +8928,13 @@ $templateCache.put('templates/time-autocomplete.html',
     "                     typeahead=\"location.id as location.title for location in getLocations($viewValue)\"\n" +
     "                     typeahead-on-select=\"selectLocation($item, $model, $label)\"\n" +
     "                     typeahead-min-length=\"3\" />\n" +
+    "              <div class=\"plaats-adres-resultaat dropdown-menu-no-results\" ng-show=\"locationsForCity.length === 0 && locationsSearched\">\n" +
+    "                <p class=\"text-center\">\n" +
+    "                  Locatie niet gevonden?<br />\n" +
+    "                  <button type=\"button\" class=\"btn btn-primary\" data-toggle=\"modal\" data-target=\"#waar-locatie-toevoegen\" ng-click=\"openPlaceModal()\">Een locatie toevoegen</button>\n" +
+    "                </p>\n" +
+    "              </div>\n" +
     "            </span>\n" +
-    "            <div class=\"plaats-adres-resultaat dropdown-menu-no-results\" ng-show=\"locationsForCity.length === 0 && locationsSearched\">\n" +
-    "              <p class=\"text-center typeahead-no-results\">\n" +
-    "                Locatie niet gevonden?<br />\n" +
-    "                <button type=\"button\" class=\"btn btn-primary\" data-toggle=\"modal\" data-target=\"#waar-locatie-toevoegen\" ng-click=\"openPlaceModal()\">Een locatie toevoegen</button>\n" +
-    "              </p>\n" +
-    "            </div>\n" +
     "            <div class=\"alert alert-danger\" ng-show=\"locationAutoCompleteError\">\n" +
     "              <span class=\"help-block\">Er was een probleem tijdens het ophalen van de locaties</span>\n" +
     "            </div>\n" +
@@ -9181,7 +9181,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "    <div class=\"row\">\n" +
     "      <div class=\"col-sm-8\">\n" +
     "\n" +
-    "        <div class=\"row extra-titel\">\n" +
+    "        <div class=\"row extra-titnieel\">\n" +
     "          <div class=\"extra-task state-complete\">\n" +
     "            <div class=\"col-sm-3\">\n" +
     "              <em class=\"extra-task-label\">Titel</em>\n" +
@@ -9289,16 +9289,21 @@ $templateCache.put('templates/time-autocomplete.html',
     "              </section>\n" +
     "              <section class=\"state filling\">\n" +
     "                <div class=\"form-group\">\n" +
-    "                  <label>Kies een organisatie</label>\n" +
+    "                  <label>Kies een organisatie <i class=\"fa fa-circle-o-notch fa-spin\" ng-show=\"loadingOrganizers\"></i></label>\n" +
     "                  <div id=\"organisator-kiezer\">\n" +
     "                    <span class=\"twitter-typeahead\" style=\"position: relative; display: inline-block; direction: ltr;\">\n" +
-    "                      <input type=\"text\" class=\"form-control typeahead\" id=\"organisator-autocomplete\" ng-model=\"organizer\" typeahead=\"organizer for organizer in getOrganizers($viewValue)\" typeahead-on-select=\"selectOrganizer()\" typeahead-min-length=\"3\" typeahead-loading=\"loadingOrganizers\" typeahead-template-url=\"templates/organizer-typeahead-template.html\"/>\n" +
+    "                      <input type=\"text\" class=\"form-control typeahead\" id=\"organisator-autocomplete\"\n" +
+    "                             ng-model=\"organizer\"\n" +
+    "                             typeahead=\"organizer for organizer in getOrganizers($viewValue)\"\n" +
+    "                             typeahead-on-select=\"selectOrganizer()\"\n" +
+    "                             typeahead-min-length=\"3\"\n" +
+    "                             typeahead-template-url=\"templates/organizer-typeahead-template.html\"/>\n" +
+    "                      <div class=\"dropdown-menu-no-results\" ng-show=\"emptyOrganizerAutocomplete\">\n" +
+    "                        <p class='text-center'>Organisator niet gevonden?</br>\n" +
+    "                          <button type='button' class='btn btn-primary' ng-click=\"openOrganizerModal()\">Nieuwe organisator toevoegen</button>\n" +
+    "                        </p>\n" +
+    "                      </div>\n" +
     "                    </span>\n" +
-    "                    <div ng-show=\"emptyOrganizerAutocomplete\">\n" +
-    "                      <p class='text-center'>Organisator niet gevonden?</br>\n" +
-    "                        <button type='button' class='btn btn-primary' ng-click=\"openOrganizerModal()\">Nieuwe organisator toevoegen</button>\n" +
-    "                      </p>\n" +
-    "                    </div>\n" +
     "                  </div>\n" +
     "                </div>\n" +
     "              </section>\n" +

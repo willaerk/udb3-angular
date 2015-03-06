@@ -45,13 +45,13 @@
                      typeahead="location.id as location.title for location in getLocations($viewValue)"
                      typeahead-on-select="selectLocation($item, $model, $label)"
                      typeahead-min-length="3" />
+              <div class="plaats-adres-resultaat dropdown-menu-no-results" ng-show="locationsForCity.length === 0 && locationsSearched">
+                <p class="text-center">
+                  Locatie niet gevonden?<br />
+                  <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#waar-locatie-toevoegen" ng-click="openPlaceModal()">Een locatie toevoegen</button>
+                </p>
+              </div>
             </span>
-            <div class="plaats-adres-resultaat dropdown-menu-no-results" ng-show="locationsForCity.length === 0 && locationsSearched">
-              <p class="text-center typeahead-no-results">
-                Locatie niet gevonden?<br />
-                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#waar-locatie-toevoegen" ng-click="openPlaceModal()">Een locatie toevoegen</button>
-              </p>
-            </div>
             <div class="alert alert-danger" ng-show="locationAutoCompleteError">
               <span class="help-block">Er was een probleem tijdens het ophalen van de locaties</span>
             </div>

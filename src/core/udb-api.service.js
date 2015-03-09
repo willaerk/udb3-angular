@@ -91,8 +91,16 @@ function UdbApi($q, $http, appConfig, $cookieStore, uitidAuth, $cacheFactory, Ud
       });
     }
 
-    return deferredEvent.promise;
-  };
+    eventRequest.success(function(jsonEvent) {
+      var event = new UdbEvent(jsonEvent);
+      eventCache.put(eventId, event);
+      deferredEvent.resolve(event);
+    });
+
+    eventRequest.error(function () {
+      deferredEvent.reject();
+    });
+  }
 
   this.getEventByLDId = function (eventLDId) {
     var eventId = eventLDId.split('/').pop();
@@ -105,30 +113,52 @@ function UdbApi($q, $http, appConfig, $cookieStore, uitidAuth, $cacheFactory, Ud
   };
 
   this.getOrganizerById = function(organizerId) {
-    var deferredOrganizer = $q.defer();
+      var deferredOrganizer = $q.defer();
 
-    var organizer = eventCache.get(organizerId);
+      var organizer = eventCache.get(organizerId);
 
-    if (organizer) {
-      deferredOrganizer.resolve(organizer);
-    } else {
-      var organizerRequest  = $http.get(
-        appConfig.baseApiUrl + 'organizer/' + organizerId,
+      if (organizer) {
+        deferredOrganizer.resolve(organizer);
+      } else {
+        var organizerRequest  = $http.get(
+          appConfig.baseApiUrl + 'organizer/' + organizerId,
+          {
+            headers: {
+              'Accept': 'application/ld+json'
+            }
+          });
+
+        organizerRequest.success(function(jsonOrganizer) {
+          var organizer = new UdbOrganizer();
+          organizer.parseJson(jsonOrganizer);
+          eventCache.put(organizerId, organizer);
+          deferredOrganizer.resolve(organizer);
+        });
+      }
+
+      return deferredOrganizer.promise;
+    };
+
+  this.getEventHistoryById = function(eventId) {
+    var eventHistoryLoaded = $q.defer();
+
+    var eventHistoryRequest  = $http.get(
+        appConfig.baseUrl + 'event/' + eventId + '/history',
         {
           headers: {
-            'Accept': 'application/ld+json'
+            'Accept': 'application/json'
           }
         });
 
-      organizerRequest.success(function(jsonOrganizer) {
-        var organizer = new UdbOrganizer();
-        organizer.parseJson(jsonOrganizer);
-        eventCache.put(organizerId, organizer);
-        deferredOrganizer.resolve(organizer);
-      });
-    }
+    eventHistoryRequest.success(function(eventHistory) {
+      eventHistoryLoaded.resolve(eventHistory);
+    });
 
-    return deferredOrganizer.promise;
+    eventHistoryRequest.error(function () {
+      eventHistoryLoaded.reject();
+    });
+
+    return eventHistoryLoaded.promise;
   };
 
   /**

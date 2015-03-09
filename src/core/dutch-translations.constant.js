@@ -19,16 +19,16 @@ angular.module('udb.core')
       'CLEAR': 'Verwijder',
       'CLOSE': 'Sluiten'
     },
-    '=': 'is',
+    '=': 'is gelijk aan',
     '><': 'tussen',
-    '+': 'bevat',
-    '!': 'is niet',
-    '-': 'bevat niet',
+    '+': 'is gelijk aan',
+    '!': 'is niet gelijk aan',
+    '-': 'is niet gelijk aan',
     '>': 'is groter of gelijk aan',
     '<': 'is kleiner of gelijk aan',
-    '>_DATE': 'is later dan',
-    '<_DATE': 'is vroeger dan',
-    '=_DATE': 'is',
+    '>_DATE': 'later dan',
+    '<_DATE': 'vroeger dan',
+    '=_DATE': 'is gelijk aan',
     '><_DATE': 'tussen',
     'choice': {
       'asc': 'oplopend',
@@ -311,7 +311,8 @@ angular.module('udb.core')
       'organizer': 'Organisator',
       'bookingInfo': 'Prijsinformatie',
       'creator': 'Auteur',
-      'terms': 'Thema',
+      'terms.theme': 'Thema',
+      'terms.eventtype': 'Soort aanbod',
       'created': 'Datum aangemaakt',
       'publisher': 'Auteur',
       'endDate': 'Einddatum',
@@ -320,6 +321,16 @@ angular.module('udb.core')
       'sameAs': 'Externe IDs',
       'typicalAgeRange': 'Leeftijd',
       'language': 'Taal'
+    },
+    queryFieldGroup: {
+      'what': 'Wat',
+      'where': 'Waar',
+      'when': 'Wanneer',
+      'input-information': 'Invoerders-informatie',
+      'translations': 'Vertalingen',
+      'other': 'Andere'
+
     }
   }
 );
+

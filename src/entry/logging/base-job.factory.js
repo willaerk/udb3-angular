@@ -87,7 +87,15 @@ function BaseJobFactory(JobStates) {
    * @return {string}
    */
   BaseJob.prototype.getTemplateName = function () {
-    return 'base-job';
+    var templateName;
+
+    if(this.state === JobStates.FAILED) {
+      templateName = 'failed-job';
+    } else {
+      templateName = 'base-job';
+    }
+
+    return templateName;
   };
 
   /**

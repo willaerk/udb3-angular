@@ -12,7 +12,7 @@ angular
   .factory('EventTagBatchJob', EventTagBatchJobFactory);
 
 /* @ngInject */
-function EventTagBatchJobFactory(BaseJob) {
+function EventTagBatchJobFactory(BaseJob, JobStates) {
 
   /**
    * @class EventTagBatchJob
@@ -38,13 +38,17 @@ function EventTagBatchJobFactory(BaseJob) {
     });
   };
 
-  EventTagBatchJob.prototype.getTemplateName = function () {
-    return 'batch-job';
-  };
-
   EventTagBatchJob.prototype.getDescription = function() {
-    var job = this;
-    return 'Tag ' + job.events.length + ' evenementen met label "' + job.label + '".';
+    var job = this,
+        description;
+
+    if(this.state === JobStates.FAILED) {
+      description = 'Labelen van evenementen mislukt';
+    } else {
+      description = 'Label ' + job.events.length + ' items met "' + job.label + '"';
+    }
+
+    return description;
   };
 
   return (EventTagBatchJob);

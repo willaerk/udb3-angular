@@ -28,6 +28,7 @@ module.exports = function(config) {
       'bower_components/socket.io-client/socket.io.js',
       'bower_components/angular-socket-io/socket.js',
       'bower_components/angular-ui-select/dist/select.js',
+      'bower_components/moment/moment.js',
       'bower_components/accounting/accounting.js',
       'bower_components/angular-translate/angular-translate.js',
       'src/**/*.module.js',
@@ -66,7 +67,7 @@ module.exports = function(config) {
 
     // level of logging
     // possible values: LOG_DISABLE || LOG_ERROR || LOG_WARN || LOG_INFO || LOG_DEBUG
-    logLevel: config.LOG_INFO,
+    logLevel: config.LOG_INFO
 
     // Uncomment the following lines if you are using grunt's server to run the tests
     // proxies: {

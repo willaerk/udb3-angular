@@ -196,20 +196,16 @@ function Search($scope, udbApi, LuceneQueryBuilder, $window, $location, $modal, 
   $scope.exportEvents = exportEvents;
   $scope.tag = tag;
 
-  $scope.editQuery = function () {
-    var query = $scope.activeQuery;
-
-    if (query && queryBuilder.isValid(query)) {
-      query.groupedQueryTree = queryBuilder.groupQueryTree(query.queryTree);
-    }
-
+  $scope.startEditing = function () {
     $scope.queryEditorShown = true;
   };
-  $rootScope.$on('editQuery', $scope.editQuery);
 
-  $scope.hideQueryEditor = function () {
+  $scope.stopEditing = function () {
     $scope.queryEditorShown = false;
   };
+
+  $rootScope.$on('startEditingQuery', $scope.startEditing);
+  $rootScope.$on('stopEditingQuery', $scope.stopEditing);
 
   $scope.$watch(function () {
     var query = getSearchQuery();

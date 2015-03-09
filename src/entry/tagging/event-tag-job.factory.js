@@ -12,7 +12,7 @@ angular
   .factory('EventTagJob', EventTagJobFactory);
 
 /* @ngInject */
-function EventTagJobFactory(BaseJob) {
+function EventTagJobFactory(BaseJob, JobStates) {
 
   /**
    * @class EventTagJob
@@ -36,17 +36,17 @@ function EventTagJobFactory(BaseJob) {
     var job = this,
         description;
 
-    if(job.untag) {
-      description = 'Verwijder label "' + job.label + '" van "' + job.event.name.nl + '".';
+    if(job.state === JobStates.FAILED) {
+      description = 'Labelen van evenement mislukt';
     } else {
-      description = 'Tag "' + job.event.name.nl + '" met label "' + job.label + '".';
+      if(job.untag) {
+        description = 'Verwijder label "' + job.label + '" van "' + job.event.name.nl + '"';
+      } else {
+        description = 'Label "' + job.event.name.nl + '" met "' + job.label + '"';
+      }
     }
 
     return description;
-  };
-
-  EventTagJob.prototype.getTemplateName = function () {
-    return 'base-job';
   };
 
   return (EventTagJob);

@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/cultuurnet/udb3-angular.svg)](https://travis-ci.org/cultuurnet/udb3-angular)
+
 This project holds all the necessary angular recipes, styles and templates to
  create an UDB3 front-end.
 

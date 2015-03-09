@@ -29,7 +29,8 @@ function EventExportController($modalInstance, udbApi, eventExporter, queryField
     { name: 'organizer', include: false, sortable: false, excludable: true},
     { name: 'bookingInfo', include: true, sortable: false, excludable: true},
     { name: 'creator', include: false, sortable: false, excludable: true},
-    { name: 'terms', include: true, sortable: false, excludable: true},
+    { name: 'terms.theme', include: true, sortable: false, excludable: true},
+    { name: 'terms.eventtype', include: true, sortable: false, excludable: true},
     { name: 'created', include: false, sortable: false, excludable: true},
     { name: 'endDate', include: false, sortable: false, excludable: true},
     { name: 'startDate', include: false, sortable: false, excludable: true},
@@ -77,11 +78,6 @@ function EventExportController($modalInstance, udbApi, eventExporter, queryField
       type: 'json',
       label: 'Als json',
       description: 'Exporteren naar event-ld om de informatie voor ontwikkelaars beschikbaar te maken.'
-    },
-    {
-      type: 'csv',
-      label: 'Als tabel',
-      description: 'Met spreadsheetprogramma\'s als Microsoft Excel kun je eenvoudig CSV-bestanden maken en bewerken.'
     },
     {
       type: 'ooxml',

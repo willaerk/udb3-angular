@@ -11,46 +11,15 @@ angular
   .directive('udbJobLog', udbJobLog);
 
 /* @ngInject */
-function udbJobLog(jobLogger) {
+function udbJobLog(jobLogger, JobStates, EventExportJob) {
   return {
-    restrict: 'C',
+    templateUrl: 'templates/job-logger.directive.html',
+    restrict: 'E',
     link: function postLink(scope, element, attrs) {
-      scope.jobs = jobLogger.getJobs();
-
-      scope.hasJobs = function () {
-        return !!_.size(scope.jobs);
-      };
-
-      scope.giveJobBarType = function (job) {
-        var barType = 'info';
-
-        if(job.getTemplateName() === 'batch-job') {
-          var failedTags = _.filter(job.events, function (event) {
-            return typeof event.tagged !== 'undefined' && event.tagged === false;
-          });
-
-          if(failedTags.length) {
-            barType = 'warning';
-            job.warning = failedTags.length + ' mislukt';
-          } else if(job.progress === 100) {
-            barType = 'success';
-          }
-        } else if (job.getTemplateName() === 'base-job'){
-          if(job.state === 'started') {
-            barType = 'info';
-          }
-
-          if(job.state === 'failed') {
-            barType = 'danger';
-          }
-
-          if(job.state === 'finished'){
-            barType = 'success';
-          }
-        }
-
-        return barType;
-      };
+      scope.getQueuedJobs = jobLogger.getQueuedJobs;
+      scope.getFinishedExportJobs = jobLogger.getFinishedExportJobs;
+      scope.getFailedJobs = jobLogger.getFailedJobs;
+      scope.hideJob = jobLogger.hideJob;
     }
   };
 }

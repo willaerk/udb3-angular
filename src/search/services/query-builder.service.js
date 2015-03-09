@@ -173,6 +173,15 @@ function LuceneQueryBuilder(LuceneQueryParser, QueryTreeValidator, QueryTreeTran
     return queryString;
   };
 
+
+  function printTreeField(field) {
+    if (field.fieldType === 'date-range') {
+      cleanUpDateRangeField(field);
+    }
+    var transformedField = transformField(field);
+    return  transformedField.field + ':' + printTerm(transformedField);
+  }
+
   /**
    * @description
    * Unparse a grouped field information tree to a query string
@@ -189,35 +198,49 @@ function LuceneQueryBuilder(LuceneQueryParser, QueryTreeValidator, QueryTreeTran
       if (node.type === 'group') {
         var group = node;
 
-        nodeString += '(';
-
         _.forEach(group.nodes, function (field, fieldIndex) {
-          if (fieldIndex) {
-            nodeString += ' ' + node.operator + ' ';
-          }
 
-          if (field.fieldType === 'date-range') {
-            cleanUpDateRangeField(field);
+          // check if the field is actually a sub group
+          if(field.type === 'group') {
+
+            var subGroup = field,
+                subGroupString = ' ';
+
+            if(subGroup.nodes.length === 1) {
+              var singleField = subGroup.nodes[0];
+              subGroupString += subGroup.operator + ' ' + printTreeField(singleField);
+            } else {
+              subGroupString += subGroup.operator + ' (';
+              _.forEach(subGroup.nodes, function (field, fieldIndex) {
+                if (fieldIndex) {
+                  subGroupString += ' OR ';
+                }
+                subGroupString += printTreeField(field);
+              });
+              subGroupString += ')';
+            }
+
+            nodeString += subGroupString;
+          } else {
+            if (fieldIndex) {
+              nodeString += ' ' + node.operator + ' ';
+            }
+
+            nodeString += printTreeField(field);
           }
-          var transformedField = transformField(field);
-          nodeString += transformedField.field + ':' + printTerm(transformedField);
         });
 
-        nodeString += ')';
-      } else if (node.type === 'field') {
-        var field = node.nodes[0];
-        if (field.fieldType === 'date-range') {
-          cleanUpDateRangeField(field);
+        if(root.nodes.length > 1 && group.nodes.length > 1) {
+          nodeString = '(' + nodeString + ')';
         }
-        var transformedField = transformField(field);
-        nodeString = transformedField.field + ':' + printTerm(transformedField);
       } else {
-        console.log('node type not recognized?');
+        console.log('Expecting a group but found: ' + node.type);
       }
 
       // do not prepend the first node with an operator
-      if (nodeIndex) {
-        queryString += ' ' + root.operator + ' ';
+      if (nodeIndex || node.excluded) {
+        var operator = node.excluded ? 'NOT' : 'OR';
+        queryString += ' ' + operator + ' ';
       }
       queryString += nodeString;
     });
@@ -402,7 +425,7 @@ function LuceneQueryBuilder(LuceneQueryParser, QueryTreeValidator, QueryTreeTran
             }
           }
 
-          if (fieldType.type === 'string') {
+          if (fieldType.type === 'tokenized-string') {
             if (!field.transformer || field.transformer === '=') {
               field.transformer = '+';
             }
@@ -412,7 +435,7 @@ function LuceneQueryBuilder(LuceneQueryParser, QueryTreeValidator, QueryTreeTran
             }
           }
 
-          if (fieldType.type === 'tokenized-string') {
+          if (fieldType.type === 'string') {
             if (!field.transformer || field.transformer === '+') {
               field.transformer = '=';
             }

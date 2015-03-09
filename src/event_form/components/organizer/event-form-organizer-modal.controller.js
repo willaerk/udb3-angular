@@ -25,11 +25,13 @@
 
     $scope.newOrganizer = {
       name : '',
-      street : '',
-      number : '',
-      city : '',
-      postalCode: '',
-      country : 'Belgium',
+      address : {
+        street : '',
+        number : '',
+        city : '',
+        postalCode: '',
+        country : 'BE'
+      },
       contact: []
     };
 

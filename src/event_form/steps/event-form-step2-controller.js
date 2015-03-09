@@ -19,8 +19,6 @@
     // main storage for event form.
     $scope.eventFormData = EventFormData;
 
-    $scope.activeCalendarType = ''; // Current active calendar type.
-    $scope.activeCalendarLabel = '';
     $scope.calendarLabels = [
       { 'label': 'Eén of meerdere dagen', 'id' : 'single', 'eventOnly' : true },
       { 'label': 'Van ... tot ... ', 'id' : 'periodic', 'eventOnly' : true },
@@ -54,11 +52,11 @@
     function setCalendarType(type) {
 
       EventFormData.showStep(3);
-      $scope.activeCalendarType = type;
 
+      var calendarLabel = '';
       for (var i = 0; i < $scope.calendarLabels.length; i++) {
         if ($scope.calendarLabels[i].id === type) {
-          $scope.activeCalendarLabel = $scope.calendarLabels[i].label;
+          calendarLabel = $scope.calendarLabels[i].label;
           break;
         }
       }
@@ -70,9 +68,11 @@
       }
 
       // A type is choosen, start a complet new calendar, removing old dat
-      EventFormData.calendarType = type;
       $scope.hasOpeningHours = false;
       EventFormData.resetCalendar();
+      EventFormData.activeCalendarType = type;
+      EventFormData.calendarType = type;
+      EventFormData.activeCalendarLabel = calendarLabel;
 
       if (type === 'single') {
         addTimestamp();
@@ -87,7 +87,7 @@
      * Click listener to reset the calendar. User can select a new calendar type.
      */
     function resetCalendar() {
-      $scope.activeCalendarType = '';
+      EventFormData.activeCalendarType = '';
     }
 
     /**

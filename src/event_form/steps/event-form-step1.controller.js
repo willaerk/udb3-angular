@@ -52,6 +52,7 @@
 
       $scope.activeEventType = type;
 
+      // User selected an event.
       if (isEvent) {
         EventFormData.isEvent = true;
         EventFormData.isPlace = false;
@@ -74,7 +75,14 @@
         }
 
       }
+      // User selected a place.
       else {
+
+        // Reset calendar if user switched to permanent.
+        if (EventFormData.calendarType !== 'permanent') {
+          EventFormData.resetCalendar();
+        }
+
         EventFormData.isEvent = false;
         EventFormData.isPlace = true;
 
@@ -94,6 +102,11 @@
             break;
           }
         }
+
+        // Places are default permanent. Users should not see a selection.
+        EventFormData.calendarType = 'permanent';
+        EventFormData.activeCalendarType = 'permanent';
+        EventFormData.activeCalendarLabel = 'Permanent';
 
       }
 

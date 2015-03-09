@@ -4418,9 +4418,19 @@ angular
             ngModel.$setValidity('contactinfo', false);
 
           }
-          else if (ngModel.$modelValue.type === 'url' && !URL_REGEXP.test(ngModel.$modelValue.value)) {
-            scope.infoErrorMessage = 'Gelieve een geldige url in te vullen';
-            ngModel.$setValidity('contactinfo', false);
+          else if (ngModel.$modelValue.type === 'url') {
+
+            var viewValue = ngModel.$viewValue;
+            // Autoset http://.
+            if (ngModel.$modelValue.value.substring(0, 7) !== 'http://') {
+              viewValue.value = 'http://' + viewValue.value;
+              ngModel.$setViewValue(viewValue);
+            }
+
+            if (!URL_REGEXP.test(viewValue.value)) {
+              scope.infoErrorMessage = 'Gelieve een geldige url in te vullen';
+              ngModel.$setValidity('contactinfo', false);
+            }
           }
         }
 
@@ -4484,11 +4494,13 @@ function EventFormOpeningHoursDirective() {
 
     $scope.newOrganizer = {
       name : '',
-      street : '',
-      number : '',
-      city : '',
-      postalCode: '',
-      country : 'Belgium',
+      address : {
+        street : '',
+        number : '',
+        city : '',
+        postalCode: '',
+        country : 'BE'
+      },
       contact: []
     };
 
@@ -4764,6 +4776,9 @@ function EventFormDataFactory(UdbEvent, UdbPlace) {
     place : {},
     type : {},
     theme : {},
+    activeCalendarType : '', // only needed for the angular.
+    activeCalendarLabel : '', // only needed for the angular.
+    calendarType : '',
     startDate : '',
     endDate : '',
     timestamps : [],
@@ -4975,6 +4990,8 @@ function EventFormDataFactory(UdbEvent, UdbPlace) {
       this.timestamps = [];
       this.startDate = '';
       this.endDate = '';
+      this.calendarType = '';
+      this.activeCalendarType = '';
     },
 
     /**
@@ -5174,6 +5191,7 @@ function EventFormStep5Directive() {
 
       $scope.activeEventType = type;
 
+      // User selected an event.
       if (isEvent) {
         EventFormData.isEvent = true;
         EventFormData.isPlace = false;
@@ -5196,7 +5214,14 @@ function EventFormStep5Directive() {
         }
 
       }
+      // User selected a place.
       else {
+
+        // Reset calendar if user switched to permanent.
+        if (EventFormData.calendarType !== 'permanent') {
+          EventFormData.resetCalendar();
+        }
+
         EventFormData.isEvent = false;
         EventFormData.isPlace = true;
 
@@ -5216,6 +5241,11 @@ function EventFormStep5Directive() {
             break;
           }
         }
+
+        // Places are default permanent. Users should not see a selection.
+        EventFormData.calendarType = 'permanent';
+        EventFormData.activeCalendarType = 'permanent';
+        EventFormData.activeCalendarLabel = 'Permanent';
 
       }
 
@@ -5321,8 +5351,6 @@ function EventFormStep5Directive() {
     // main storage for event form.
     $scope.eventFormData = EventFormData;
 
-    $scope.activeCalendarType = ''; // Current active calendar type.
-    $scope.activeCalendarLabel = '';
     $scope.calendarLabels = [
       { 'label': 'Eén of meerdere dagen', 'id' : 'single', 'eventOnly' : true },
       { 'label': 'Van ... tot ... ', 'id' : 'periodic', 'eventOnly' : true },
@@ -5356,11 +5384,11 @@ function EventFormStep5Directive() {
     function setCalendarType(type) {
 
       EventFormData.showStep(3);
-      $scope.activeCalendarType = type;
 
+      var calendarLabel = '';
       for (var i = 0; i < $scope.calendarLabels.length; i++) {
         if ($scope.calendarLabels[i].id === type) {
-          $scope.activeCalendarLabel = $scope.calendarLabels[i].label;
+          calendarLabel = $scope.calendarLabels[i].label;
           break;
         }
       }
@@ -5372,9 +5400,11 @@ function EventFormStep5Directive() {
       }
 
       // A type is choosen, start a complet new calendar, removing old dat
-      EventFormData.calendarType = type;
       $scope.hasOpeningHours = false;
       EventFormData.resetCalendar();
+      EventFormData.activeCalendarType = type;
+      EventFormData.calendarType = type;
+      EventFormData.activeCalendarLabel = calendarLabel;
 
       if (type === 'single') {
         addTimestamp();
@@ -5389,7 +5419,7 @@ function EventFormStep5Directive() {
      * Click listener to reset the calendar. User can select a new calendar type.
      */
     function resetCalendar() {
-      $scope.activeCalendarType = '';
+      EventFormData.activeCalendarType = '';
     }
 
     /**
@@ -5569,6 +5599,7 @@ function EventFormStep5Directive() {
       $scope.selectedCity = '';
       $scope.selectedLocation = '';
       $scope.cityAutocompleteTextField = '';
+      $scope.locationsSearched = false;
       $scope.locationAutocompleteTextField = '';
       EventFormData.showStep4 = false;
 
@@ -5608,6 +5639,7 @@ function EventFormStep5Directive() {
       //$scope.selectedCity = '';
       $scope.selectedLocation = '';
       $scope.locationAutocompleteTextField = '';
+      $scope.locationsSearched = false;
 
       EventFormData.showStep4 = false;
 
@@ -8591,29 +8623,27 @@ $templateCache.put('templates/time-autocomplete.html',
     "      <div class=\"row\">\n" +
     "\n" +
     "        <div class=\"col-xs-9\">\n" +
-    "          <div class=\"form-group\" ng-class=\"{'has-error' : showValidation && organizerForm.street.$error.required }\">\n" +
+    "          <div class=\"form-group\">\n" +
     "            <label>Straat</label>\n" +
-    "            <input type=\"text\" class=\"form-control\" name=\"street\" ng-model=\"newOrganizer.street\" required>\n" +
-    "            <span class=\"help-block\" ng-show=\"showValidation && (organizerForm.street.$error.required || organizerForm.number.$error.required)\">Gelieve straat en nummer in te vullen.</span>\n" +
+    "            <input type=\"text\" class=\"form-control\" name=\"street\" ng-model=\"newOrganizer.address.street\">\n" +
     "          </div>\n" +
     "        </div>\n" +
     "        <div class=\"col-xs-3\">\n" +
-    "          <div class=\"form-group\" ng-class=\"{'has-error' : showValidation && organizerForm.number.$error.required }\">\n" +
+    "          <div class=\"form-group\">\n" +
     "            <label>Nummer</label>\n" +
-    "            <input type=\"text\" class=\"form-control\" name=\"number\" ng-model=\"newOrganizer.number\" required>\n" +
+    "            <input type=\"text\" class=\"form-control\" name=\"number\" ng-model=\"newOrganizer.address.number\">\n" +
     "          </div>\n" +
     "        </div>\n" +
     "        <div class=\"col-xs-9\">\n" +
-    "          <div class=\"form-group\" ng-class=\"{'has-error' : showValidation && organizerForm.city.$error.required }\">\n" +
+    "          <div class=\"form-group\">\n" +
     "            <label>Gemeente</label>\n" +
-    "            <input type=\"text\" class=\"form-control\" name=\"city\" ng-model=\"newOrganizer.city\" required>\n" +
-    "            <span class=\"help-block\" ng-show=\"showValidation && (organizerForm.city.$error.required || organizerForm.postalCode.$invalid)\">Gelieve een geldige gemeente en postcode in te vullen.</span>\n" +
+    "            <input type=\"text\" class=\"form-control\" name=\"city\" ng-model=\"newOrganizer.address.city\">\n" +
     "          </div>\n" +
     "        </div>\n" +
     "        <div class=\"col-xs-3\">\n" +
-    "          <div class=\"form-group\" ng-class=\"{'has-error' : showValidation && organizerForm.postalCode.$invalid }\">\n" +
+    "          <div class=\"form-group\">\n" +
     "            <label>Postcode</label>\n" +
-    "            <input type=\"number\" class=\"form-control\" name=\"postalCode\" ng-model=\"newOrganizer.postalCode\" required>\n" +
+    "            <input type=\"number\" class=\"form-control\" name=\"postalCode\" ng-model=\"newOrganizer.address.postalCode\">\n" +
     "          </div>\n" +
     "        </div>\n" +
     "\n" +
@@ -8844,34 +8874,34 @@ $templateCache.put('templates/time-autocomplete.html',
     "      <span ng-show=\"eventFormData.isPlace\">Wanneer is deze plaats of locatie open?</span>\n" +
     "    </h2>\n" +
     "\n" +
-    "    <div class=\"row\">\n" +
+    "    <div class=\"row\" ng-show=\"eventFormData.isEvent\">\n" +
     "      <div class=\"col-xs-12\">\n" +
     "        <div class=\"form-group\">\n" +
     "\n" +
-    "          <label class=\"wanneerkiezer-label\" ng-show=\"activeCalendarType === ''\">Maak een keuze</label>\n" +
-    "          <div class=\"wanneerkiezer\" ng-show=\"activeCalendarType === ''\">\n" +
+    "          <label class=\"wanneerkiezer-label\" ng-show=\"eventFormData.activeCalendarType === ''\">Maak een keuze</label>\n" +
+    "          <div class=\"wanneerkiezer\" ng-show=\"eventFormData.activeCalendarType === ''\">\n" +
     "            <ul class=\"list-inline button-list\">\n" +
     "              <li ng-repeat=\"calendarLabel in calendarLabels\" ng-hide=\"eventFormData.isPlace && calendarLabel.eventOnly\">\n" +
     "                <button class=\"btn btn-default\" ng-bind=\"calendarLabel.label\" ng-click=\"setCalendarType(calendarLabel.id)\"></button>\n" +
     "              </li>\n" +
     "            </ul>\n" +
     "          </div>\n" +
-    "          <div class=\"wanneer-chosen\" ng-hide=\"activeCalendarType === ''\">\n" +
-    "            <span class=\"btn-chosen\" ng-bind=\"activeCalendarLabel\"></span><a class=\"btn btn-link wanneerrestore\" href=\"#\" ng-click=\"resetCalendar()\">Wijzigen</a>\n" +
+    "          <div class=\"wanneer-chosen\" ng-hide=\"eventFormData.activeCalendarType === ''\">\n" +
+    "            <span class=\"btn-chosen\" ng-bind=\"eventFormData.activeCalendarLabel\"></span><a class=\"btn btn-link wanneerrestore\" href=\"#\" ng-click=\"resetCalendar()\">Wijzigen</a>\n" +
     "          </div>\n" +
     "        </div>\n" +
     "      </div>\n" +
     "    </div>\n" +
     "\n" +
-    "    <div class=\"row\" ng-show=\"activeCalendarType === 'single'\">\n" +
+    "    <div class=\"row\" ng-show=\"eventFormData.activeCalendarType === 'single'\">\n" +
     "      <udb-event-form-timestamp></udb-event-form-timestamp>\n" +
     "    </div>\n" +
     "\n" +
-    "    <div class=\"row\" ng-show=\"activeCalendarType === 'periodic'\">\n" +
+    "    <div class=\"row\" ng-show=\"eventFormData.activeCalendarType === 'periodic'\">\n" +
     "      <udb-event-form-period></udb-event-form-period>\n" +
     "    </div>\n" +
     "\n" +
-    "    <div class=\"row\" ng-show=\"activeCalendarType === 'permanent' || activeCalendarType === 'periodic'\">\n" +
+    "    <div class=\"row\" ng-show=\"eventFormData.activeCalendarType === 'permanent' || eventFormData.activeCalendarType === 'periodic'\">\n" +
     "      <udb-event-form-opening-hours></udb-event-form-opening-hours>\n" +
     "    </div>\n" +
     "\n" +
@@ -9282,7 +9312,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "            </div>\n" +
     "            <div class=\"col-sm-8\">\n" +
     "              <section class=\"state incomplete\">\n" +
-    "                <a class=\"btn btn-default to-filling\" ng-click=\"organizerCssClass = 'state-filling'\">Organisator(s) toevoegen</a>\n" +
+    "                <a class=\"btn btn-default to-filling\" ng-click=\"organizerCssClass = 'state-filling'\">Organisator toevoegen</a>\n" +
     "              </section>\n" +
     "              <section class=\"state complete\">\n" +
     "                <p>{{ eventFormData.organizer.name}} <a class=\"btn btn-link to-filling\"><button type=\"button\" class=\"close\" ng-click=\"deleteOrganizer()\" data-dismiss=\"modal\" aria-label=\"Close\"><span aria-hidden=\"true\">&times;</span></button></a></p>\n" +

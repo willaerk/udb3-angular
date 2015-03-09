@@ -18,29 +18,27 @@
       <div class="row">
 
         <div class="col-xs-9">
-          <div class="form-group" ng-class="{'has-error' : showValidation && organizerForm.street.$error.required }">
+          <div class="form-group">
             <label>Straat</label>
-            <input type="text" class="form-control" name="street" ng-model="newOrganizer.street" required>
-            <span class="help-block" ng-show="showValidation && (organizerForm.street.$error.required || organizerForm.number.$error.required)">Gelieve straat en nummer in te vullen.</span>
+            <input type="text" class="form-control" name="street" ng-model="newOrganizer.address.street">
           </div>
         </div>
         <div class="col-xs-3">
-          <div class="form-group" ng-class="{'has-error' : showValidation && organizerForm.number.$error.required }">
+          <div class="form-group">
             <label>Nummer</label>
-            <input type="text" class="form-control" name="number" ng-model="newOrganizer.number" required>
+            <input type="text" class="form-control" name="number" ng-model="newOrganizer.address.number">
           </div>
         </div>
         <div class="col-xs-9">
-          <div class="form-group" ng-class="{'has-error' : showValidation && organizerForm.city.$error.required }">
+          <div class="form-group">
             <label>Gemeente</label>
-            <input type="text" class="form-control" name="city" ng-model="newOrganizer.city" required>
-            <span class="help-block" ng-show="showValidation && (organizerForm.city.$error.required || organizerForm.postalCode.$invalid)">Gelieve een geldige gemeente en postcode in te vullen.</span>
+            <input type="text" class="form-control" name="city" ng-model="newOrganizer.address.city">
           </div>
         </div>
         <div class="col-xs-3">
-          <div class="form-group" ng-class="{'has-error' : showValidation && organizerForm.postalCode.$invalid }">
+          <div class="form-group">
             <label>Postcode</label>
-            <input type="number" class="form-control" name="postalCode" ng-model="newOrganizer.postalCode" required>
+            <input type="number" class="form-control" name="postalCode" ng-model="newOrganizer.address.postalCode">
           </div>
         </div>
 

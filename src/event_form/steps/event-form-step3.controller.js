@@ -113,6 +113,7 @@
       $scope.selectedCity = '';
       $scope.selectedLocation = '';
       $scope.cityAutocompleteTextField = '';
+      $scope.locationsSearched = false;
       $scope.locationAutocompleteTextField = '';
       EventFormData.showStep4 = false;
 
@@ -152,6 +153,7 @@
       //$scope.selectedCity = '';
       $scope.selectedLocation = '';
       $scope.locationAutocompleteTextField = '';
+      $scope.locationsSearched = false;
 
       EventFormData.showStep4 = false;
 

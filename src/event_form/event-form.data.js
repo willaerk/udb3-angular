@@ -37,6 +37,9 @@ function EventFormDataFactory(UdbEvent, UdbPlace) {
     place : {},
     type : {},
     theme : {},
+    activeCalendarType : '', // only needed for the angular.
+    activeCalendarLabel : '', // only needed for the angular.
+    calendarType : '',
     startDate : '',
     endDate : '',
     timestamps : [],
@@ -248,6 +251,8 @@ function EventFormDataFactory(UdbEvent, UdbPlace) {
       this.timestamps = [];
       this.startDate = '';
       this.endDate = '';
+      this.calendarType = '';
+      this.activeCalendarType = '';
     },
 
     /**

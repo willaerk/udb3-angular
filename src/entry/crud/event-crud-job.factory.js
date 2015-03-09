@@ -51,6 +51,9 @@ function EventCrudJobFactory(BaseJob) {
       case 'deleteOrganizer':
         return 'Organisatie verwijderen: "' + this.item.name + '".';
 
+      case 'updateContactInfo':
+        return 'Contact informatie aanpassen: "' + this.item.name + '".';
+
     }
 
   };

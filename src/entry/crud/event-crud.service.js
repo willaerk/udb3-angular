@@ -54,14 +54,12 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
   /**
    * Update the main language description and add it to the job logger.
    *
-   * @param {UdbEvent|UdbPlace|EventFormData} item
-   * @param {string} type
-   *  Type of item: Event / Place
+   * @param {EventFormData} item
    * @returns {EventCrud.updateTypicalAgeRange.jobPromise}
    */
-  this.updateDescription = function(item, type) {
+  this.updateDescription = function(item) {
 
-    var jobPromise = udbApi.translateProperty(item.id, type, 'description', udbApi.mainLanguage, item.description.nl);
+    var jobPromise = udbApi.translateProperty(item.id, item.getType(), 'description', udbApi.mainLanguage, item.description.nl);
 
     jobPromise.success(function (jobData) {
       var job = new EventCrudJob(jobData.commandId, item, 'updateTypicalAgeRange');
@@ -75,14 +73,12 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
   /**
    * Update the typical age range and add it to the job logger.
    *
-   * @param {UdbEvent|UdbPlace} item
-   * @param {string} type
-   *  Type of item
+   * @param {EventFormData} item
    * @returns {EventCrud.updateTypicalAgeRange.jobPromise}
    */
-  this.updateTypicalAgeRange = function(item, type) {
+  this.updateTypicalAgeRange = function(item) {
 
-    var jobPromise = udbApi.updateProperty(item.id, type, 'typicalAgeRange', item.typicalAgeRange);
+    var jobPromise = udbApi.updateProperty(item.id, item.getType(), 'typicalAgeRange', item.typicalAgeRange);
 
     jobPromise.success(function (jobData) {
       var job = new EventCrudJob(jobData.commandId, item, 'updateTypicalAgeRange');
@@ -124,6 +120,27 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
 
     jobPromise.success(function (jobData) {
       var job = new EventCrudJob(jobData.commandId, item, 'deleteOrganizer');
+      jobLogger.addJob(job);
+    });
+
+    return jobPromise;
+
+  };
+
+  /**
+   * Update the contact info and add it to the job logger.
+   *
+   * @param {UdbEvent|UdbPlace} item
+   * @param {string} type
+   *  Type of item
+   * @returns {EventCrud.updateContactInfo.jobPromise}
+   */
+  this.updateContactInfo = function(item) {
+
+    var jobPromise = udbApi.updateProperty(item.id, item.getType(), 'contactInfo', item.contact);
+
+    jobPromise.success(function (jobData) {
+      var job = new EventCrudJob(jobData.commandId, item, 'updateContactInfo');
       jobLogger.addJob(job);
     });
 

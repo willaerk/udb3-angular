@@ -46,6 +46,7 @@ function EventFormDataFactory(UdbEvent, UdbPlace) {
     openingHours : [],
     ageRange : '',
     organizer : {},
+    contact : [],
 
     /**
      * Show the given step.
@@ -267,7 +268,18 @@ function EventFormDataFactory(UdbEvent, UdbPlace) {
      */
     resetOrganizer: function() {
       this.organizer = {};
-    }
+    },
+
+    /**
+     * Add a timestamp to the timestamps array.
+     */
+    addContactInfo: function(type, value) {
+      this.contact.push({
+        'type' : type,
+        'value' : value
+      });
+
+    },
 
   };
 }

@@ -1,6 +1,6 @@
 <div ng-controller="EventFormStep5Ctrl as EventFormStep5">
   <a name="extra"></a>
-  <section id="extra" ng-show="eventFormData.showStep5">
+  <section id="extra" ng-hide="eventFormData.showStep5">
 
     <h2 class="title-border">
       <span class="number">5</span>
@@ -76,7 +76,7 @@
             </div>
             <div class="col-sm-8">
               <section>
-                <div class="form-group clearfix" ng-hide="ageRange === -1">
+                <div class="form-group clearfix" ng-hide="ageRange === - 1">
                   <select class="form-control leeftijd-incomplete-select" ng-change="changeAgeRange()" ng-model="ageRange" style="width: 50%; float: left;">
                     <option value="0" ng-show="ageRange === 0">Kies een leeftijdscategorie</option>
                     <option value="12">Kinderen tot 12 jaar</option>
@@ -94,7 +94,7 @@
                   </div>
                 </div>
 
-                <p ng-show="ageRange === -1">Alle leeftijden <a href="#" class="btn btn-link btn-leeftijd-restore to-filling" ng-click="resetAgeRange()">Wijzigen</a></p>
+                <p ng-show="ageRange === - 1">Alle leeftijden <a href="#" class="btn btn-link btn-leeftijd-restore to-filling" ng-click="resetAgeRange()">Wijzigen</a></p>
 
                 <div ng-show="ageRangeError" class="alert alert-danger">
                   Er ging iets fout bij het opslaan van de leeftijd.
@@ -144,8 +144,49 @@
           </div>
         </div>
 
-      </div>
-    </div>
+        <div class="row extra-contact">
+          <div class="extra-task meer-info" ng-class="contactInfoCssClass">
+            <div class="col-sm-3">
+              <em class="extra-task-label">Meer info &amp; contact</em> <i class="fa fa-circle-o-notch fa-spin" ng-show="savingContactInfo"></i>
+            </div>
 
-  </section>
-</div>
+            <div class="col-sm-8">
+              <section class="state incomplete">
+                <a class="btn btn-default" ng-click="contactCssClass='state-filling'">Contactinformatie toevoegen</a>
+              </section>
+
+              <section class="state filling complete">
+                <form name="contactInfo">
+                  <table class="table">
+                    <tr ng-repeat="(key, info) in eventFormData.contact" ng-model="info" udb-contact-info-validation ng-class="{'has-error' : infoErrorMessage !== '' }" ng-change="saveContactInfo()">
+                      <td>
+                        <select class="form-control" ng-model="info.type" ng-change="clearInfo();">
+                          <option value="url">Website</option>
+                          <option value="phone">Telefoonnummer</option>
+                          <option value="email">E-mailadres</option>
+                        </select>
+                      </td>
+                      <td>
+                        <input type="text" class="form-control" ng-model="info.value" name="contact[{{key}}]" ng-change="validateInfo(key); saveContactInfo();" ng-model-options="{ updateOn: 'blur' }"/>
+                        <span class="help-block" ng-hide="infoErrorMessage === ''" ng-bind="infoErrorMessage"></span>
+                      </td>
+                      <td>
+                        <button type="button" class="close" aria-label="Close" ng-click="deleteContactInfo(key)"><span aria-hidden="true">&times;</span></button>
+                      </td>
+                    </tr>
+                    <tr><td colspan="3"><a ng-click="eventFormData.addContactInfo('')">Meer contactgegevens toevoegen</a></td></tr>
+                  </table>
+                </form>
+              </section>
+
+              <div ng-show="contactInfoError" class="alert alert-danger">
+                Er ging iets fout bij het opslaan van de contact info.
+              </div>
+
+            </div>
+
+          </div>
+        </div>
+
+        </section>
+      </div>

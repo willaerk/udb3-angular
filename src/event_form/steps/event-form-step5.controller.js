@@ -26,15 +26,21 @@
 
     // Scope vars.
     $scope.eventFormData = EventFormData; // main storage for event form.
+
+    // Description vars.
     $scope.description = EventFormData.getDescription('nl');
     $scope.descriptionCssClass = $scope.description ? 'state-complete' : 'state-incomplete';
     $scope.savingDescription = false;
     $scope.descriptionError = false;
+
+    // Age range vars
     $scope.savingAgeRange = false;
     $scope.ageRangeError = false;
     $scope.ageRange = 0;
     $scope.ageCssClass = EventFormData.ageRange ? 'state-complete' : 'state-incomplete';
     $scope.minAge = '';
+
+    // Organizer vars.
     $scope.organizerCssClass = EventFormData.organizer.id ? 'state-complete' : 'state-incomplete';
     $scope.organizer = '';
     $scope.emptyOrganizerAutocomplete = false;
@@ -42,20 +48,39 @@
     $scope.organizerError = false;
     $scope.savingOrganizer = false;
 
+    // Contactinfo vars.
+    $scope.contactInfoCssClass = EventFormData.contact.length ? 'state-complete' : 'state-incomplete';
+    $scope.savingContactInfo = false;
+    $scope.contactInfoError = false;
+
     // Scope functions.
+    // Description functions.
     $scope.saveDescription = saveDescription;
+
+    // Age range functions.
     $scope.saveAgeRange = saveAgeRange;
     $scope.changeAgeRange = changeAgeRange;
     $scope.setAllAges = setAllAges;
     $scope.resetAgeRange = resetAgeRange;
+
+    // Organizer functions.
     $scope.getOrganizers = getOrganizers;
     $scope.selectOrganizer = selectOrganizer;
     $scope.deleteOrganizer = deleteOrganizer;
     $scope.openOrganizerModal = openOrganizerModal;
 
+    // Contact info functions.
+    $scope.deleteContactInfo = deleteContactInfo;
+    $scope.saveContactInfo = saveContactInfo;
+
     // Check if we have a minAge set on load.
     if (EventFormData.minAge) {
       $scope.ageCssClass = 'state-complete';
+    }
+
+    // Add empty contact.
+    if (EventFormData.contact.length === 0) {
+      EventFormData.addContactInfo('', '');
     }
 
     /**
@@ -68,7 +93,7 @@
 
       EventFormData.setDescription($scope.description, 'nl');
 
-      var promise = eventCrud.updateDescription(EventFormData, EventFormData.getType(), $scope.description);
+      var promise = eventCrud.updateDescription(EventFormData, $scope.description);
       promise.then(function() {
 
         $scope.savingDescription = false;
@@ -130,7 +155,7 @@
         EventFormData.typicalAgeRange = $scope.ageRange;
       }
 
-      var promise = eventCrud.updateTypicalAgeRange(EventFormData, EventFormData.getType());
+      var promise = eventCrud.updateTypicalAgeRange(EventFormData);
       promise.then(function() {
         $scope.savingAgeRange = false;
         updateLastUpdated();
@@ -269,6 +294,37 @@
         $scope.organizerError = true;
         $scope.savingOrganizer = false;
       });
+    }
+
+    /**
+     * Delete a given contact info item.
+     */
+    function deleteContactInfo(index) {
+      EventFormData.contact.splice(index, 1);
+    }
+
+    /**
+     * Save the contact info.
+     */
+    function saveContactInfo() {
+
+      $scope.savingContactInfo = true;
+      $scope.contactInfoError = false;
+
+      // Only save with valid input.
+      if ($scope.contactInfo.$valid) {
+
+        var promise = eventCrud.saveContactInfo(EventFormData);
+        promise.then(function() {
+          updateLastUpdated();
+          $scope.contactInfoCssClass = 'state-complete';
+          $scope.savingContactInfo = false;
+        }, function() {
+          $scope.contactInfoError = true;
+          $scope.savingContactInfo = false;
+        });
+
+      }
     }
 
   }

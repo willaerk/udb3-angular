@@ -5246,6 +5246,10 @@ function EventFormStep5Directive() {
         EventFormData.calendarType = 'permanent';
         EventFormData.activeCalendarType = 'permanent';
         EventFormData.activeCalendarLabel = 'Permanent';
+        if (EventFormData.openingHours.length === 0) {
+          EventFormData.addOpeningHour('', '', '');
+        }
+        EventFormData.showStep(3);
 
       }
 
@@ -6242,6 +6246,7 @@ function EventFormStep5Directive() {
      */
     function saveOrganizer() {
 
+      $scope.emptyOrganizerAutocomplete = false;
       $scope.organizerError = false;
       $scope.savingOrganizer = true;
 

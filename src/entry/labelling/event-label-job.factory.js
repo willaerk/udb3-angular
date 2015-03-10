@@ -2,44 +2,44 @@
 
 /**
  * @ngdoc service
- * @name udb.entry.EventTagJob
+ * @name udb.entry.EventLabelJob
  * @description
- * # Event Tag Job
- * This Is the factory that creates an event tag job
+ * # Event Label Job
+ * This Is the factory that creates an event label job
  */
 angular
   .module('udb.entry')
-  .factory('EventTagJob', EventTagJobFactory);
+  .factory('EventLabelJob', EventLabelJobFactory);
 
 /* @ngInject */
-function EventTagJobFactory(BaseJob, JobStates) {
+function EventLabelJobFactory(BaseJob, JobStates) {
 
   /**
-   * @class EventTagJob
+   * @class EventLabelJob
    * @constructor
    * @param {string} commandId
    * @param {UdbEvent} event
    * @param {string} label
-   * @param {boolean} untag set to true when untagging
+   * @param {boolean} unlabel set to true when unlabeling
    */
-  var EventTagJob = function (commandId, event, label, untag) {
+  var EventLabelJob = function (commandId, event, label, unlabel) {
     BaseJob.call(this, commandId);
     this.event = event;
     this.label = label;
-    this.untag = !!untag || false;
+    this.unlabel = !!unlabel || false;
   };
 
-  EventTagJob.prototype = Object.create(BaseJob.prototype);
-  EventTagJob.prototype.constructor = EventTagJob;
+  EventLabelJob.prototype = Object.create(BaseJob.prototype);
+  EventLabelJob.prototype.constructor = EventLabelJob;
 
-  EventTagJob.prototype.getDescription = function() {
+  EventLabelJob.prototype.getDescription = function() {
     var job = this,
         description;
 
     if(job.state === JobStates.FAILED) {
       description = 'Labelen van evenement mislukt';
     } else {
-      if(job.untag) {
+      if(job.unlabel) {
         description = 'Verwijder label "' + job.label + '" van "' + job.event.name.nl + '"';
       } else {
         description = 'Label "' + job.event.name.nl + '" met "' + job.label + '"';
@@ -49,5 +49,5 @@ function EventTagJobFactory(BaseJob, JobStates) {
     return description;
   };
 
-  return (EventTagJob);
+  return (EventLabelJob);
 }

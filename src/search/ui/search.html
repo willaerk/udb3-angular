@@ -58,7 +58,7 @@
                 <div class="col-sm-12 rv-first-column">
                     <span ng-bind="resultViewer.querySelected ? resultViewer.totalItems : resultViewer.selectedIds.length"></span> items geselecteerd
 
-                    <button class="btn btn-default rv-action" ng-click="tag()">
+                    <button class="btn btn-default rv-action" ng-click="label()">
                         <i class="fa fa-tag"></i> Labelen
                     </button>
                     <button class="btn btn-default rv-action" ng-click="exportEvents()">
@@ -247,7 +247,7 @@
                           </div>
 
                           <div ng-show="resultViewer.eventProperties.labels.visible" class="udb-labels">
-                              <span ng-hide="event.labels.length">Dit evenement is nog niet getagd.</span>
+                              <span ng-hide="event.labels.length">Dit evenement is nog niet gelabeld.</span>
                               <ui-select multiple ng-model="event.labels" tagging tagging-label="(label toevoegen)"
                                          ng-disabled="disabled" reset-search-input="true" tagging-tokens="ENTER|;"
                                          on-select="labelAdded($item)" on-remove="labelRemoved($item)">

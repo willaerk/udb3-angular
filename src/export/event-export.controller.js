@@ -21,7 +21,7 @@ function EventExportController($modalInstance, udbApi, eventExporter, queryField
   exporter.eventProperties = [
     { name: 'name', include: true, sortable: false, excludable: false},
     { name: 'description', include: false, sortable: false, excludable: true},
-    { name: 'keywords', include: false, sortable: false, excludable: true},
+    { name: 'labels', include: false, sortable: false, excludable: true},
     { name: 'calendarSummary', include: true, sortable: false, excludable: false},
     { name: 'image', include: true, sortable: false, excludable: true},
     { name: 'location', include: true, sortable: false, excludable: false},

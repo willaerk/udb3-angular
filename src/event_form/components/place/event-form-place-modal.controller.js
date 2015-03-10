@@ -57,7 +57,7 @@
       $scope.newPlace = getDefaultPlace();
 
       // Close the modal.
-      $modalInstance.close($scope.newPlace);
+      $modalInstance.dismiss();
 
     }
     /**

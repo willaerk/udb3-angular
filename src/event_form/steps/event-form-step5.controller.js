@@ -15,14 +15,25 @@
   /* @ngInject */
   function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizers, $modal) {
 
+    EventFormData.showStep(5);
+
     // Work hardcoded on this id for now.
     // Event
-    EventFormData.id = 'e38de815-3443-4d08-872a-4bbc5d6d7df3';
+    // local event nils
+    EventFormData.id = '9bd5b8dc-6637-4f93-afe4-1707c71b1b37';
+
+    // local event jochen
+    // EventFormData.id = 'bc47b5e6-a7ae-4737-a6e0-bb7b243f1989';
 
     // Place
-    EventFormData.id = 'bc47b5e6-a7ae-4737-a6e0-bb7b243f1989';
-    EventFormData.isEvent = true;
-    EventFormData.isPlace = false;
+    // local place nils
+    EventFormData.id = '1c16ad11-071c-40da-bdc6-9ec4e866fdb0';
+
+    // local place jochen
+    // EventFormData.id = 'x';
+
+    EventFormData.isEvent = false;
+    EventFormData.isPlace = true;
 
     // Scope vars.
     $scope.eventFormData = EventFormData; // main storage for event form.
@@ -47,7 +58,7 @@
     $scope.loadingOrganizers = false;
     $scope.organizerError = false;
     $scope.savingOrganizer = false;
-    
+
     // Booking & tickets vars.
     $scope.bookingInfo = {
       price : '',
@@ -464,7 +475,7 @@
         $scope.facilitiesCssClass = 'state-complete';
       }
     }
-    
+
     /**
      * Enables a booking type.
      */
@@ -479,12 +490,12 @@
         $scope.viaPhone = !$scope.viaPhone;
       }
     }
-    
+
     /**
      * Validates a booking type.
      */
     function validateBookingType(type) {
-      
+
       if (type === 'website') {
         $scope.bookingModel.urlRequired = true;
         $scope.bookingModel.emailRequired = false;
@@ -500,16 +511,16 @@
         $scope.bookingModel.emailRequired = false;
         $scope.bookingModel.urlRequired = false;
       }
-      
+
       // Forms are automatically known in scope.
       if (!$scope.step5TicketsForm.$valid) {
         return;
       }
-      
+
       saveBookingType(type);
-      
+
     }
-    
+
     /**
      * Temporarily save a booking type.
      */
@@ -528,7 +539,7 @@
       }
       saveBookingInfo();
     }
-    
+
     /**
      * @param {type} type
      */
@@ -543,7 +554,7 @@
         $scope.bookingInfo.phone = $scope.bookingModel.phone = '';
       }
     }
-    
+
     /**
      * Save the website preview settings.
      */
@@ -555,57 +566,57 @@
       }
       saveBookingInfo();
     }
-    
+
     /**
      * Enable the website preview modal.
      */
     function enableWebsitePreview() {
       $scope.websitePreviewEnabled = true;
     }
-    
+
     /**
      * Save the booking period settings.
      */
     function saveBookingPeriod() {
-      
+
       $scope.bookingPeriodShowValidation = true;
-      
+
       // Forms are automatically known in scope.
       if (!$scope.step5TicketsForm.$valid) {
         return;
       }
-      
+
       $scope.bookingPeriodPreviewEnabled = false;
-      
+
       $scope.bookingInfo.availabilityStarts = $scope.bookingModel.availabilityStarts;
       $scope.bookingInfo.availabilityEnds = $scope.bookingModel.availabilityEnds;
-      
+
       saveBookingInfo();
-      
+
     }
-    
+
     /**
      * Enable the booking period preview modal.
      */
     function enableBookingPeriodPreview() {
       $scope.bookingPeriodPreviewEnabled = true;
     }
-    
+
     /**
      * Saves the booking info
      */
     function saveBookingInfo() {
-      
+
       EventFormData.setBookingInfo($scope.bookingInfo);
       //
-      
+
       var promise = eventCrud.updateBookingInfo(EventFormData);
       promise.then(function() {
         updateLastUpdated();
       }, function() {
       });
     }
-    
+
   }
 
 })();

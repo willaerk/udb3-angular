@@ -4981,7 +4981,7 @@ function EventFormOpeningHoursDirective() {
       $scope.newPlace = getDefaultPlace();
 
       // Close the modal.
-      $modalInstance.close($scope.newPlace);
+      $modalInstance.dismiss();
 
     }
     /**
@@ -6386,12 +6386,23 @@ EventFormFacilities.$inject = ["$q", "$http", "$cacheFactory", "appConfig"];
   /* @ngInject */
   function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizers, $modal) {
 
+    EventFormData.showStep(5);
+
     // Work hardcoded on this id for now.
     // Event
-    EventFormData.id = '2fa0b713-09ac-4a13-b357-5e5c57294b24';
+    // local event nils
+    EventFormData.id = '9bd5b8dc-6637-4f93-afe4-1707c71b1b37';
+
+    // local event jochen
+    // EventFormData.id = '9bd5b8dc-6637-4f93-afe4-1707c71b1b37';
 
     // Place
-    EventFormData.id = '2f0f4fb7-3fff-44c2-a8ae-a086e963c833';
+    // local place nils
+    EventFormData.id = '1c16ad11-071c-40da-bdc6-9ec4e866fdb0';
+
+    // local event jochen
+    // EventFormData.id = '9bd5b8dc-6637-4f93-afe4-1707c71b1b37';
+
     EventFormData.isEvent = false;
     EventFormData.isPlace = true;
 
@@ -10173,7 +10184,7 @@ $templateCache.put('templates/time-autocomplete.html',
   $templateCache.put('templates/event-form-step5.html',
     "<div ng-controller=\"EventFormStep5Ctrl as EventFormStep5\">\n" +
     "  <a name=\"extra\"></a>\n" +
-    "  <section id=\"extra\" ng-hide=\"eventFormData.showStep5\">\n" +
+    "  <section id=\"extra\" ng-show=\"eventFormData.showStep5\">\n" +
     "\n" +
     "    <h2 class=\"title-border\">\n" +
     "      <span class=\"number\">5</span>\n" +

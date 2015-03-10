@@ -3411,8 +3411,11 @@ function EventCrudJobFactory(BaseJob) {
       case 'deleteOrganizer':
         return 'Organisatie verwijderen: "' + this.item.name + '".';
 
-      case 'updateContactInfo':
+      case 'updateContactPoint':
         return 'Contact informatie aanpassen: "' + this.item.name + '".';
+
+      case 'updateFacilities':
+        return 'Voorzieningen aanpassen: "' + this.item.name + '".';
 
     }
 
@@ -3534,7 +3537,7 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
   /**
    * Delete the organizer for the event / place.
    *
-   * @param item
+   * @param {EventFormData} item
    * @returns {EventCrud.updateOrganizer.jobPromise}
    */
   this.deleteOfferOrganizer = function(item) {
@@ -3551,19 +3554,36 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
   };
 
   /**
-   * Update the contact info and add it to the job logger.
+   * Update the contact point and add it to the job logger.
    *
-   * @param {UdbEvent|UdbPlace} item
-   * @param {string} type
-   *  Type of item
-   * @returns {EventCrud.updateContactInfo.jobPromise}
+   * @param {EventFormData} item
+   * @returns {EventCrud.updateContactPoint.jobPromise}
    */
-  this.updateContactInfo = function(item) {
+  this.updateContactPoint = function(item) {
 
-    var jobPromise = udbApi.updateProperty(item.id, item.getType(), 'contactInfo', item.contact);
+    var jobPromise = udbApi.updateProperty(item.id, item.getType(), 'contactPoint', item.contact);
 
     jobPromise.success(function (jobData) {
       var job = new EventCrudJob(jobData.commandId, item, 'updateContactInfo');
+      jobLogger.addJob(job);
+    });
+
+    return jobPromise;
+
+  };
+
+  /**
+   * Update the facilities and add it to the job logger.
+   *
+   * @param {EventFormData} item
+   * @returns {EventCrud.updateFacilities.jobPromise}
+   */
+  this.updateFacilities = function(item) {
+
+    var jobPromise = udbApi.updateProperty(item.id, item.getType(), 'facilities', item.facilities);
+
+    jobPromise.success(function (jobData) {
+      var job = new EventCrudJob(jobData.commandId, item, 'updateFacilities');
       jobLogger.addJob(job);
     });
 
@@ -4659,6 +4679,97 @@ angular
   }
 
 })();
+// Source: src/event_form/components/facilities-modal/event-form-facilities-modal.controller.js
+(function () {
+/**
+   * @ngdoc function
+   * @name udbApp.controller:EventFormFacilitiesModalCtrl
+   * @description
+   * # EventFormFacilitiesModalCtrl
+   * Modal for selecting facilities.
+   */
+  angular
+    .module('udb.event-form')
+    .controller('EventFormFacilitiesModalCtrl', EventFormFacilitiesModalController);
+
+  /* @ngInject */
+  function EventFormFacilitiesModalController($scope, $modalInstance, EventFormData, eventCrud, eventFormFacilities) {
+
+    // Scope vars.
+    $scope.saving = false;
+    $scope.error = false;
+
+    $scope.facilities = {
+      motor : [],
+      visual : [],
+      hearing : []
+    };
+
+    var eventPromise = eventFormFacilities.getFacilities();
+    eventPromise.then(function (facilities) {
+      $scope.facilities = facilities;
+    });
+
+    // Scope functions.
+    $scope.cancel = cancel;
+    $scope.saveFacilities = saveFacilities;
+
+    /**
+     * Cancel the modal.
+     */
+    function cancel() {
+      $modalInstance.dismiss('cancel');
+    }
+
+    /**
+     * Save the selected facilities in db.
+     */
+    function saveFacilities() {
+
+      EventFormData.facilities = [];
+
+      // Add all selected motor facilities.
+      var i;
+      for (i = 0; i < $scope.facilities.motor.length; i++) {
+        if ($scope.facilities.motor[i].selected) {
+          EventFormData.facilities.push($scope.facilities.motor[i]);
+        }
+      }
+
+      // Add all selected visual facilities.
+      for (i = 0; i < $scope.facilities.visual.length; i++) {
+        if ($scope.facilities.visual[i].selected) {
+          EventFormData.facilities.push($scope.facilities.visual[i]);
+        }
+      }
+
+      // Add all selected hearing facilities.
+      for (i = 0; i < $scope.facilities.hearing.length; i++) {
+        if ($scope.facilities.hearing[i].selected) {
+          EventFormData.facilities.push($scope.facilities.hearing[i]);
+        }
+      }
+
+      $scope.saving = true;
+      $scope.error = false;
+
+      var promise = eventCrud.updateFacilities(EventFormData);
+      promise.then(function(jsonResponse) {
+
+        $scope.saving = false;
+        $modalInstance.close();
+
+      }, function() {
+        $scope.error = true;
+        $scope.saving = false;
+      });
+    }
+
+  }
+  EventFormFacilitiesModalController.$inject = ["$scope", "$modalInstance", "EventFormData", "eventCrud", "eventFormFacilities"];
+
+})();
+
 // Source: src/event_form/components/openinghours/openinghours.directive.js
 /**
  * @ngdoc directive
@@ -4994,7 +5105,12 @@ function EventFormDataFactory(UdbEvent, UdbPlace) {
     openingHours : [],
     ageRange : '',
     organizer : {},
-    contact : [],
+    contactPoint : {
+      url : [],
+      phone : [],
+      email : []
+    },
+    facilities : [],
 
     /**
      * Show the given step.
@@ -5219,10 +5335,10 @@ function EventFormDataFactory(UdbEvent, UdbPlace) {
     },
 
     /**
-     * Add a timestamp to the timestamps array.
+     * Add contact info to the contactPoint.
      */
     addContactInfo: function(type, value) {
-      this.contact.push({
+      this.contactPoint.push({
         'type' : type,
         'value' : value
       });
@@ -5359,6 +5475,48 @@ function EventFormStep5Directive() {
     restrict: 'EA',
   };
 }
+// Source: src/event_form/event-form.facilities.service.js
+/**
+ * @ngdoc service
+ * @name udb.event-form.eventFormFacilities
+ * @description
+ * Service for loading the event form facilities.
+ */
+angular
+  .module('udb.core')
+  .service('eventFormFacilities', EventFormFacilities);
+
+/* @ngInject */
+function EventFormFacilities($q, $http, $cacheFactory, appConfig) {
+
+  var cache = $cacheFactory('facilitiesCache');
+
+  /**
+   * Get the facilities.
+   */
+  this.getFacilities = function () {
+
+    var deferredEvent = $q.defer();
+    var facilities = cache.get('facilities');
+
+    if (facilities) {
+      deferredEvent.resolve(facilities);
+    } else {
+      var request = $http.get(appConfig.udb3JsBaseUrl + '/src/event_form/facilities.json');
+
+      request.success(function(jsonData) {
+        deferredEvent.resolve(jsonData);
+        cache.put('facilities', jsonData);
+      });
+    }
+
+    return deferredEvent.promise;
+
+  };
+
+}
+EventFormFacilities.$inject = ["$q", "$http", "$cacheFactory", "appConfig"];
+
 // Source: src/event_form/steps/event-form-step1.controller.js
 (function () {
 /**
@@ -6261,9 +6419,14 @@ function EventFormStep5Directive() {
     $scope.savingOrganizer = false;
 
     // Contactinfo vars.
-    $scope.contactInfoCssClass = EventFormData.contact.length ? 'state-complete' : 'state-incomplete';
+    $scope.contactInfoCssClass = EventFormData.contactPoint.length ? 'state-complete' : 'state-incomplete';
     $scope.savingContactInfo = false;
     $scope.contactInfoError = false;
+
+    // Facilities vars.
+    $scope.facilitiesCssClass = 'state-incomplete';
+    $scope.facilitiesInapplicable = false;
+    $scope.selectedFacilities = EventFormData.facilities;
 
     // Scope functions.
     // Description functions.
@@ -6285,13 +6448,17 @@ function EventFormStep5Directive() {
     $scope.deleteContactInfo = deleteContactInfo;
     $scope.saveContactInfo = saveContactInfo;
 
+    // Facilities functions.
+    $scope.openFacilitiesModal = openFacilitiesModal;
+    $scope.setFacilitiesInapplicable = setFacilitiesInapplicable;
+
     // Check if we have a minAge set on load.
     if (EventFormData.minAge) {
       $scope.ageCssClass = 'state-complete';
     }
 
     // Add empty contact.
-    if (EventFormData.contact.length === 0) {
+    if (EventFormData.contactPoint.length === 0) {
       EventFormData.addContactInfo('', '');
     }
 
@@ -6512,7 +6679,7 @@ function EventFormStep5Directive() {
      * Delete a given contact info item.
      */
     function deleteContactInfo(index) {
-      EventFormData.contact.splice(index, 1);
+      EventFormData.contactPoint.splice(index, 1);
     }
 
     /**
@@ -6526,7 +6693,7 @@ function EventFormStep5Directive() {
       // Only save with valid input.
       if ($scope.contactInfo.$valid) {
 
-        var promise = eventCrud.saveContactInfo(EventFormData);
+        var promise = eventCrud.updateContactInfo(EventFormData);
         promise.then(function() {
           updateLastUpdated();
           $scope.contactInfoCssClass = 'state-complete';
@@ -6536,6 +6703,67 @@ function EventFormStep5Directive() {
           $scope.savingContactInfo = false;
         });
 
+      }
+    }
+
+    /**
+     * Open the facilities modal.
+     */
+    function openFacilitiesModal() {
+
+      var modalInstance = $modal.open({
+        templateUrl: 'templates/event-form-facilities-modal.html',
+        controller: 'EventFormFacilitiesModalCtrl',
+      });
+
+      modalInstance.result.then(function () {
+
+        $scope.facilitiesCssClass = 'state-complete';
+        $scope.selectedFacilities = EventFormData.facilities;
+
+        if (EventFormData.facilities.length > 0) {
+          $scope.facilitiesInapplicable = false;
+        }
+        else {
+          $scope.facilitiesInapplicable = true;
+        }
+      }, function () {
+        // modal dismissed.
+        if (EventFormData.facilities.length > 0 || $scope.facilitiesInapplicable) {
+          $scope.facilitiesCssClass = 'state-complete';
+        }
+        else {
+          $scope.facilitiesCssClass = 'state-incomplete';
+        }
+      });
+
+    }
+
+    /**
+     * Remove all facilities and set it to inapplicable.
+     */
+    function setFacilitiesInapplicable() {
+
+      // Delete facilities.
+      if (EventFormData.facilities.length > 0) {
+
+        $scope.facilitiesError = false;
+        EventFormData.facilities = [];
+
+        var promise = eventCrud.updateFacilities(EventFormData);
+        promise.then(function() {
+          $scope.savingFacilities = false;
+          $scope.facilitiesInapplicable = true;
+          $scope.facilitiesCssClass = 'state-complete';
+        }, function() {
+          $scope.savingFacilities = false;
+          $scope.facilitiesError = true;
+        });
+
+      }
+      else {
+        $scope.facilitiesInapplicable = true;
+        $scope.facilitiesCssClass = 'state-complete';
       }
     }
 
@@ -9193,6 +9421,45 @@ $templateCache.put('templates/time-autocomplete.html',
   );
 
 
+  $templateCache.put('templates/event-form-facilities-modal.html',
+    "<div class=\"modal-header\">\n" +
+    "  <h4 class=\"modal-title\">Toegankelijkheidsinformatie</h4>\n" +
+    "</div>\n" +
+    "<div class=\"modal-body\">\n" +
+    "\n" +
+    "  <label>Voorzieningen voor personen met een motorische beperking</label>\n" +
+    "\n" +
+    "  <div class=\"checkbox\" ng-repeat=\"facility in facilities.motor\">\n" +
+    "    <label>\n" +
+    "      <input type=\"checkbox\" ng-model=\"facility.selected\">{{facility.label}}</label>\n" +
+    "  </div>\n" +
+    "\n" +
+    "  <label>Voorzieningen voor personen met een visuele beperking</label>\n" +
+    "\n" +
+    "  <div class=\"checkbox\" ng-repeat=\"facility in facilities.visual\">\n" +
+    "    <label>\n" +
+    "      <input type=\"checkbox\" ng-model=\"facility.selected\">{{facility.label}}</label>\n" +
+    "  </div>\n" +
+    "\n" +
+    "  <label>Voorzieningen voor personen met een auditieve beperking</label>\n" +
+    "\n" +
+    "  <div class=\"checkbox\" ng-repeat=\"facility in facilities.hearing\">\n" +
+    "    <label>\n" +
+    "      <input type=\"checkbox\" ng-model=\"facility.selected\">{{facility.label}}</label>\n" +
+    "  </div>\n" +
+    "\n" +
+    "  <div class=\"alert alert-danger\" ng-show=\"error\">\n" +
+    "    Er ging iets fout tijdens het opslaan van de voorzieningen.\n" +
+    "  </div>\n" +
+    "\n" +
+    "</div>\n" +
+    "<div class=\"modal-footer\">\n" +
+    "  <button type=\"button\" class=\"btn btn-default\" ng-click=\"cancel();\">Annuleren</button>\n" +
+    "  <button type=\"button\" class=\"btn btn-primary\" ng-click=\"saveFacilities();\">Bevestigen <i class=\"fa fa-circle-o-notch fa-spin\" ng-show=\"saving\"></i></button>\n" +
+    "</div>\n"
+  );
+
+
   $templateCache.put('templates/event-form-openinghours.html',
     "<div class=\"col-xs-12\" ng-hide=\"hasOpeningHours\">\n" +
     "  <a href=\"#\" class=\"btn btn-link btn-plus wanneer-openingsuren-link\" data-toggle=\"modal\" data-target=\"#wanneer-openingsuren-toevoegen\">Openingsuren toevoegen</a>\n" +
@@ -10031,7 +10298,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "\n" +
     "            <div class=\"col-sm-8\">\n" +
     "              <section class=\"state incomplete\">\n" +
-    "                <a class=\"btn btn-default\" ng-click=\"contactCssClass='state-filling'\">Contactinformatie toevoegen</a>\n" +
+    "                <a class=\"btn btn-default\" ng-click=\"contactInfoCssClass = 'state-filling'\">Contactinformatie toevoegen</a>\n" +
     "              </section>\n" +
     "\n" +
     "              <section class=\"state filling complete\">\n" +
@@ -10064,6 +10331,26 @@ $templateCache.put('templates/time-autocomplete.html',
     "\n" +
     "            </div>\n" +
     "\n" +
+    "          </div>\n" +
+    "        </div>\n" +
+    "\n" +
+    "        <div class=\"row extra-toegankelijkheid \">\n" +
+    "          <div class=\"extra-task\" ng-class=\"facilitiesCssClass\">\n" +
+    "            <div class=\"col-sm-3\">\n" +
+    "              <em class=\"extra-task-label\">Toegankelijkheid</em>\n" +
+    "            </div>\n" +
+    "            <div class=\"col-sm-8\">\n" +
+    "              <section class=\"state incomplete\">\n" +
+    "                <a class=\"btn btn-default\" href=\"#\" ng-click=\"openFacilitiesModal();\">Voorzieningen toevoegen</a>\n" +
+    "                <a class=\"btn btn-link btn-nvt\" ng-click=\"setFacilitiesInapplicable();\">Niet van toepassing</a>\n" +
+    "              </section>\n" +
+    "              <section class=\"state complete\">\n" +
+    "                <ul ng-if=\"selectedFacilities.length > 0\">\n" +
+    "                  <li ng-repeat=\"facility in selectedFacilities\">{{ facility.label }}</li>\n" +
+    "                </ul>\n" +
+    "                <p><span ng-if=\"facilitiesInapplicable\">Niet van toepassing</span> <a href=\"#\" class=\"btn btn-link\" ng-click=\"openFacilitiesModal();\">Wijzigen</a></p>\n" +
+    "              </section>\n" +
+    "            </div>\n" +
     "          </div>\n" +
     "        </div>\n" +
     "\n" +

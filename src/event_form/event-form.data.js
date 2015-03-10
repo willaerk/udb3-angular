@@ -46,7 +46,12 @@ function EventFormDataFactory(UdbEvent, UdbPlace) {
     openingHours : [],
     ageRange : '',
     organizer : {},
-    contact : [],
+    contactPoint : {
+      url : [],
+      phone : [],
+      email : []
+    },
+    facilities : [],
 
     /**
      * Show the given step.
@@ -271,10 +276,10 @@ function EventFormDataFactory(UdbEvent, UdbPlace) {
     },
 
     /**
-     * Add a timestamp to the timestamps array.
+     * Add contact info to the contactPoint.
      */
     addContactInfo: function(type, value) {
-      this.contact.push({
+      this.contactPoint.push({
         'type' : type,
         'value' : value
       });

@@ -152,7 +152,7 @@
 
             <div class="col-sm-8">
               <section class="state incomplete">
-                <a class="btn btn-default" ng-click="contactCssClass='state-filling'">Contactinformatie toevoegen</a>
+                <a class="btn btn-default" ng-click="contactInfoCssClass = 'state-filling'">Contactinformatie toevoegen</a>
               </section>
 
               <section class="state filling complete">
@@ -185,6 +185,26 @@
 
             </div>
 
+          </div>
+        </div>
+
+        <div class="row extra-toegankelijkheid ">
+          <div class="extra-task" ng-class="facilitiesCssClass">
+            <div class="col-sm-3">
+              <em class="extra-task-label">Toegankelijkheid</em>
+            </div>
+            <div class="col-sm-8">
+              <section class="state incomplete">
+                <a class="btn btn-default" href="#" ng-click="openFacilitiesModal();">Voorzieningen toevoegen</a>
+                <a class="btn btn-link btn-nvt" ng-click="setFacilitiesInapplicable();">Niet van toepassing</a>
+              </section>
+              <section class="state complete">
+                <ul ng-if="selectedFacilities.length > 0">
+                  <li ng-repeat="facility in selectedFacilities">{{ facility.label }}</li>
+                </ul>
+                <p><span ng-show="facilitiesInapplicable">Niet van toepassing</span> <a href="#" class="btn btn-link" ng-click="openFacilitiesModal();">Wijzigen</a></p>
+              </section>
+            </div>
           </div>
         </div>
 

@@ -49,9 +49,14 @@
     $scope.savingOrganizer = false;
 
     // Contactinfo vars.
-    $scope.contactInfoCssClass = EventFormData.contact.length ? 'state-complete' : 'state-incomplete';
+    $scope.contactInfoCssClass = EventFormData.contactPoint.length ? 'state-complete' : 'state-incomplete';
     $scope.savingContactInfo = false;
     $scope.contactInfoError = false;
+
+    // Facilities vars.
+    $scope.facilitiesCssClass = 'state-incomplete';
+    $scope.facilitiesInapplicable = false;
+    $scope.selectedFacilities = EventFormData.facilities;
 
     // Scope functions.
     // Description functions.
@@ -73,13 +78,17 @@
     $scope.deleteContactInfo = deleteContactInfo;
     $scope.saveContactInfo = saveContactInfo;
 
+    // Facilities functions.
+    $scope.openFacilitiesModal = openFacilitiesModal;
+    $scope.setFacilitiesInapplicable = setFacilitiesInapplicable;
+
     // Check if we have a minAge set on load.
     if (EventFormData.minAge) {
       $scope.ageCssClass = 'state-complete';
     }
 
     // Add empty contact.
-    if (EventFormData.contact.length === 0) {
+    if (EventFormData.contactPoint.length === 0) {
       EventFormData.addContactInfo('', '');
     }
 
@@ -300,7 +309,7 @@
      * Delete a given contact info item.
      */
     function deleteContactInfo(index) {
-      EventFormData.contact.splice(index, 1);
+      EventFormData.contactPoint.splice(index, 1);
     }
 
     /**
@@ -314,7 +323,7 @@
       // Only save with valid input.
       if ($scope.contactInfo.$valid) {
 
-        var promise = eventCrud.saveContactInfo(EventFormData);
+        var promise = eventCrud.updateContactInfo(EventFormData);
         promise.then(function() {
           updateLastUpdated();
           $scope.contactInfoCssClass = 'state-complete';
@@ -324,6 +333,67 @@
           $scope.savingContactInfo = false;
         });
 
+      }
+    }
+
+    /**
+     * Open the facilities modal.
+     */
+    function openFacilitiesModal() {
+
+      var modalInstance = $modal.open({
+        templateUrl: 'templates/event-form-facilities-modal.html',
+        controller: 'EventFormFacilitiesModalCtrl',
+      });
+
+      modalInstance.result.then(function () {
+
+        $scope.facilitiesCssClass = 'state-complete';
+        $scope.selectedFacilities = EventFormData.facilities;
+
+        if (EventFormData.facilities.length > 0) {
+          $scope.facilitiesInapplicable = false;
+        }
+        else {
+          $scope.facilitiesInapplicable = true;
+        }
+      }, function () {
+        // modal dismissed.
+        if (EventFormData.facilities.length > 0 || $scope.facilitiesInapplicable) {
+          $scope.facilitiesCssClass = 'state-complete';
+        }
+        else {
+          $scope.facilitiesCssClass = 'state-incomplete';
+        }
+      });
+
+    }
+
+    /**
+     * Remove all facilities and set it to inapplicable.
+     */
+    function setFacilitiesInapplicable() {
+
+      // Delete facilities.
+      if (EventFormData.facilities.length > 0) {
+
+        $scope.facilitiesError = false;
+        EventFormData.facilities = [];
+
+        var promise = eventCrud.updateFacilities(EventFormData);
+        promise.then(function() {
+          $scope.savingFacilities = false;
+          $scope.facilitiesInapplicable = true;
+          $scope.facilitiesCssClass = 'state-complete';
+        }, function() {
+          $scope.savingFacilities = false;
+          $scope.facilitiesError = true;
+        });
+
+      }
+      else {
+        $scope.facilitiesInapplicable = true;
+        $scope.facilitiesCssClass = 'state-complete';
       }
     }
 

@@ -3561,7 +3561,7 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
    */
   this.updateContactPoint = function(item) {
 
-    var jobPromise = udbApi.updateProperty(item.id, item.getType(), 'contactPoint', item.contact);
+    var jobPromise = udbApi.updateProperty(item.id, item.getType(), 'contactPoint', item.contactPoint);
 
     jobPromise.success(function (jobData) {
       var job = new EventCrudJob(jobData.commandId, item, 'updateContactInfo');
@@ -5335,15 +5335,16 @@ function EventFormDataFactory(UdbEvent, UdbPlace) {
     },
 
     /**
-     * Add contact info to the contactPoint.
+     * Reset the contact point.
      */
-    addContactInfo: function(type, value) {
-      this.contactPoint.push({
-        'type' : type,
-        'value' : value
-      });
+    resetContactPoint: function() {
+      this.contactPoint = {
+        url : [],
+        phone : [],
+        email : []
+      };
+    }
 
-    },
 
   };
 }
@@ -6390,7 +6391,7 @@ EventFormFacilities.$inject = ["$q", "$http", "$cacheFactory", "appConfig"];
     EventFormData.id = '2fa0b713-09ac-4a13-b357-5e5c57294b24';
 
     // Place
-    EventFormData.id = 'ad461033-839d-4383-98ab-50afb650da14';
+    EventFormData.id = '2f0f4fb7-3fff-44c2-a8ae-a086e963c833';
     EventFormData.isEvent = false;
     EventFormData.isPlace = true;
 
@@ -6422,6 +6423,7 @@ EventFormFacilities.$inject = ["$q", "$http", "$cacheFactory", "appConfig"];
     $scope.contactInfoCssClass = EventFormData.contactPoint.length ? 'state-complete' : 'state-incomplete';
     $scope.savingContactInfo = false;
     $scope.contactInfoError = false;
+    $scope.contactInfo = [];
 
     // Facilities vars.
     $scope.facilitiesCssClass = 'state-incomplete';
@@ -6447,6 +6449,7 @@ EventFormFacilities.$inject = ["$q", "$http", "$cacheFactory", "appConfig"];
     // Contact info functions.
     $scope.deleteContactInfo = deleteContactInfo;
     $scope.saveContactInfo = saveContactInfo;
+    $scope.addContactInfo = addContactInfo;
 
     // Facilities functions.
     $scope.openFacilitiesModal = openFacilitiesModal;
@@ -6458,9 +6461,7 @@ EventFormFacilities.$inject = ["$q", "$http", "$cacheFactory", "appConfig"];
     }
 
     // Add empty contact.
-    if (EventFormData.contactPoint.length === 0) {
-      EventFormData.addContactInfo('', '');
-    }
+    addContactInfo();
 
     /**
      * Save the description.
@@ -6676,10 +6677,21 @@ EventFormFacilities.$inject = ["$q", "$http", "$cacheFactory", "appConfig"];
     }
 
     /**
+     * Add contact info.
+     */
+    function addContactInfo() {
+      $scope.contactInfo.push({
+        type : '',
+        value : ''
+      });
+
+    }
+
+    /**
      * Delete a given contact info item.
      */
     function deleteContactInfo(index) {
-      EventFormData.contactPoint.splice(index, 1);
+      $scope.contactInfo.splice(index, 1);
     }
 
     /**
@@ -6691,9 +6703,24 @@ EventFormFacilities.$inject = ["$q", "$http", "$cacheFactory", "appConfig"];
       $scope.contactInfoError = false;
 
       // Only save with valid input.
-      if ($scope.contactInfo.$valid) {
+      if ($scope.contactInfoForm.$valid) {
 
-        var promise = eventCrud.updateContactInfo(EventFormData);
+      EventFormData.resetContactPoint();
+
+        // Copy all data to the correct contactpoint property.
+        for (var i = 0; i < $scope.contactInfo.length; i++) {
+          if ($scope.contactInfo.type === 'url') {
+            EventFormData.contactPoint.url.push($scope.contactInfo.value);
+          }
+          else if ($scope.contactInfo.type === 'phone') {
+            EventFormData.contactPoint.phone.push($scope.contactInfo.value);
+          }
+          else if ($scope.contactInfo.type === 'email') {
+            EventFormData.contactPoint.email.push($scope.contactInfo.value);
+          }
+        }
+
+        var promise = eventCrud.updateContactPoint(EventFormData);
         promise.then(function() {
           updateLastUpdated();
           $scope.contactInfoCssClass = 'state-complete';
@@ -10302,9 +10329,9 @@ $templateCache.put('templates/time-autocomplete.html',
     "              </section>\n" +
     "\n" +
     "              <section class=\"state filling complete\">\n" +
-    "                <form name=\"contactInfo\">\n" +
+    "                <form name=\"contactInfoForm\">\n" +
     "                  <table class=\"table\">\n" +
-    "                    <tr ng-repeat=\"(key, info) in eventFormData.contact\" ng-model=\"info\" udb-contact-info-validation ng-class=\"{'has-error' : infoErrorMessage !== '' }\" ng-change=\"saveContactInfo()\">\n" +
+    "                    <tr ng-repeat=\"(key, info) in contactInfo\" ng-model=\"info\" udb-contact-info-validation ng-class=\"{'has-error' : infoErrorMessage !== '' }\" ng-change=\"saveContactInfo()\">\n" +
     "                      <td>\n" +
     "                        <select class=\"form-control\" ng-model=\"info.type\" ng-change=\"clearInfo();\">\n" +
     "                          <option value=\"url\">Website</option>\n" +
@@ -10320,7 +10347,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "                        <button type=\"button\" class=\"close\" aria-label=\"Close\" ng-click=\"deleteContactInfo(key)\"><span aria-hidden=\"true\">&times;</span></button>\n" +
     "                      </td>\n" +
     "                    </tr>\n" +
-    "                    <tr><td colspan=\"3\"><a ng-click=\"eventFormData.addContactInfo('')\">Meer contactgegevens toevoegen</a></td></tr>\n" +
+    "                    <tr><td colspan=\"3\"><a ng-click=\"addContactInfo()\">Meer contactgegevens toevoegen</a></td></tr>\n" +
     "                  </table>\n" +
     "                </form>\n" +
     "              </section>\n" +
@@ -10348,7 +10375,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "                <ul ng-if=\"selectedFacilities.length > 0\">\n" +
     "                  <li ng-repeat=\"facility in selectedFacilities\">{{ facility.label }}</li>\n" +
     "                </ul>\n" +
-    "                <p><span ng-if=\"facilitiesInapplicable\">Niet van toepassing</span> <a href=\"#\" class=\"btn btn-link\" ng-click=\"openFacilitiesModal();\">Wijzigen</a></p>\n" +
+    "                <p><span ng-show=\"facilitiesInapplicable\">Niet van toepassing</span> <a href=\"#\" class=\"btn btn-link\" ng-click=\"openFacilitiesModal();\">Wijzigen</a></p>\n" +
     "              </section>\n" +
     "            </div>\n" +
     "          </div>\n" +

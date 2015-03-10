@@ -135,7 +135,7 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
    */
   this.updateContactPoint = function(item) {
 
-    var jobPromise = udbApi.updateProperty(item.id, item.getType(), 'contactPoint', item.contact);
+    var jobPromise = udbApi.updateProperty(item.id, item.getType(), 'contactPoint', item.contactPoint);
 
     jobPromise.success(function (jobData) {
       var job = new EventCrudJob(jobData.commandId, item, 'updateContactInfo');

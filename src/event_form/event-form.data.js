@@ -276,15 +276,16 @@ function EventFormDataFactory(UdbEvent, UdbPlace) {
     },
 
     /**
-     * Add contact info to the contactPoint.
+     * Reset the contact point.
      */
-    addContactInfo: function(type, value) {
-      this.contactPoint.push({
-        'type' : type,
-        'value' : value
-      });
+    resetContactPoint: function() {
+      this.contactPoint = {
+        url : [],
+        phone : [],
+        email : []
+      };
+    }
 
-    },
 
   };
 }

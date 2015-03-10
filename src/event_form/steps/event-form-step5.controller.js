@@ -20,7 +20,7 @@
     EventFormData.id = '2fa0b713-09ac-4a13-b357-5e5c57294b24';
 
     // Place
-    EventFormData.id = 'ad461033-839d-4383-98ab-50afb650da14';
+    EventFormData.id = '2f0f4fb7-3fff-44c2-a8ae-a086e963c833';
     EventFormData.isEvent = false;
     EventFormData.isPlace = true;
 
@@ -52,6 +52,7 @@
     $scope.contactInfoCssClass = EventFormData.contactPoint.length ? 'state-complete' : 'state-incomplete';
     $scope.savingContactInfo = false;
     $scope.contactInfoError = false;
+    $scope.contactInfo = [];
 
     // Facilities vars.
     $scope.facilitiesCssClass = 'state-incomplete';
@@ -77,6 +78,7 @@
     // Contact info functions.
     $scope.deleteContactInfo = deleteContactInfo;
     $scope.saveContactInfo = saveContactInfo;
+    $scope.addContactInfo = addContactInfo;
 
     // Facilities functions.
     $scope.openFacilitiesModal = openFacilitiesModal;
@@ -88,9 +90,7 @@
     }
 
     // Add empty contact.
-    if (EventFormData.contactPoint.length === 0) {
-      EventFormData.addContactInfo('', '');
-    }
+    addContactInfo();
 
     /**
      * Save the description.
@@ -306,10 +306,21 @@
     }
 
     /**
+     * Add contact info.
+     */
+    function addContactInfo() {
+      $scope.contactInfo.push({
+        type : '',
+        value : ''
+      });
+
+    }
+
+    /**
      * Delete a given contact info item.
      */
     function deleteContactInfo(index) {
-      EventFormData.contactPoint.splice(index, 1);
+      $scope.contactInfo.splice(index, 1);
     }
 
     /**
@@ -321,9 +332,24 @@
       $scope.contactInfoError = false;
 
       // Only save with valid input.
-      if ($scope.contactInfo.$valid) {
+      if ($scope.contactInfoForm.$valid) {
 
-        var promise = eventCrud.updateContactInfo(EventFormData);
+      EventFormData.resetContactPoint();
+
+        // Copy all data to the correct contactpoint property.
+        for (var i = 0; i < $scope.contactInfo.length; i++) {
+          if ($scope.contactInfo.type === 'url') {
+            EventFormData.contactPoint.url.push($scope.contactInfo.value);
+          }
+          else if ($scope.contactInfo.type === 'phone') {
+            EventFormData.contactPoint.phone.push($scope.contactInfo.value);
+          }
+          else if ($scope.contactInfo.type === 'email') {
+            EventFormData.contactPoint.email.push($scope.contactInfo.value);
+          }
+        }
+
+        var promise = eventCrud.updateContactPoint(EventFormData);
         promise.then(function() {
           updateLastUpdated();
           $scope.contactInfoCssClass = 'state-complete';

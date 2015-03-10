@@ -156,9 +156,9 @@
               </section>
 
               <section class="state filling complete">
-                <form name="contactInfo">
+                <form name="contactInfoForm">
                   <table class="table">
-                    <tr ng-repeat="(key, info) in eventFormData.contact" ng-model="info" udb-contact-info-validation ng-class="{'has-error' : infoErrorMessage !== '' }" ng-change="saveContactInfo()">
+                    <tr ng-repeat="(key, info) in contactInfo" ng-model="info" udb-contact-info-validation ng-class="{'has-error' : infoErrorMessage !== '' }" ng-change="saveContactInfo()">
                       <td>
                         <select class="form-control" ng-model="info.type" ng-change="clearInfo();">
                           <option value="url">Website</option>
@@ -174,7 +174,7 @@
                         <button type="button" class="close" aria-label="Close" ng-click="deleteContactInfo(key)"><span aria-hidden="true">&times;</span></button>
                       </td>
                     </tr>
-                    <tr><td colspan="3"><a ng-click="eventFormData.addContactInfo('')">Meer contactgegevens toevoegen</a></td></tr>
+                    <tr><td colspan="3"><a ng-click="addContactInfo()">Meer contactgegevens toevoegen</a></td></tr>
                   </table>
                 </form>
               </section>

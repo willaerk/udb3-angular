@@ -158,6 +158,23 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
 
     jobPromise.success(function (jobData) {
       var job = new EventCrudJob(jobData.commandId, item, 'updateFacilities');
+    });
+  };
+      
+  /**
+   * Update the booking info and add it to the job logger.
+   *
+   * @param {UdbEvent|UdbPlace} item
+   * @param {string} type
+   *  Type of item
+   * @returns {EventCrud.updateBookingInfo.jobPromise}
+   */
+  this.updateBookingInfo = function(item) {
+
+    var jobPromise = udbApi.updateProperty(item.id, item.getType(), 'bookingInfo', item.bookingInfo);
+
+    jobPromise.success(function (jobData) {
+      var job = new EventCrudJob(jobData.commandId, item, 'updateBookingInfo');
       jobLogger.addJob(job);
     });
 

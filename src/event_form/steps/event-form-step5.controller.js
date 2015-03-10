@@ -17,12 +17,12 @@
 
     // Work hardcoded on this id for now.
     // Event
-    EventFormData.id = '2fa0b713-09ac-4a13-b357-5e5c57294b24';
+    EventFormData.id = 'e38de815-3443-4d08-872a-4bbc5d6d7df3';
 
     // Place
-    EventFormData.id = '2f0f4fb7-3fff-44c2-a8ae-a086e963c833';
-    EventFormData.isEvent = false;
-    EventFormData.isPlace = true;
+    EventFormData.id = 'bc47b5e6-a7ae-4737-a6e0-bb7b243f1989';
+    EventFormData.isEvent = true;
+    EventFormData.isPlace = false;
 
     // Scope vars.
     $scope.eventFormData = EventFormData; // main storage for event form.
@@ -47,6 +47,48 @@
     $scope.loadingOrganizers = false;
     $scope.organizerError = false;
     $scope.savingOrganizer = false;
+    
+    // Booking & tickets vars.
+    $scope.bookingInfo = {
+      price : '',
+      currency : 'EUR',
+      availabilityStarts : '',
+      availabilityEnds : '',
+      name : '',
+      description : '',
+      url : '',
+      urlLabel : 'Koop tickets',
+      email : '',
+      phone : '',
+      validFrom : '',
+      validThrough : ''
+    };
+    $scope.bookingModel = {
+      url : '',
+      urlRequired : false,
+      urlLabel : '',
+      urlLabelCustom : '',
+      email : '',
+      emailRequired : false,
+      phone : '',
+      phoneRequired : false,
+      availabilityStarts : '',
+      availabilityEnds : ''
+    };
+    $scope.viaWebsite = false;
+    $scope.viaEmail = false;
+    $scope.viaPhone = false;
+    $scope.websitePreviewEnabled = false;
+    $scope.bookingPeriodPreviewEnabled = false;
+    $scope.bookingPeriodShowValidation = false;
+    $scope.enableBookingType = enableBookingType;
+    $scope.saveBookingType = saveBookingType;
+    $scope.validateBookingType = validateBookingType;
+    $scope.resetBookingType = resetBookingType;
+    $scope.saveWebsitePreview = saveWebsitePreview;
+    $scope.enableWebsitePreview = enableWebsitePreview;
+    $scope.saveBookingPeriod = saveBookingPeriod;
+    $scope.enableBookingPeriodPreview = enableBookingPeriodPreview;
 
     // Contactinfo vars.
     $scope.contactInfoCssClass = EventFormData.contactPoint.length ? 'state-complete' : 'state-incomplete';
@@ -422,7 +464,148 @@
         $scope.facilitiesCssClass = 'state-complete';
       }
     }
-
+    
+    /**
+     * Enables a booking type.
+     */
+    function enableBookingType(type) {
+      if (type === 'website') {
+        $scope.viaWebsite = !$scope.viaWebsite;
+      }
+      else if (type === 'email') {
+        $scope.viaEmail = !$scope.viaEmail;
+      }
+      else if (type === 'phone') {
+        $scope.viaPhone = !$scope.viaPhone;
+      }
+    }
+    
+    /**
+     * Validates a booking type.
+     */
+    function validateBookingType(type) {
+      
+      if (type === 'website') {
+        $scope.bookingModel.urlRequired = true;
+        $scope.bookingModel.emailRequired = false;
+        $scope.bookingModel.phoneRequired = false;
+      }
+      else if (type === 'email') {
+        $scope.bookingModel.emailRequired = true;
+        $scope.bookingModel.urlRequired = false;
+        $scope.bookingModel.phoneRequired = false;
+      }
+      else if (type === 'phone') {
+        $scope.bookingModel.phoneRequired = true;
+        $scope.bookingModel.emailRequired = false;
+        $scope.bookingModel.urlRequired = false;
+      }
+      
+      // Forms are automatically known in scope.
+      if (!$scope.step5TicketsForm.$valid) {
+        return;
+      }
+      
+      saveBookingType(type);
+      
+    }
+    
+    /**
+     * Temporarily save a booking type.
+     */
+    function saveBookingType(type) {
+      if (type === 'website') {
+        $scope.viaWebsite = true;
+        $scope.bookingInfo.url = $scope.bookingModel.url;
+      }
+      else if (type === 'email') {
+        $scope.viaEmail = true;
+        $scope.bookingInfo.email = $scope.bookingModel.email;
+      }
+      else if (type === 'phone') {
+        $scope.viaPhone = true;
+        $scope.bookingInfo.phone = $scope.bookingModel.phone;
+      }
+      saveBookingInfo();
+    }
+    
+    /**
+     * @param {type} type
+     */
+    function resetBookingType(type) {
+      if (type === 'website') {
+        $scope.bookingInfo.url = $scope.bookingModel.url = '';
+      }
+      else if (type === 'email') {
+        $scope.bookingInfo.email = $scope.bookingModel.email = '';
+      }
+      else if (type === 'phone') {
+        $scope.bookingInfo.phone = $scope.bookingModel.phone = '';
+      }
+    }
+    
+    /**
+     * Save the website preview settings.
+     */
+    function saveWebsitePreview() {
+      $scope.websitePreviewEnabled = false;
+      $scope.bookingInfo.urlLabel = $scope.bookingModel.urlLabel;
+      if ($scope.bookingModel.urlLabelCustom !== '') {
+        $scope.bookingInfo.urlLabel = $scope.bookingModel.urlLabelCustom;
+      }
+      saveBookingInfo();
+    }
+    
+    /**
+     * Enable the website preview modal.
+     */
+    function enableWebsitePreview() {
+      $scope.websitePreviewEnabled = true;
+    }
+    
+    /**
+     * Save the booking period settings.
+     */
+    function saveBookingPeriod() {
+      
+      $scope.bookingPeriodShowValidation = true;
+      
+      // Forms are automatically known in scope.
+      if (!$scope.step5TicketsForm.$valid) {
+        return;
+      }
+      
+      $scope.bookingPeriodPreviewEnabled = false;
+      
+      $scope.bookingInfo.availabilityStarts = $scope.bookingModel.availabilityStarts;
+      $scope.bookingInfo.availabilityEnds = $scope.bookingModel.availabilityEnds;
+      
+      saveBookingInfo();
+      
+    }
+    
+    /**
+     * Enable the booking period preview modal.
+     */
+    function enableBookingPeriodPreview() {
+      $scope.bookingPeriodPreviewEnabled = true;
+    }
+    
+    /**
+     * Saves the booking info
+     */
+    function saveBookingInfo() {
+      
+      EventFormData.setBookingInfo($scope.bookingInfo);
+      //
+      
+      var promise = eventCrud.updateBookingInfo(EventFormData);
+      promise.then(function() {
+        updateLastUpdated();
+      }, function() {
+      });
+    }
+    
   }
 
 })();

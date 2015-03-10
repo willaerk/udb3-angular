@@ -52,6 +52,7 @@ function EventFormDataFactory(UdbEvent, UdbPlace) {
       email : []
     },
     facilities : [],
+    bookingInfo : {},
 
     /**
      * Show the given step.
@@ -284,8 +285,15 @@ function EventFormDataFactory(UdbEvent, UdbPlace) {
         phone : [],
         email : []
       };
-    }
+    },
 
+
+    /**
+     * Sets the booking info array.
+     */
+    setBookingInfo : function(bookingInfo) {
+      this.bookingInfo = bookingInfo;
+    }
 
   };
 }

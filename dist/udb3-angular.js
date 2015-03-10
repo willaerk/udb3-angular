@@ -10361,7 +10361,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "          </div>\n" +
     "        </div>\n" +
     "\n" +
-    "        <div class=\"row extra-toegankelijkheid \">\n" +
+    "        <div class=\"row extra-toegankelijkheid\" ng-if=\"eventFormData.isPlace\">\n" +
     "          <div class=\"extra-task\" ng-class=\"facilitiesCssClass\">\n" +
     "            <div class=\"col-sm-3\">\n" +
     "              <em class=\"extra-task-label\">Toegankelijkheid</em>\n" +

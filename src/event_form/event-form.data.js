@@ -46,6 +46,13 @@ function EventFormDataFactory(UdbEvent, UdbPlace) {
     openingHours : [],
     ageRange : '',
     organizer : {},
+    contactPoint : {
+      url : [],
+      phone : [],
+      email : []
+    },
+    facilities : [],
+    bookingInfo : {},
 
     /**
      * Show the given step.
@@ -267,6 +274,25 @@ function EventFormDataFactory(UdbEvent, UdbPlace) {
      */
     resetOrganizer: function() {
       this.organizer = {};
+    },
+
+    /**
+     * Reset the contact point.
+     */
+    resetContactPoint: function() {
+      this.contactPoint = {
+        url : [],
+        phone : [],
+        email : []
+      };
+    },
+
+
+    /**
+     * Sets the booking info array.
+     */
+    setBookingInfo : function(bookingInfo) {
+      this.bookingInfo = bookingInfo;
     }
 
   };

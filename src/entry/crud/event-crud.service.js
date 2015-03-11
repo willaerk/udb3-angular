@@ -54,14 +54,12 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
   /**
    * Update the main language description and add it to the job logger.
    *
-   * @param {UdbEvent|UdbPlace|EventFormData} item
-   * @param {string} type
-   *  Type of item: Event / Place
+   * @param {EventFormData} item
    * @returns {EventCrud.updateTypicalAgeRange.jobPromise}
    */
-  this.updateDescription = function(item, type) {
+  this.updateDescription = function(item) {
 
-    var jobPromise = udbApi.translateProperty(item.id, type, 'description', udbApi.mainLanguage, item.description.nl);
+    var jobPromise = udbApi.translateProperty(item.id, item.getType(), 'description', udbApi.mainLanguage, item.description.nl);
 
     jobPromise.success(function (jobData) {
       var job = new EventCrudJob(jobData.commandId, item, 'updateTypicalAgeRange');
@@ -75,14 +73,12 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
   /**
    * Update the typical age range and add it to the job logger.
    *
-   * @param {UdbEvent|UdbPlace} item
-   * @param {string} type
-   *  Type of item
+   * @param {EventFormData} item
    * @returns {EventCrud.updateTypicalAgeRange.jobPromise}
    */
-  this.updateTypicalAgeRange = function(item, type) {
+  this.updateTypicalAgeRange = function(item) {
 
-    var jobPromise = udbApi.updateProperty(item.id, type, 'typicalAgeRange', item.typicalAgeRange);
+    var jobPromise = udbApi.updateProperty(item.id, item.getType(), 'typicalAgeRange', item.typicalAgeRange);
 
     jobPromise.success(function (jobData) {
       var job = new EventCrudJob(jobData.commandId, item, 'updateTypicalAgeRange');
@@ -115,7 +111,7 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
   /**
    * Delete the organizer for the event / place.
    *
-   * @param item
+   * @param {EventFormData} item
    * @returns {EventCrud.updateOrganizer.jobPromise}
    */
   this.deleteOfferOrganizer = function(item) {
@@ -124,6 +120,63 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
 
     jobPromise.success(function (jobData) {
       var job = new EventCrudJob(jobData.commandId, item, 'deleteOrganizer');
+      jobLogger.addJob(job);
+    });
+
+    return jobPromise;
+
+  };
+
+  /**
+   * Update the contact point and add it to the job logger.
+   *
+   * @param {EventFormData} item
+   * @returns {EventCrud.updateContactPoint.jobPromise}
+   */
+  this.updateContactPoint = function(item) {
+
+    var jobPromise = udbApi.updateProperty(item.id, item.getType(), 'contactPoint', item.contactPoint);
+
+    jobPromise.success(function (jobData) {
+      var job = new EventCrudJob(jobData.commandId, item, 'updateContactInfo');
+      jobLogger.addJob(job);
+    });
+
+    return jobPromise;
+
+  };
+
+  /**
+   * Update the facilities and add it to the job logger.
+   *
+   * @param {EventFormData} item
+   * @returns {EventCrud.updateFacilities.jobPromise}
+   */
+  this.updateFacilities = function(item) {
+
+    var jobPromise = udbApi.updateProperty(item.id, item.getType(), 'facilities', item.facilities);
+
+    jobPromise.success(function (jobData) {
+      var job = new EventCrudJob(jobData.commandId, item, 'updateFacilities');
+    });
+
+    return jobPromise;
+  };
+
+  /**
+   * Update the booking info and add it to the job logger.
+   *
+   * @param {UdbEvent|UdbPlace} item
+   * @param {string} type
+   *  Type of item
+   * @returns {EventCrud.updateBookingInfo.jobPromise}
+   */
+  this.updateBookingInfo = function(item) {
+
+    var jobPromise = udbApi.updateProperty(item.id, item.getType(), 'bookingInfo', item.bookingInfo);
+
+    jobPromise.success(function (jobData) {
+      var job = new EventCrudJob(jobData.commandId, item, 'updateBookingInfo');
       jobLogger.addJob(job);
     });
 

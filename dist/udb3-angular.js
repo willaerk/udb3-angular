@@ -2540,11 +2540,19 @@ function UdbApi($q, $http, appConfig, $cookieStore, uitidAuth, $cacheFactory, Ud
     eventHistoryRequest.success(function(eventHistory) {
       eventHistoryLoaded.resolve(eventHistory);
     });
+<<<<<<< HEAD
 
     eventHistoryRequest.error(function () {
       eventHistoryLoaded.reject();
     });
 
+=======
+
+    eventHistoryRequest.error(function () {
+      eventHistoryLoaded.reject();
+    });
+
+>>>>>>> de3a213b2ad8d0070cba97c887237b5642223633
     return eventHistoryLoaded.promise;
   };
 
@@ -3351,7 +3359,7 @@ function Udb3Content($q, $http, appConfig) {
    */
 
   this.getNoOmdEventsMessage = function() {
-    
+
     return $http.get(appConfig.udb3BaseUrl + '/omd/no_omd_events_message');
 
   };
@@ -3564,6 +3572,12 @@ function EventCrudJobFactory(BaseJob) {
       case 'deleteOrganizer':
         return 'Organisatie verwijderen: "' + this.item.name + '".';
 
+      case 'updateContactPoint':
+        return 'Contact informatie aanpassen: "' + this.item.name + '".';
+
+      case 'updateFacilities':
+        return 'Voorzieningen aanpassen: "' + this.item.name + '".';
+
     }
 
   };
@@ -3627,14 +3641,12 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
   /**
    * Update the main language description and add it to the job logger.
    *
-   * @param {UdbEvent|UdbPlace|EventFormData} item
-   * @param {string} type
-   *  Type of item: Event / Place
+   * @param {EventFormData} item
    * @returns {EventCrud.updateTypicalAgeRange.jobPromise}
    */
-  this.updateDescription = function(item, type) {
+  this.updateDescription = function(item) {
 
-    var jobPromise = udbApi.translateProperty(item.id, type, 'description', udbApi.mainLanguage, item.description.nl);
+    var jobPromise = udbApi.translateProperty(item.id, item.getType(), 'description', udbApi.mainLanguage, item.description.nl);
 
     jobPromise.success(function (jobData) {
       var job = new EventCrudJob(jobData.commandId, item, 'updateTypicalAgeRange');
@@ -3648,14 +3660,12 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
   /**
    * Update the typical age range and add it to the job logger.
    *
-   * @param {UdbEvent|UdbPlace} item
-   * @param {string} type
-   *  Type of item
+   * @param {EventFormData} item
    * @returns {EventCrud.updateTypicalAgeRange.jobPromise}
    */
-  this.updateTypicalAgeRange = function(item, type) {
+  this.updateTypicalAgeRange = function(item) {
 
-    var jobPromise = udbApi.updateProperty(item.id, type, 'typicalAgeRange', item.typicalAgeRange);
+    var jobPromise = udbApi.updateProperty(item.id, item.getType(), 'typicalAgeRange', item.typicalAgeRange);
 
     jobPromise.success(function (jobData) {
       var job = new EventCrudJob(jobData.commandId, item, 'updateTypicalAgeRange');
@@ -3688,7 +3698,7 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
   /**
    * Delete the organizer for the event / place.
    *
-   * @param item
+   * @param {EventFormData} item
    * @returns {EventCrud.updateOrganizer.jobPromise}
    */
   this.deleteOfferOrganizer = function(item) {
@@ -3697,6 +3707,63 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
 
     jobPromise.success(function (jobData) {
       var job = new EventCrudJob(jobData.commandId, item, 'deleteOrganizer');
+      jobLogger.addJob(job);
+    });
+
+    return jobPromise;
+
+  };
+
+  /**
+   * Update the contact point and add it to the job logger.
+   *
+   * @param {EventFormData} item
+   * @returns {EventCrud.updateContactPoint.jobPromise}
+   */
+  this.updateContactPoint = function(item) {
+
+    var jobPromise = udbApi.updateProperty(item.id, item.getType(), 'contactPoint', item.contactPoint);
+
+    jobPromise.success(function (jobData) {
+      var job = new EventCrudJob(jobData.commandId, item, 'updateContactInfo');
+      jobLogger.addJob(job);
+    });
+
+    return jobPromise;
+
+  };
+
+  /**
+   * Update the facilities and add it to the job logger.
+   *
+   * @param {EventFormData} item
+   * @returns {EventCrud.updateFacilities.jobPromise}
+   */
+  this.updateFacilities = function(item) {
+
+    var jobPromise = udbApi.updateProperty(item.id, item.getType(), 'facilities', item.facilities);
+
+    jobPromise.success(function (jobData) {
+      var job = new EventCrudJob(jobData.commandId, item, 'updateFacilities');
+    });
+
+    return jobPromise;
+  };
+
+  /**
+   * Update the booking info and add it to the job logger.
+   *
+   * @param {UdbEvent|UdbPlace} item
+   * @param {string} type
+   *  Type of item
+   * @returns {EventCrud.updateBookingInfo.jobPromise}
+   */
+  this.updateBookingInfo = function(item) {
+
+    var jobPromise = udbApi.updateProperty(item.id, item.getType(), 'bookingInfo', item.bookingInfo);
+
+    jobPromise.success(function (jobData) {
+      var job = new EventCrudJob(jobData.commandId, item, 'updateBookingInfo');
       jobLogger.addJob(job);
     });
 
@@ -4039,12 +4106,21 @@ function JobLogger(udbSocket, JobStates, EventExportJob) {
 
   this.getFailedJobs = function () {
     return failedJobs;
+<<<<<<< HEAD
   };
 
   this.getFinishedExportJobs = function () {
     return finishedExportJobs;
   };
 
+=======
+  };
+
+  this.getFinishedExportJobs = function () {
+    return finishedExportJobs;
+  };
+
+>>>>>>> de3a213b2ad8d0070cba97c887237b5642223633
   this.hideJob = hideJob;
 }
 JobLogger.$inject = ["udbSocket", "JobStates", "EventExportJob"];
@@ -4792,6 +4868,164 @@ angular
   }
 
 })();
+// Source: src/event_form/components/facilities-modal/event-form-facilities-modal.controller.js
+(function () {
+/**
+   * @ngdoc function
+   * @name udbApp.controller:EventFormFacilitiesModalCtrl
+   * @description
+   * # EventFormFacilitiesModalCtrl
+   * Modal for selecting facilities.
+   */
+  angular
+    .module('udb.event-form')
+    .controller('EventFormFacilitiesModalCtrl', EventFormFacilitiesModalController);
+
+  /* @ngInject */
+  function EventFormFacilitiesModalController($scope, $modalInstance, EventFormData, eventCrud, eventFormFacilities) {
+
+    // Scope vars.
+    $scope.saving = false;
+    $scope.error = false;
+
+    $scope.facilities = {
+      motor : [],
+      visual : [],
+      hearing : []
+    };
+
+    var eventPromise = eventFormFacilities.getFacilities();
+    eventPromise.then(function (facilities) {
+      $scope.facilities = facilities;
+    });
+
+    // Scope functions.
+    $scope.cancel = cancel;
+    $scope.saveFacilities = saveFacilities;
+
+    /**
+     * Cancel the modal.
+     */
+    function cancel() {
+      $modalInstance.dismiss('cancel');
+    }
+
+    /**
+     * Save the selected facilities in db.
+     */
+    function saveFacilities() {
+
+      EventFormData.facilities = [];
+
+      // Add all selected motor facilities.
+      var i;
+      for (i = 0; i < $scope.facilities.motor.length; i++) {
+        if ($scope.facilities.motor[i].selected) {
+          EventFormData.facilities.push($scope.facilities.motor[i]);
+        }
+      }
+
+      // Add all selected visual facilities.
+      for (i = 0; i < $scope.facilities.visual.length; i++) {
+        if ($scope.facilities.visual[i].selected) {
+          EventFormData.facilities.push($scope.facilities.visual[i]);
+        }
+      }
+
+      // Add all selected hearing facilities.
+      for (i = 0; i < $scope.facilities.hearing.length; i++) {
+        if ($scope.facilities.hearing[i].selected) {
+          EventFormData.facilities.push($scope.facilities.hearing[i]);
+        }
+      }
+
+      $scope.saving = true;
+      $scope.error = false;
+
+      var promise = eventCrud.updateFacilities(EventFormData);
+      promise.then(function() {
+
+        $scope.saving = false;
+        $modalInstance.close();
+
+      }, function() {
+        $scope.error = true;
+        $scope.saving = false;
+      });
+    }
+
+  }
+  EventFormFacilitiesModalController.$inject = ["$scope", "$modalInstance", "EventFormData", "eventCrud", "eventFormFacilities"];
+
+})();
+
+// Source: src/event_form/components/image-upload/event-form-image-upload.controller.js
+(function () {
+/**
+   * @ngdoc function
+   * @name udbApp.controller:EventFormImageUploadCtrl
+   * @description
+   * # EventFormImageUploadCtrl
+   * Modal for uploading images.
+   */
+  angular
+    .module('udb.event-form')
+    .controller('EventFormImageUploadCtrl', EventFormImageUploadController);
+
+  /* @ngInject */
+  function EventFormImageUploadController($scope, $modalInstance, EventFormData, eventCrud) {
+
+    // Scope vars.
+    $scope.saving = false;
+    $scope.error = false;
+    $scope.showAgreements = true;
+    $scope.modalTitle = 'Gebruiksvoorwaarden';
+
+    // Scope functions.
+    $scope.acceptAgreements = acceptAgreements;
+    $scope.cancel = cancel;
+    $scope.uploadImage = uploadImage;
+
+    /**
+     * Accept the agreements.
+     */
+    function acceptAgreements() {
+      $scope.modalTitle = 'Nieuwe afbeelding toevoegen';
+      $scope.showAgreements = false;
+    }
+
+    /**
+     * Cancel the modal.
+     */
+    function cancel() {
+      $modalInstance.dismiss('cancel');
+    }
+
+    /**
+     * Upload the image and save it to db.
+     */
+    function uploadImage() {
+
+      $scope.saving = true;
+      $scope.error = false;
+
+      var promise = eventCrud.addImage(EventFormData);
+      promise.then(function() {
+
+        $scope.saving = false;
+        $modalInstance.close();
+
+      }, function() {
+        $scope.error = true;
+        $scope.saving = false;
+      });
+    }
+
+  }
+  EventFormImageUploadController.$inject = ["$scope", "$modalInstance", "EventFormData", "eventCrud"];
+
+})();
+
 // Source: src/event_form/components/openinghours/openinghours.directive.js
 /**
  * @ngdoc directive
@@ -5003,7 +5237,7 @@ function EventFormOpeningHoursDirective() {
       $scope.newPlace = getDefaultPlace();
 
       // Close the modal.
-      $modalInstance.close($scope.newPlace);
+      $modalInstance.dismiss();
 
     }
     /**
@@ -5127,6 +5361,13 @@ function EventFormDataFactory(UdbEvent, UdbPlace) {
     openingHours : [],
     ageRange : '',
     organizer : {},
+    contactPoint : {
+      url : [],
+      phone : [],
+      email : []
+    },
+    facilities : [],
+    bookingInfo : {},
 
     /**
      * Show the given step.
@@ -5348,6 +5589,25 @@ function EventFormDataFactory(UdbEvent, UdbPlace) {
      */
     resetOrganizer: function() {
       this.organizer = {};
+    },
+
+    /**
+     * Reset the contact point.
+     */
+    resetContactPoint: function() {
+      this.contactPoint = {
+        url : [],
+        phone : [],
+        email : []
+      };
+    },
+
+
+    /**
+     * Sets the booking info array.
+     */
+    setBookingInfo : function(bookingInfo) {
+      this.bookingInfo = bookingInfo;
     }
 
   };
@@ -5480,6 +5740,48 @@ function EventFormStep5Directive() {
     restrict: 'EA',
   };
 }
+// Source: src/event_form/event-form.facilities.service.js
+/**
+ * @ngdoc service
+ * @name udb.event-form.eventFormFacilities
+ * @description
+ * Service for loading the event form facilities.
+ */
+angular
+  .module('udb.core')
+  .service('eventFormFacilities', EventFormFacilities);
+
+/* @ngInject */
+function EventFormFacilities($q, $http, $cacheFactory, appConfig) {
+
+  var cache = $cacheFactory('facilitiesCache');
+
+  /**
+   * Get the facilities.
+   */
+  this.getFacilities = function () {
+
+    var deferredEvent = $q.defer();
+    var facilities = cache.get('facilities');
+
+    if (facilities) {
+      deferredEvent.resolve(facilities);
+    } else {
+      var request = $http.get(appConfig.udb3JsBaseUrl + '/src/event_form/facilities.json');
+
+      request.success(function(jsonData) {
+        deferredEvent.resolve(jsonData);
+        cache.put('facilities', jsonData);
+      });
+    }
+
+    return deferredEvent.promise;
+
+  };
+
+}
+EventFormFacilities.$inject = ["$q", "$http", "$cacheFactory", "appConfig"];
+
 // Source: src/event_form/steps/event-form-step1.controller.js
 (function () {
 /**
@@ -5588,6 +5890,10 @@ function EventFormStep5Directive() {
         EventFormData.calendarType = 'permanent';
         EventFormData.activeCalendarType = 'permanent';
         EventFormData.activeCalendarLabel = 'Permanent';
+        if (EventFormData.openingHours.length === 0) {
+          EventFormData.addOpeningHour('', '', '');
+        }
+        EventFormData.showStep(3);
 
       }
 
@@ -6344,26 +6650,43 @@ function EventFormStep5Directive() {
   /* @ngInject */
   function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizers, $modal) {
 
+    EventFormData.showStep(5);
+
     // Work hardcoded on this id for now.
     // Event
-    EventFormData.id = '2fa0b713-09ac-4a13-b357-5e5c57294b24';
+    // local event nils
+    EventFormData.id = '9bd5b8dc-6637-4f93-afe4-1707c71b1b37';
+
+    // local event jochen
+    // EventFormData.id = 'bc47b5e6-a7ae-4737-a6e0-bb7b243f1989';
 
     // Place
-    EventFormData.id = 'ad461033-839d-4383-98ab-50afb650da14';
+    // local place nils
+    EventFormData.id = '1c16ad11-071c-40da-bdc6-9ec4e866fdb0';
+
+    // local place jochen
+    // EventFormData.id = 'x';
+
     EventFormData.isEvent = false;
     EventFormData.isPlace = true;
 
     // Scope vars.
     $scope.eventFormData = EventFormData; // main storage for event form.
+
+    // Description vars.
     $scope.description = EventFormData.getDescription('nl');
     $scope.descriptionCssClass = $scope.description ? 'state-complete' : 'state-incomplete';
     $scope.savingDescription = false;
     $scope.descriptionError = false;
+
+    // Age range vars
     $scope.savingAgeRange = false;
     $scope.ageRangeError = false;
     $scope.ageRange = 0;
     $scope.ageCssClass = EventFormData.ageRange ? 'state-complete' : 'state-incomplete';
     $scope.minAge = '';
+
+    // Organizer vars.
     $scope.organizerCssClass = EventFormData.organizer.id ? 'state-complete' : 'state-incomplete';
     $scope.organizer = '';
     $scope.emptyOrganizerAutocomplete = false;
@@ -6371,21 +6694,97 @@ function EventFormStep5Directive() {
     $scope.organizerError = false;
     $scope.savingOrganizer = false;
 
+    // Booking & tickets vars.
+    $scope.bookingInfo = {
+      price : '',
+      currency : 'EUR',
+      availabilityStarts : '',
+      availabilityEnds : '',
+      name : '',
+      description : '',
+      url : '',
+      urlLabel : 'Koop tickets',
+      email : '',
+      phone : '',
+      validFrom : '',
+      validThrough : ''
+    };
+    $scope.bookingModel = {
+      url : '',
+      urlRequired : false,
+      urlLabel : '',
+      urlLabelCustom : '',
+      email : '',
+      emailRequired : false,
+      phone : '',
+      phoneRequired : false,
+      availabilityStarts : '',
+      availabilityEnds : ''
+    };
+    $scope.viaWebsite = false;
+    $scope.viaEmail = false;
+    $scope.viaPhone = false;
+    $scope.websitePreviewEnabled = false;
+    $scope.bookingPeriodPreviewEnabled = false;
+    $scope.bookingPeriodShowValidation = false;
+    $scope.enableBookingType = enableBookingType;
+    $scope.saveBookingType = saveBookingType;
+    $scope.validateBookingType = validateBookingType;
+    $scope.resetBookingType = resetBookingType;
+    $scope.saveWebsitePreview = saveWebsitePreview;
+    $scope.enableWebsitePreview = enableWebsitePreview;
+    $scope.saveBookingPeriod = saveBookingPeriod;
+    $scope.enableBookingPeriodPreview = enableBookingPeriodPreview;
+
+    // Contactinfo vars.
+    $scope.contactInfoCssClass = EventFormData.contactPoint.length ? 'state-complete' : 'state-incomplete';
+    $scope.savingContactInfo = false;
+    $scope.contactInfoError = false;
+    $scope.contactInfo = [];
+
+    // Facilities vars.
+    $scope.facilitiesCssClass = 'state-incomplete';
+    $scope.facilitiesInapplicable = false;
+    $scope.selectedFacilities = EventFormData.facilities;
+
+    // Image upload vars.
+    $scope.imageCssClass = 'state-incomplete';
+
     // Scope functions.
+    // Description functions.
     $scope.saveDescription = saveDescription;
+
+    // Age range functions.
     $scope.saveAgeRange = saveAgeRange;
     $scope.changeAgeRange = changeAgeRange;
     $scope.setAllAges = setAllAges;
     $scope.resetAgeRange = resetAgeRange;
+
+    // Organizer functions.
     $scope.getOrganizers = getOrganizers;
     $scope.selectOrganizer = selectOrganizer;
     $scope.deleteOrganizer = deleteOrganizer;
     $scope.openOrganizerModal = openOrganizerModal;
 
+    // Contact info functions.
+    $scope.deleteContactInfo = deleteContactInfo;
+    $scope.saveContactInfo = saveContactInfo;
+    $scope.addContactInfo = addContactInfo;
+
+    // Facilities functions.
+    $scope.openFacilitiesModal = openFacilitiesModal;
+    $scope.setFacilitiesInapplicable = setFacilitiesInapplicable;
+
+    // Image upload functions.
+    $scope.openUploadModal = openUploadModal;
+
     // Check if we have a minAge set on load.
     if (EventFormData.minAge) {
       $scope.ageCssClass = 'state-complete';
     }
+
+    // Add empty contact.
+    addContactInfo();
 
     /**
      * Save the description.
@@ -6397,7 +6796,7 @@ function EventFormStep5Directive() {
 
       EventFormData.setDescription($scope.description, 'nl');
 
-      var promise = eventCrud.updateDescription(EventFormData, EventFormData.getType(), $scope.description);
+      var promise = eventCrud.updateDescription(EventFormData, $scope.description);
       promise.then(function() {
 
         $scope.savingDescription = false;
@@ -6459,7 +6858,7 @@ function EventFormStep5Directive() {
         EventFormData.typicalAgeRange = $scope.ageRange;
       }
 
-      var promise = eventCrud.updateTypicalAgeRange(EventFormData, EventFormData.getType());
+      var promise = eventCrud.updateTypicalAgeRange(EventFormData);
       promise.then(function() {
         $scope.savingAgeRange = false;
         updateLastUpdated();
@@ -6598,6 +6997,336 @@ function EventFormStep5Directive() {
         $scope.organizerError = true;
         $scope.savingOrganizer = false;
       });
+    }
+
+    /**
+     * Add contact info.
+     */
+    function addContactInfo() {
+      $scope.contactInfo.push({
+        type : '',
+        value : ''
+      });
+
+    }
+
+    /**
+     * Delete a given contact info item.
+     */
+    function deleteContactInfo(index) {
+      $scope.contactInfo.splice(index, 1);
+    }
+
+    /**
+     * Save the contact info.
+     */
+    function saveContactInfo() {
+
+<<<<<<< HEAD
+  /**
+   * @class EventExportJob
+   * @constructor
+   * @param commandId
+   */
+  var EventExportJob = function (commandId, eventCount, format) {
+    BaseJob.call(this, commandId);
+    this.exportUrl = '';
+    this.eventCount = eventCount;
+    this.format = format;
+  };
+=======
+      $scope.savingContactInfo = true;
+      $scope.contactInfoError = false;
+>>>>>>> de3a213b2ad8d0070cba97c887237b5642223633
+
+      // Only save with valid input.
+      if ($scope.contactInfoForm.$valid) {
+
+<<<<<<< HEAD
+  EventExportJob.prototype.getTemplateName = function () {
+    var templateName;
+
+    switch (this.state) {
+      case JobStates.FINISHED:
+        templateName = 'export-job';
+        break;
+      case JobStates.FAILED:
+        templateName = 'failed-job';
+        break;
+      default:
+        templateName = 'base-job';
+    }
+
+    return templateName;
+  };
+
+  EventExportJob.prototype.getDescription = function() {
+    var description = '';
+
+    if(this.state === JobStates.FAILED) {
+      description = 'Exporteren van evenementen mislukt';
+    } else {
+      var exportExtension = this.exportUrl.split('.').pop();
+      description = 'Document .' + exportExtension + ' met ' + this.eventCount + ' evenementen';
+    }
+
+    return description;
+  };
+=======
+      EventFormData.resetContactPoint();
+
+        // Copy all data to the correct contactpoint property.
+        for (var i = 0; i < $scope.contactInfo.length; i++) {
+          if ($scope.contactInfo.type === 'url') {
+            EventFormData.contactPoint.url.push($scope.contactInfo.value);
+          }
+          else if ($scope.contactInfo.type === 'phone') {
+            EventFormData.contactPoint.phone.push($scope.contactInfo.value);
+          }
+          else if ($scope.contactInfo.type === 'email') {
+            EventFormData.contactPoint.email.push($scope.contactInfo.value);
+          }
+        }
+>>>>>>> de3a213b2ad8d0070cba97c887237b5642223633
+
+        var promise = eventCrud.updateContactPoint(EventFormData);
+        promise.then(function() {
+          updateLastUpdated();
+          $scope.contactInfoCssClass = 'state-complete';
+          $scope.savingContactInfo = false;
+        }, function() {
+          $scope.contactInfoError = true;
+          $scope.savingContactInfo = false;
+        });
+
+      }
+    }
+
+    /**
+     * Open the facilities modal.
+     */
+    function openFacilitiesModal() {
+
+      var modalInstance = $modal.open({
+        templateUrl: 'templates/event-form-facilities-modal.html',
+        controller: 'EventFormFacilitiesModalCtrl',
+      });
+
+      modalInstance.result.then(function () {
+
+        $scope.facilitiesCssClass = 'state-complete';
+        $scope.selectedFacilities = EventFormData.facilities;
+
+        if (EventFormData.facilities.length > 0) {
+          $scope.facilitiesInapplicable = false;
+        }
+        else {
+          $scope.facilitiesInapplicable = true;
+        }
+      }, function () {
+        // modal dismissed.
+        if (EventFormData.facilities.length > 0 || $scope.facilitiesInapplicable) {
+          $scope.facilitiesCssClass = 'state-complete';
+        }
+        else {
+          $scope.facilitiesCssClass = 'state-incomplete';
+        }
+      });
+
+    }
+
+    /**
+     * Remove all facilities and set it to inapplicable.
+     */
+    function setFacilitiesInapplicable() {
+
+      // Delete facilities.
+      if (EventFormData.facilities.length > 0) {
+
+        $scope.facilitiesError = false;
+        EventFormData.facilities = [];
+
+        var promise = eventCrud.updateFacilities(EventFormData);
+        promise.then(function() {
+          $scope.savingFacilities = false;
+          $scope.facilitiesInapplicable = true;
+          $scope.facilitiesCssClass = 'state-complete';
+        }, function() {
+          $scope.savingFacilities = false;
+          $scope.facilitiesError = true;
+        });
+
+      }
+      else {
+        $scope.facilitiesInapplicable = true;
+        $scope.facilitiesCssClass = 'state-complete';
+      }
+    }
+
+    /**
+     * Enables a booking type.
+     */
+    function enableBookingType(type) {
+      if (type === 'website') {
+        $scope.viaWebsite = !$scope.viaWebsite;
+      }
+      else if (type === 'email') {
+        $scope.viaEmail = !$scope.viaEmail;
+      }
+      else if (type === 'phone') {
+        $scope.viaPhone = !$scope.viaPhone;
+      }
+    }
+
+    /**
+     * Validates a booking type.
+     */
+    function validateBookingType(type) {
+
+      if (type === 'website') {
+        $scope.bookingModel.urlRequired = true;
+        $scope.bookingModel.emailRequired = false;
+        $scope.bookingModel.phoneRequired = false;
+      }
+      else if (type === 'email') {
+        $scope.bookingModel.emailRequired = true;
+        $scope.bookingModel.urlRequired = false;
+        $scope.bookingModel.phoneRequired = false;
+      }
+      else if (type === 'phone') {
+        $scope.bookingModel.phoneRequired = true;
+        $scope.bookingModel.emailRequired = false;
+        $scope.bookingModel.urlRequired = false;
+      }
+
+      // Forms are automatically known in scope.
+      if (!$scope.step5TicketsForm.$valid) {
+        return;
+      }
+
+      saveBookingType(type);
+
+    }
+
+    /**
+     * Temporarily save a booking type.
+     */
+    function saveBookingType(type) {
+      if (type === 'website') {
+        $scope.viaWebsite = true;
+        $scope.bookingInfo.url = $scope.bookingModel.url;
+      }
+      else if (type === 'email') {
+        $scope.viaEmail = true;
+        $scope.bookingInfo.email = $scope.bookingModel.email;
+      }
+      else if (type === 'phone') {
+        $scope.viaPhone = true;
+        $scope.bookingInfo.phone = $scope.bookingModel.phone;
+      }
+      saveBookingInfo();
+    }
+
+    /**
+     * @param {type} type
+     */
+    function resetBookingType(type) {
+      if (type === 'website') {
+        $scope.bookingInfo.url = $scope.bookingModel.url = '';
+      }
+      else if (type === 'email') {
+        $scope.bookingInfo.email = $scope.bookingModel.email = '';
+      }
+      else if (type === 'phone') {
+        $scope.bookingInfo.phone = $scope.bookingModel.phone = '';
+      }
+    }
+
+    /**
+     * Save the website preview settings.
+     */
+    function saveWebsitePreview() {
+      $scope.websitePreviewEnabled = false;
+      $scope.bookingInfo.urlLabel = $scope.bookingModel.urlLabel;
+      if ($scope.bookingModel.urlLabelCustom !== '') {
+        $scope.bookingInfo.urlLabel = $scope.bookingModel.urlLabelCustom;
+      }
+      saveBookingInfo();
+    }
+
+    /**
+     * Enable the website preview modal.
+     */
+    function enableWebsitePreview() {
+      $scope.websitePreviewEnabled = true;
+    }
+
+    /**
+     * Save the booking period settings.
+     */
+    function saveBookingPeriod() {
+
+      $scope.bookingPeriodShowValidation = true;
+
+      // Forms are automatically known in scope.
+      if (!$scope.step5TicketsForm.$valid) {
+        return;
+      }
+
+      $scope.bookingPeriodPreviewEnabled = false;
+
+      $scope.bookingInfo.availabilityStarts = $scope.bookingModel.availabilityStarts;
+      $scope.bookingInfo.availabilityEnds = $scope.bookingModel.availabilityEnds;
+
+      saveBookingInfo();
+
+    }
+
+    /**
+     * Enable the booking period preview modal.
+     */
+    function enableBookingPeriodPreview() {
+      $scope.bookingPeriodPreviewEnabled = true;
+    }
+
+    /**
+     * Saves the booking info
+     */
+    function saveBookingInfo() {
+
+      EventFormData.setBookingInfo($scope.bookingInfo);
+
+      var promise = eventCrud.updateBookingInfo(EventFormData);
+      promise.then(function() {
+        updateLastUpdated();
+      }, function() {
+      });
+    }
+
+    /**
+     * Open the upload modal.
+     */
+    function openUploadModal() {
+
+      var modalInstance = $modal.open({
+        templateUrl: 'templates/event-form-image-upload.html',
+        controller: 'EventFormImageUploadCtrl',
+      });
+
+      modalInstance.result.then(function () {
+
+        $scope.imageCssClass = 'state-complete';
+
+      }, function () {
+        // modal dismissed.
+        /*if () {
+          $scope.facilitiesCssClass = 'state-complete';
+        }
+        else {
+          $scope.facilitiesCssClass = 'state-incomplete';
+        }*/
+      });
+
     }
 
   }
@@ -6840,7 +7569,7 @@ function EventExportController($modalInstance, udbApi, eventExporter, queryField
 
   exporter.format = exporter.exportFormats[0].type;
   exporter.email = '';
-  
+
   udbApi.getMe().then(function (user) {
     if(user.mbox) {
       exporter.email = user.mbox;
@@ -9258,6 +9987,141 @@ $templateCache.put('templates/time-autocomplete.html',
   );
 
 
+  $templateCache.put('templates/event-detail.html',
+    "<div ng-if=\"eventIdIsInvalid\">\n" +
+    "  <div class=\"page-header\">\n" +
+    "    <h1>Pagina niet gevonden</h1>\n" +
+    "  </div>\n" +
+    "\n" +
+    "  <div class=\"row\">\n" +
+    "    <div class=\"col-xs-12\">\n" +
+    "      <p>Deze pagina kon niet gevonden worden.</p>\n" +
+    "    </div>\n" +
+    "  </div>\n" +
+    "</div>\n" +
+    "\n" +
+    "<div ng-if=\"event\">\n" +
+    "  <div class=\"page-header\">\n" +
+    "    <h1>{{event.name}}</h1>\n" +
+    "  </div>\n" +
+    "\n" +
+    "  <div class=\"row\">\n" +
+    "    <div class=\"col-xs-3\">\n" +
+    "      <ul class=\"nav nav-pills nav-stacked\">\n" +
+    "        <li ng-repeat=\"tab in tabs\" class=\"{{classForTab(tab)}}\" role=\"tab\">\n" +
+    "          <a href=\"#{{tab.id}}\" role=\"tab\" ng-bind=\"tab.header\"></a>\n" +
+    "        </li>\n" +
+    "      </ul>\n" +
+    "    </div>\n" +
+    "\n" +
+    "    <div class=\"col-xs-9\">\n" +
+    "      <div class=\"tab-pane\" role=\"tabpanel\" ng-show=\"isTabActive('data')\">\n" +
+    "        <div class=\"panel panel-default\">\n" +
+    "          <table class=\"table\">\n" +
+    "            <colgroup>\n" +
+    "              <col style=\"width:20%\"/>\n" +
+    "              <col style=\"width:80%\"/>\n" +
+    "            </colgroup>\n" +
+    "            <tbody>\n" +
+    "            <tr>\n" +
+    "              <td><strong>Titel</strong></td>\n" +
+    "              <td>{{event.name}}</td>\n" +
+    "            </tr>\n" +
+    "            <tr>\n" +
+    "              <td><strong>Type</strong></td>\n" +
+    "              <td>{{event.type}}</td>\n" +
+    "            </tr>\n" +
+    "            <tr>\n" +
+    "              <td><strong>Beschrijving</strong></td>\n" +
+    "              <td ng-bind-html=\"event.description\"></td>\n" +
+    "            </tr>\n" +
+    "            <tr>\n" +
+    "              <td><strong>Waar</strong></td>\n" +
+    "              <td>{{eventLocation(event)}}</td>\n" +
+    "            </tr>\n" +
+    "            <tr>\n" +
+    "              <td><strong>Wanneer</strong></td>\n" +
+    "              <td>{{event.calendarSummary}}</td>\n" +
+    "            </tr>\n" +
+    "            <tr ng-class=\"{muted: !event.organizer}\">\n" +
+    "              <td><strong>Organisator</strong></td>\n" +
+    "              <td>{{event.organizer.name}}</td>\n" +
+    "            </tr>\n" +
+    "            <!--<tr>\n" +
+    "              <td><strong>Prijs</strong></td>\n" +
+    "              <td></td>\n" +
+    "            </tr>-->\n" +
+    "            <tr ng-class=\"{muted: !event.typicalAgeRange}\">\n" +
+    "              <td><strong>Geschikt voor</strong></td>\n" +
+    "              <td>\n" +
+    "                <span ng-if=\"event.typicalAgeRange\">{{event.typicalAgeRange}}</span>\n" +
+    "                <span ng-if=\"!event.typicalAgeRange\">Geen leeftijdsinformatie</span>\n" +
+    "              </td>\n" +
+    "            </tr>\n" +
+    "            <tr ng-class=\"{muted: !event.image}\">\n" +
+    "              <td><strong>Afbeelding</strong></td>\n" +
+    "              <td>\n" +
+    "                <img ng-if=\"event.image\" src=\"{{event.image}}?maxwidth=400&maxheight=300\"/>\n" +
+    "                <span ng-if=\"!event.image\">Geen afbeelding</span>\n" +
+    "              </td>\n" +
+    "            </tr>\n" +
+    "            </tbody>\n" +
+    "          </table>\n" +
+    "        </div>\n" +
+    "      </div>\n" +
+    "\n" +
+    "      <div role=\"tabpanel\" class=\"tab-pane\" ng-show=\"isTabActive('history')\">\n" +
+    "        <div class=\"timeline\">\n" +
+    "          <dl ng-repeat=\"eventAction in eventHistory\">\n" +
+    "            <dt ng-bind=\"eventAction.date | date:'dd/MM/yyyy H:mm'\"></dt>\n" +
+    "            <dd>\n" +
+    "                <span class=\"author\" ng-if=\"eventAction.author\">{{eventAction.author}}</span><br ng-if=\"eventAction.author\"/>\n" +
+    "                <span class=\"description\">{{eventAction.description}}</span>\n" +
+    "            </dd>\n" +
+    "          </dl>\n" +
+    "        </div>\n" +
+    "      </div>\n" +
+    "\n" +
+    "      <div class=\"tab-pane\" role=\"tabpanel\" ng-show=\"isTabActive('publication')\">\n" +
+    "        <div class=\"panel panel-default\">\n" +
+    "          <table class=\"table\">\n" +
+    "            <colgroup>\n" +
+    "              <col style=\"width:20%\"/>\n" +
+    "              <col style=\"width:80%\"/>\n" +
+    "            </colgroup>\n" +
+    "            <tbody>\n" +
+    "            <tr ng-class=\"{muted: !event.available}\">\n" +
+    "              <td><strong>Publicatiedatum</strong></td>\n" +
+    "              <td>\n" +
+    "                <span ng-if=\"event.available\"\n" +
+    "                      ng-bind=\"event.available | date: 'dd/MM/yyyy'\">\n" +
+    "                </span>\n" +
+    "                <span ng-if=\"!event.available\">\n" +
+    "                    Geen publicatiedatum\n" +
+    "                </span>\n" +
+    "              </td>\n" +
+    "            </tr>\n" +
+    "            <tr>\n" +
+    "              <td><strong>ID</strong></td>\n" +
+    "              <td>\n" +
+    "                <ul>\n" +
+    "                  <li ng-repeat=\"id in eventIds(event)\" ng-switch=\"isUrl(id)\">\n" +
+    "                    <a ng-switch-when=\"true\" ng-href=\"{{id}}\" ng-bind=\"id\"></a>\n" +
+    "                    <span ng-switch-when=\"false\" ng-bind=\"id\"></span>\n" +
+    "                  </li>\n" +
+    "                </ul>\n" +
+    "              </td>\n" +
+    "            </tr>\n" +
+    "            </tbody>\n" +
+    "          </table>\n" +
+    "        </div>\n" +
+    "      </div>\n" +
+    "    </div>\n" +
+    "  </div>\n" +
+    "</div>\n"
+  );
+
+
   $templateCache.put('templates/event-form-period.html',
     "<div id=\"wanneer-periode\" class=\"row\">\n" +
     "  <div class=\"col-xs-12 col-sm-4\">\n" +
@@ -9323,6 +10187,92 @@ $templateCache.put('templates/time-autocomplete.html',
     "    </a>\n" +
     "  </div>\n" +
     "</div>"
+  );
+
+
+  $templateCache.put('templates/event-form-facilities-modal.html',
+    "<div class=\"modal-header\">\n" +
+    "  <h4 class=\"modal-title\">Toegankelijkheidsinformatie</h4>\n" +
+    "</div>\n" +
+    "<div class=\"modal-body\">\n" +
+    "\n" +
+    "  <label>Voorzieningen voor personen met een motorische beperking</label>\n" +
+    "\n" +
+    "  <div class=\"checkbox\" ng-repeat=\"facility in facilities.motor\">\n" +
+    "    <label>\n" +
+    "      <input type=\"checkbox\" ng-model=\"facility.selected\">{{facility.label}}</label>\n" +
+    "  </div>\n" +
+    "\n" +
+    "  <label>Voorzieningen voor personen met een visuele beperking</label>\n" +
+    "\n" +
+    "  <div class=\"checkbox\" ng-repeat=\"facility in facilities.visual\">\n" +
+    "    <label>\n" +
+    "      <input type=\"checkbox\" ng-model=\"facility.selected\">{{facility.label}}</label>\n" +
+    "  </div>\n" +
+    "\n" +
+    "  <label>Voorzieningen voor personen met een auditieve beperking</label>\n" +
+    "\n" +
+    "  <div class=\"checkbox\" ng-repeat=\"facility in facilities.hearing\">\n" +
+    "    <label>\n" +
+    "      <input type=\"checkbox\" ng-model=\"facility.selected\">{{facility.label}}</label>\n" +
+    "  </div>\n" +
+    "\n" +
+    "  <div class=\"alert alert-danger\" ng-show=\"error\">\n" +
+    "    Er ging iets fout tijdens het opslaan van de voorzieningen.\n" +
+    "  </div>\n" +
+    "\n" +
+    "</div>\n" +
+    "<div class=\"modal-footer\">\n" +
+    "  <button type=\"button\" class=\"btn btn-default\" ng-click=\"cancel();\">Annuleren</button>\n" +
+    "  <button type=\"button\" class=\"btn btn-primary\" ng-click=\"saveFacilities();\">Bevestigen <i class=\"fa fa-circle-o-notch fa-spin\" ng-show=\"saving\"></i></button>\n" +
+    "</div>\n"
+  );
+
+
+  $templateCache.put('templates/event-form-image-upload.html',
+    "\n" +
+    "<div class=\"modal-content\">\n" +
+    "  <div class=\"modal-header\">\n" +
+    "    <button type=\"button\" class=\"close\" ng-click=\"cancel()\"><span aria-hidden=\"true\">&times;</span><span class=\"sr-only\">Close</span></button>\n" +
+    "    <h4 class=\"modal-title\" ng-bind=\"modalTitle\"></h4>\n" +
+    "  </div>\n" +
+    "  <div class=\"modal-body\">\n" +
+    "\n" +
+    "    <p ng-show=\"showAgreements\">Je staat op het punt (een) afbeelding(en) toe te voegen en openbaar te verspreiden. Je dient daartoe alle geldende auteurs- en portretrechten te respecteren, alsook alle andere toepasselijke wetgeving. Je kan daarvoor aansprakelijk worden gehouden, zoals vastgelegd in de <a href=\"#\">algemene voorwaarden</a>. <a href=\"#\">Meer informatie over copyright</a></p>\n" +
+    "    <div ng-hide=\"showAgreements\">\n" +
+    "      <div class=\"form-group\">\n" +
+    "        <label for=\"exampleInputFile\">Selecteer je foto('s)</label>\n" +
+    "        <input type=\"file\" id=\"exampleInputFile\" multiple>\n" +
+    "        <p class=\"help-block\">\n" +
+    "          De maximale grootte van je afbeelding is 5 MB en heeft als type .jpeg, .gif of .png</p>\n" +
+    "      </div>\n" +
+    "\n" +
+    "      <div class=\"form-group\">\n" +
+    "        <label>Beschrijving</label>\n" +
+    "        <input type=\"text\" class=\"form-control\">\n" +
+    "        <p class=\"help-block\">\n" +
+    "          Een goede beschrijving van je afbeelding wordt gelezen door zoekmachines en gebruikers met een visuele beperking.</p>\n" +
+    "      </div>\n" +
+    "\n" +
+    "      <div class=\"form-group\">\n" +
+    "        <label>Copyright</label>\n" +
+    "        <input type=\"text\" class=\"form-control\">\n" +
+    "        <p class=\"help-block\">\n" +
+    "          Vermeld de naam van de rechtenhoudende fotograaf.</p>\n" +
+    "      </div>\n" +
+    "    </div>\n" +
+    "\n" +
+    "\n" +
+    "  </div>\n" +
+    "  <div class=\"modal-footer\">\n" +
+    "\n" +
+    "    <button type=\"button\" class=\"btn btn-default\" ng-click=\"cancel()\">Annuleren</button>\n" +
+    "    <button type=\"button\" class=\"btn btn-primary image-uploaded\" ng-hide=\"showAgreements\">Opladen</button>\n" +
+    "    <button class=\"btn btn-primary\" ng-show=\"showAgreements\" ng-click=\"acceptAgreements()\">Akkoord</button>\n" +
+    "\n" +
+    "  </div>\n" +
+    "</div><!-- /.modal-content -->\n" +
+    "\n"
   );
 
 
@@ -9869,27 +10819,26 @@ $templateCache.put('templates/time-autocomplete.html',
     "             udb-event=\"event\"\n" +
     "             ng-hide=\"fetching\">\n" +
     "          <a class=\"btn btn-tile\" ng-click=\"setActiveDuplicate(event.id)\" data-toggle=\"modal\" data-target=\"#dubbeldetectie-voorbeeld\">\n" +
-    "              <small class=\"label label-default\" ng-bind=\"event.type\"></small><br>\n" +
-    "              <strong class=\"title\" ng-bind=\"event.name\"></strong><br>\n" +
-    "               {{ event.location.name }} -\n" +
-    "               <ng-switch on=\"event.calendarType\">\n" +
-    "                 <span ng-switch-when=\"single\">\n" +
-    "                    {{ event.startDate | date: 'dd/MM' }}\n" +
-    "                 </span>\n" +
-    "                 <span ng-switch-when=\"multiple\">\n" +
-    "                    Van {{ event.startDate | date: 'dd/MM' }} tot {{ event.endDate | date: 'dd/MM' }}\n" +
-    "                 </span>\n" +
-    "                 <span ng-switch-when=\"period\">\n" +
-    "                    Van {{ event.startDate | date: 'dd/MM' }} tot {{ event.endDate | date: 'dd/MM' }}\n" +
-    "                 </span>\n" +
-    "                 <span ng-switch-when=\"permanent\">\n" +
-    "                    Permanent\n" +
-    "                 </span>\n" +
-    "               </ng-switch>\n" +
-    "               <br>\n" +
-    "              <small class=\"preview-corner\"></small>\n" +
-    "              <i class=\"fa fa-eye preview-icon\"></i>\n" +
-    "            </span>\n" +
+    "            <small class=\"label label-default\" ng-bind=\"event.type\"></small><br>\n" +
+    "            <strong class=\"title\" ng-bind=\"event.name\"></strong><br>\n" +
+    "             {{ event.location.name }} -\n" +
+    "             <ng-switch on=\"event.calendarType\">\n" +
+    "               <span ng-switch-when=\"single\">\n" +
+    "                  {{ event.startDate | date: 'dd/MM' }}\n" +
+    "               </span>\n" +
+    "               <span ng-switch-when=\"multiple\">\n" +
+    "                  Van {{ event.startDate | date: 'dd/MM' }} tot {{ event.endDate | date: 'dd/MM' }}\n" +
+    "               </span>\n" +
+    "               <span ng-switch-when=\"period\">\n" +
+    "                  Van {{ event.startDate | date: 'dd/MM' }} tot {{ event.endDate | date: 'dd/MM' }}\n" +
+    "               </span>\n" +
+    "               <span ng-switch-when=\"permanent\">\n" +
+    "                  Permanent\n" +
+    "               </span>\n" +
+    "             </ng-switch>\n" +
+    "             <br>\n" +
+    "            <small class=\"preview-corner\"></small>\n" +
+    "            <i class=\"fa fa-eye preview-icon\"></i>\n" +
     "          </a>\n" +
     "        </div>\n" +
     "\n" +
@@ -10088,7 +11037,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "            </div>\n" +
     "            <div class=\"col-sm-8\">\n" +
     "              <section>\n" +
-    "                <div class=\"form-group clearfix\" ng-hide=\"ageRange === -1\">\n" +
+    "                <div class=\"form-group clearfix\" ng-hide=\"ageRange === - 1\">\n" +
     "                  <select class=\"form-control leeftijd-incomplete-select\" ng-change=\"changeAgeRange()\" ng-model=\"ageRange\" style=\"width: 50%; float: left;\">\n" +
     "                    <option value=\"0\" ng-show=\"ageRange === 0\">Kies een leeftijdscategorie</option>\n" +
     "                    <option value=\"12\">Kinderen tot 12 jaar</option>\n" +
@@ -10106,7 +11055,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "                  </div>\n" +
     "                </div>\n" +
     "\n" +
-    "                <p ng-show=\"ageRange === -1\">Alle leeftijden <a href=\"#\" class=\"btn btn-link btn-leeftijd-restore to-filling\" ng-click=\"resetAgeRange()\">Wijzigen</a></p>\n" +
+    "                <p ng-show=\"ageRange === - 1\">Alle leeftijden <a href=\"#\" class=\"btn btn-link btn-leeftijd-restore to-filling\" ng-click=\"resetAgeRange()\">Wijzigen</a></p>\n" +
     "\n" +
     "                <div ng-show=\"ageRangeError\" class=\"alert alert-danger\">\n" +
     "                  Er ging iets fout bij het opslaan van de leeftijd.\n" +
@@ -10156,11 +11105,280 @@ $templateCache.put('templates/time-autocomplete.html',
     "          </div>\n" +
     "        </div>\n" +
     "\n" +
+    "        <form name=\"step5TicketsForm\" class=\"css-form\">\n" +
+    "          <div class=\"row extra-tickets-website\">\n" +
+    "            <div class=\"extra-task state-incomplete\">\n" +
+    "              <div class=\"col-sm-3\">\n" +
+    "                <em class=\"extra-task-label\">Reservatie &amp; tickets</em>\n" +
+    "              </div>\n" +
+    "              <div class=\"col-sm-8\">\n" +
+    "                <section class=\"state incomplete\">\n" +
+    "\n" +
+    "                  <div class=\"checkbox\">\n" +
+    "                    <label>\n" +
+    "                      <input type=\"checkbox\" class=\"reservatie-website-check reservatie-check\" ng-click=\"enableBookingType('website')\">Via website</label>\n" +
+    "                  </div>\n" +
+    "                  <div class=\"reservatie-website-info reservatie-info\" ng-show=\"viaWebsite\">\n" +
+    "                    <div class=\"reservatie-info-stap1\" ng-show=\"bookingInfo.url === ''\">\n" +
+    "                      <div class=\"form-inline\">\n" +
+    "                        <label>URL voor tickets en reservaties</label><br>\n" +
+    "                        <div class=\"form-group\">\n" +
+    "                          <input type=\"url\" class=\"form-control\" name=\"url\" ng-model=\"bookingModel.url\" ng-required=\"viaWebsite\">\n" +
+    "                          <span class=\"help-block\" ng-show=\"bookingModel.urlRequired && !step5TicketsForm.url.$valid\">Gelieve een geldig formaat te gebruiken</span>\n" +
+    "                        </div>\n" +
+    "                        <a class=\"btn btn-primary reservatie-info-stap1-controleren\" ng-click=\"validateBookingType('website')\">Opslaan</a>\n" +
+    "                      </div>\n" +
+    "                    </div>\n" +
+    "                    <div class=\"reservatie-info-stap2\" ng-show=\"bookingInfo.url !== ''\">\n" +
+    "                      <p>{{ bookingInfo.url}} <a href=\"\" class=\"btn btn-link\" ng-click=\"resetBookingType('website')\">Wijzigen</a></p>\n" +
+    "                      <div class=\"weergave\">\n" +
+    "                        <p><small class=\"text-muted\">VOORBEELDWEERGAVE</small></p>\n" +
+    "                        <p>\n" +
+    "                          <a class=\"btn btn-info\" target=\"_blank\" href=\"{{ bookingInfo.url}}\">{{ bookingInfo.urlLabel}}</a>\n" +
+    "                          <a class=\"btn btn-link\" href=\"#\" ng-click=\"enableWebsitePreview()\" data-toggle=\"modal\" data-target=\"#extra-tickets-website-weergave\">Wijzigen</a>\n" +
+    "                        </p>\n" +
+    "                      </div>\n" +
+    "                    </div>\n" +
+    "                  </div>\n" +
+    "                </section>\n" +
+    "              </div>\n" +
+    "            </div>\n" +
+    "          </div>\n" +
+    "          <div class=\"modal fade\" id=\"extra-tickets-website-weergave\" aria-hidden=\"true\" ng-show=\"websitePreviewEnabled\">\n" +
+    "            <div class=\"modal-dialog\">\n" +
+    "              <div class=\"modal-content\">\n" +
+    "                <div class=\"modal-header\">\n" +
+    "                  <button type=\"button\" class=\"close\" data-dismiss=\"modal\"><span aria-hidden=\"true\">×</span><span class=\"sr-only\">Close</span></button>\n" +
+    "                  <h4 class=\"modal-title\">Weergave</h4>\n" +
+    "                </div>\n" +
+    "                <div class=\"modal-body\">\n" +
+    "                  <label>Kies een passend actie-label voor deze link</label>\n" +
+    "                  <div class=\"radio\">\n" +
+    "                    <label><input type=\"radio\" ng-model=\"bookingModel.urlLabel\" name=\"optionsRadios\" id=\"optionsRadios1\" value=\"Koop tickets\" checked=\"\">Koop tickets</label>\n" +
+    "                  </div>\n" +
+    "                  <div class=\"radio\">\n" +
+    "                    <label><input type=\"radio\" ng-model=\"bookingModel.urlLabel\" name=\"optionsRadios\" id=\"optionsRadios2\" value=\"Reserveer plaatsen\">Reserveer plaatsen</label>\n" +
+    "                  </div>\n" +
+    "                  <div class=\"radio\">\n" +
+    "                    <label><input type=\"radio\" ng-model=\"bookingModel.urlLabel\" name=\"optionsRadios\" id=\"optionsRadios3\" value=\"Controleer beschikbaarheid\">Controleer beschikbaarheid</label>\n" +
+    "                  </div>\n" +
+    "                  <div class=\"radio\">\n" +
+    "                    <label><input type=\"radio\" ng-model=\"bookingModel.urlLabel\" name=\"optionsRadios\" id=\"optionsRadios4\" value=\"Schrijf je in\">Schrijf je in</label>\n" +
+    "                  </div>\n" +
+    "                  <div class=\"radio\">\n" +
+    "                    <label><input type=\"radio\" ng-model=\"bookingModel.urlLabel\" name=\"optionsRadios\" id=\"optionsRadios5\" value=\"Andere\">Andere</label>\n" +
+    "                    <input type=\"text\" class=\"form-control\" ng-show=\"bookingModel.urlLabel === 'Andere'\" ng-model=\"bookingModel.urlLabelCustom\">\n" +
+    "                  </div>\n" +
+    "                </div>\n" +
+    "                <div class=\"modal-footer\">\n" +
+    "                  <button type=\"button\" class=\"btn btn-default\" data-dismiss=\"modal\">Annuleren</button>\n" +
+    "                  <button type=\"button\" class=\"btn btn-primary\" data-toggle=\"modal\" data-target=\"#extra-tickets-website-weergave\" ng-click=\"saveWebsitePreview()\">Bevestigen</button>\n" +
+    "                </div>\n" +
+    "              </div><!-- /.modal-content -->\n" +
+    "            </div><!-- /.modal-dialog -->\n" +
+    "          </div>\n" +
+    "          <div class=\"row extra-tickets-telefoon\">\n" +
+    "            <div class=\"extra-task state-incomplete\">\n" +
+    "              <div class=\"col-sm-3\">\n" +
+    "                <!--<em class=\"extra-task-label\">Reservatie &amp; tickets</em>-->\n" +
+    "              </div>\n" +
+    "              <div class=\"col-sm-8\">\n" +
+    "                <div class=\"checkbox\">\n" +
+    "                  <label><input type=\"checkbox\" class=\"reservatie-telefoon-check reservatie-check\" ng-click=\"enableBookingType('phone')\">Via telefoon</label>\n" +
+    "                </div>\n" +
+    "                <div class=\"reservatie-telefoon-info reservatie-info\" ng-show=\"viaPhone\">\n" +
+    "                  <div class=\"reservatie-telefoon-filling\" ng-show=\"bookingInfo.phone === ''\">\n" +
+    "\n" +
+    "                    <label>Telefoonnummer voor tickets of reservaties</label><br>\n" +
+    "                    <div class=\"form-inline\">\n" +
+    "                      <input type=\"text\" class=\"form-control\" name=\"phone\" ng-model=\"bookingModel.phone\" ng-required=\"viaPhone\">\n" +
+    "                      <span class=\"help-block\" ng-show=\"bookingModel.phoneRequired && step5TicketsForm.phone.$error.required\">Gelieve een geldig formaat te gebruiken</span>\n" +
+    "                      <a class=\"btn btn-primary reservatie-telefoon-opslaan\" ng-click=\"validateBookingType('phone')\">Opslaan</a>\n" +
+    "                    </div>\n" +
+    "                  </div>\n" +
+    "                  <div class=\"reservatie-telefoon-complete\" ng-show=\"bookingInfo.phone !== ''\">\n" +
+    "                    <p>{{ bookingInfo.phone}}  <a class=\"btn btn-link\" ng-click=\"resetBookingType('phone')\">Wijzigen</a></p>\n" +
+    "                  </div>\n" +
+    "                </div>\n" +
+    "              </div>\n" +
+    "            </div>\n" +
+    "          </div>\n" +
+    "          <div class=\"row extra-tickets-email\">\n" +
+    "            <div class=\"extra-task state-incomplete\">\n" +
+    "              <div class=\"col-sm-3\">\n" +
+    "                <!--<em class=\"extra-task-label\">Reservatie &amp; tickets</em>-->\n" +
+    "              </div>\n" +
+    "              <div class=\"col-sm-8\">\n" +
+    "                <div class=\"checkbox\">\n" +
+    "                  <label>\n" +
+    "                    <input type=\"checkbox\" class=\"reservatie-email-check reservatie-check\" ng-click=\"enableBookingType('email')\">Via e-mail</label>\n" +
+    "                </div>\n" +
+    "                <div class=\"reservatie-email-info reservatie-info\" ng-show=\"viaEmail\">\n" +
+    "                  <div class=\"reservatie-email-filling\" ng-show=\"bookingInfo.email === ''\">\n" +
+    "                    <label>E-mailadres voor tickets of reservaties</label><br>\n" +
+    "                    <div class=\"form-inline\">\n" +
+    "                      <input type=\"email\" class=\"form-control\" name=\"email\" ng-model=\"bookingModel.email\" ng-required=\"viaEmail\">\n" +
+    "                      <span class=\"help-block\" ng-show=\"bookingModel.emailRequired && !step5TicketsForm.email.$valid\">Gelieve een geldig formaat te gebruiken</span>\n" +
+    "                      <a class=\"btn btn-primary reservatie-email-opslaan\" ng-click=\"validateBookingType('email')\">Opslaan</a>\n" +
+    "                    </div>\n" +
+    "                  </div>\n" +
+    "                  <div class=\"reservatie-email-complete\" ng-show=\"bookingInfo.email !== ''\">\n" +
+    "                    <p>{{ bookingInfo.email}}  <a class=\"btn btn-link\" ng-click=\"resetBookingType('email')\">Wijzigen</a></p>\n" +
+    "                  </div>\n" +
+    "                </div>\n" +
+    "              </div>\n" +
+    "            </div>\n" +
+    "          </div>\n" +
+    "          <div class=\"row extra-tickets-periode\" style=\"display: block;\">\n" +
+    "            <div class=\"extra-task\">\n" +
+    "              <div class=\"col-sm-3\">\n" +
+    "                <!--<em class=\"extra-task-label\">Reservatie &amp; tickets</em>-->\n" +
+    "              </div>\n" +
+    "              <div class=\"col-sm-8\" ng-show=\"bookingInfo.availabilityStarts === ''\">\n" +
+    "                <p><a class=\"reservatie-periode-toevoegen\" href=\"#\" ng-click=\"enableBookingPeriodPreview()\" data-toggle=\"modal\" data-target=\"#extra-tickets-periode-toevoegen\">Reservatie-periode toevoegen</a></p>\n" +
+    "              </div>\n" +
+    "              <div class=\"col-sm-8\" ng-hide=\"bookingInfo.availabilityStarts === ''\">\n" +
+    "                <p>Van {{ bookingInfo.availabilityStarts | date:'dd-MM-yyyy' }} tot {{ bookingInfo.availabilityEnds | date:'dd-MM-yyyy'  }} <a class=\"reservatie-periode-toevoegen\" href=\"#\" ng-click=\"enableBookingPeriodPreview()\" data-toggle=\"modal\" data-target=\"#extra-tickets-periode-toevoegen\">Reservatie-periode wijzigen</a></p>\n" +
+    "              </div>\n" +
+    "            </div>\n" +
+    "          </div>\n" +
+    "          <div class=\"modal fade\" id=\"extra-tickets-periode-toevoegen\" ng-show=\"bookingPeriodPreviewEnabled\">\n" +
+    "            <div class=\"modal-dialog\">\n" +
+    "              <div class=\"modal-content\">\n" +
+    "                <div class=\"modal-header\">\n" +
+    "                  <button type=\"button\" class=\"close\" data-dismiss=\"modal\"><span aria-hidden=\"true\">×</span><span class=\"sr-only\">Close</span>\n" +
+    "                  </button>\n" +
+    "                  <h4 class=\"modal-title\">Reservatieperiode</h4>\n" +
+    "                </div>\n" +
+    "                <div class=\"modal-body\">\n" +
+    "                  <div class=\"row\">\n" +
+    "                    <div class=\"form-group col-md-6 col-sm-12\">\n" +
+    "                      <div class=\"add-date\">\n" +
+    "                        <label>Reserveren van</label>\n" +
+    "                        <div udb-datepicker highlight-date=\"2015-8-12\" ng-model=\"bookingModel.availabilityStarts\"></div>\n" +
+    "                        <span class=\"help-block\" ng-show=\"bookingPeriodShowValidation && step5TicketsForm.startdate.$error.required\">Gelieve een start datum te kiezen</span>\n" +
+    "                      </div>\n" +
+    "                    </div>\n" +
+    "                    <div class=\"form-group col-md-6 col-sm-12\">\n" +
+    "                      <div class=\"add-date\">\n" +
+    "                        <label>Tot</label>\n" +
+    "                        <div udb-datepicker highlight-date=\"2015-8-12\" ng-model=\"bookingModel.availabilityEnds\"></div>\n" +
+    "                        <span class=\"help-block\" ng-show=\"bookingPeriodShowValidation && step5TicketsForm.enddate.$error.required\">Gelieve een eind datum te kiezen</span>\n" +
+    "                      </div>\n" +
+    "                    </div>\n" +
+    "                  </div>\n" +
+    "                </div>\n" +
+    "                <div class=\"modal-footer\">\n" +
+    "                  <button type=\"button\" class=\"btn btn-default\" data-dismiss=\"modal\">Annuleren</button>\n" +
+    "                  <button type=\"button\" class=\"btn btn-primary\" data-toggle=\"modal\" data-target=\"#extra-tickets-periode-toevoegen\" ng-click=\"saveBookingPeriod()\">Bevestigen</button>\n" +
+    "                </div>\n" +
+    "              </div>\n" +
+    "              <!-- /.modal-content -->\n" +
+    "            </div>\n" +
+    "            <!-- /.modal-dialog -->\n" +
+    "          </div>\n" +
+    "        </form>\n" +
+    "\n" +
+    "        <div class=\"row extra-contact\">\n" +
+    "          <div class=\"extra-task meer-info\" ng-class=\"contactInfoCssClass\">\n" +
+    "            <div class=\"col-sm-3\">\n" +
+    "              <em class=\"extra-task-label\">Meer info &amp; contact</em> <i class=\"fa fa-circle-o-notch fa-spin\" ng-show=\"savingContactInfo\"></i>\n" +
+    "            </div>\n" +
+    "\n" +
+    "            <div class=\"col-sm-8\">\n" +
+    "              <section class=\"state incomplete\">\n" +
+    "                <a class=\"btn btn-default\" ng-click=\"contactInfoCssClass = 'state-filling'\">Contactinformatie toevoegen</a>\n" +
+    "              </section>\n" +
+    "\n" +
+    "              <section class=\"state filling complete\">\n" +
+    "                <form name=\"contactInfoForm\">\n" +
+    "                  <table class=\"table\">\n" +
+    "                    <tr ng-repeat=\"(key, info) in contactInfo\" ng-model=\"info\" udb-contact-info-validation ng-class=\"{'has-error' : infoErrorMessage !== '' }\" ng-change=\"saveContactInfo()\">\n" +
+    "                      <td>\n" +
+    "                        <select class=\"form-control\" ng-model=\"info.type\" ng-change=\"clearInfo();\">\n" +
+    "                          <option value=\"url\">Website</option>\n" +
+    "                          <option value=\"phone\">Telefoonnummer</option>\n" +
+    "                          <option value=\"email\">E-mailadres</option>\n" +
+    "                        </select>\n" +
+    "                      </td>\n" +
+    "                      <td>\n" +
+    "                        <input type=\"text\" class=\"form-control\" ng-model=\"info.value\" name=\"contact[{{key}}]\" ng-change=\"validateInfo(key); saveContactInfo();\" ng-model-options=\"{ updateOn: 'blur' }\"/>\n" +
+    "                        <span class=\"help-block\" ng-hide=\"infoErrorMessage === ''\" ng-bind=\"infoErrorMessage\"></span>\n" +
+    "                      </td>\n" +
+    "                      <td>\n" +
+    "                        <button type=\"button\" class=\"close\" aria-label=\"Close\" ng-click=\"deleteContactInfo(key)\"><span aria-hidden=\"true\">&times;</span></button>\n" +
+    "                      </td>\n" +
+    "                    </tr>\n" +
+    "                    <tr><td colspan=\"3\"><a ng-click=\"addContactInfo()\">Meer contactgegevens toevoegen</a></td></tr>\n" +
+    "                  </table>\n" +
+    "                </form>\n" +
+    "              </section>\n" +
+    "\n" +
+    "              <div ng-show=\"contactInfoError\" class=\"alert alert-danger\">\n" +
+    "                Er ging iets fout bij het opslaan van de contact info.\n" +
+    "              </div>\n" +
+    "\n" +
+    "            </div>\n" +
+    "\n" +
+    "          </div>\n" +
+    "        </div>\n" +
+    "\n" +
+    "        <div class=\"row extra-toegankelijkheid\" ng-if=\"eventFormData.isPlace\">\n" +
+    "          <div class=\"extra-task\" ng-class=\"facilitiesCssClass\">\n" +
+    "            <div class=\"col-sm-3\">\n" +
+    "              <em class=\"extra-task-label\">Toegankelijkheid</em>\n" +
+    "            </div>\n" +
+    "            <div class=\"col-sm-8\">\n" +
+    "              <section class=\"state incomplete\">\n" +
+    "                <a class=\"btn btn-default\" href=\"#\" ng-click=\"openFacilitiesModal();\">Voorzieningen toevoegen</a>\n" +
+    "                <a class=\"btn btn-link btn-nvt\" ng-click=\"setFacilitiesInapplicable();\">Niet van toepassing</a>\n" +
+    "              </section>\n" +
+    "              <section class=\"state complete\">\n" +
+    "                <ul ng-if=\"selectedFacilities.length > 0\">\n" +
+    "                  <li ng-repeat=\"facility in selectedFacilities\">{{ facility.label}}</li>\n" +
+    "                </ul>\n" +
+    "                <p><span ng-show=\"facilitiesInapplicable\">Niet van toepassing</span> <a href=\"#\" class=\"btn btn-link\" ng-click=\"openFacilitiesModal();\">Wijzigen</a></p>\n" +
+    "              </section>\n" +
+    "            </div>\n" +
+    "          </div>\n" +
+    "        </div>\n" +
+    "\n" +
     "      </div>\n" +
+    "\n" +
+    "      <div class=\"col-sm-4\">\n" +
+    "\n" +
+    "        <div class=\"image-upload\" ng-class=\"imageCssClass\">\n" +
+    "\n" +
+    "          <div class=\"image-upload-none state incomplete\">\n" +
+    "            <span class=\"image-upload-icon\"></span>\n" +
+    "            <p class=\"muted\">Voeg een afbeelding toe zodat je bezoekers je activiteit beter herkennen.</p>\n" +
+    "          </div>\n" +
+    "\n" +
+    "          <div class=\"image-upload-list state complete\">\n" +
+    "            <h4>Afbeeldingen</h4>\n" +
+    "            <div class=\"uploaded-image\">\n" +
+    "              <div class=\"media\">\n" +
+    "                <a class=\"media-left\" href=\"#\">\n" +
+    "                  <img src=\"https://dl.dropboxusercontent.com/u/10742547/herita_v6/img/default-placeholder.png\">\n" +
+    "                </a>\n" +
+    "                <div class=\"media-body\">\n" +
+    "                  <p>Beschrijving <small>Copyright</small></p>\n" +
+    "                  <p><a href=\"#\" class=\"btn btn-link\" href=\"#\" data-toggle='modal' data-target='#extra-afbeelding-toevoegen'  data-dismiss=\"modal\">Wijzigen</a><a href=\"#\" class=\"btn btn-link\">Verwijderen</a></p>\n" +
+    "                </div>\n" +
+    "              </div>\n" +
+    "            </div>\n" +
+    "\n" +
+    "          </div>\n" +
+    "\n" +
+    "          <a class=\"btn btn-default\" href=\"#\" ng-click=\"openUploadModal()\">Afbeelding toevoegen</a>\n" +
+    "\n" +
+    "        </div>\n" +
+    "\n" +
+    "      </div>\n" +
+    "\n" +
     "    </div>\n" +
     "\n" +
-    "  </section>\n" +
-    "</div>"
+    "  </section>"
   );
 
 

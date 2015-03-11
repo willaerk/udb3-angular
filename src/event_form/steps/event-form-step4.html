@@ -38,27 +38,26 @@
              udb-event="event"
              ng-hide="fetching">
           <a class="btn btn-tile" ng-click="setActiveDuplicate(event.id)" data-toggle="modal" data-target="#dubbeldetectie-voorbeeld">
-              <small class="label label-default" ng-bind="event.type"></small><br>
-              <strong class="title" ng-bind="event.name"></strong><br>
-               {{ event.location.name }} -
-               <ng-switch on="event.calendarType">
-                 <span ng-switch-when="single">
-                    {{ event.startDate | date: 'dd/MM' }}
-                 </span>
-                 <span ng-switch-when="multiple">
-                    Van {{ event.startDate | date: 'dd/MM' }} tot {{ event.endDate | date: 'dd/MM' }}
-                 </span>
-                 <span ng-switch-when="period">
-                    Van {{ event.startDate | date: 'dd/MM' }} tot {{ event.endDate | date: 'dd/MM' }}
-                 </span>
-                 <span ng-switch-when="permanent">
-                    Permanent
-                 </span>
-               </ng-switch>
-               <br>
-              <small class="preview-corner"></small>
-              <i class="fa fa-eye preview-icon"></i>
-            </span>
+            <small class="label label-default" ng-bind="event.type"></small><br>
+            <strong class="title" ng-bind="event.name"></strong><br>
+             {{ event.location.name }} -
+             <ng-switch on="event.calendarType">
+               <span ng-switch-when="single">
+                  {{ event.startDate | date: 'dd/MM' }}
+               </span>
+               <span ng-switch-when="multiple">
+                  Van {{ event.startDate | date: 'dd/MM' }} tot {{ event.endDate | date: 'dd/MM' }}
+               </span>
+               <span ng-switch-when="period">
+                  Van {{ event.startDate | date: 'dd/MM' }} tot {{ event.endDate | date: 'dd/MM' }}
+               </span>
+               <span ng-switch-when="permanent">
+                  Permanent
+               </span>
+             </ng-switch>
+             <br>
+            <small class="preview-corner"></small>
+            <i class="fa fa-eye preview-icon"></i>
           </a>
         </div>
 

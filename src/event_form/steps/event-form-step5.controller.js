@@ -112,6 +112,9 @@
     $scope.facilitiesInapplicable = false;
     $scope.selectedFacilities = EventFormData.facilities;
 
+    // Image upload vars.
+    $scope.imageCssClass = 'state-incomplete';
+
     // Scope functions.
     // Description functions.
     $scope.saveDescription = saveDescription;
@@ -136,6 +139,9 @@
     // Facilities functions.
     $scope.openFacilitiesModal = openFacilitiesModal;
     $scope.setFacilitiesInapplicable = setFacilitiesInapplicable;
+
+    // Image upload functions.
+    $scope.openUploadModal = openUploadModal;
 
     // Check if we have a minAge set on load.
     if (EventFormData.minAge) {
@@ -608,13 +614,38 @@
     function saveBookingInfo() {
 
       EventFormData.setBookingInfo($scope.bookingInfo);
-      //
 
       var promise = eventCrud.updateBookingInfo(EventFormData);
       promise.then(function() {
         updateLastUpdated();
       }, function() {
       });
+    }
+
+    /**
+     * Open the upload modal.
+     */
+    function openUploadModal() {
+
+      var modalInstance = $modal.open({
+        templateUrl: 'templates/event-form-image-upload.html',
+        controller: 'EventFormImageUploadCtrl',
+      });
+
+      modalInstance.result.then(function () {
+
+        $scope.imageCssClass = 'state-complete';
+
+      }, function () {
+        // modal dismissed.
+        /*if () {
+          $scope.facilitiesCssClass = 'state-complete';
+        }
+        else {
+          $scope.facilitiesCssClass = 'state-incomplete';
+        }*/
+      });
+
     }
 
   }

@@ -159,8 +159,10 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
     jobPromise.success(function (jobData) {
       var job = new EventCrudJob(jobData.commandId, item, 'updateFacilities');
     });
+
+    return jobPromise;
   };
-      
+
   /**
    * Update the booking info and add it to the job logger.
    *

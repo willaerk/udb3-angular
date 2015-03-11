@@ -100,6 +100,8 @@ function UdbApi($q, $http, appConfig, $cookieStore, uitidAuth, $cacheFactory, Ud
         deferredEvent.reject();
       });
     }
+
+    return deferredEvent.promise;
   };
 
   this.getEventByLDId = function (eventLDId) {

@@ -74,7 +74,7 @@
       $scope.error = false;
 
       var promise = eventCrud.updateFacilities(EventFormData);
-      promise.then(function(jsonResponse) {
+      promise.then(function() {
 
         $scope.saving = false;
         $modalInstance.close();

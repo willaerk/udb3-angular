@@ -1,0 +1,68 @@
+<div ng-controller="DashboardCtrl as dashboard">
+
+<div class="alert alert-default no-new no-data" ng-show="noContent">
+    <p class="text-center">Je hebt nog geen items toegevoegd.
+      <br/><a href="udb3/event/add">Een activiteit of monument toevoegen?</a>
+    </p>
+  </div>
+
+  <div ng-hide="noContent">
+
+    <div ng-show="noOmdEvents">
+      <div class="alert alert-info no-omd-events" ng-bind-html="noEventsMessage"></div>
+    </div>
+
+
+    <div class="clearfix">
+
+      <p class="invoer-title"><span class="block-header">Laatst toegevoegd</span>
+        <span class="pull-right"><a class="btn btn-primary " href="udb3/event/add"><i class="fa fa-plus-circle"></i> Toevoegen</a></span>
+      </p>
+
+    </div>
+
+    <div class="panel panel-default">
+
+      <table class="table ">
+
+        <tr ng-repeat="userContentItem in userContent">
+          <td>
+            <strong><a href="http://www.google.be">{{userContentItem.title}}</a></strong><br/>
+            <small><ng-switch on="userContentItem.details.payload.calendar.type">
+                 <span ng-switch-when="single">
+                    {{ userContentItem.details.payload.event_type.label }} - {{ userContentItem.details.payload.calendar.startDate | date: 'dd/MM/yyyy' }}
+                 </span>
+                 <span ng-switch-when="multiple">
+                    {{ userContentItem.details.payload.event_type.label }} - Van {{ userContentItem.details.payload.calendar.startDate | date: 'dd/MM/yyyy' }} tot {{ userContentItem.details.payload.calendar.endDate | date: 'dd/MM/yyyy' }}
+                 </span>
+                 <span ng-switch-when="period">
+                    {{ userContentItem.details.payload.event_type.label }} - Van {{ userContentItem.details.payload.calendar.startDate | date: 'dd/MM/yyyy' }} tot {{ userContentItem.details.payload.calendar.endDate | date: 'dd/MM/yyyy' }}
+                 </span>
+                 <span ng-switch-when="permanent">
+                    {{ userContentItem.details.payload.event_type.label }} - Permanent
+                 </span>
+               </ng-switch>
+            </small>
+          </td>
+
+          <td>
+            <div class="pull-right btn-group" dropdown>
+              <a class="btn btn-default" href="{{ userContentItem.editUrl }}">Bewerken</a>
+              <button type="button" class="btn btn-default" dropdown-toggle><span class="caret"></span></button>
+              <ul class="dropdown-menu" role="menu">
+                <li>
+                  <a href="{{ userContentItem.exampleUrl }}">Voorbeeld</a>
+                </li>
+                <li class="divider"></li>
+                <li>
+                  <a href="{{ userContentItem.deleteUrl }}">Verwijderen</a>
+                </li>
+              </ul>
+            </div>
+          </td>
+
+        </tr>
+      </table>
+
+    </div>
+  </div>

@@ -89,18 +89,19 @@ function UdbApi($q, $http, appConfig, $cookieStore, uitidAuth, $cacheFactory, Ud
         eventCache.put(eventId, event);
         deferredEvent.resolve(event);
       });
+
+      eventRequest.success(function(jsonEvent) {
+        var event = new UdbEvent(jsonEvent);
+        eventCache.put(eventId, event);
+        deferredEvent.resolve(event);
+      });
+
+      eventRequest.error(function () {
+        deferredEvent.reject();
+      });
     }
 
-    eventRequest.success(function(jsonEvent) {
-      var event = new UdbEvent(jsonEvent);
-      eventCache.put(eventId, event);
-      deferredEvent.resolve(event);
-    });
-
-    eventRequest.error(function () {
-      deferredEvent.reject();
-    });
-  }
+  };
 
   this.getEventByLDId = function (eventLDId) {
     var eventId = eventLDId.split('/').pop();

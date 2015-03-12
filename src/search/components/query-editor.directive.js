@@ -11,13 +11,15 @@ angular
   .directive('udbQueryEditor', udbQueryEditor);
 
 /* @ngInject */
-function udbQueryEditor(queryFields,
-                        LuceneQueryBuilder,
-                        taxonomyTerms,
-                        fieldTypeTransformers,
-                        searchHelper,
-                        $translate,
-                        $rootScope) {
+function udbQueryEditor(
+  queryFields,
+  LuceneQueryBuilder,
+  taxonomyTerms,
+  fieldTypeTransformers,
+  searchHelper,
+  $translate,
+  $rootScope
+) {
   return {
     templateUrl: 'templates/query-editor.directive.html',
     restrict: 'E',

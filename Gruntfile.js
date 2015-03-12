@@ -378,7 +378,7 @@ module.exports = function (grunt) {
         '!src/search/parsers/udb-query-parser.service.js'
       ],
       options: {
-        config: 'jscs.json'
+        config: '.jscs.json'
       }
     }
   });
@@ -409,12 +409,13 @@ module.exports = function (grunt) {
     'less',
     'autoprefixer',
     'ngtemplates',
+    'jscs',
     'jshint:all',
     'concat:modules',
     'concat:dist',
     'ngAnnotate',
     'cssmin',
-    'uglify',
+    'uglify'
   ]);
 
   grunt.registerTask('default', [

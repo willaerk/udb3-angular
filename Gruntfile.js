@@ -388,7 +388,7 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-peg');
   grunt.loadNpmTasks('grunt-curl');
   grunt.loadNpmTasks('grunt-angular-templates');
-  grunt.loadNpmTasks("grunt-jscs");
+  grunt.loadNpmTasks('grunt-jscs');
 
   grunt.registerTask('test', [
     'clean:server',

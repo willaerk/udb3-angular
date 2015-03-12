@@ -10,32 +10,33 @@
     <div ng-hide="showAgreements">
       <div class="form-group">
         <label for="exampleInputFile">Selecteer je foto('s)</label>
-        <input type="file" id="exampleInputFile" multiple>
+        <input type="file" ng-model="imagesToUpload" multiple ng-file-select ng-multiple="true" accept="'image/*'">
         <p class="help-block">
           De maximale grootte van je afbeelding is 5 MB en heeft als type .jpeg, .gif of .png</p>
       </div>
 
       <div class="form-group">
         <label>Beschrijving</label>
-        <input type="text" class="form-control">
+        <input type="text" class="form-control" ng-model="description">
         <p class="help-block">
           Een goede beschrijving van je afbeelding wordt gelezen door zoekmachines en gebruikers met een visuele beperking.</p>
       </div>
 
       <div class="form-group">
         <label>Copyright</label>
-        <input type="text" class="form-control">
+        <input type="text" class="form-control" ng-model="copyright">
         <p class="help-block">
           Vermeld de naam van de rechtenhoudende fotograaf.</p>
       </div>
     </div>
 
+    <div ng-show="error" class="alert alert-danger">Er ging iets mis bij het opslaan van de afbeelding.</div>
 
   </div>
   <div class="modal-footer">
 
     <button type="button" class="btn btn-default" ng-click="cancel()">Annuleren</button>
-    <button type="button" class="btn btn-primary image-uploaded" ng-hide="showAgreements">Opladen</button>
+    <button type="button" class="btn btn-primary" ng-hide="showAgreements" ng-click="uploadImages()">Opladen <i ng-show="saving" class="fa fa-circle-o-notch fa-spin"></i></button>
     <button class="btn btn-primary" ng-show="showAgreements" ng-click="acceptAgreements()">Akkoord</button>
 
   </div>

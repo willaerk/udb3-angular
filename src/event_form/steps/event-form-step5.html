@@ -395,21 +395,21 @@
 
           <div class="image-upload-list state complete">
             <h4>Afbeeldingen</h4>
-            <div class="uploaded-image">
+            <div ng-repeat="(key, mediaObject) in eventFormData.mediaObject" class="uploaded-image">
               <div class="media">
                 <a class="media-left" href="#">
-                  <img src="https://dl.dropboxusercontent.com/u/10742547/herita_v6/img/default-placeholder.png">
+                  <img src="{{mediaObject.thumbnailUrl}}">
                 </a>
                 <div class="media-body">
-                  <p>Beschrijving <small>Copyright</small></p>
-                  <p><a href="#" class="btn btn-link" href="#" data-toggle='modal' data-target='#extra-afbeelding-toevoegen'  data-dismiss="modal">Wijzigen</a><a href="#" class="btn btn-link">Verwijderen</a></p>
+                  <p>{{ mediaObject.description }} <small ng-bind="mediaObject.copyrightHolder">Copyright</small></p>
+                  <p><a href="#" class="btn btn-link" ng-click="openUploadImageModal(key)">Wijzigen</a><a href="#" class="btn btn-link" ng-click="openDeleteImageModal(key)">Verwijderen</a></p>
                 </div>
               </div>
             </div>
 
           </div>
 
-          <a class="btn btn-default" href="#" ng-click="openUploadModal()">Afbeelding toevoegen</a>
+          <a class="btn btn-default" href="#" ng-click="openUploadImageModal(-1)">Afbeelding toevoegen</a>
 
         </div>
 

@@ -13,6 +13,7 @@ angular
     'ngSanitize',
     'ui.bootstrap',
     'ui.select',
+    'angularFileUpload',
     'udb.config',
     'udb.search',
     'udb.entry',
@@ -2398,7 +2399,7 @@ angular
   .service('udbApi', UdbApi);
 
 /* @ngInject */
-function UdbApi($q, $http, appConfig, $cookieStore, uitidAuth, $cacheFactory, UdbEvent, UdbOrganizer) {
+function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth, $cacheFactory, UdbEvent, UdbOrganizer) {
   var apiUrl = appConfig.baseApiUrl;
   var defaultApiConfig = {
         withCredentials: true,
@@ -2732,8 +2733,74 @@ function UdbApi($q, $http, appConfig, $cookieStore, uitidAuth, $cacheFactory, Ud
     );
   };
 
+  /**
+   * Add a new image.
+   */
+  this.addImage = function(id, type, image, description, copyrightHolder) {
+
+    var options = defaultApiConfig;
+    options.url = appConfig.baseApiUrl + type + '/' + id + '/image';
+    options.fields = {
+      description: description,
+      copyrightHolder : copyrightHolder
+    };
+    options.file = image;
+
+    return $upload.upload(options);
+
+  };
+
+  /**
+   * Update an image.
+   */
+  this.updateImage = function(id, type, indexToUpdate, image, description, copyrightHolder) {
+
+    // Image is also changed.
+    if (image) {
+
+      var options = defaultApiConfig;
+      options.url = appConfig.baseApiUrl + type + '/' + id + '/image/' + indexToUpdate;
+      options.fields = {
+        description: description,
+        copyrightHolder : copyrightHolder
+      };
+      options.file = image;
+
+      return $upload.upload(options);
+
+    }
+    // Only the textfields change.
+    else {
+
+      var postData = {
+        description: description,
+        copyrightHolder : copyrightHolder
+      };
+
+      return $http.post(
+        appConfig.baseApiUrl + type + '/' + id + '/image/' + indexToUpdate,
+        postData,
+        defaultApiConfig
+      );
+    }
+
+  };
+
+  /**
+   * Delete an image.
+   */
+  this.deleteImage = function(id, type, indexToDelete) {
+
+    return $http.delete(
+      appConfig.baseApiUrl + type + '/' + id + '/image/' + indexToDelete,
+      {},
+      defaultApiConfig
+    );
+
+  };
+
 }
-UdbApi.$inject = ["$q", "$http", "appConfig", "$cookieStore", "uitidAuth", "$cacheFactory", "UdbEvent", "UdbOrganizer"];
+UdbApi.$inject = ["$q", "$http", "$upload", "appConfig", "$cookieStore", "uitidAuth", "$cacheFactory", "UdbEvent", "UdbOrganizer"];
 
 // Source: src/core/udb-event.factory.js
 /**
@@ -3571,6 +3638,18 @@ function EventCrudJobFactory(BaseJob) {
       case 'updateFacilities':
         return 'Voorzieningen aanpassen: "' + this.item.name + '".';
 
+      case 'updateBookingInfo':
+        return 'Boeking info aanpassen: "' + this.item.name + '".';
+
+      case 'addImage':
+        return 'Afbeelding toevoegen: "' + this.item.name + '".';
+
+      case 'updateImage':
+        return 'Afbeelding aanpassen: "' + this.item.name + '".';
+
+      case 'deleteImage':
+        return 'Afbeelding verwijderen: "' + this.item.name + '".';
+
     }
 
   };
@@ -3757,6 +3836,71 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
 
     jobPromise.success(function (jobData) {
       var job = new EventCrudJob(jobData.commandId, item, 'updateBookingInfo');
+      jobLogger.addJob(job);
+    });
+
+    return jobPromise;
+
+  };
+
+  /**
+   * Add a new image to the item.
+   *
+   * @param {EventFormData} item
+   * @param File image
+   * @param string description
+   * @param string copyrightHolder
+   * @returns {EventCrud.addImage.jobPromise}
+   */
+  this.addImage = function(item, image, description, copyrightHolder) {
+
+    var jobPromise = udbApi.addImage(item.id, item.getType(), image, description, copyrightHolder);
+
+    jobPromise.success(function (jobData) {
+      var job = new EventCrudJob(jobData.commandId, item, 'addImage');
+      jobLogger.addJob(job);
+    });
+
+    return jobPromise;
+
+  };
+
+  /**
+   * Update an image of the item.
+   *
+   * @param {EventFormData} item
+   * @param int indexToUpdate
+   * @param File|null image
+   * @param string description
+   * @param string copyrightHolder
+   * @returns {EventCrud.updateImage.jobPromise}
+   */
+  this.updateImage = function(item, indexToUpdate, image, description, copyrightHolder) {
+
+    var jobPromise = udbApi.updateImage(item.id, item.getType(), indexToUpdate, image, description, copyrightHolder);
+
+    jobPromise.success(function (jobData) {
+      var job = new EventCrudJob(jobData.commandId, item, 'updateImage');
+      jobLogger.addJob(job);
+    });
+
+    return jobPromise;
+
+  };
+
+  /**
+   * Delete an image of the item.
+   *
+   * @param {EventFormData} item
+   * @param int indexToDelete
+   * @returns {EventCrud.deleteImage.jobPromise}
+   */
+  this.deleteImage = function(item, indexToDelete) {
+
+    var jobPromise = udbApi.deleteImage(item.id, item.getType(), indexToDelete);
+
+    jobPromise.success(function (jobData) {
+      var job = new EventCrudJob(jobData.commandId, item, 'deleteImage');
       jobLogger.addJob(job);
     });
 
@@ -4943,6 +5087,61 @@ angular
 
 })();
 
+// Source: src/event_form/components/image-delete/event-form-image-delete.controller.js
+(function () {
+/**
+   * @ngdoc function
+   * @name udbApp.controller:EventFormImageDeleteCtrl
+   * @description
+   * # EventFormImageDeleteCtrl
+   * Modal for deleting images.
+   */
+  angular
+    .module('udb.event-form')
+    .controller('EventFormImageDeleteCtrl', EventFormImageDeleteController);
+
+  /* @ngInject */
+  function EventFormImageDeleteController($scope, $modalInstance, EventFormData, eventCrud, indexToDelete) {
+
+    // Scope vars.
+    $scope.saving = false;
+    $scope.error = false;
+
+    // Scope functions.
+    $scope.cancel = cancel;
+    $scope.deleteImage = deleteImage;
+
+    /**
+     * Cancel the modal.
+     */
+    function cancel() {
+      $modalInstance.dismiss('cancel');
+    }
+
+    /**
+     * Upload the images and save it to db.
+     */
+    function deleteImage() {
+
+      $scope.saving = true;
+      $scope.error = false;
+
+      eventCrud.deleteImage(EventFormData, indexToDelete).then(function() {
+        EventFormData.deleteMediaObject(indexToDelete);
+        $scope.saving = false;
+        $modalInstance.close();
+      }, function() {
+        $scope.error = true;
+        $scope.saving = false;
+      });
+
+    }
+
+  }
+  EventFormImageDeleteController.$inject = ["$scope", "$modalInstance", "EventFormData", "eventCrud", "indexToDelete"];
+
+})();
+
 // Source: src/event_form/components/image-upload/event-form-image-upload.controller.js
 (function () {
 /**
@@ -4957,18 +5156,30 @@ angular
     .controller('EventFormImageUploadCtrl', EventFormImageUploadController);
 
   /* @ngInject */
-  function EventFormImageUploadController($scope, $modalInstance, EventFormData, eventCrud) {
+  function EventFormImageUploadController($scope, $modalInstance, EventFormData, eventCrud, indexToEdit) {
 
     // Scope vars.
     $scope.saving = false;
     $scope.error = false;
     $scope.showAgreements = true;
     $scope.modalTitle = 'Gebruiksvoorwaarden';
+    $scope.imagesToUpload = [];
+    $scope.description = '';
+    $scope.copyright = '';
+
+    var mediaObject = null;
+    // An object to edit was given.
+    if (indexToEdit >= 0) {
+      mediaObject = EventFormData.mediaObject[indexToEdit];
+      $scope.description = mediaObject.description;
+      $scope.copyright = mediaObject.copyrightHolder;
+      acceptAgreements();
+    }
 
     // Scope functions.
     $scope.acceptAgreements = acceptAgreements;
     $scope.cancel = cancel;
-    $scope.uploadImage = uploadImage;
+    $scope.uploadImages = uploadImages;
 
     /**
      * Accept the agreements.
@@ -4986,27 +5197,64 @@ angular
     }
 
     /**
-     * Upload the image and save it to db.
+     * Upload the images and save it to db.
      */
-    function uploadImage() {
+    function uploadImages() {
 
       $scope.saving = true;
       $scope.error = false;
 
-      var promise = eventCrud.addImage(EventFormData);
-      promise.then(function() {
+      // If we are editing, imagesToUpload is not required.
+      if (mediaObject) {
+        // Will be undefined if no upload was done in edit.
+        updateImage($scope.imagesToUpload[0]);
+      }
+      else {
+        // IE8/9 can't handle array. Upload 1 by 1.
+        for (var i = 0; i < $scope.imagesToUpload.length; i++) {
+          addImage($scope.imagesToUpload[i]);
+        }
+      }
 
-        $scope.saving = false;
-        $modalInstance.close();
+    }
 
+    /**
+     * Upload and add an image.
+     */
+    function addImage(image) {
+
+      var uploaded = 0;
+
+      eventCrud.addImage(EventFormData, image, $scope.description, $scope.copyright).then(function (jsonResponse) {
+        EventFormData.addMediaObject(jsonResponse.data.url, jsonResponse.thumbnailUrl, $scope.description, $scope.copyright, image);
+        uploaded++;
+        if (uploaded === $scope.imagesToUpload.length) {
+          $modalInstance.close();
+        }
       }, function() {
-        $scope.error = true;
         $scope.saving = false;
+        $scope.error = true;
       });
+
+    }
+
+    /**
+     * Update an image or the description.
+     */
+    function updateImage(image) {
+
+      eventCrud.updateImage(EventFormData, indexToEdit, image, $scope.description, $scope.copyright).then(function (data) {
+          EventFormData.editMediaObject(indexToEdit, data.url, data.thumbnailUrl, $scope.description, $scope.copyright, image);
+          $modalInstance.close();
+      }, function() {
+        $scope.saving = false;
+        $scope.error = true;
+      });
+
     }
 
   }
-  EventFormImageUploadController.$inject = ["$scope", "$modalInstance", "EventFormData", "eventCrud"];
+  EventFormImageUploadController.$inject = ["$scope", "$modalInstance", "EventFormData", "eventCrud", "indexToEdit"];
 
 })();
 
@@ -5352,6 +5600,7 @@ function EventFormDataFactory(UdbEvent, UdbPlace) {
     },
     facilities : [],
     bookingInfo : {},
+    mediaObject : [],
 
     /**
      * Show the given step.
@@ -5592,6 +5841,37 @@ function EventFormDataFactory(UdbEvent, UdbPlace) {
      */
     setBookingInfo : function(bookingInfo) {
       this.bookingInfo = bookingInfo;
+    },
+
+    /**
+     * Add a new media object.
+     */
+    addMediaObject : function(url, thumbnailUrl, description, copyrightHolder) {
+      this.mediaObject.push({
+        url : url,
+        thumbnailUrl : thumbnailUrl,
+        description : description,
+        copyrightHolder : copyrightHolder
+      });
+    },
+
+    /**
+     * Edit a media object.
+     */
+    editMediaObject : function(indexToEdit, url, thumbnailUrl, description, copyrightHolder) {
+      this.mediaObject[indexToEdit] = {
+        url : url,
+        thumbnailUrl : thumbnailUrl,
+        description : description,
+        copyrightHolder : copyrightHolder,
+      };
+    },
+
+    /**
+     * Delete a given media object.
+     */
+    deleteMediaObject : function(index) {
+      this.mediaObject.splice(index, 1);
     }
 
   };
@@ -6651,8 +6931,8 @@ EventFormFacilities.$inject = ["$q", "$http", "$cacheFactory", "appConfig"];
     // local place jochen
     // EventFormData.id = 'x';
 
-    EventFormData.isEvent = false;
-    EventFormData.isPlace = true;
+    EventFormData.isEvent = true;
+    EventFormData.isPlace = false;
 
     // Scope vars.
     $scope.eventFormData = EventFormData; // main storage for event form.
@@ -6760,7 +7040,8 @@ EventFormFacilities.$inject = ["$q", "$http", "$cacheFactory", "appConfig"];
     $scope.setFacilitiesInapplicable = setFacilitiesInapplicable;
 
     // Image upload functions.
-    $scope.openUploadModal = openUploadModal;
+    $scope.openUploadImageModal = openUploadImageModal;
+    $scope.openDeleteImageModal = openDeleteImageModal;
 
     // Check if we have a minAge set on load.
     if (EventFormData.minAge) {
@@ -7244,25 +7525,62 @@ EventFormFacilities.$inject = ["$q", "$http", "$cacheFactory", "appConfig"];
     /**
      * Open the upload modal.
      */
-    function openUploadModal() {
+    function openUploadImageModal(indexToEdit) {
 
       var modalInstance = $modal.open({
         templateUrl: 'templates/event-form-image-upload.html',
         controller: 'EventFormImageUploadCtrl',
+        resolve: {
+          indexToEdit: function () {
+            return indexToEdit;
+          },
+        }
       });
 
       modalInstance.result.then(function () {
-
         $scope.imageCssClass = 'state-complete';
-
       }, function () {
         // modal dismissed.
-        /*if () {
-          $scope.facilitiesCssClass = 'state-complete';
+        if (EventFormData.mediaObject.length > 0) {
+          $scope.imageCssClass = 'state-complete';
         }
         else {
-          $scope.facilitiesCssClass = 'state-incomplete';
-        }*/
+          $scope.imageCssClass = 'state-incomplete';
+        }
+      });
+
+    }
+
+    /**
+     * Open the modal to delete an image.
+     */
+    function openDeleteImageModal(indexToDelete) {
+
+      var modalInstance = $modal.open({
+        templateUrl: 'templates/event-form-image-delete.html',
+        controller: 'EventFormImageDeleteCtrl',
+        resolve: {
+          indexToDelete: function () {
+            return indexToDelete;
+          },
+        }
+      });
+
+      modalInstance.result.then(function () {
+        if (EventFormData.mediaObject.length > 0) {
+          $scope.imageCssClass = 'state-complete';
+        }
+        else {
+          $scope.imageCssClass = 'state-incomplete';
+        }
+      }, function () {
+        // modal dismissed.
+        if (EventFormData.mediaObject.length > 0) {
+          $scope.imageCssClass = 'state-complete';
+        }
+        else {
+          $scope.imageCssClass = 'state-incomplete';
+        }
       });
 
     }
@@ -10032,6 +10350,31 @@ $templateCache.put('templates/time-autocomplete.html',
   );
 
 
+  $templateCache.put('templates/event-form-image-delete.html',
+    "\n" +
+    "<div class=\"modal-content\">\n" +
+    "  <div class=\"modal-header\">\n" +
+    "    <button type=\"button\" class=\"close\" ng-click=\"cancel()\"><span aria-hidden=\"true\">&times;</span><span class=\"sr-only\">Close</span></button>\n" +
+    "    <h4 class=\"modal-title\">Afbeeldingen verwijderen</h4>\n" +
+    "  </div>\n" +
+    "  <div class=\"modal-body\">\n" +
+    "\n" +
+    "    <p>Ben je zeker dat je deze afbeelding wil verwijderen? Dit kan niet ongedaan gemaakt worden.</p>\n" +
+    "\n" +
+    "    <div ng-show=\"error\" class=\"alert alert-danger\">Er ging iets mis bij het verwijderen van de afbeelding.</div>\n" +
+    "\n" +
+    "  </div>\n" +
+    "  <div class=\"modal-footer\">\n" +
+    "\n" +
+    "    <button type=\"button\" class=\"btn btn-default\" ng-click=\"cancel()\">Annuleren</button>\n" +
+    "    <button class=\"btn btn-primary\" ng-click=\"deleteImage()\">Akkoord <i ng-show=\"saving\" class=\"fa fa-circle-o-notch fa-spin\"></i></button>\n" +
+    "\n" +
+    "  </div>\n" +
+    "</div><!-- /.modal-content -->\n" +
+    "\n"
+  );
+
+
   $templateCache.put('templates/event-form-image-upload.html',
     "\n" +
     "<div class=\"modal-content\">\n" +
@@ -10045,32 +10388,33 @@ $templateCache.put('templates/time-autocomplete.html',
     "    <div ng-hide=\"showAgreements\">\n" +
     "      <div class=\"form-group\">\n" +
     "        <label for=\"exampleInputFile\">Selecteer je foto('s)</label>\n" +
-    "        <input type=\"file\" id=\"exampleInputFile\" multiple>\n" +
+    "        <input type=\"file\" ng-model=\"imagesToUpload\" multiple ng-file-select ng-multiple=\"true\" accept=\"'image/*'\">\n" +
     "        <p class=\"help-block\">\n" +
     "          De maximale grootte van je afbeelding is 5 MB en heeft als type .jpeg, .gif of .png</p>\n" +
     "      </div>\n" +
     "\n" +
     "      <div class=\"form-group\">\n" +
     "        <label>Beschrijving</label>\n" +
-    "        <input type=\"text\" class=\"form-control\">\n" +
+    "        <input type=\"text\" class=\"form-control\" ng-model=\"description\">\n" +
     "        <p class=\"help-block\">\n" +
     "          Een goede beschrijving van je afbeelding wordt gelezen door zoekmachines en gebruikers met een visuele beperking.</p>\n" +
     "      </div>\n" +
     "\n" +
     "      <div class=\"form-group\">\n" +
     "        <label>Copyright</label>\n" +
-    "        <input type=\"text\" class=\"form-control\">\n" +
+    "        <input type=\"text\" class=\"form-control\" ng-model=\"copyright\">\n" +
     "        <p class=\"help-block\">\n" +
     "          Vermeld de naam van de rechtenhoudende fotograaf.</p>\n" +
     "      </div>\n" +
     "    </div>\n" +
     "\n" +
+    "    <div ng-show=\"error\" class=\"alert alert-danger\">Er ging iets mis bij het opslaan van de afbeelding.</div>\n" +
     "\n" +
     "  </div>\n" +
     "  <div class=\"modal-footer\">\n" +
     "\n" +
     "    <button type=\"button\" class=\"btn btn-default\" ng-click=\"cancel()\">Annuleren</button>\n" +
-    "    <button type=\"button\" class=\"btn btn-primary image-uploaded\" ng-hide=\"showAgreements\">Opladen</button>\n" +
+    "    <button type=\"button\" class=\"btn btn-primary\" ng-hide=\"showAgreements\" ng-click=\"uploadImages()\">Opladen <i ng-show=\"saving\" class=\"fa fa-circle-o-notch fa-spin\"></i></button>\n" +
     "    <button class=\"btn btn-primary\" ng-show=\"showAgreements\" ng-click=\"acceptAgreements()\">Akkoord</button>\n" +
     "\n" +
     "  </div>\n" +
@@ -11159,21 +11503,21 @@ $templateCache.put('templates/time-autocomplete.html',
     "\n" +
     "          <div class=\"image-upload-list state complete\">\n" +
     "            <h4>Afbeeldingen</h4>\n" +
-    "            <div class=\"uploaded-image\">\n" +
+    "            <div ng-repeat=\"(key, mediaObject) in eventFormData.mediaObject\" class=\"uploaded-image\">\n" +
     "              <div class=\"media\">\n" +
     "                <a class=\"media-left\" href=\"#\">\n" +
-    "                  <img src=\"https://dl.dropboxusercontent.com/u/10742547/herita_v6/img/default-placeholder.png\">\n" +
+    "                  <img src=\"{{mediaObject.thumbnailUrl}}\">\n" +
     "                </a>\n" +
     "                <div class=\"media-body\">\n" +
-    "                  <p>Beschrijving <small>Copyright</small></p>\n" +
-    "                  <p><a href=\"#\" class=\"btn btn-link\" href=\"#\" data-toggle='modal' data-target='#extra-afbeelding-toevoegen'  data-dismiss=\"modal\">Wijzigen</a><a href=\"#\" class=\"btn btn-link\">Verwijderen</a></p>\n" +
+    "                  <p>{{ mediaObject.description }} <small ng-bind=\"mediaObject.copyrightHolder\">Copyright</small></p>\n" +
+    "                  <p><a href=\"#\" class=\"btn btn-link\" ng-click=\"openUploadImageModal(key)\">Wijzigen</a><a href=\"#\" class=\"btn btn-link\" ng-click=\"openDeleteImageModal(key)\">Verwijderen</a></p>\n" +
     "                </div>\n" +
     "              </div>\n" +
     "            </div>\n" +
     "\n" +
     "          </div>\n" +
     "\n" +
-    "          <a class=\"btn btn-default\" href=\"#\" ng-click=\"openUploadModal()\">Afbeelding toevoegen</a>\n" +
+    "          <a class=\"btn btn-default\" href=\"#\" ng-click=\"openUploadImageModal(-1)\">Afbeelding toevoegen</a>\n" +
     "\n" +
     "        </div>\n" +
     "\n" +

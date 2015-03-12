@@ -32,8 +32,8 @@
     // local place jochen
     // EventFormData.id = 'x';
 
-    EventFormData.isEvent = false;
-    EventFormData.isPlace = true;
+    EventFormData.isEvent = true;
+    EventFormData.isPlace = false;
 
     // Scope vars.
     $scope.eventFormData = EventFormData; // main storage for event form.
@@ -141,7 +141,8 @@
     $scope.setFacilitiesInapplicable = setFacilitiesInapplicable;
 
     // Image upload functions.
-    $scope.openUploadModal = openUploadModal;
+    $scope.openUploadImageModal = openUploadImageModal;
+    $scope.openDeleteImageModal = openDeleteImageModal;
 
     // Check if we have a minAge set on load.
     if (EventFormData.minAge) {
@@ -625,25 +626,62 @@
     /**
      * Open the upload modal.
      */
-    function openUploadModal() {
+    function openUploadImageModal(indexToEdit) {
 
       var modalInstance = $modal.open({
         templateUrl: 'templates/event-form-image-upload.html',
         controller: 'EventFormImageUploadCtrl',
+        resolve: {
+          indexToEdit: function () {
+            return indexToEdit;
+          },
+        }
       });
 
       modalInstance.result.then(function () {
-
         $scope.imageCssClass = 'state-complete';
-
       }, function () {
         // modal dismissed.
-        /*if () {
-          $scope.facilitiesCssClass = 'state-complete';
+        if (EventFormData.mediaObject.length > 0) {
+          $scope.imageCssClass = 'state-complete';
         }
         else {
-          $scope.facilitiesCssClass = 'state-incomplete';
-        }*/
+          $scope.imageCssClass = 'state-incomplete';
+        }
+      });
+
+    }
+
+    /**
+     * Open the modal to delete an image.
+     */
+    function openDeleteImageModal(indexToDelete) {
+
+      var modalInstance = $modal.open({
+        templateUrl: 'templates/event-form-image-delete.html',
+        controller: 'EventFormImageDeleteCtrl',
+        resolve: {
+          indexToDelete: function () {
+            return indexToDelete;
+          },
+        }
+      });
+
+      modalInstance.result.then(function () {
+        if (EventFormData.mediaObject.length > 0) {
+          $scope.imageCssClass = 'state-complete';
+        }
+        else {
+          $scope.imageCssClass = 'state-incomplete';
+        }
+      }, function () {
+        // modal dismissed.
+        if (EventFormData.mediaObject.length > 0) {
+          $scope.imageCssClass = 'state-complete';
+        }
+        else {
+          $scope.imageCssClass = 'state-incomplete';
+        }
       });
 
     }

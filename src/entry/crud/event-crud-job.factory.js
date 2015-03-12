@@ -57,6 +57,18 @@ function EventCrudJobFactory(BaseJob) {
       case 'updateFacilities':
         return 'Voorzieningen aanpassen: "' + this.item.name + '".';
 
+      case 'updateBookingInfo':
+        return 'Boeking info aanpassen: "' + this.item.name + '".';
+
+      case 'addImage':
+        return 'Afbeelding toevoegen: "' + this.item.name + '".';
+
+      case 'updateImage':
+        return 'Afbeelding aanpassen: "' + this.item.name + '".';
+
+      case 'deleteImage':
+        return 'Afbeelding verwijderen: "' + this.item.name + '".';
+
     }
 
   };

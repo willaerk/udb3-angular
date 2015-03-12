@@ -12,7 +12,7 @@ angular
   .service('udbApi', UdbApi);
 
 /* @ngInject */
-function UdbApi($q, $http, appConfig, $cookieStore, uitidAuth, $cacheFactory, UdbEvent, UdbOrganizer) {
+function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth, $cacheFactory, UdbEvent, UdbOrganizer) {
   var apiUrl = appConfig.baseApiUrl;
   var defaultApiConfig = {
         withCredentials: true,
@@ -344,6 +344,72 @@ function UdbApi($q, $http, appConfig, $cookieStore, uitidAuth, $cacheFactory, Ud
       {},
       defaultApiConfig
     );
+  };
+
+  /**
+   * Add a new image.
+   */
+  this.addImage = function(id, type, image, description, copyrightHolder) {
+
+    var options = defaultApiConfig;
+    options.url = appConfig.baseApiUrl + type + '/' + id + '/image';
+    options.fields = {
+      description: description,
+      copyrightHolder : copyrightHolder
+    };
+    options.file = image;
+
+    return $upload.upload(options);
+
+  };
+
+  /**
+   * Update an image.
+   */
+  this.updateImage = function(id, type, indexToUpdate, image, description, copyrightHolder) {
+
+    // Image is also changed.
+    if (image) {
+
+      var options = defaultApiConfig;
+      options.url = appConfig.baseApiUrl + type + '/' + id + '/image/' + indexToUpdate;
+      options.fields = {
+        description: description,
+        copyrightHolder : copyrightHolder
+      };
+      options.file = image;
+
+      return $upload.upload(options);
+
+    }
+    // Only the textfields change.
+    else {
+
+      var postData = {
+        description: description,
+        copyrightHolder : copyrightHolder
+      };
+
+      return $http.post(
+        appConfig.baseApiUrl + type + '/' + id + '/image/' + indexToUpdate,
+        postData,
+        defaultApiConfig
+      );
+    }
+
+  };
+
+  /**
+   * Delete an image.
+   */
+  this.deleteImage = function(id, type, indexToDelete) {
+
+    return $http.delete(
+      appConfig.baseApiUrl + type + '/' + id + '/image/' + indexToDelete,
+      {},
+      defaultApiConfig
+    );
+
   };
 
 }

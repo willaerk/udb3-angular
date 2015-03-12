@@ -13,18 +13,30 @@
     .controller('EventFormImageUploadCtrl', EventFormImageUploadController);
 
   /* @ngInject */
-  function EventFormImageUploadController($scope, $modalInstance, EventFormData, eventCrud) {
+  function EventFormImageUploadController($scope, $modalInstance, EventFormData, eventCrud, indexToEdit) {
 
     // Scope vars.
     $scope.saving = false;
     $scope.error = false;
     $scope.showAgreements = true;
     $scope.modalTitle = 'Gebruiksvoorwaarden';
+    $scope.imagesToUpload = [];
+    $scope.description = '';
+    $scope.copyright = '';
+
+    var mediaObject = null;
+    // An object to edit was given.
+    if (indexToEdit >= 0) {
+      mediaObject = EventFormData.mediaObject[indexToEdit];
+      $scope.description = mediaObject.description;
+      $scope.copyright = mediaObject.copyrightHolder;
+      acceptAgreements();
+    }
 
     // Scope functions.
     $scope.acceptAgreements = acceptAgreements;
     $scope.cancel = cancel;
-    $scope.uploadImage = uploadImage;
+    $scope.uploadImages = uploadImages;
 
     /**
      * Accept the agreements.
@@ -42,23 +54,60 @@
     }
 
     /**
-     * Upload the image and save it to db.
+     * Upload the images and save it to db.
      */
-    function uploadImage() {
+    function uploadImages() {
 
       $scope.saving = true;
       $scope.error = false;
 
-      var promise = eventCrud.addImage(EventFormData);
-      promise.then(function() {
+      // If we are editing, imagesToUpload is not required.
+      if (mediaObject) {
+        // Will be undefined if no upload was done in edit.
+        updateImage($scope.imagesToUpload[0]);
+      }
+      else {
+        // IE8/9 can't handle array. Upload 1 by 1.
+        for (var i = 0; i < $scope.imagesToUpload.length; i++) {
+          addImage($scope.imagesToUpload[i]);
+        }
+      }
 
-        $scope.saving = false;
-        $modalInstance.close();
+    }
 
+    /**
+     * Upload and add an image.
+     */
+    function addImage(image) {
+
+      var uploaded = 0;
+
+      eventCrud.addImage(EventFormData, image, $scope.description, $scope.copyright).then(function (jsonResponse) {
+        EventFormData.addMediaObject(jsonResponse.data.url, jsonResponse.thumbnailUrl, $scope.description, $scope.copyright, image);
+        uploaded++;
+        if (uploaded === $scope.imagesToUpload.length) {
+          $modalInstance.close();
+        }
       }, function() {
-        $scope.error = true;
         $scope.saving = false;
+        $scope.error = true;
       });
+
+    }
+
+    /**
+     * Update an image or the description.
+     */
+    function updateImage(image) {
+
+      eventCrud.updateImage(EventFormData, indexToEdit, image, $scope.description, $scope.copyright).then(function (data) {
+          EventFormData.editMediaObject(indexToEdit, data.url, data.thumbnailUrl, $scope.description, $scope.copyright, image);
+          $modalInstance.close();
+      }, function() {
+        $scope.saving = false;
+        $scope.error = true;
+      });
+
     }
 
   }

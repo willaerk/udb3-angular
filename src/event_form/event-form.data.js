@@ -53,6 +53,7 @@ function EventFormDataFactory(UdbEvent, UdbPlace) {
     },
     facilities : [],
     bookingInfo : {},
+    mediaObject : [],
 
     /**
      * Show the given step.
@@ -293,6 +294,37 @@ function EventFormDataFactory(UdbEvent, UdbPlace) {
      */
     setBookingInfo : function(bookingInfo) {
       this.bookingInfo = bookingInfo;
+    },
+
+    /**
+     * Add a new media object.
+     */
+    addMediaObject : function(url, thumbnailUrl, description, copyrightHolder) {
+      this.mediaObject.push({
+        url : url,
+        thumbnailUrl : thumbnailUrl,
+        description : description,
+        copyrightHolder : copyrightHolder
+      });
+    },
+
+    /**
+     * Edit a media object.
+     */
+    editMediaObject : function(indexToEdit, url, thumbnailUrl, description, copyrightHolder) {
+      this.mediaObject[indexToEdit] = {
+        url : url,
+        thumbnailUrl : thumbnailUrl,
+        description : description,
+        copyrightHolder : copyrightHolder,
+      };
+    },
+
+    /**
+     * Delete a given media object.
+     */
+    deleteMediaObject : function(index) {
+      this.mediaObject.splice(index, 1);
     }
 
   };

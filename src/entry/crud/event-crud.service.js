@@ -184,4 +184,69 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
 
   };
 
+  /**
+   * Add a new image to the item.
+   *
+   * @param {EventFormData} item
+   * @param File image
+   * @param string description
+   * @param string copyrightHolder
+   * @returns {EventCrud.addImage.jobPromise}
+   */
+  this.addImage = function(item, image, description, copyrightHolder) {
+
+    var jobPromise = udbApi.addImage(item.id, item.getType(), image, description, copyrightHolder);
+
+    jobPromise.success(function (jobData) {
+      var job = new EventCrudJob(jobData.commandId, item, 'addImage');
+      jobLogger.addJob(job);
+    });
+
+    return jobPromise;
+
+  };
+
+  /**
+   * Update an image of the item.
+   *
+   * @param {EventFormData} item
+   * @param int indexToUpdate
+   * @param File|null image
+   * @param string description
+   * @param string copyrightHolder
+   * @returns {EventCrud.updateImage.jobPromise}
+   */
+  this.updateImage = function(item, indexToUpdate, image, description, copyrightHolder) {
+
+    var jobPromise = udbApi.updateImage(item.id, item.getType(), indexToUpdate, image, description, copyrightHolder);
+
+    jobPromise.success(function (jobData) {
+      var job = new EventCrudJob(jobData.commandId, item, 'updateImage');
+      jobLogger.addJob(job);
+    });
+
+    return jobPromise;
+
+  };
+
+  /**
+   * Delete an image of the item.
+   *
+   * @param {EventFormData} item
+   * @param int indexToDelete
+   * @returns {EventCrud.deleteImage.jobPromise}
+   */
+  this.deleteImage = function(item, indexToDelete) {
+
+    var jobPromise = udbApi.deleteImage(item.id, item.getType(), indexToDelete);
+
+    jobPromise.success(function (jobData) {
+      var job = new EventCrudJob(jobData.commandId, item, 'deleteImage');
+      jobLogger.addJob(job);
+    });
+
+    return jobPromise;
+
+  };
+
 }

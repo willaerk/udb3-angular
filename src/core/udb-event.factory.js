@@ -91,6 +91,7 @@ function UdbEventFactory() {
       this.calendarType = jsonEvent.calendarType || '';
       this.startDate = jsonEvent.startDate;
       this.endDate = jsonEvent.endDate;
+      this.mediaObject = jsonEvent.mediaObject || [];
       this.url = '/event/' + this.id;
       this.sameAs = jsonEvent.sameAs;
       if (jsonEvent.typicalAgeRange) {

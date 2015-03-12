@@ -2399,7 +2399,7 @@ angular
   .service('udbApi', UdbApi);
 
 /* @ngInject */
-function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth, $cacheFactory, UdbEvent, UdbOrganizer) {
+function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth, $cacheFactory, UdbEvent, UdbPlace, UdbOrganizer) {
   var apiUrl = appConfig.baseApiUrl;
   var defaultApiConfig = {
         withCredentials: true,
@@ -2477,12 +2477,6 @@ function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth, $cacheFa
         deferredEvent.resolve(event);
       });
 
-      eventRequest.success(function(jsonEvent) {
-        var event = new UdbEvent(jsonEvent);
-        eventCache.put(eventId, event);
-        deferredEvent.resolve(event);
-      });
-
       eventRequest.error(function () {
         deferredEvent.reject();
       });
@@ -2494,6 +2488,37 @@ function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth, $cacheFa
   this.getEventByLDId = function (eventLDId) {
     var eventId = eventLDId.split('/').pop();
     return this.getEventById(eventId);
+  };
+
+  this.getPlaceById = function(placeId) {
+    var deferredEvent = $q.defer();
+
+    var place = eventCache.get(placeId);
+
+    if (place) {
+      deferredEvent.resolve(place);
+    } else {
+      var placeRequest  = $http.get(
+        appConfig.baseApiUrl + 'place/' + placeId,
+        {
+          headers: {
+            'Accept': 'application/ld+json'
+          }
+        });
+
+      placeRequest.success(function(jsonPlace) {
+        var place = new UdbPlace();
+        place.parseJson(jsonPlace);
+        eventCache.put(placeId, place);
+        deferredEvent.resolve(place);
+      });
+
+      placeRequest.error(function () {
+        deferredEvent.reject();
+      });
+    }
+
+    return deferredEvent.promise;
   };
 
   this.getOrganizerByLDId = function(organizerLDId) {
@@ -2800,7 +2825,7 @@ function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth, $cacheFa
   };
 
 }
-UdbApi.$inject = ["$q", "$http", "$upload", "appConfig", "$cookieStore", "uitidAuth", "$cacheFactory", "UdbEvent", "UdbOrganizer"];
+UdbApi.$inject = ["$q", "$http", "$upload", "appConfig", "$cookieStore", "uitidAuth", "$cacheFactory", "UdbEvent", "UdbPlace", "UdbOrganizer"];
 
 // Source: src/core/udb-event.factory.js
 /**
@@ -2894,6 +2919,7 @@ function UdbEventFactory() {
       this.calendarType = jsonEvent.calendarType || '';
       this.startDate = jsonEvent.startDate;
       this.endDate = jsonEvent.endDate;
+      this.mediaObject = jsonEvent.mediaObject || [];
       this.url = '/event/' + this.id;
       this.sameAs = jsonEvent.sameAs;
       if (jsonEvent.typicalAgeRange) {
@@ -5546,6 +5572,54 @@ function EventFormOpeningHoursDirective() {
   EventFormPlaceModalController.$inject = ["$scope", "$modalInstance", "eventCrud", "UdbPlace", "location", "categories"];
 
 })();
+// Source: src/event_form/event-form.controller.js
+(function () {
+/**
+   * @ngdoc function
+   * @name udbApp.controller:EventFormCtrl
+   * @description
+   * # EventFormCtrl
+   * Init the event form
+   */
+  angular
+    .module('udb.event-form')
+    .controller('EventFormCtrl', EventFormController);
+
+  /* @ngInject */
+  function EventFormController($scope, EventFormData, udbApi) {
+
+    $scope.loaded = false;
+
+    // Fill the event form data if an event is beïng edited.
+    var eventForm = angular.element('#event-form');
+    var id = eventForm.data('id');
+    if (id) {
+
+      var type = eventForm.data('type');
+      if (type === 'event') {
+        udbApi.getEventById(id).then(function(event) {
+          EventFormData.id = event['@id'];
+          EventFormData.mediaObject = event.mediaObject;
+          EventFormData.name = event.name;
+        console.log('loaded');
+        $scope.loaded = true;
+        });
+
+      }
+      else {
+        var place = udbApi.getPlaceById();
+      }
+
+    }
+    else {
+      $scope.loaded = true;
+    }
+
+  }
+  EventFormController.$inject = ["$scope", "EventFormData", "udbApi"];
+
+})();
+
 // Source: src/event_form/event-form.data.js
 /**
  * @ngdoc service
@@ -7010,9 +7084,9 @@ EventFormFacilities.$inject = ["$q", "$http", "$cacheFactory", "appConfig"];
     $scope.facilitiesCssClass = 'state-incomplete';
     $scope.facilitiesInapplicable = false;
     $scope.selectedFacilities = EventFormData.facilities;
-
+console.log(EventFormData.mediaObject.length);
     // Image upload vars.
-    $scope.imageCssClass = 'state-incomplete';
+    $scope.imageCssClass = EventFormData.mediaObject.length > 0 ? 'state-complete' : 'state-incomplete';
 
     // Scope functions.
     // Description functions.
@@ -11506,7 +11580,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "            <div ng-repeat=\"(key, mediaObject) in eventFormData.mediaObject\" class=\"uploaded-image\">\n" +
     "              <div class=\"media\">\n" +
     "                <a class=\"media-left\" href=\"#\">\n" +
-    "                  <img src=\"{{mediaObject.thumbnailUrl}}\">\n" +
+    "                  <img src=\"{{ mediaObject.thumbnailUrl }}\">\n" +
     "                </a>\n" +
     "                <div class=\"media-body\">\n" +
     "                  <p>{{ mediaObject.description }} <small ng-bind=\"mediaObject.copyrightHolder\">Copyright</small></p>\n" +
@@ -11525,7 +11599,8 @@ $templateCache.put('templates/time-autocomplete.html',
     "\n" +
     "    </div>\n" +
     "\n" +
-    "  </section>"
+    "  </section>\n" +
+    "</div>"
   );
 
 

@@ -398,7 +398,7 @@
             <div ng-repeat="(key, mediaObject) in eventFormData.mediaObject" class="uploaded-image">
               <div class="media">
                 <a class="media-left" href="#">
-                  <img src="{{mediaObject.thumbnailUrl}}">
+                  <img src="{{ mediaObject.thumbnailUrl }}">
                 </a>
                 <div class="media-body">
                   <p>{{ mediaObject.description }} <small ng-bind="mediaObject.copyrightHolder">Copyright</small></p>
@@ -418,3 +418,4 @@
     </div>
 
   </section>
+</div>

@@ -12,7 +12,7 @@ angular
   .service('udbApi', UdbApi);
 
 /* @ngInject */
-function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth, $cacheFactory, UdbEvent, UdbOrganizer) {
+function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth, $cacheFactory, UdbEvent, UdbPlace, UdbOrganizer) {
   var apiUrl = appConfig.baseApiUrl;
   var defaultApiConfig = {
         withCredentials: true,
@@ -90,12 +90,6 @@ function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth, $cacheFa
         deferredEvent.resolve(event);
       });
 
-      eventRequest.success(function(jsonEvent) {
-        var event = new UdbEvent(jsonEvent);
-        eventCache.put(eventId, event);
-        deferredEvent.resolve(event);
-      });
-
       eventRequest.error(function () {
         deferredEvent.reject();
       });
@@ -107,6 +101,37 @@ function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth, $cacheFa
   this.getEventByLDId = function (eventLDId) {
     var eventId = eventLDId.split('/').pop();
     return this.getEventById(eventId);
+  };
+
+  this.getPlaceById = function(placeId) {
+    var deferredEvent = $q.defer();
+
+    var place = eventCache.get(placeId);
+
+    if (place) {
+      deferredEvent.resolve(place);
+    } else {
+      var placeRequest  = $http.get(
+        appConfig.baseApiUrl + 'place/' + placeId,
+        {
+          headers: {
+            'Accept': 'application/ld+json'
+          }
+        });
+
+      placeRequest.success(function(jsonPlace) {
+        var place = new UdbPlace();
+        place.parseJson(jsonPlace);
+        eventCache.put(placeId, place);
+        deferredEvent.resolve(place);
+      });
+
+      placeRequest.error(function () {
+        deferredEvent.reject();
+      });
+    }
+
+    return deferredEvent.promise;
   };
 
   this.getOrganizerByLDId = function(organizerLDId) {

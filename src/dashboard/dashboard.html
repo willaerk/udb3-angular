@@ -25,7 +25,7 @@
 
       <table class="table ">
 
-        <tr ng-repeat="userContentItem in userContent">
+        <tr ng-repeat="userContentItem in userContent | orderBy:'recorded_on':true">
           <td>
             <strong><a href="http://www.google.be">{{userContentItem.title}}</a></strong><br/>
             <small><ng-switch on="userContentItem.details.payload.calendar.type">

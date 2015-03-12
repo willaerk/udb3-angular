@@ -2487,6 +2487,7 @@ function UdbApi($q, $http, appConfig, $cookieStore, uitidAuth, $cacheFactory, Ud
       });
     }
 
+    return deferredEvent.promise;
   };
 
   this.getEventByLDId = function (eventLDId) {
@@ -2540,19 +2541,11 @@ function UdbApi($q, $http, appConfig, $cookieStore, uitidAuth, $cacheFactory, Ud
     eventHistoryRequest.success(function(eventHistory) {
       eventHistoryLoaded.resolve(eventHistory);
     });
-<<<<<<< HEAD
 
     eventHistoryRequest.error(function () {
       eventHistoryLoaded.reject();
     });
 
-=======
-
-    eventHistoryRequest.error(function () {
-      eventHistoryLoaded.reject();
-    });
-
->>>>>>> de3a213b2ad8d0070cba97c887237b5642223633
     return eventHistoryLoaded.promise;
   };
 
@@ -3359,7 +3352,7 @@ function Udb3Content($q, $http, appConfig) {
    */
 
   this.getNoOmdEventsMessage = function() {
-
+    
     return $http.get(appConfig.udb3BaseUrl + '/omd/no_omd_events_message');
 
   };
@@ -3436,6 +3429,7 @@ UitidAuth.$inject = ["$window", "$location", "$http", "appConfig", "$cookieStore
   function DashboardController($scope, udb3Content) {
 
     // Scope variables.
+    $scope.userContent = null;
     $scope.noContent = true;
     $scope.noOmdEvents = true;
 
@@ -3455,8 +3449,8 @@ UitidAuth.$inject = ["$window", "$location", "$http", "appConfig", "$cookieStore
       var promise = udb3Content.getUdb3ContentForCurrentUser();
       return promise.then(function (content) {
 
-        // Add data to scope.
-        $scope.userContent = content.data.content;
+        // Add data to scope and convert to array to allow ordering in ng-repeat.
+        $scope.userContent = Object.keys(content.data.content).map(function(key) { return content.data.content[key]; });
 
         if ($scope.userContent.length) {
 
@@ -3483,7 +3477,6 @@ UitidAuth.$inject = ["$window", "$location", "$http", "appConfig", "$cookieStore
           // set boolean is user has no content.
           $scope.noContent = true;
         }
-
       });
     }
 
@@ -4106,21 +4099,12 @@ function JobLogger(udbSocket, JobStates, EventExportJob) {
 
   this.getFailedJobs = function () {
     return failedJobs;
-<<<<<<< HEAD
   };
 
   this.getFinishedExportJobs = function () {
     return finishedExportJobs;
   };
 
-=======
-  };
-
-  this.getFinishedExportJobs = function () {
-    return finishedExportJobs;
-  };
-
->>>>>>> de3a213b2ad8d0070cba97c887237b5642223633
   this.hideJob = hideJob;
 }
 JobLogger.$inject = ["udbSocket", "JobStates", "EventExportJob"];
@@ -7022,57 +7006,12 @@ EventFormFacilities.$inject = ["$q", "$http", "$cacheFactory", "appConfig"];
      */
     function saveContactInfo() {
 
-<<<<<<< HEAD
-  /**
-   * @class EventExportJob
-   * @constructor
-   * @param commandId
-   */
-  var EventExportJob = function (commandId, eventCount, format) {
-    BaseJob.call(this, commandId);
-    this.exportUrl = '';
-    this.eventCount = eventCount;
-    this.format = format;
-  };
-=======
       $scope.savingContactInfo = true;
       $scope.contactInfoError = false;
->>>>>>> de3a213b2ad8d0070cba97c887237b5642223633
 
       // Only save with valid input.
       if ($scope.contactInfoForm.$valid) {
 
-<<<<<<< HEAD
-  EventExportJob.prototype.getTemplateName = function () {
-    var templateName;
-
-    switch (this.state) {
-      case JobStates.FINISHED:
-        templateName = 'export-job';
-        break;
-      case JobStates.FAILED:
-        templateName = 'failed-job';
-        break;
-      default:
-        templateName = 'base-job';
-    }
-
-    return templateName;
-  };
-
-  EventExportJob.prototype.getDescription = function() {
-    var description = '';
-
-    if(this.state === JobStates.FAILED) {
-      description = 'Exporteren van evenementen mislukt';
-    } else {
-      var exportExtension = this.exportUrl.split('.').pop();
-      description = 'Document .' + exportExtension + ' met ' + this.eventCount + ' evenementen';
-    }
-
-    return description;
-  };
-=======
       EventFormData.resetContactPoint();
 
         // Copy all data to the correct contactpoint property.
@@ -7087,7 +7026,6 @@ EventFormFacilities.$inject = ["$q", "$http", "$cacheFactory", "appConfig"];
             EventFormData.contactPoint.email.push($scope.contactInfo.value);
           }
         }
->>>>>>> de3a213b2ad8d0070cba97c887237b5642223633
 
         var promise = eventCrud.updateContactPoint(EventFormData);
         promise.then(function() {
@@ -7569,7 +7507,7 @@ function EventExportController($modalInstance, udbApi, eventExporter, queryField
 
   exporter.format = exporter.exportFormats[0].type;
   exporter.email = '';
-
+  
   udbApi.getMe().then(function (user) {
     if(user.mbox) {
       exporter.email = user.mbox;
@@ -9720,7 +9658,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "\n" +
     "      <table class=\"table \">\n" +
     "\n" +
-    "        <tr ng-repeat=\"userContentItem in userContent\">\n" +
+    "        <tr ng-repeat=\"userContentItem in userContent | orderBy:'recorded_on':true\">\n" +
     "          <td>\n" +
     "            <strong><a href=\"http://www.google.be\">{{userContentItem.title}}</a></strong><br/>\n" +
     "            <small><ng-switch on=\"userContentItem.details.payload.calendar.type\">\n" +
@@ -9849,141 +9787,6 @@ $templateCache.put('templates/time-autocomplete.html',
     "  <button class=\"btn btn-primary\" ng-click=\"ok()\">label</button>\n" +
     "  <button class=\"btn btn-warning\" ng-click=\"close()\">annuleren</button>\n" +
     "</div>"
-  );
-
-
-  $templateCache.put('templates/event-detail.html',
-    "<div ng-if=\"eventIdIsInvalid\">\n" +
-    "  <div class=\"page-header\">\n" +
-    "    <h1>Pagina niet gevonden</h1>\n" +
-    "  </div>\n" +
-    "\n" +
-    "  <div class=\"row\">\n" +
-    "    <div class=\"col-xs-12\">\n" +
-    "      <p>Deze pagina kon niet gevonden worden.</p>\n" +
-    "    </div>\n" +
-    "  </div>\n" +
-    "</div>\n" +
-    "\n" +
-    "<div ng-if=\"event\">\n" +
-    "  <div class=\"page-header\">\n" +
-    "    <h1>{{event.name}}</h1>\n" +
-    "  </div>\n" +
-    "\n" +
-    "  <div class=\"row\">\n" +
-    "    <div class=\"col-xs-3\">\n" +
-    "      <ul class=\"nav nav-pills nav-stacked\">\n" +
-    "        <li ng-repeat=\"tab in tabs\" class=\"{{classForTab(tab)}}\" role=\"tab\">\n" +
-    "          <a href=\"#{{tab.id}}\" role=\"tab\" ng-bind=\"tab.header\"></a>\n" +
-    "        </li>\n" +
-    "      </ul>\n" +
-    "    </div>\n" +
-    "\n" +
-    "    <div class=\"col-xs-9\">\n" +
-    "      <div class=\"tab-pane\" role=\"tabpanel\" ng-show=\"isTabActive('data')\">\n" +
-    "        <div class=\"panel panel-default\">\n" +
-    "          <table class=\"table\">\n" +
-    "            <colgroup>\n" +
-    "              <col style=\"width:20%\"/>\n" +
-    "              <col style=\"width:80%\"/>\n" +
-    "            </colgroup>\n" +
-    "            <tbody>\n" +
-    "            <tr>\n" +
-    "              <td><strong>Titel</strong></td>\n" +
-    "              <td>{{event.name}}</td>\n" +
-    "            </tr>\n" +
-    "            <tr>\n" +
-    "              <td><strong>Type</strong></td>\n" +
-    "              <td>{{event.type}}</td>\n" +
-    "            </tr>\n" +
-    "            <tr>\n" +
-    "              <td><strong>Beschrijving</strong></td>\n" +
-    "              <td ng-bind-html=\"event.description\"></td>\n" +
-    "            </tr>\n" +
-    "            <tr>\n" +
-    "              <td><strong>Waar</strong></td>\n" +
-    "              <td>{{eventLocation(event)}}</td>\n" +
-    "            </tr>\n" +
-    "            <tr>\n" +
-    "              <td><strong>Wanneer</strong></td>\n" +
-    "              <td>{{event.calendarSummary}}</td>\n" +
-    "            </tr>\n" +
-    "            <tr ng-class=\"{muted: !event.organizer}\">\n" +
-    "              <td><strong>Organisator</strong></td>\n" +
-    "              <td>{{event.organizer.name}}</td>\n" +
-    "            </tr>\n" +
-    "            <!--<tr>\n" +
-    "              <td><strong>Prijs</strong></td>\n" +
-    "              <td></td>\n" +
-    "            </tr>-->\n" +
-    "            <tr ng-class=\"{muted: !event.typicalAgeRange}\">\n" +
-    "              <td><strong>Geschikt voor</strong></td>\n" +
-    "              <td>\n" +
-    "                <span ng-if=\"event.typicalAgeRange\">{{event.typicalAgeRange}}</span>\n" +
-    "                <span ng-if=\"!event.typicalAgeRange\">Geen leeftijdsinformatie</span>\n" +
-    "              </td>\n" +
-    "            </tr>\n" +
-    "            <tr ng-class=\"{muted: !event.image}\">\n" +
-    "              <td><strong>Afbeelding</strong></td>\n" +
-    "              <td>\n" +
-    "                <img ng-if=\"event.image\" src=\"{{event.image}}?maxwidth=400&maxheight=300\"/>\n" +
-    "                <span ng-if=\"!event.image\">Geen afbeelding</span>\n" +
-    "              </td>\n" +
-    "            </tr>\n" +
-    "            </tbody>\n" +
-    "          </table>\n" +
-    "        </div>\n" +
-    "      </div>\n" +
-    "\n" +
-    "      <div role=\"tabpanel\" class=\"tab-pane\" ng-show=\"isTabActive('history')\">\n" +
-    "        <div class=\"timeline\">\n" +
-    "          <dl ng-repeat=\"eventAction in eventHistory\">\n" +
-    "            <dt ng-bind=\"eventAction.date | date:'dd/MM/yyyy H:mm'\"></dt>\n" +
-    "            <dd>\n" +
-    "                <span class=\"author\" ng-if=\"eventAction.author\">{{eventAction.author}}</span><br ng-if=\"eventAction.author\"/>\n" +
-    "                <span class=\"description\">{{eventAction.description}}</span>\n" +
-    "            </dd>\n" +
-    "          </dl>\n" +
-    "        </div>\n" +
-    "      </div>\n" +
-    "\n" +
-    "      <div class=\"tab-pane\" role=\"tabpanel\" ng-show=\"isTabActive('publication')\">\n" +
-    "        <div class=\"panel panel-default\">\n" +
-    "          <table class=\"table\">\n" +
-    "            <colgroup>\n" +
-    "              <col style=\"width:20%\"/>\n" +
-    "              <col style=\"width:80%\"/>\n" +
-    "            </colgroup>\n" +
-    "            <tbody>\n" +
-    "            <tr ng-class=\"{muted: !event.available}\">\n" +
-    "              <td><strong>Publicatiedatum</strong></td>\n" +
-    "              <td>\n" +
-    "                <span ng-if=\"event.available\"\n" +
-    "                      ng-bind=\"event.available | date: 'dd/MM/yyyy'\">\n" +
-    "                </span>\n" +
-    "                <span ng-if=\"!event.available\">\n" +
-    "                    Geen publicatiedatum\n" +
-    "                </span>\n" +
-    "              </td>\n" +
-    "            </tr>\n" +
-    "            <tr>\n" +
-    "              <td><strong>ID</strong></td>\n" +
-    "              <td>\n" +
-    "                <ul>\n" +
-    "                  <li ng-repeat=\"id in eventIds(event)\" ng-switch=\"isUrl(id)\">\n" +
-    "                    <a ng-switch-when=\"true\" ng-href=\"{{id}}\" ng-bind=\"id\"></a>\n" +
-    "                    <span ng-switch-when=\"false\" ng-bind=\"id\"></span>\n" +
-    "                  </li>\n" +
-    "                </ul>\n" +
-    "              </td>\n" +
-    "            </tr>\n" +
-    "            </tbody>\n" +
-    "          </table>\n" +
-    "        </div>\n" +
-    "      </div>\n" +
-    "    </div>\n" +
-    "  </div>\n" +
-    "</div>\n"
   );
 
 

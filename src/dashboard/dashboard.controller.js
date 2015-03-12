@@ -16,6 +16,7 @@
   function DashboardController($scope, udb3Content) {
 
     // Scope variables.
+    $scope.userContent = null;
     $scope.noContent = true;
     $scope.noOmdEvents = true;
 
@@ -35,8 +36,8 @@
       var promise = udb3Content.getUdb3ContentForCurrentUser();
       return promise.then(function (content) {
 
-        // Add data to scope.
-        $scope.userContent = content.data.content;
+        // Add data to scope and convert to array to allow ordering in ng-repeat.
+        $scope.userContent = Object.keys(content.data.content).map(function(key) { return content.data.content[key]; });
 
         if ($scope.userContent.length) {
 
@@ -63,7 +64,6 @@
           // set boolean is user has no content.
           $scope.noContent = true;
         }
-
       });
     }
 

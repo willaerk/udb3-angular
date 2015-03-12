@@ -32,14 +32,14 @@ function EventTagJobFactory(BaseJob, JobStates) {
   EventTagJob.prototype = Object.create(BaseJob.prototype);
   EventTagJob.prototype.constructor = EventTagJob;
 
-  EventTagJob.prototype.getDescription = function() {
+  EventTagJob.prototype.getDescription = function () {
     var job = this,
         description;
 
-    if(job.state === JobStates.FAILED) {
+    if (job.state === JobStates.FAILED) {
       description = 'Labelen van evenement mislukt';
     } else {
-      if(job.untag) {
+      if (job.untag) {
         description = 'Verwijder label "' + job.label + '" van "' + job.event.name.nl + '"';
       } else {
         description = 'Label "' + job.event.name.nl + '" met "' + job.label + '"';

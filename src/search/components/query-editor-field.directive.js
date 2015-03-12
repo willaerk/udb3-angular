@@ -17,10 +17,10 @@ function udbQueryEditorField() {
     restrict: 'E',
     link: function postLink(scope, element, attrs) {
 
-      function getParentGroup () {
+      function getParentGroup() {
         var parentGroup;
 
-        if(isSubGroup()) {
+        if (isSubGroup()) {
           parentGroup = scope.$parent.field;
         } else {
           parentGroup = scope.rootGroup;
@@ -31,7 +31,7 @@ function udbQueryEditorField() {
 
       function getOperatorClass() {
         var operatorClass;
-        if(isSubGroup() && scope.$index === 0) {
+        if (isSubGroup() && scope.$index === 0) {
           operatorClass = 'AND';
         } else {
           operatorClass = scope.$index ? 'OR' : 'FIRST';
@@ -60,12 +60,12 @@ function udbQueryEditorField() {
 
       scope.addSubGroup = function (index) {
         var rootGroup = scope.rootGroup,
-          treeGroupId = _.uniqueId(),
+            treeGroupId = _.uniqueId(),
             group = getParentGroup();
 
         group.treeGroupId = treeGroupId;
 
-        if(isSubGroup()) {
+        if (isSubGroup()) {
           index = _.findIndex(rootGroup.nodes, function (group) {
             return group.treeGroupId === treeGroupId;
           });

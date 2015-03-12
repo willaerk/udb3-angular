@@ -333,4 +333,3 @@ angular.module('udb.core')
     }
   }
 );
-

@@ -23,36 +23,36 @@ function JobLogger(udbSocket, JobStates, EventExportJob) {
 
   /**
    * Finds a job  by id
-   * @param jobId
+   * @param {string}  jobId
    * @returns {BaseJob|undefined}
    */
-  function findJob (jobId) {
-    return _.find(jobs, { id: jobId});
+  function findJob(jobId) {
+    return _.find(jobs, {id: jobId});
   }
 
-  function jobStarted (data) {
+  function jobStarted(data) {
     var job = findJob(data['job_id']);
 
-    if(job) {
+    if (job) {
       job.start(data);
       console.log('job with id: ' + job.id + ' started');
       updateJobLists();
     }
   }
 
-  function jobInfo (data) {
+  function jobInfo(data) {
     var job = findJob(data['job_id']);
 
-    if(job) {
+    if (job) {
       job.info(data);
       console.log('job with id: ' + job.id + ' received some info.');
     }
   }
 
-  function jobFinished (data) {
+  function jobFinished(data) {
     var job = findJob(data['job_id']);
 
-    if(job) {
+    if (job) {
       job.finish(data);
       console.log('job with id: ' + job.id + ' finished');
       updateJobLists();
@@ -62,26 +62,26 @@ function JobLogger(udbSocket, JobStates, EventExportJob) {
   function jobFailed(data) {
     var job = findJob(data['job_id']);
 
-    if(job) {
+    if (job) {
       job.fail(data);
       console.log('job with id: ' + job.id + ' failed');
       updateJobLists();
     }
   }
 
-  function taskFinished (data) {
+  function taskFinished(data) {
     var job = findJob(data['job_id']);
 
-    if(job) {
+    if (job) {
       job.finishTask(data);
       console.log('Task of job with id: ' + job.id + ' finished.');
     }
   }
 
-  function taskFailed (data) {
+  function taskFailed(data) {
     var job = findJob(data['job_id']);
 
-    if(job) {
+    if (job) {
       job.failTask(data);
       console.log('Task of job with id: ' + job.id + ' failed. Error message: ' + data.error);
     }
@@ -93,7 +93,7 @@ function JobLogger(udbSocket, JobStates, EventExportJob) {
         activeJobs = _.filter(visibleJobs, {state: JobStates.STARTED});
 
     failedJobs = _.filter(visibleJobs, {state: JobStates.FAILED});
-    finishedExportJobs = _.filter(visibleJobs, function(job) {
+    finishedExportJobs = _.filter(visibleJobs, function (job) {
       return job instanceof EventExportJob && job.state === JobStates.FINISHED;
     });
     queuedJobs = activeJobs.concat(newJobs);

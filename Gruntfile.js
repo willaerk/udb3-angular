@@ -374,6 +374,7 @@ module.exports = function (grunt) {
         'src/**/*.js',
         '!src/**/*.spec.js',
         '!src/**/*.module.js',
+        '!src/**/*.value.js',
         '!src/search/parsers/udb-query-parser.service.js'
       ],
       options: {

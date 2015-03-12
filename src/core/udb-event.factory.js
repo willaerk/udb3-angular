@@ -51,7 +51,7 @@ function UdbEventFactory() {
   /**
    * @class UdbEvent
    * @constructor
-   * @param jsonEvent
+   * @param {object}  jsonEvent
    */
   var UdbEvent = function (jsonEvent) {
     this.parseJson(jsonEvent);

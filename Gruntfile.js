@@ -367,6 +367,18 @@ module.exports = function (grunt) {
           }
         }
       }
+    },
+
+    jscs: {
+      src: [
+        'src/**/*.js',
+        '!src/**/*.spec.js',
+        '!src/**/*.module.js',
+        '!src/search/parsers/udb-query-parser.service.js'
+      ],
+      options: {
+        config: 'jscs.json'
+      }
     }
   });
 
@@ -375,6 +387,7 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-peg');
   grunt.loadNpmTasks('grunt-curl');
   grunt.loadNpmTasks('grunt-angular-templates');
+  grunt.loadNpmTasks("grunt-jscs");
 
   grunt.registerTask('test', [
     'clean:server',

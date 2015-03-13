@@ -3911,7 +3911,6 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
    */
   this.updateImage = function(item, indexToUpdate, image, description, copyrightHolder) {
 
-console.log(image);
     var jobPromise = udbApi.updateImage(item.id, item.getType(), indexToUpdate, image, description, copyrightHolder);
 
     jobPromise.success(function (jobData) {

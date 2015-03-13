@@ -22,7 +22,6 @@
     $scope.showValidation = false;
     $scope.organizers = [];
 
-
     $scope.newOrganizer = {
       name : '',
       address : {

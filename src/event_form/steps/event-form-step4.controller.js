@@ -54,7 +54,9 @@
       if (EventFormData.calendarType === 'single' && EventFormData.timestamps[0].date === '') {
         $scope.infoMissing = true;
       }
-      else if (EventFormData.calendarType === 'periodic' && (EventFormData.startDate === '' || EventFormData.endDate === '')) {
+      else if (EventFormData.calendarType === 'periodic' &&
+        (EventFormData.startDate === '' || EventFormData.endDate === '')
+      ) {
         $scope.infoMissing = true;
       }
 
@@ -89,10 +91,10 @@
       var location = EventFormData.getLocation();
 
       if (EventFormData.isEvent) {
-        params = { locationCdbId : location.id };
+        params = {locationCdbId : location.id};
       }
       else {
-        params = { locationZip : location.address.postalCode };
+        params = {locationZip : location.address.postalCode};
       }
 
       // Load the candidate duplicates asynchronously.

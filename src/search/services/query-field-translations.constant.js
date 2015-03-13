@@ -36,7 +36,7 @@ angular
       'TITLE' : 'titel',
       'KEYWORDS' : 'label',
       'CITY' : 'gemeente',
-      'ORGANISER_KEYWORDS': 'organisatie-tag',
+      'ORGANISER_KEYWORDS': 'organisatie-label',
       'ZIPCODE' : 'postcode',
       'COUNTRY' : 'land',
       'PHYSICAL_GIS' : 'geo',

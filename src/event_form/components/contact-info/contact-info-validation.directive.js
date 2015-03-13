@@ -7,7 +7,7 @@
  * @description
  * # directive for contact info validation
  */
-angular
+  angular
   .module('udb.core')
   .directive('udbContactInfoValidation', UdbContactInfoValidationDirective);
 

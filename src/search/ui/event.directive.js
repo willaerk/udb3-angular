@@ -11,7 +11,7 @@ angular
   .directive('udbEvent', udbEvent);
 
 /* @ngInject */
-function udbEvent(udbApi, jsonLDLangFilter, eventTranslator, eventTagger) {
+function udbEvent(udbApi, jsonLDLangFilter, eventTranslator, eventLabeller) {
   var event = {
     restrict: 'A',
     link: function postLink(scope, iElement, iAttrs) {
@@ -24,11 +24,11 @@ function udbEvent(udbApi, jsonLDLangFilter, eventTranslator, eventTagger) {
 
       function updateTranslationState(event) {
         var languages = {'en': false, 'fr': false, 'de': false},
-          properties = ['name', 'description'];
+            properties = ['name', 'description'];
 
         _.forEach(languages, function (language, languageKey) {
           var translationCount = 0,
-            state;
+              state;
 
           _.forEach(properties, function (property) {
             if (event[property] && event[property][languageKey]) {
@@ -77,7 +77,7 @@ function udbEvent(udbApi, jsonLDLangFilter, eventTranslator, eventTagger) {
         {'lang': 'en'},
         {'lang': 'de'}
       ];
-      scope.availableLabels = eventTagger.recentLabels;
+      scope.availableLabels = eventLabeller.recentLabels;
 
       // The event object that's returned from the server
       var event;
@@ -89,7 +89,7 @@ function udbEvent(udbApi, jsonLDLangFilter, eventTranslator, eventTagger) {
         eventPromise.then(function (eventObject) {
           event = eventObject;
           updateTranslationState(event);
-          scope.availableLabels = _.union(event.labels, eventTagger.recentLabels);
+          scope.availableLabels = _.union(event.labels, eventLabeller.recentLabels);
           scope.event = jsonLDLangFilter(event, 'nl');
           scope.fetching = false;
         });
@@ -101,7 +101,7 @@ function udbEvent(udbApi, jsonLDLangFilter, eventTranslator, eventTagger) {
       /**
        * Sets the provided language as active or toggles it off when already active
        *
-       * @param lang
+       * @param {String} lang
        */
       function toggleLanguage(lang) {
 
@@ -118,14 +118,14 @@ function udbEvent(udbApi, jsonLDLangFilter, eventTranslator, eventTagger) {
 
       scope.hasPropertyChanged = function (propertyName) {
         var lang = scope.activeLanguage,
-          translation = scope.eventTranslation;
+            translation = scope.eventTranslation;
 
         return scope.eventTranslation && event[propertyName][lang] !== translation[propertyName];
       };
 
       scope.undoPropertyChanges = function (propertyName) {
         var lang = scope.activeLanguage,
-          translation = scope.eventTranslation;
+            translation = scope.eventTranslation;
 
         if (translation) {
           translation[propertyName] = event[propertyName][lang];
@@ -134,7 +134,7 @@ function udbEvent(udbApi, jsonLDLangFilter, eventTranslator, eventTagger) {
 
       scope.applyPropertyChanges = function (propertyName) {
         var translation = scope.eventTranslation[propertyName],
-          apiProperty;
+            apiProperty;
 
         // TODO: this is hacky, should decide on consistent name for this property
         if (propertyName === 'name') {
@@ -151,7 +151,7 @@ function udbEvent(udbApi, jsonLDLangFilter, eventTranslator, eventTagger) {
 
       function translateEventProperty(property, translation, apiProperty) {
         var language = scope.activeLanguage,
-          udbProperty = apiProperty || property;
+            udbProperty = apiProperty || property;
 
         if (translation && translation !== event[property][language]) {
           var translationPromise = eventTranslator.translateProperty(event, udbProperty, language, translation);
@@ -163,11 +163,11 @@ function udbEvent(udbApi, jsonLDLangFilter, eventTranslator, eventTagger) {
       }
 
       scope.labelAdded = function (label) {
-        eventTagger.tag(event, label);
+        eventLabeller.label(event, label);
       };
 
       scope.labelRemoved = function (label) {
-        eventTagger.untag(event, label);
+        eventLabeller.unlabel(event, label);
       };
     }
   };

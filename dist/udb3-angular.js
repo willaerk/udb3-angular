@@ -1865,12 +1865,12 @@ CityAutocomplete.$inject = ["$q", "$http", "appConfig"];
 // Source: src/core/components/datepicker/datepicker.directive.js
 (function () {
 /**
- * @ngdoc directive
- * @name udb.core.directive:udbDatepicker
- * @description
- * # directive for datepicker integration
- */
-angular
+   * @ngdoc directive
+   * @name udb.core.directive:udbDatepicker
+   * @description
+   * # directive for datepicker integration
+   */
+  angular
   .module('udb.core')
   .directive('udbDatepicker', udbDatepickerDirective);
 
@@ -1902,15 +1902,16 @@ angular
   }
 
 })();
+
 // Source: src/core/components/multiselect/multiselect.directive.js
 (function () {
 /**
- * @ngdoc directive
- * @name udb.core.directive:udbMultiselect
- * @description
- * # directive for bootstrap-multiselect integration
- */
-angular
+   * @ngdoc directive
+   * @name udb.core.directive:udbMultiselect
+   * @description
+   * # directive for bootstrap-multiselect integration
+   */
+  angular
   .module('udb.core')
   .directive('udbMultiselect', udbMultiselectDirective);
 
@@ -1926,7 +1927,7 @@ angular
             if (options.length > 0) {
               var labels = [];
               options.each(function() {
-                labels.push(angular.element(this).html().substring(0,2));
+                labels.push(angular.element(this).html().substring(0, 2));
               });
               return labels.join(', ') + ' ';
             }
@@ -1941,15 +1942,16 @@ angular
   }
 
 })();
+
 // Source: src/core/components/time-autocomplete/time-autocomplete.js
 (function () {
 /**
- * @ngdoc directive
- * @name udb.core.directive:udbMultiselect
- * @description
- * # directive for bootstrap-multiselect integration
- */
-angular
+   * @ngdoc directive
+   * @name udb.core.directive:udbMultiselect
+   * @description
+   * # directive for bootstrap-multiselect integration
+   */
+  angular
   .module('udb.core')
   .directive('udbTimeAutocomplete', udbTimeAutocompleteDirective);
 
@@ -1975,25 +1977,24 @@ angular
      */
     function generateTimes() {
 
-      var startMinute = 60;
       var increment = 15;
       var date = new Date(2015, 1, 1, 0, 0);
       var options = [];
       var hourLen = 60;
       var hours = 24;
 
-      for(var i = 0, loopInt = hours * (hourLen/increment); i < loopInt; i++){
+      for (var i = 0, loopInt = hours * (hourLen / increment); i < loopInt; i++) {
 
         date.setMinutes(date.getMinutes() + increment);
         var h = date.getHours();
         var m = date.getMinutes();
 
-        if(('' + h).length === 1){
-            h = '0' + h;
+        if (('' + h).length === 1) {
+          h = '0' + h;
         }
 
-        if(('' + m).length === 1){
-            m = '0' + m;
+        if (('' + m).length === 1) {
+          m = '0' + m;
         }
 
         var label = h + ':' + m;
@@ -2004,10 +2005,10 @@ angular
 
     }
 
-
   }
 
 })();
+
 // Source: src/core/dutch-translations.constant.js
 /**
  * @ngdoc service
@@ -2312,7 +2313,7 @@ angular.module('udb.core')
     property: {
       'name': 'Naam',
       'description': 'Beschrijving',
-      'keywords': 'Labels',
+      'labels': 'Labels',
       'calendarSummary': 'Kalendersamenvatting',
       'image': 'Afbeelding',
       'location': 'Locatie',
@@ -2342,7 +2343,6 @@ angular.module('udb.core')
     }
   }
 );
-
 
 // Source: src/core/event-types.service.js
 /**
@@ -2399,14 +2399,15 @@ angular
   .service('udbApi', UdbApi);
 
 /* @ngInject */
-function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth, $cacheFactory, UdbEvent, UdbPlace, UdbOrganizer) {
+function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth,
+  $cacheFactory, UdbEvent, UdbPlace, UdbOrganizer) {
   var apiUrl = appConfig.baseApiUrl;
   var defaultApiConfig = {
-        withCredentials: true,
-        headers: {
-          'Content-Type': 'application/json'
-        },
-      };
+    withCredentials: true,
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  };
   var eventCache = $cacheFactory('eventCache');
 
   this.mainLanguage = 'nl';
@@ -2426,7 +2427,7 @@ function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth, $cacheFa
           start: offset
         };
 
-    if(queryString.length) {
+    if (queryString.length) {
       searchParams.query = queryString;
     }
     if (conditions !== undefined) {
@@ -2444,35 +2445,34 @@ function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth, $cacheFa
     });
 
     request
-    .success(function (data) {
-      deferredEvents.resolve(data);
-    })
-    .error(function () {
-      deferredEvents.reject();
-    });
+      .success(function (data) {
+        deferredEvents.resolve(data);
+      })
+      .error(function () {
+        deferredEvents.reject();
+      });
 
     return deferredEvents.promise;
   };
 
-  this.getEventById = function(eventId) {
+  this.getEventById = function (eventId) {
     var deferredEvent = $q.defer();
 
     var event = eventCache.get(eventId);
 
-    if(event) {
+    if (event) {
       deferredEvent.resolve(event);
     } else {
-      var eventRequest  = $http.get(
-        appConfig.baseApiUrl + 'event/' + eventId,
+      var eventRequest = $http.get(
+        appConfig.baseUrl + 'event/' + eventId,
         {
           headers: {
             'Accept': 'application/ld+json'
           }
         });
 
-      eventRequest.success(function(jsonEvent) {
-        var event = new UdbEvent();
-        event.parseJson(jsonEvent);
+      eventRequest.success(function (jsonEvent) {
+        var event = new UdbEvent(jsonEvent);
         eventCache.put(eventId, event);
         deferredEvent.resolve(event);
       });
@@ -2552,19 +2552,18 @@ function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth, $cacheFa
 
       return deferredOrganizer.promise;
     };
-
-  this.getEventHistoryById = function(eventId) {
+  this.getEventHistoryById = function (eventId) {
     var eventHistoryLoaded = $q.defer();
 
-    var eventHistoryRequest  = $http.get(
-        appConfig.baseUrl + 'event/' + eventId + '/history',
-        {
-          headers: {
-            'Accept': 'application/json'
-          }
-        });
+    var eventHistoryRequest = $http.get(
+      appConfig.baseUrl + 'event/' + eventId + '/history',
+      {
+        headers: {
+          'Accept': 'application/json'
+        }
+      });
 
-    eventHistoryRequest.success(function(eventHistory) {
+    eventHistoryRequest.success(function (eventHistory) {
       eventHistoryLoaded.resolve(eventHistory);
     });
 
@@ -2576,12 +2575,12 @@ function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth, $cacheFa
   };
 
   /**
-   * @returns {Promise} A list of tags wrapped as a promise.
+   * @returns {Promise} A list of labels wrapped as a promise.
    */
   this.getRecentLabels = function () {
     var deferredLabels = $q.defer();
 
-    var request = $http.get(apiUrl + 'user/keywords', {
+    var request = $http.get(apiUrl + 'user/labels', {
       withCredentials: true,
       headers: {
         'Accept': 'application/json'
@@ -2607,7 +2606,7 @@ function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth, $cacheFa
 
     var activeUser = uitidAuth.getUser();
 
-    if(activeUser) {
+    if (activeUser) {
       deferredUser.resolve(activeUser);
     } else {
 
@@ -2615,7 +2614,7 @@ function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth, $cacheFa
         withCredentials: true
       });
 
-      request.success(function(userData) {
+      request.success(function (userData) {
         $cookieStore.put('user', userData);
         deferredUser.resolve(userData);
       });
@@ -2628,21 +2627,21 @@ function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth, $cacheFa
     return deferredUser.promise;
   };
 
-  this.tagEvents = function (eventIds, label) {
-    return $http.post(appConfig.baseApiUrl + 'events/tag',
+  this.labelEvents = function (eventIds, label) {
+    return $http.post(appConfig.baseUrl + 'events/label',
       {
-        'keyword': label,
-        'events' : eventIds
+        'label': label,
+        'events': eventIds
       },
       defaultApiConfig
     );
   };
 
-  this.tagQuery = function (query, label) {
-    return $http.post(appConfig.baseApiUrl + 'query/tag',
+  this.labelQuery = function (query, label) {
+    return $http.post(appConfig.baseUrl + 'query/label',
       {
-        'keyword': label,
-        'query' : query
+        'label': label,
+        'query': query
       },
       defaultApiConfig
     );
@@ -2658,11 +2657,11 @@ function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth, $cacheFa
       perDay: perDay
     };
 
-    if(email) {
+    if (email) {
       exportData.email = email;
     }
 
-    return $http.post(appConfig.baseApiUrl + 'events/export/' + format, exportData, defaultApiConfig
+    return $http.post(appConfig.baseUrl + 'events/export/' + format, exportData, defaultApiConfig
     );
   };
 
@@ -2681,39 +2680,39 @@ function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth, $cacheFa
   /**
    * Update the property for a given id.
    *
-   * @param string id
+   * @param {string} id
    *   ID to update
-   * @param string type
+   * @param {string} type
    *   Type of entity to update
-   * @param string property
+   * @param {string} property
    *   Property to update
-   * @param string value
+   * @param {string} value
    *   Value to save
    */
-  this.updateProperty = function(eventId, type, property, value) {
+  this.updateProperty = function(id, type, property, value) {
 
     var updateData = {};
     updateData[property] = value;
 
     return $http.post(
-      appConfig.baseUrl + type + '/' + eventId + '/' + property,
+      appConfig.baseUrl + type + '/' + id + '/' + property,
       updateData,
       defaultApiConfig
     );
 
   };
 
-  this.tagEvent = function (eventId, label) {
+  this.labelEvent = function (eventId, label) {
     return $http.post(
-      appConfig.baseApiUrl + 'event/' + eventId + '/keywords',
-      { 'keyword': label},
+      appConfig.baseUrl + 'event/' + eventId + '/labels',
+      {'label': label},
       defaultApiConfig
     );
   };
 
-  this.untagEvent = function (eventId, label) {
+  this.unlabelEvent = function (eventId, label) {
     return $http.delete(
-      appConfig.baseApiUrl + 'event/' + eventId + '/keywords/' + label,
+      appConfig.baseUrl + 'event/' + eventId + '/labels/' + label,
       defaultApiConfig
     );
   };
@@ -2750,9 +2749,8 @@ function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth, $cacheFa
    */
   this.deleteOfferOrganizer = function(id, type, organizerId) {
 
-
     return $http.delete(
-      appConfig.baseApiUrl + type + '/' + id +'/organizer/' + organizerId,
+      appConfig.baseApiUrl + type + '/' + id + '/organizer/' + organizerId,
       {},
       defaultApiConfig
     );
@@ -2882,7 +2880,7 @@ function UdbEventFactory() {
   /**
    * @class UdbEvent
    * @constructor
-   * @param jsonEvent
+   * @param {object}  jsonEvent
    */
   var UdbEvent = function () {
     this.id = '';
@@ -2901,7 +2899,7 @@ function UdbEventFactory() {
       this.calendarSummary = jsonEvent.calendarSummary;
       this.location = jsonEvent.location;
       this.image = jsonEvent.image;
-      this.labels = _.map(jsonEvent.keywords, function (label) {
+      this.labels = _.map(jsonEvent.labels, function (label) {
         return label;
       });
       if (jsonEvent.organizer) {
@@ -3026,10 +3024,10 @@ function UdbEventFactory() {
     },
 
     /**
-     * Tag the event with a label or a list of labels
+     * Label the event with a label or a list of labels
      * @param {string|string[]} label
      */
-    tag: function (label) {
+    label: function (label) {
       var labels = [];
 
       if (_.isArray(label)) {
@@ -3044,10 +3042,10 @@ function UdbEventFactory() {
     },
 
     /**
-     * Untag a label from an event
+     * Unlabel a label from an event
      * @param {string} labelName
      */
-    untag: function (labelName) {
+    unlabel: function (labelName) {
       _.remove(event.labels, function (label) {
         return label === labelName;
       });
@@ -3161,6 +3159,7 @@ function udbOrganizer(udbApi) {
   return event;
 }
 udbOrganizer.$inject = ["udbApi"];
+
 // Source: src/core/udb-organizer.factory.js
 /**
  * @ngdoc service
@@ -3453,7 +3452,7 @@ function Udb3Content($q, $http, appConfig) {
    */
 
   this.getNoOmdEventsMessage = function() {
-    
+
     return $http.get(appConfig.udb3BaseUrl + '/omd/no_omd_events_message');
 
   };
@@ -3567,9 +3566,9 @@ UitidAuth.$inject = ["$window", "$location", "$http", "appConfig", "$cookieStore
             $scope.userContent[key].exampleUrl = 'http://www.google.be';
             $scope.userContent[key].deleteUrl = 'http://www.google.be';
 
-
             // User has omd events if events have been added with startdate 2015-09-13.
-            if ((item.type === 'event') && (item.details.payload.calendar.startDate.substring(0,10) === '2015-09-13')) {
+            var startDate = item.details.payload.calendar.startDate.substring(0, 10);
+            if (item.type === 'event' && startDate === '2015-09-13') {
               $scope.noOmdEvents = false;
             }
           }
@@ -3596,6 +3595,7 @@ UitidAuth.$inject = ["$window", "$location", "$http", "appConfig", "$cookieStore
   DashboardController.$inject = ["$scope", "udb3Content"];
 
 })();
+
 // Source: src/dashboard/dashboard.directive.js
 /**
  * @ngdoc directive
@@ -3614,6 +3614,7 @@ function udbDashboardDirective() {
     restrict: 'EA',
   };
 }
+
 // Source: src/entry/crud/event-crud-job.factory.js
 /**
  * @ngdoc service
@@ -3632,8 +3633,8 @@ function EventCrudJobFactory(BaseJob) {
    * @class EventCrudJob
    * @constructor
    * @param {string} commandId
+   * @param {EventFormData} item
    * @param {string} action
-   * @param {UdbEvent|UdbPlace} item
    */
   var EventCrudJob = function (commandId, item, action) {
     BaseJob.call(this, commandId);
@@ -3752,7 +3753,13 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
    */
   this.updateDescription = function(item) {
 
-    var jobPromise = udbApi.translateProperty(item.id, item.getType(), 'description', udbApi.mainLanguage, item.description.nl);
+    var jobPromise = udbApi.translateProperty(
+      item.id,
+      item.getType(),
+      'description',
+      udbApi.mainLanguage,
+      item.description.nl
+    );
 
     jobPromise.success(function (jobData) {
       var job = new EventCrudJob(jobData.commandId, item, 'updateTypicalAgeRange');
@@ -3881,9 +3888,9 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
    * Add a new image to the item.
    *
    * @param {EventFormData} item
-   * @param File image
-   * @param string description
-   * @param string copyrightHolder
+   * @param {File} image
+   * @param {string} description
+   * @param {string} copyrightHolder
    * @returns {EventCrud.addImage.jobPromise}
    */
   this.addImage = function(item, image, description, copyrightHolder) {
@@ -3903,10 +3910,10 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
    * Update an image of the item.
    *
    * @param {EventFormData} item
-   * @param int indexToUpdate
-   * @param File|null image
-   * @param string description
-   * @param string copyrightHolder
+   * @param {int} indexToUpdate
+   * @param {File|null} image
+   * @param {string} description
+   * @param {string} copyrightHolder
    * @returns {EventCrud.updateImage.jobPromise}
    */
   this.updateImage = function(item, indexToUpdate, image, description, copyrightHolder) {
@@ -3926,7 +3933,7 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
    * Delete an image of the item.
    *
    * @param {EventFormData} item
-   * @param int indexToDelete
+   * @param {int} indexToDelete
    * @returns {EventCrud.deleteImage.jobPromise}
    */
   this.deleteImage = function(item, indexToDelete) {
@@ -3944,6 +3951,320 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
 
 }
 EventCrud.$inject = ["jobLogger", "udbApi", "EventCrudJob"];
+
+// Source: src/entry/labelling/event-label-batch-job.factory.js
+/**
+ * @ngdoc service
+ * @name udb.entry.EventLabelBatchJob
+ * @description
+ * # BaseJob
+ * This Is the factory that creates an event export job
+ */
+angular
+  .module('udb.entry')
+  .factory('EventLabelBatchJob', EventLabelBatchJobFactory);
+
+/* @ngInject */
+function EventLabelBatchJobFactory(BaseJob, JobStates) {
+
+  /**
+   * @class EventLabelBatchJob
+   * @constructor
+   * @param {string} commandId
+   * @param {string[]} eventIds
+   * @param {string} label
+   */
+  var EventLabelBatchJob = function (commandId, eventIds, label) {
+    BaseJob.call(this, commandId);
+    this.events = eventIds;
+    this.addEventsAsTask(eventIds);
+    this.label = label;
+  };
+
+  EventLabelBatchJob.prototype = Object.create(BaseJob.prototype);
+  EventLabelBatchJob.prototype.constructor = EventLabelBatchJob;
+
+  EventLabelBatchJob.prototype.addEventsAsTask = function (eventIds) {
+    var job = this;
+    _.forEach(eventIds, function (eventId) {
+      job.addTask({id: eventId});
+    });
+  };
+
+  EventLabelBatchJob.prototype.getDescription = function () {
+    var job = this,
+        description;
+
+    if (this.state === JobStates.FAILED) {
+      description = 'Labelen van evenementen mislukt';
+    } else {
+      description = 'Label ' + job.events.length + ' items met "' + job.label + '"';
+    }
+
+    return description;
+  };
+
+  return (EventLabelBatchJob);
+}
+EventLabelBatchJobFactory.$inject = ["BaseJob", "JobStates"];
+
+// Source: src/entry/labelling/event-label-job.factory.js
+/**
+ * @ngdoc service
+ * @name udb.entry.EventLabelJob
+ * @description
+ * # Event Label Job
+ * This Is the factory that creates an event label job
+ */
+angular
+  .module('udb.entry')
+  .factory('EventLabelJob', EventLabelJobFactory);
+
+/* @ngInject */
+function EventLabelJobFactory(BaseJob, JobStates) {
+
+  /**
+   * @class EventLabelJob
+   * @constructor
+   * @param {string} commandId
+   * @param {UdbEvent} event
+   * @param {string} label
+   * @param {boolean} unlabel set to true when unlabeling
+   */
+  var EventLabelJob = function (commandId, event, label, unlabel) {
+    BaseJob.call(this, commandId);
+    this.event = event;
+    this.label = label;
+    this.unlabel = !!unlabel || false;
+  };
+
+  EventLabelJob.prototype = Object.create(BaseJob.prototype);
+  EventLabelJob.prototype.constructor = EventLabelJob;
+
+  EventLabelJob.prototype.getDescription = function () {
+    var job = this,
+        description;
+
+    if (job.state === JobStates.FAILED) {
+      description = 'Labelen van evenement mislukt';
+    } else {
+      if (job.unlabel) {
+        description = 'Verwijder label "' + job.label + '" van "' + job.event.name.nl + '"';
+      } else {
+        description = 'Label "' + job.event.name.nl + '" met "' + job.label + '"';
+      }
+    }
+
+    return description;
+  };
+
+  return (EventLabelJob);
+}
+EventLabelJobFactory.$inject = ["BaseJob", "JobStates"];
+
+// Source: src/entry/labelling/event-label-modal.controller.js
+/**
+ * @ngdoc function
+ * @name udb.entry.controller:EventLabelModalCtrl
+ * @description
+ * # EventLabelModalCtrl
+ * Controller of the udb.entry
+ */
+angular
+  .module('udb.entry')
+  .controller('EventLabelModalCtrl', EventLabelModalCtrl);
+
+/* @ngInject */
+function EventLabelModalCtrl($scope, $modalInstance, udbApi) {
+  var labelPromise = udbApi.getRecentLabels();
+
+  var ok = function () {
+    // Get the labels selected by checkbox
+    var checkedLabels = $scope.labelSelection.filter(function (label) {
+      return label.selected;
+    }).map(function (label) {
+      return label.name;
+    });
+
+    //add the labels
+    var inputLabels = parseLabelInput($scope.labelNames);
+
+    // join arrays and remove doubles
+    var labels = _.union(checkedLabels, inputLabels);
+
+    $modalInstance.close(labels);
+  };
+
+  var close = function () {
+    $modalInstance.dismiss('cancel');
+  };
+
+  function parseLabelInput(stringWithLabels) {
+    //split sting into array of labels
+    var labels = stringWithLabels.split(';');
+
+    // trim whitespaces
+    labels = _.each(labels, function (label, index) {
+      labels[index] = label.trim();
+    });
+
+    // remove empty strings
+    labels = _.without(labels, '');
+
+    return labels;
+  }
+
+  labelPromise.then(function (labels) {
+    $scope.availableLabels = labels;
+    $scope.labelSelection = _.map(labels, function (label) {
+      return {'name': label, 'selected': false};
+    });
+  });
+  // ui-select can't get to this scope variable unless you reference it from the $parent scope.
+  // seems to be 1.3 specific issue, see: https://github.com/angular-ui/ui-select/issues/243
+  $scope.labels = [];
+  $scope.close = close;
+  $scope.ok = ok;
+  $scope.labelNames = '';
+}
+EventLabelModalCtrl.$inject = ["$scope", "$modalInstance", "udbApi"];
+
+// Source: src/entry/labelling/event-labeller.service.js
+/**
+ * @ngdoc service
+ * @name udb.entry.evenLabeller
+ * @description
+ * # eventLabeller
+ * Service in the udb.entry.
+ */
+angular
+  .module('udb.entry')
+  .service('eventLabeller', EventLabeller);
+
+/* @ngInject */
+function EventLabeller(jobLogger, udbApi, EventLabelJob, EventLabelBatchJob, QueryLabelJob) {
+
+  var eventLabeller = this;
+
+  // keep a cache of all the recently used labels
+  eventLabeller.recentLabels = ['some', 'recent', 'label'];
+
+  function updateRecentLabels() {
+    var labelPromise = udbApi.getRecentLabels();
+
+    labelPromise.then(function (labels) {
+      eventLabeller.recentLabels = labels;
+    });
+  }
+
+  // warm up the cache
+  updateRecentLabels();
+
+  /**
+   * Label an event with a label
+   * @param {UdbEvent} event
+   * @param {string} label
+   */
+  this.label = function (event, label) {
+    var jobPromise = udbApi.labelEvent(event.id, label);
+
+    jobPromise.success(function (jobData) {
+      event.label(label);
+      var job = new EventLabelJob(jobData.commandId, event, label);
+      jobLogger.addJob(job);
+    });
+  };
+
+  /**
+   * Unlabel a label from an event
+   * @param {UdbEvent} event
+   * @param {string} label
+   */
+  this.unlabel = function (event, label) {
+    var jobPromise = udbApi.unlabelEvent(event.id, label);
+
+    jobPromise.success(function (jobData) {
+      event.unlabel(label);
+      var job = new EventLabelJob(jobData.commandId, event, label, true);
+      jobLogger.addJob(job);
+    });
+  };
+
+  /**
+   * @param {string[]} eventIds
+   * @param {string} label
+   */
+  this.labelEventsById = function (eventIds, label) {
+    var jobPromise = udbApi.labelEvents(eventIds, label);
+
+    jobPromise.success(function (jobData) {
+      var job = new EventLabelBatchJob(jobData.commandId, eventIds, label);
+      console.log(job);
+      jobLogger.addJob(job);
+    });
+  };
+
+  /**
+   *
+   * @param {string} query
+   * @param {string} label
+   */
+  this.labelQuery = function (query, label, eventCount) {
+    var jobPromise = udbApi.labelQuery(query, label);
+    eventCount = eventCount || 0;
+
+    jobPromise.success(function (jobData) {
+      var job = new QueryLabelJob(jobData.commandId, eventCount, label);
+      jobLogger.addJob(job);
+    });
+
+  };
+}
+EventLabeller.$inject = ["jobLogger", "udbApi", "EventLabelJob", "EventLabelBatchJob", "QueryLabelJob"];
+
+// Source: src/entry/labelling/query-label-job.factory.js
+/**
+ * @ngdoc service
+ * @name udb.entry.QueryLabelJob
+ * @description
+ * # BaseJob
+ * This Is the factory that creates an event export job
+ */
+angular
+  .module('udb.entry')
+  .factory('QueryLabelJob', QueryLabelJobFactory);
+
+/* @ngInject */
+function QueryLabelJobFactory(BaseJob) {
+
+  /**
+   * @class QueryLabelJob
+   * @constructor
+   * @param {string} commandId
+   * @param {number} eventCount
+   * @param {string} label
+   */
+  var QueryLabelJob = function (commandId, eventCount, label) {
+    BaseJob.call(this, commandId);
+    this.eventCount = eventCount;
+    this.label = label;
+  };
+
+  QueryLabelJob.prototype = Object.create(BaseJob.prototype);
+  QueryLabelJob.prototype.constructor = QueryLabelJob;
+
+  QueryLabelJob.prototype.getTaskCount = function () {
+    return this.eventCount;
+  };
+
+  QueryLabelJob.prototype.getDescription = function() {
+    var job = this;
+    return 'Label ' + job.eventCount + ' evenementen met label "' + job.label + '".';
+  };
+
+  return (QueryLabelJob);
+}
+QueryLabelJobFactory.$inject = ["BaseJob"];
 
 // Source: src/entry/logging/base-job.factory.js
 /**
@@ -3987,7 +4308,6 @@ function BaseJobFactory(JobStates) {
    */
   BaseJob.prototype.constructor = BaseJob;
 
-
   // The following functions are used to update the job state based on feedback of the server.
 
   BaseJob.prototype.fail = function () {
@@ -4000,7 +4320,7 @@ function BaseJobFactory(JobStates) {
   };
 
   BaseJob.prototype.finish = function () {
-    if(this.state !== JobStates.FAILED) {
+    if (this.state !== JobStates.FAILED) {
       this.state = JobStates.FINISHED;
     }
     this.progress = 100;
@@ -4012,8 +4332,8 @@ function BaseJobFactory(JobStates) {
    *
    * @param {object}  jobData
    */
-  BaseJob.prototype.info = function (jobData) {};
-
+  BaseJob.prototype.info = function (jobData) {
+  };
 
   /**
    * Renders the job description based on its details.
@@ -4035,7 +4355,7 @@ function BaseJobFactory(JobStates) {
   BaseJob.prototype.getTemplateName = function () {
     var templateName;
 
-    if(this.state === JobStates.FAILED) {
+    if (this.state === JobStates.FAILED) {
       templateName = 'failed-job';
     } else {
       templateName = 'base-job';
@@ -4053,7 +4373,7 @@ function BaseJobFactory(JobStates) {
 
     var duplicateTask = _.find(this.tasks, {id: task.id});
 
-    if(!duplicateTask) {
+    if (!duplicateTask) {
       this.tasks.push(task);
     }
   };
@@ -4071,23 +4391,22 @@ function BaseJobFactory(JobStates) {
    */
   BaseJob.prototype.findTask = function (taskData) {
     var taskId = taskData['event_id'], // jshint ignore:line
-        task =  _.find(this.tasks, { id: taskId});
+        task = _.find(this.tasks, {id: taskId});
 
-    if(!task) {
-      task = { id: taskId};
+    if (!task) {
+      task = {id: taskId};
       this.addTask(task);
     }
 
     return task;
   };
 
-
   // These functions are used to update this job's task state based on feedback from the server.
 
   BaseJob.prototype.failTask = function (taskData) {
     var task = this.findTask(taskData);
 
-    if(task) {
+    if (task) {
       task.state = 'failed';
       this.updateProgress();
     }
@@ -4096,7 +4415,7 @@ function BaseJobFactory(JobStates) {
   BaseJob.prototype.finishTask = function (taskData) {
     var task = this.findTask(taskData);
 
-    if(task) {
+    if (task) {
       task.state = 'finished';
       this.updateProgress();
     }
@@ -4112,7 +4431,6 @@ function BaseJobFactory(JobStates) {
     ++job.completedTaskCount;
     job.progress = (job.completedTaskCount / job.getTaskCount()) * 100;
   };
-
 
   return (BaseJob);
 }
@@ -4168,36 +4486,36 @@ function JobLogger(udbSocket, JobStates, EventExportJob) {
 
   /**
    * Finds a job  by id
-   * @param jobId
+   * @param {string}  jobId
    * @returns {BaseJob|undefined}
    */
-  function findJob (jobId) {
-    return _.find(jobs, { id: jobId});
+  function findJob(jobId) {
+    return _.find(jobs, {id: jobId});
   }
 
-  function jobStarted (data) {
+  function jobStarted(data) {
     var job = findJob(data['job_id']);
 
-    if(job) {
+    if (job) {
       job.start(data);
       console.log('job with id: ' + job.id + ' started');
       updateJobLists();
     }
   }
 
-  function jobInfo (data) {
+  function jobInfo(data) {
     var job = findJob(data['job_id']);
 
-    if(job) {
+    if (job) {
       job.info(data);
       console.log('job with id: ' + job.id + ' received some info.');
     }
   }
 
-  function jobFinished (data) {
+  function jobFinished(data) {
     var job = findJob(data['job_id']);
 
-    if(job) {
+    if (job) {
       job.finish(data);
       console.log('job with id: ' + job.id + ' finished');
       updateJobLists();
@@ -4207,26 +4525,26 @@ function JobLogger(udbSocket, JobStates, EventExportJob) {
   function jobFailed(data) {
     var job = findJob(data['job_id']);
 
-    if(job) {
+    if (job) {
       job.fail(data);
       console.log('job with id: ' + job.id + ' failed');
       updateJobLists();
     }
   }
 
-  function taskFinished (data) {
+  function taskFinished(data) {
     var job = findJob(data['job_id']);
 
-    if(job) {
+    if (job) {
       job.finishTask(data);
       console.log('Task of job with id: ' + job.id + ' finished.');
     }
   }
 
-  function taskFailed (data) {
+  function taskFailed(data) {
     var job = findJob(data['job_id']);
 
-    if(job) {
+    if (job) {
       job.failTask(data);
       console.log('Task of job with id: ' + job.id + ' failed. Error message: ' + data.error);
     }
@@ -4238,7 +4556,7 @@ function JobLogger(udbSocket, JobStates, EventExportJob) {
         activeJobs = _.filter(visibleJobs, {state: JobStates.STARTED});
 
     failedJobs = _.filter(visibleJobs, {state: JobStates.FAILED});
-    finishedExportJobs = _.filter(visibleJobs, function(job) {
+    finishedExportJobs = _.filter(visibleJobs, function (job) {
       return job instanceof EventExportJob && job.state === JobStates.FINISHED;
     });
     queuedJobs = activeJobs.concat(newJobs);
@@ -4253,8 +4571,8 @@ function JobLogger(udbSocket, JobStates, EventExportJob) {
     updateJobLists();
   }
 
-  udbSocket.on('event_was_tagged', taskFinished);
-  udbSocket.on('event_was_not_tagged', taskFailed);
+  udbSocket.on('event_was_labelled', taskFinished);
+  udbSocket.on('event_was_not_labelled', taskFailed);
   udbSocket.on('task_completed', taskFinished);
   udbSocket.on('job_started', jobStarted);
   udbSocket.on('job_info', jobInfo);
@@ -4311,6 +4629,7 @@ angular
     FAILED: 'failed',
     FINISHED: 'finished'
   });
+
 // Source: src/entry/logging/job.directive.js
 /**
  * @ngdoc directive
@@ -4392,327 +4711,13 @@ function udbWorkIndicator ($window, jobLogger) {
 }
 udbWorkIndicator.$inject = ["$window", "jobLogger"];
 
-// Source: src/entry/tagging/event-tag-batch-job.factory.js
-/**
- * @ngdoc service
- * @name udb.entry.EventTagBatchJob
- * @description
- * # BaseJob
- * This Is the factory that creates an event export job
- */
-angular
-  .module('udb.entry')
-  .factory('EventTagBatchJob', EventTagBatchJobFactory);
-
-/* @ngInject */
-function EventTagBatchJobFactory(BaseJob, JobStates) {
-
-  /**
-   * @class EventTagBatchJob
-   * @constructor
-   * @param {string} commandId
-   * @param {string[]} eventIds
-   * @param {string} label
-   */
-  var EventTagBatchJob = function (commandId, eventIds, label) {
-    BaseJob.call(this, commandId);
-    this.events = eventIds;
-    this.addEventsAsTask(eventIds);
-    this.label = label;
-  };
-
-  EventTagBatchJob.prototype = Object.create(BaseJob.prototype);
-  EventTagBatchJob.prototype.constructor = EventTagBatchJob;
-
-  EventTagBatchJob.prototype.addEventsAsTask = function (eventIds) {
-    var job = this;
-    _.forEach(eventIds, function (eventId) {
-      job.addTask({ id: eventId});
-    });
-  };
-
-  EventTagBatchJob.prototype.getDescription = function() {
-    var job = this,
-        description;
-
-    if(this.state === JobStates.FAILED) {
-      description = 'Labelen van evenementen mislukt';
-    } else {
-      description = 'Label ' + job.events.length + ' items met "' + job.label + '"';
-    }
-
-    return description;
-  };
-
-  return (EventTagBatchJob);
-}
-EventTagBatchJobFactory.$inject = ["BaseJob", "JobStates"];
-
-// Source: src/entry/tagging/event-tag-job.factory.js
-/**
- * @ngdoc service
- * @name udb.entry.EventTagJob
- * @description
- * # Event Tag Job
- * This Is the factory that creates an event tag job
- */
-angular
-  .module('udb.entry')
-  .factory('EventTagJob', EventTagJobFactory);
-
-/* @ngInject */
-function EventTagJobFactory(BaseJob, JobStates) {
-
-  /**
-   * @class EventTagJob
-   * @constructor
-   * @param {string} commandId
-   * @param {UdbEvent} event
-   * @param {string} label
-   * @param {boolean} untag set to true when untagging
-   */
-  var EventTagJob = function (commandId, event, label, untag) {
-    BaseJob.call(this, commandId);
-    this.event = event;
-    this.label = label;
-    this.untag = !!untag || false;
-  };
-
-  EventTagJob.prototype = Object.create(BaseJob.prototype);
-  EventTagJob.prototype.constructor = EventTagJob;
-
-  EventTagJob.prototype.getDescription = function() {
-    var job = this,
-        description;
-
-    if(job.state === JobStates.FAILED) {
-      description = 'Labelen van evenement mislukt';
-    } else {
-      if(job.untag) {
-        description = 'Verwijder label "' + job.label + '" van "' + job.event.name.nl + '"';
-      } else {
-        description = 'Label "' + job.event.name.nl + '" met "' + job.label + '"';
-      }
-    }
-
-    return description;
-  };
-
-  return (EventTagJob);
-}
-EventTagJobFactory.$inject = ["BaseJob", "JobStates"];
-
-// Source: src/entry/tagging/event-tag-modal.controller.js
-/**
- * @ngdoc function
- * @name udb.entry.controller:EventTagModalCtrl
- * @description
- * # EventTagModalCtrl
- * Controller of the udb.entry
- */
-angular
-  .module('udb.entry')
-  .controller('EventTagModalCtrl', EventTagModalCtrl);
-
-/* @ngInject */
-function EventTagModalCtrl($scope, $modalInstance, udbApi) {
-  var labelPromise = udbApi.getRecentLabels();
-
-  var ok = function () {
-    // Get the labels selected by checkbox
-    var checkedLabels = $scope.labelSelection.filter(function (label) {
-      return label.selected;
-    }).map(function (label) {
-      return label.name;
-    });
-
-    //add the labels
-    var inputLabels = parseLabelInput($scope.labelNames);
-
-    // join arrays and remove doubles
-    var labels = _.union(checkedLabels, inputLabels);
-
-    $modalInstance.close(labels);
-  };
-
-  var close = function () {
-    $modalInstance.dismiss('cancel');
-  };
-
-  function parseLabelInput(stringWithLabels) {
-    //split sting into array of labels
-    var labels = stringWithLabels.split(';');
-
-    // trim whitespaces
-    labels = _.each(labels, function (label, index) {
-      labels[index] = label.trim();
-    });
-
-    // remove empty strings
-    labels = _.without(labels, '');
-
-    return labels;
-  }
-
-  labelPromise.then(function (labels) {
-    $scope.availableLabels = labels;
-    $scope.labelSelection = _.map(labels, function (label) {
-      return {'name': label, 'selected': false};
-    });
-  });
-  // ui-select can't get to this scope variable unless you reference it from the $parent scope.
-  // seems to be 1.3 specific issue, see: https://github.com/angular-ui/ui-select/issues/243
-  $scope.labels = [];
-  $scope.close = close;
-  $scope.ok = ok;
-  $scope.labelNames = '';
-}
-EventTagModalCtrl.$inject = ["$scope", "$modalInstance", "udbApi"];
-
-// Source: src/entry/tagging/event-tagger.service.js
-/**
- * @ngdoc service
- * @name udb.entry.evenTagger
- * @description
- * # eventTagger
- * Service in the udb.entry.
- */
-angular
-  .module('udb.entry')
-  .service('eventTagger', EventTagger);
-
-/* @ngInject */
-function EventTagger(jobLogger, udbApi, EventTagJob, EventTagBatchJob, QueryTagJob) {
-
-  var eventTagger = this;
-
-  // keep a cache of all the recently used labels
-  eventTagger.recentLabels = ['some', 'recent', 'label'];
-
-  function updateRecentLabels() {
-    var labelPromise = udbApi.getRecentLabels();
-
-    labelPromise.then(function (labels) {
-      eventTagger.recentLabels = labels;
-    });
-  }
-
-  // warm up the cache
-  updateRecentLabels();
-
-  /**
-   * Tag an event with a label
-   * @param {UdbEvent} event
-   * @param {string} label
-   */
-  this.tag = function (event, label) {
-    var jobPromise = udbApi.tagEvent(event.id, label);
-
-    jobPromise.success(function (jobData) {
-      event.tag(label);
-      var job = new EventTagJob(jobData.commandId, event, label);
-      jobLogger.addJob(job);
-    });
-  };
-
-  /**
-   * Untag a label from an event
-   * @param {UdbEvent} event
-   * @param {string} label
-   */
-  this.untag = function (event, label) {
-    var jobPromise = udbApi.untagEvent(event.id, label);
-
-    jobPromise.success(function (jobData) {
-      event.untag(label);
-      var job = new EventTagJob(jobData.commandId, event, label, true);
-      jobLogger.addJob(job);
-    });
-  };
-
-  /**
-   * @param {string[]} eventIds
-   * @param {string} label
-   */
-  this.tagEventsById = function (eventIds, label) {
-    var jobPromise = udbApi.tagEvents(eventIds, label);
-
-    jobPromise.success(function (jobData) {
-      var job = new EventTagBatchJob(jobData.commandId, eventIds, label);
-      console.log(job);
-      jobLogger.addJob(job);
-    });
-  };
-
-  /**
-   *
-   * @param {string} query
-   * @param {string} label
-   */
-  this.tagQuery = function (query, label, eventCount) {
-    var jobPromise = udbApi.tagQuery(query, label);
-    eventCount = eventCount || 0;
-
-    jobPromise.success(function (jobData) {
-      var job = new QueryTagJob(jobData.commandId, eventCount, label);
-      jobLogger.addJob(job);
-    });
-
-  };
-}
-EventTagger.$inject = ["jobLogger", "udbApi", "EventTagJob", "EventTagBatchJob", "QueryTagJob"];
-
-// Source: src/entry/tagging/query-tag-job.factory.js
-/**
- * @ngdoc service
- * @name udb.entry.QueryTagJob
- * @description
- * # BaseJob
- * This Is the factory that creates an event export job
- */
-angular
-  .module('udb.entry')
-  .factory('QueryTagJob', QueryTagJobFactory);
-
-/* @ngInject */
-function QueryTagJobFactory(BaseJob) {
-
-  /**
-   * @class QueryTagJob
-   * @constructor
-   * @param {string} commandId
-   * @param {number} eventCount
-   * @param {string} label
-   */
-  var QueryTagJob = function (commandId, eventCount, label) {
-    BaseJob.call(this, commandId);
-    this.eventCount = eventCount;
-    this.label = label;
-  };
-
-  QueryTagJob.prototype = Object.create(BaseJob.prototype);
-  QueryTagJob.prototype.constructor = QueryTagJob;
-
-  QueryTagJob.prototype.getTaskCount = function () {
-    return this.eventCount;
-  };
-
-  QueryTagJob.prototype.getDescription = function() {
-    var job = this;
-    return 'Tag ' + job.eventCount + ' evenementen met label "' + job.label + '".';
-  };
-
-  return (QueryTagJob);
-}
-QueryTagJobFactory.$inject = ["BaseJob"];
-
 // Source: src/entry/translation/event-translation-job.factory.js
 /**
  * @ngdoc service
  * @name udb.entry.EventTranslationJob
  * @description
- * # Event Tag Job
- * This Is the factory that creates an event tag job
+ * # Event Label Job
+ * This Is the factory that creates an event label job
  */
 angular
   .module('udb.entry')
@@ -4741,11 +4746,11 @@ function EventTranslationJobFactory(BaseJob, JobStates) {
   EventTranslationJob.prototype = Object.create(BaseJob.prototype);
   EventTranslationJob.prototype.constructor = EventTranslationJob;
 
-  EventTranslationJob.prototype.getDescription = function() {
+  EventTranslationJob.prototype.getDescription = function () {
     var job = this,
-      description;
+        description;
 
-    if(this.state === JobStates.FAILED) {
+    if (this.state === JobStates.FAILED) {
       description = 'Vertalen van evenement mislukt';
     } else {
       var propertyName;
@@ -4825,8 +4830,8 @@ angular
     .controller('EventDetailController', EventDetail);
 
 /* @ngInject */
-function EventDetail($scope, itemId, $location, udbApi, jsonLDLangFilter, locationTypes) {
-  $scope.eventId = itemId;
+function EventDetail($scope, $location, eventId, udbApi, jsonLDLangFilter, locationTypes) {
+  $scope.eventId = eventId;
   $scope.eventIdIsInvalid = false;
   $scope.eventHistory = [];
 
@@ -4919,7 +4924,7 @@ function EventDetail($scope, itemId, $location, udbApi, jsonLDLangFilter, locati
     return tabId === activeTabId;
   };
 }
-EventDetail.$inject = ["$scope", "itemId", "$location", "udbApi", "jsonLDLangFilter", "locationTypes"];
+EventDetail.$inject = ["$scope", "$location", "eventId", "udbApi", "jsonLDLangFilter", "locationTypes"];
 
 // Source: src/event_form/components/calendartypes/event-form-period.directive.js
 /**
@@ -4939,6 +4944,7 @@ function EventFormPeriodDirective() {
     restrict: 'EA',
   };
 }
+
 // Source: src/event_form/components/calendartypes/event-form-timestamp.directive.js
 /**
  * @ngdoc directive
@@ -4957,6 +4963,7 @@ function EventFormTimestampDirective() {
     restrict: 'EA',
   };
 }
+
 // Source: src/event_form/components/contact-info/contact-info-validation.directive.js
 (function () {
 /**
@@ -4965,7 +4972,7 @@ function EventFormTimestampDirective() {
  * @description
  * # directive for contact info validation
  */
-angular
+  angular
   .module('udb.core')
   .directive('udbContactInfoValidation', UdbContactInfoValidationDirective);
 
@@ -5030,6 +5037,7 @@ angular
   }
 
 })();
+
 // Source: src/event_form/components/facilities-modal/event-form-facilities-modal.controller.js
 (function () {
 /**
@@ -5259,8 +5267,18 @@ angular
 
       var uploaded = 0;
 
-      eventCrud.addImage(EventFormData, image, $scope.description, $scope.copyright).then(function (jsonResponse) {
-        EventFormData.addMediaObject(jsonResponse.data.url, jsonResponse.data.thumbnailUrl, $scope.description, $scope.copyright);
+      eventCrud.addImage(
+        EventFormData,
+        image,
+        $scope.description,
+        $scope.copyright
+      ).then(function (jsonResponse) {
+        EventFormData.addMediaObject(
+          jsonResponse.data.url,
+          jsonResponse.data.thumbnailUrl,
+          $scope.description,
+          $scope.copyright
+        );
         uploaded++;
         if (uploaded === $scope.imagesToUpload.length) {
           $modalInstance.close();
@@ -5277,9 +5295,21 @@ angular
      */
     function updateImage(image) {
 
-      eventCrud.updateImage(EventFormData, indexToEdit, image, $scope.description, $scope.copyright).then(function (jsonResponse) {
-          EventFormData.editMediaObject(indexToEdit, jsonResponse.data.url, jsonResponse.data.thumbnailUrl, $scope.description, $scope.copyright);
-          $modalInstance.close();
+      eventCrud.updateImage(
+        EventFormData,
+        indexToEdit,
+        image,
+        $scope.description,
+        $scope.copyright
+      ).then(function (jsonResponse) {
+        EventFormData.editMediaObject(
+          indexToEdit,
+          jsonResponse.data.url,
+          jsonResponse.data.thumbnailUrl,
+          $scope.description,
+          $scope.copyright
+        );
+        $modalInstance.close();
       }, function() {
         $scope.saving = false;
         $scope.error = true;
@@ -5310,6 +5340,7 @@ function EventFormOpeningHoursDirective() {
     restrict: 'E',
   };
 }
+
 // Source: src/event_form/components/organizer/event-form-organizer-modal.controller.js
 (function () {
 /**
@@ -5332,7 +5363,6 @@ function EventFormOpeningHoursDirective() {
     $scope.error = false;
     $scope.showValidation = false;
     $scope.organizers = [];
-
 
     $scope.newOrganizer = {
       name : '',
@@ -5580,6 +5610,7 @@ function EventFormOpeningHoursDirective() {
   EventFormPlaceModalController.$inject = ["$scope", "$modalInstance", "eventCrud", "UdbPlace", "location", "categories"];
 
 })();
+
 // Source: src/event_form/event-form.controller.js
 (function () {
 /**
@@ -5702,7 +5733,7 @@ function EventFormDataFactory(UdbEvent, UdbPlace) {
 
     /**
      * Show the given step.
-     * @param int stepNumber
+     * @param {number} stepNumber
      */
     showStep: function(stepNumber) {
       this['showStep' + stepNumber] = true;
@@ -5710,7 +5741,7 @@ function EventFormDataFactory(UdbEvent, UdbPlace) {
 
     /**
      * Hide the given step.
-     * @param int stepNumber
+     * @param {number} stepNumber
      */
     hideStep: function (stepNumber) {
       this['showStep' + stepNumber] = false;
@@ -5893,7 +5924,7 @@ function EventFormDataFactory(UdbEvent, UdbPlace) {
      * Remove the openinghour with the given index.
      */
     removeOpeningHour: function(index) {
-       this.openingHours.splice(index, 1);
+      this.openingHours.splice(index, 1);
     },
 
     /**
@@ -5932,7 +5963,6 @@ function EventFormDataFactory(UdbEvent, UdbPlace) {
         email : []
       };
     },
-
 
     /**
      * Sets the booking info array.
@@ -6102,6 +6132,7 @@ function EventFormStep5Directive() {
     restrict: 'EA',
   };
 }
+
 // Source: src/event_form/event-form.facilities.service.js
 /**
  * @ngdoc service
@@ -6362,9 +6393,9 @@ EventFormFacilities.$inject = ["$q", "$http", "$cacheFactory", "appConfig"];
     $scope.eventFormData = EventFormData;
 
     $scope.calendarLabels = [
-      { 'label': 'Eén of meerdere dagen', 'id' : 'single', 'eventOnly' : true },
-      { 'label': 'Van ... tot ... ', 'id' : 'periodic', 'eventOnly' : true },
-      { 'label' : 'Permanent', 'id' : 'permanent', 'eventOnly' : false }
+      {'label': 'Eén of meerdere dagen', 'id' : 'single', 'eventOnly' : true},
+      {'label': 'Van ... tot ... ', 'id' : 'periodic', 'eventOnly' : true},
+      {'label' : 'Permanent', 'id' : 'permanent', 'eventOnly' : false}
     ];
     $scope.hasOpeningHours = false;
 
@@ -6441,7 +6472,7 @@ EventFormFacilities.$inject = ["$q", "$http", "$cacheFactory", "appConfig"];
 
     /**
      * Toggle the starthour field for given timestamp.
-     * @param timestamp
+     * @param {string} timestamp
      *   Timestamp to change
      */
     function toggleStartHour(timestamp) {
@@ -6459,7 +6490,7 @@ EventFormFacilities.$inject = ["$q", "$http", "$cacheFactory", "appConfig"];
 
     /**
      * Toggle the endhour field for given timestamp
-     * @param timestamp
+     * @param {string} timestamp
      *   Timestamp to change
      */
     function toggleEndHour(timestamp) {
@@ -6838,7 +6869,9 @@ EventFormFacilities.$inject = ["$q", "$http", "$cacheFactory", "appConfig"];
       if (EventFormData.calendarType === 'single' && EventFormData.timestamps[0].date === '') {
         $scope.infoMissing = true;
       }
-      else if (EventFormData.calendarType === 'periodic' && (EventFormData.startDate === '' || EventFormData.endDate === '')) {
+      else if (EventFormData.calendarType === 'periodic' &&
+        (EventFormData.startDate === '' || EventFormData.endDate === '')
+      ) {
         $scope.infoMissing = true;
       }
 
@@ -6873,10 +6906,10 @@ EventFormFacilities.$inject = ["$q", "$http", "$cacheFactory", "appConfig"];
       var location = EventFormData.getLocation();
 
       if (EventFormData.isEvent) {
-        params = { locationCdbId : location.id };
+        params = {locationCdbId : location.id};
       }
       else {
-        params = { locationZip : location.address.postalCode };
+        params = {locationZip : location.address.postalCode};
       }
 
       // Load the candidate duplicates asynchronously.
@@ -7298,26 +7331,26 @@ EventFormFacilities.$inject = ["$q", "$http", "$cacheFactory", "appConfig"];
      */
     function openOrganizerModal() {
 
-        var modalInstance = $modal.open({
-          templateUrl: 'templates/event-form-organizer-modal.html',
-          controller: 'EventFormOrganizerModalCtrl',
-        });
+      var modalInstance = $modal.open({
+        templateUrl: 'templates/event-form-organizer-modal.html',
+        controller: 'EventFormOrganizerModalCtrl',
+      });
 
-        modalInstance.result.then(function (organizer) {
-          EventFormData.organizer = organizer;
-          saveOrganizer();
-          $scope.organizer = '';
-        }, function () {
-          // modal dismissed.
-          $scope.organizer = '';
-          $scope.emptyOrganizerAutocomplete = false;
-          if (EventFormData.organizer.id) {
-            $scope.organizerCssClass = 'state-complete';
-          }
-          else {
-            $scope.organizerCssClass = 'state-incomplete';
-          }
-        });
+      modalInstance.result.then(function (organizer) {
+        EventFormData.organizer = organizer;
+        saveOrganizer();
+        $scope.organizer = '';
+      }, function () {
+        // modal dismissed.
+        $scope.organizer = '';
+        $scope.emptyOrganizerAutocomplete = false;
+        if (EventFormData.organizer.id) {
+          $scope.organizerCssClass = 'state-complete';
+        }
+        else {
+          $scope.organizerCssClass = 'state-incomplete';
+        }
+      });
 
     }
 
@@ -7371,7 +7404,7 @@ EventFormFacilities.$inject = ["$q", "$http", "$cacheFactory", "appConfig"];
       // Only save with valid input.
       if ($scope.contactInfoForm.$valid) {
 
-      EventFormData.resetContactPoint();
+        EventFormData.resetContactPoint();
 
         // Copy all data to the correct contactpoint property.
         for (var i = 0; i < $scope.contactInfo.length; i++) {
@@ -7686,7 +7719,9 @@ function EventExportJobFactory(BaseJob, JobStates) {
   /**
    * @class EventExportJob
    * @constructor
-   * @param commandId
+   * @param   {string}    commandId
+   * @param   {number}    eventCount
+   * @param   {string}    format
    */
   var EventExportJob = function (commandId, eventCount, format) {
     BaseJob.call(this, commandId);
@@ -7715,10 +7750,10 @@ function EventExportJobFactory(BaseJob, JobStates) {
     return templateName;
   };
 
-  EventExportJob.prototype.getDescription = function() {
+  EventExportJob.prototype.getDescription = function () {
     var description = '';
 
-    if(this.state === JobStates.FAILED) {
+    if (this.state === JobStates.FAILED) {
       description = 'Exporteren van evenementen mislukt';
     } else {
       var exportExtension = this.exportUrl.split('.').pop();
@@ -7729,7 +7764,7 @@ function EventExportJobFactory(BaseJob, JobStates) {
   };
 
   EventExportJob.prototype.info = function (jobData) {
-    if(jobData.location) {
+    if (jobData.location) {
       this.exportUrl = jobData.location;
     }
   };
@@ -7762,59 +7797,26 @@ function EventExportController($modalInstance, udbApi, eventExporter, queryField
   exporter.dayByDay = false;
 
   exporter.eventProperties = [
-    { name: 'name', include: true, sortable: false, excludable: false},
-    { name: 'description', include: false, sortable: false, excludable: true},
-    { name: 'keywords', include: false, sortable: false, excludable: true},
-    { name: 'calendarSummary', include: true, sortable: false, excludable: false},
-    { name: 'image', include: true, sortable: false, excludable: true},
-    { name: 'location', include: true, sortable: false, excludable: false},
-    { name: 'address', include: true, sortable: false, excludable: true},
-    { name: 'organizer', include: false, sortable: false, excludable: true},
-    { name: 'bookingInfo', include: true, sortable: false, excludable: true},
-    { name: 'creator', include: false, sortable: false, excludable: true},
-    { name: 'terms.theme', include: true, sortable: false, excludable: true},
-    { name: 'terms.eventtype', include: true, sortable: false, excludable: true},
-    { name: 'created', include: false, sortable: false, excludable: true},
-    { name: 'endDate', include: false, sortable: false, excludable: true},
-    { name: 'startDate', include: false, sortable: false, excludable: true},
-    { name: 'calendarType', include: false, sortable: false, excludable: true},
-    { name: 'sameAs', include: false, sortable: false, excludable: true},
-    { name: 'typicalAgeRange', include: false, sortable: false, excludable: true},
-    { name: 'language', include: false, sortable: false, excludable: true}
+    {name: 'name', include: true, sortable: false, excludable: false},
+    {name: 'description', include: false, sortable: false, excludable: true},
+    {name: 'labels', include: false, sortable: false, excludable: true},
+    {name: 'calendarSummary', include: true, sortable: false, excludable: false},
+    {name: 'image', include: true, sortable: false, excludable: true},
+    {name: 'location', include: true, sortable: false, excludable: false},
+    {name: 'address', include: true, sortable: false, excludable: true},
+    {name: 'organizer', include: false, sortable: false, excludable: true},
+    {name: 'bookingInfo', include: true, sortable: false, excludable: true},
+    {name: 'creator', include: false, sortable: false, excludable: true},
+    {name: 'terms.theme', include: true, sortable: false, excludable: true},
+    {name: 'terms.eventtype', include: true, sortable: false, excludable: true},
+    {name: 'created', include: false, sortable: false, excludable: true},
+    {name: 'endDate', include: false, sortable: false, excludable: true},
+    {name: 'startDate', include: false, sortable: false, excludable: true},
+    {name: 'calendarType', include: false, sortable: false, excludable: true},
+    {name: 'sameAs', include: false, sortable: false, excludable: true},
+    {name: 'typicalAgeRange', include: false, sortable: false, excludable: true},
+    {name: 'language', include: false, sortable: false, excludable: true}
   ];
-
-  //exporter.fieldSorters = [];
-  //
-  //exporter.getUnsortedFields = function (includeName) {
-  //  var sortedFieldNames = _.map(exporter.fieldSorters, 'fieldName');
-  //
-  //  if(includeName) {
-  //    sortedFieldNames = _.without(sortedFieldNames, includeName);
-  //  }
-  //
-  //  var unsortedFields = _.filter(queryFields, function (field) {
-  //    return !_.contains(sortedFieldNames, field.name);
-  //  });
-  //
-  //  return unsortedFields;
-  //};
-  //
-  //exporter.addSorter = function () {
-  //  var unsortedFields = exporter.getUnsortedFields();
-  //
-  //  if(unsortedFields.length) {
-  //    var fieldSorter = {
-  //      fieldName: unsortedFields[0].name,
-  //      order: 'asc'
-  //    };
-  //
-  //    exporter.fieldSorters.push(fieldSorter);
-  //  } else {
-  //    $window.alert('Already sorting on every possible field');
-  //  }
-  //
-  //};
-  //exporter.addSorter();
 
   exporter.exportFormats = [
     {
@@ -7834,21 +7836,22 @@ function EventExportController($modalInstance, udbApi, eventExporter, queryField
    * You can add a callback to its incomplete property which will be used to check if a step is completed.
    */
   exporter.steps = [
-    { name: 'format' },
-    { name: 'filter',
+    {name: 'format'},
+    {
+      name: 'filter',
       incomplete: function () {
-        return !_.find(exporter.eventProperties, function(property) {
+        return !_.find(exporter.eventProperties, function (property) {
           return property.include === true;
         });
       }
     },
     //{name: 'sort' },
-    { name: 'confirm' }
+    {name: 'confirm'}
   ];
 
   var activeStep = 0;
   exporter.nextStep = function () {
-    if(exporter.isStepCompleted()) {
+    if (exporter.isStepCompleted()) {
       setActiveStep(activeStep + 1);
     }
   };
@@ -7859,7 +7862,7 @@ function EventExportController($modalInstance, udbApi, eventExporter, queryField
 
   exporter.isStepCompleted = function () {
 
-    if(activeStep === -1) {
+    if (activeStep === -1) {
       return true;
     }
 
@@ -7868,9 +7871,9 @@ function EventExportController($modalInstance, udbApi, eventExporter, queryField
   };
 
   function setActiveStep(stepIndex) {
-    if(stepIndex < 0) {
+    if (stepIndex < 0) {
       activeStep = 0;
-    } else if(stepIndex > exporter.steps.length) {
+    } else if (stepIndex > exporter.steps.length) {
       activeStep = exporter.steps.length;
     } else {
       activeStep = stepIndex;
@@ -7883,7 +7886,7 @@ function EventExportController($modalInstance, udbApi, eventExporter, queryField
 
   exporter.getActiveStepName = function () {
 
-    if(activeStep === -1) {
+    if (activeStep === -1) {
       return 'finished';
     }
 
@@ -7903,9 +7906,9 @@ function EventExportController($modalInstance, udbApi, eventExporter, queryField
 
   exporter.format = exporter.exportFormats[0].type;
   exporter.email = '';
-  
+
   udbApi.getMe().then(function (user) {
-    if(user.mbox) {
+    if (user.mbox) {
       exporter.email = user.mbox;
     }
   });
@@ -8055,10 +8058,10 @@ function udbQueryEditorField() {
     restrict: 'E',
     link: function postLink(scope, element, attrs) {
 
-      function getParentGroup () {
+      function getParentGroup() {
         var parentGroup;
 
-        if(isSubGroup()) {
+        if (isSubGroup()) {
           parentGroup = scope.$parent.field;
         } else {
           parentGroup = scope.rootGroup;
@@ -8069,7 +8072,7 @@ function udbQueryEditorField() {
 
       function getOperatorClass() {
         var operatorClass;
-        if(isSubGroup() && scope.$index === 0) {
+        if (isSubGroup() && scope.$index === 0) {
           operatorClass = 'AND';
         } else {
           operatorClass = scope.$index ? 'OR' : 'FIRST';
@@ -8098,12 +8101,12 @@ function udbQueryEditorField() {
 
       scope.addSubGroup = function (index) {
         var rootGroup = scope.rootGroup,
-          treeGroupId = _.uniqueId(),
+            treeGroupId = _.uniqueId(),
             group = getParentGroup();
 
         group.treeGroupId = treeGroupId;
 
-        if(isSubGroup()) {
+        if (isSubGroup()) {
           index = _.findIndex(rootGroup.nodes, function (group) {
             return group.treeGroupId === treeGroupId;
           });
@@ -8118,6 +8121,7 @@ function udbQueryEditorField() {
     }
   };
 }
+
 // Source: src/search/components/query-editor.directive.js
 /**
  * @ngdoc directive
@@ -8151,7 +8155,7 @@ function udbQueryEditor(
 
       // use the first occurrence of a group name to order it against the other groups
       var orderedGroups = _.chain(qe.fields)
-        .map(function(field) {
+        .map(function (field) {
           return field.group;
         })
         .uniq()
@@ -8168,7 +8172,6 @@ function udbQueryEditor(
         });
       });
 
-      qe.operators = ['AND', 'OR'];
       qe.groupedQueryTree = {
         type: 'root',
         nodes: [
@@ -8186,7 +8189,6 @@ function udbQueryEditor(
           }
         ]
       };
-      qe.colorScheme = ['rgb(141,211,199)', 'rgb(255,255,179)', 'rgb(190,186,218)', 'rgb(251,128,114)', 'rgb(128,177,211)', 'rgb(253,180,98)', 'rgb(179,222,105)', 'rgb(252,205,229)', 'rgb(217,217,217)', 'rgb(188,128,189)', 'rgb(204,235,197)'];
 
       // Holds options for both term and choice query-field types
       qe.transformers = {};
@@ -8215,7 +8217,8 @@ function udbQueryEditor(
       /**
        * Add a field to a group
        *
-       * @param {number}  groupIndex  The index of the group to add the field to
+       * @param  {object}  group       The group to add the field to
+       * @param {number}  fieldIndex  The index of the field after which to add
        */
       qe.addField = function (group, fieldIndex) {
 
@@ -8257,26 +8260,26 @@ function udbQueryEditor(
       qe.unwrapSubGroups = function () {
         var root = qe.groupedQueryTree;
 
-        _.forEach(root.nodes, function(group) {
-            var firstNode = group.nodes[0];
+        _.forEach(root.nodes, function (group) {
+          var firstNode = group.nodes[0];
 
-            if(firstNode.nodes) {
-              var firstNodeChildren = firstNode.nodes;
-              group.nodes.splice(0, 1);
-              _.forEach(firstNodeChildren, function (node, index) {
-                group.nodes.splice(index, 0, node);
-              });
-            }
+          if (firstNode.nodes) {
+            var firstNodeChildren = firstNode.nodes;
+            group.nodes.splice(0, 1);
+            _.forEach(firstNodeChildren, function (node, index) {
+              group.nodes.splice(index, 0, node);
+            });
+          }
         });
       };
 
       qe.removeEmptyGroups = function () {
         var root = qe.groupedQueryTree;
 
-        _.forEach(root.nodes, function(group) {
-            _.remove(group.nodes, function (node) {
-              return node.nodes && node.nodes.length === 0;
-            });
+        _.forEach(root.nodes, function (group) {
+          _.remove(group.nodes, function (node) {
+            return node.nodes && node.nodes.length === 0;
+          });
         });
       };
 
@@ -8289,7 +8292,7 @@ function udbQueryEditor(
       };
 
       qe.removeGroup = function (groupIndex) {
-        if(qe.canRemoveGroup()) {
+        if (qe.canRemoveGroup()) {
           var root = qe.groupedQueryTree,
               group = root.nodes[groupIndex];
 
@@ -8339,9 +8342,9 @@ function udbQueryEditor(
 
       qe.updateFieldType = function (field) {
         var fieldName = field.field,
-          queryField = _.find(queryFields, function (field) {
-            return field.name === fieldName;
-          });
+            queryField = _.find(queryFields, function (field) {
+              return field.name === fieldName;
+            });
 
         if (field.fieldType !== queryField.type) {
           // TODO: Maybe try to do a type conversion?
@@ -8448,6 +8451,7 @@ function udbSearchBar(searchHelper, $rootScope) {
   };
 }
 udbSearchBar.$inject = ["searchHelper", "$rootScope"];
+
 // Source: src/search/filters/currency.filter.js
 /**
  * @ngdoc filter
@@ -8503,16 +8507,16 @@ angular.module('udb.search')
 function JsonLDLangFilter() {
   return function (jsonLDObject, preferredLanguage, shouldFallback) {
     var translatedObject = _.cloneDeep(jsonLDObject),
-      containedProperties = ['name', 'description'],
-      languages = ['nl', 'en', 'fr', 'de'],
-    // set a default language if none is specified
-      language = preferredLanguage || 'nl';
+        containedProperties = ['name', 'description'],
+        languages = ['nl', 'en', 'fr', 'de'],
+        // set a default language if none is specified
+        language = preferredLanguage || 'nl';
 
     _.each(containedProperties, function (property) {
       // make sure the property is set on the object
       if (translatedObject[property]) {
         var translatedProperty = translatedObject[property][language],
-          langIndex = 0;
+            langIndex = 0;
 
         // if there is no translation available for the provided language or default language
         // check for a default language
@@ -8531,7 +8535,6 @@ function JsonLDLangFilter() {
     return translatedObject;
   };
 }
-
 
 // Source: src/search/services/field-type-transformers.value.js
 /**
@@ -8612,12 +8615,12 @@ function LuceneQueryBuilder(LuceneQueryParser, QueryTreeValidator, QueryTreeTran
 
   var printTerm = function (node) {
     var term = node.term,
-      isRangeExpression = (node.lowerBound || node.upperBound);
+        isRangeExpression = (node.lowerBound || node.upperBound);
 
     if (isRangeExpression) {
       var min = node.lowerBound || '*',
-        max = node.upperBound || '*',
-        inclusive = node.inclusive;
+          max = node.upperBound || '*',
+          inclusive = node.inclusive;
 
       if (min instanceof Date) {
         min = min.toISOString();
@@ -8667,7 +8670,7 @@ function LuceneQueryBuilder(LuceneQueryParser, QueryTreeValidator, QueryTreeTran
 
     if (branch.left) {
       var result,
-        operator = (branch.operator === implicitToken) ? ' ' : (' ' + branch.operator + ' ');
+          operator = (branch.operator === implicitToken) ? ' ' : (' ' + branch.operator + ' ');
 
       if (branch.right) {
         result = unparseNode(branch.left, depth + 1, sentence);
@@ -8690,7 +8693,7 @@ function LuceneQueryBuilder(LuceneQueryParser, QueryTreeValidator, QueryTreeTran
 
     } else {
       var fieldQuery = '',
-        term = printTerm(branch);
+          term = printTerm(branch);
 
       if (branch.field !== implicitToken && branch.field !== null) {
         var fieldPrefix = '';
@@ -8727,13 +8730,12 @@ function LuceneQueryBuilder(LuceneQueryParser, QueryTreeValidator, QueryTreeTran
     return queryString;
   };
 
-
   function printTreeField(field) {
     if (field.fieldType === 'date-range') {
       cleanUpDateRangeField(field);
     }
     var transformedField = transformField(field);
-    return  transformedField.field + ':' + printTerm(transformedField);
+    return transformedField.field + ':' + printTerm(transformedField);
   }
 
   /**
@@ -8755,12 +8757,12 @@ function LuceneQueryBuilder(LuceneQueryParser, QueryTreeValidator, QueryTreeTran
         _.forEach(group.nodes, function (field, fieldIndex) {
 
           // check if the field is actually a sub group
-          if(field.type === 'group') {
+          if (field.type === 'group') {
 
             var subGroup = field,
                 subGroupString = ' ';
 
-            if(subGroup.nodes.length === 1) {
+            if (subGroup.nodes.length === 1) {
               var singleField = subGroup.nodes[0];
               subGroupString += subGroup.operator + ' ' + printTreeField(singleField);
             } else {
@@ -8784,7 +8786,7 @@ function LuceneQueryBuilder(LuceneQueryParser, QueryTreeValidator, QueryTreeTran
           }
         });
 
-        if(root.nodes.length > 1 && group.nodes.length > 1) {
+        if (root.nodes.length > 1 && group.nodes.length > 1) {
           nodeString = '(' + nodeString + ')';
         }
       } else {
@@ -9020,7 +9022,7 @@ function LuceneQueryBuilder(LuceneQueryParser, QueryTreeValidator, QueryTreeTran
 
           if (fieldType.type === 'date-range') {
             var startDate = moment(field.lowerBound),
-              endDate = moment(field.upperBound);
+                endDate = moment(field.upperBound);
 
             if (startDate.isValid() && endDate.isValid()) {
               if (startDate.isSame(endDate, 'day')) {
@@ -9106,13 +9108,13 @@ function LuceneQueryBuilder(LuceneQueryParser, QueryTreeValidator, QueryTreeTran
    */
   function makeField(node, fieldName) {
     var fieldType = _.find(queryFields, function (type) {
-        return type.name === node.field;
-      }),
-      field = {
-        field: fieldName || node.field,
-        fieldType: fieldType || 'string',
-        transformer: node.transformer || '='
-      };
+          return type.name === node.field;
+        }),
+        field = {
+          field: fieldName || node.field,
+          fieldType: fieldType || 'string',
+          transformer: node.transformer || '='
+        };
 
     if (node.lowerBound || node.upperBound) {
       field.lowerBound = node.lowerBound || undefined;
@@ -9164,7 +9166,7 @@ angular
       'TITLE' : 'titel',
       'KEYWORDS' : 'label',
       'CITY' : 'gemeente',
-      'ORGANISER_KEYWORDS': 'organisatie-tag',
+      'ORGANISER_KEYWORDS': 'organisatie-label',
       'ZIPCODE' : 'postcode',
       'COUNTRY' : 'land',
       'PHYSICAL_GIS' : 'geo',
@@ -9248,7 +9250,6 @@ angular
     {name: 'category_facility_name', type: 'term', group: 'other', editable: true},
     {name: 'category_targetaudience_name', type: 'term', group: 'other', editable: true},
     {name: 'category_publicscope_name', type: 'term', group: 'other', editable: true},
-
 
     {name: 'like_count', type: 'number'},
     {name: 'recommend_count', type: 'number'},
@@ -9423,9 +9424,9 @@ angular.module('udb.search')
   .factory('SearchResultViewer', function () {
 
     var SelectionState = {
-      ALL: { 'name': 'all', 'icon': 'fa-check-square' },
-      NONE: { 'name': 'none', 'icon': 'fa-square-o' },
-      SOME: { 'name': 'some', 'icon': 'fa-minus-square' }
+      ALL: {'name': 'all', 'icon': 'fa-check-square'},
+      NONE: {'name': 'none', 'icon': 'fa-square-o'},
+      SOME: {'name': 'some', 'icon': 'fa-minus-square'}
     };
 
     var identifyItem = function (event) {
@@ -9435,16 +9436,16 @@ angular.module('udb.search')
     /**
      * @class SearchResultViewer
      * @constructor
-     * @param pagSize
+     * @param    {number}     pageSize        The number of items shown per page
      *
-     * @property {object[]}   events       - A list of json-LD event objects
-     * @property {number}     pageSize     - The current page size
-     * @property {number}     totalItems   - The total items found
-     * @property {number}     currentPage  - The index of the current page without zeroing
-     * @property {boolean}    loading      - A flag to indicate the period between changing of the query and
-     *                                       receiving of the results.
-     * @property {object} eventProperties A list of event properties that can be shown complementary
-     * @property {array} eventSpecifics A list of specific event info that can be shown exclusively
+     * @property {object[]}   events          A list of json-LD event objects
+     * @property {number}     pageSize        The current page size
+     * @property {number}     totalItems      The total items found
+     * @property {number}     currentPage     The index of the current page without zeroing
+     * @property {boolean}    loading         A flag to indicate the period between changing of the query and
+     *                                        receiving of the results.
+     * @property {object}     eventProperties A list of event properties that can be shown complementary
+     * @property {array}      eventSpecifics  A list of specific event info that can be shown exclusively
      * @property {SelectionState} selectionState Enum that keeps the state of selected results
      */
     var SearchResultViewer = function (pageSize) {
@@ -9459,9 +9460,9 @@ angular.module('udb.search')
         image: {name: 'Afbeelding', visible: false}
       };
       this.eventSpecifics = [
-        { id: 'input', name: 'Invoer-informatie'},
-        { id: 'price', name: 'Prijs-informatie'},
-        { id: 'translation', name: 'Vertaalstatus'}
+        {id: 'input', name: 'Invoer-informatie'},
+        {id: 'price', name: 'Prijs-informatie'},
+        {id: 'translation', name: 'Vertaalstatus'}
       ];
       this.activeSpecific = this.eventSpecifics[0];
       this.selectedIds = [];
@@ -9473,9 +9474,9 @@ angular.module('udb.search')
       toggleSelection: function () {
         var state = this.selectionState;
 
-        if( state === SelectionState.SOME || state === SelectionState.ALL) {
+        if (state === SelectionState.SOME || state === SelectionState.ALL) {
           this.deselectPageItems();
-          if(this.querySelected) {
+          if (this.querySelected) {
             this.deselectAll();
             this.querySelected = false;
           }
@@ -9489,13 +9490,13 @@ angular.module('udb.search')
       },
       updateSelectionState: function () {
         var selectedIds = this.selectedIds,
-            selectedPageItems = _.filter(this.events, function(event) {
+            selectedPageItems = _.filter(this.events, function (event) {
               return _.contains(selectedIds, identifyItem(event));
             });
 
-        if(selectedPageItems.length === this.pageSize) {
+        if (selectedPageItems.length === this.pageSize) {
           this.selectionState = SelectionState.ALL;
-        } else if (selectedPageItems.length > 0 ) {
+        } else if (selectedPageItems.length > 0) {
           this.selectionState = SelectionState.SOME;
         } else {
           this.selectionState = SelectionState.NONE;
@@ -9504,15 +9505,17 @@ angular.module('udb.search')
       toggleSelectId: function (id) {
 
         // Prevent toggling individual items when the whole query is selected
-        if(this.querySelected) {
+        if (this.querySelected) {
           return;
         }
 
         var selectedIds = this.selectedIds,
-          isSelected = _.contains(selectedIds, id);
+            isSelected = _.contains(selectedIds, id);
 
-        if(isSelected) {
-          _.remove(selectedIds, function(iid) { return id === iid; });
+        if (isSelected) {
+          _.remove(selectedIds, function (iid) {
+            return id === iid;
+          });
         } else {
           selectedIds.push(id);
         }
@@ -9536,7 +9539,7 @@ angular.module('udb.search')
       },
       selectPageItems: function () {
         var events = this.events,
-          selectedIds = this.selectedIds;
+            selectedIds = this.selectedIds;
 
         _.each(events, function (event) {
           selectedIds.push(identifyItem(event));
@@ -9556,7 +9559,7 @@ angular.module('udb.search')
         viewer.totalItems = pagedResults.totalItems || 0;
 
         viewer.loading = false;
-        if(this.querySelected) {
+        if (this.querySelected) {
           this.selectPageItems();
         }
         this.updateSelectionState();
@@ -9598,7 +9601,7 @@ angular
   .directive('udbEvent', udbEvent);
 
 /* @ngInject */
-function udbEvent(udbApi, jsonLDLangFilter, eventTranslator, eventTagger) {
+function udbEvent(udbApi, jsonLDLangFilter, eventTranslator, eventLabeller) {
   var event = {
     restrict: 'A',
     link: function postLink(scope, iElement, iAttrs) {
@@ -9611,11 +9614,11 @@ function udbEvent(udbApi, jsonLDLangFilter, eventTranslator, eventTagger) {
 
       function updateTranslationState(event) {
         var languages = {'en': false, 'fr': false, 'de': false},
-          properties = ['name', 'description'];
+            properties = ['name', 'description'];
 
         _.forEach(languages, function (language, languageKey) {
           var translationCount = 0,
-            state;
+              state;
 
           _.forEach(properties, function (property) {
             if (event[property] && event[property][languageKey]) {
@@ -9664,7 +9667,7 @@ function udbEvent(udbApi, jsonLDLangFilter, eventTranslator, eventTagger) {
         {'lang': 'en'},
         {'lang': 'de'}
       ];
-      scope.availableLabels = eventTagger.recentLabels;
+      scope.availableLabels = eventLabeller.recentLabels;
 
       // The event object that's returned from the server
       var event;
@@ -9676,7 +9679,7 @@ function udbEvent(udbApi, jsonLDLangFilter, eventTranslator, eventTagger) {
         eventPromise.then(function (eventObject) {
           event = eventObject;
           updateTranslationState(event);
-          scope.availableLabels = _.union(event.labels, eventTagger.recentLabels);
+          scope.availableLabels = _.union(event.labels, eventLabeller.recentLabels);
           scope.event = jsonLDLangFilter(event, 'nl');
           scope.fetching = false;
         });
@@ -9688,7 +9691,7 @@ function udbEvent(udbApi, jsonLDLangFilter, eventTranslator, eventTagger) {
       /**
        * Sets the provided language as active or toggles it off when already active
        *
-       * @param lang
+       * @param {String} lang
        */
       function toggleLanguage(lang) {
 
@@ -9705,14 +9708,14 @@ function udbEvent(udbApi, jsonLDLangFilter, eventTranslator, eventTagger) {
 
       scope.hasPropertyChanged = function (propertyName) {
         var lang = scope.activeLanguage,
-          translation = scope.eventTranslation;
+            translation = scope.eventTranslation;
 
         return scope.eventTranslation && event[propertyName][lang] !== translation[propertyName];
       };
 
       scope.undoPropertyChanges = function (propertyName) {
         var lang = scope.activeLanguage,
-          translation = scope.eventTranslation;
+            translation = scope.eventTranslation;
 
         if (translation) {
           translation[propertyName] = event[propertyName][lang];
@@ -9721,7 +9724,7 @@ function udbEvent(udbApi, jsonLDLangFilter, eventTranslator, eventTagger) {
 
       scope.applyPropertyChanges = function (propertyName) {
         var translation = scope.eventTranslation[propertyName],
-          apiProperty;
+            apiProperty;
 
         // TODO: this is hacky, should decide on consistent name for this property
         if (propertyName === 'name') {
@@ -9738,7 +9741,7 @@ function udbEvent(udbApi, jsonLDLangFilter, eventTranslator, eventTagger) {
 
       function translateEventProperty(property, translation, apiProperty) {
         var language = scope.activeLanguage,
-          udbProperty = apiProperty || property;
+            udbProperty = apiProperty || property;
 
         if (translation && translation !== event[property][language]) {
           var translationPromise = eventTranslator.translateProperty(event, udbProperty, language, translation);
@@ -9750,18 +9753,19 @@ function udbEvent(udbApi, jsonLDLangFilter, eventTranslator, eventTagger) {
       }
 
       scope.labelAdded = function (label) {
-        eventTagger.tag(event, label);
+        eventLabeller.label(event, label);
       };
 
       scope.labelRemoved = function (label) {
-        eventTagger.untag(event, label);
+        eventLabeller.unlabel(event, label);
       };
     }
   };
 
   return event;
 }
-udbEvent.$inject = ["udbApi", "jsonLDLangFilter", "eventTranslator", "eventTagger"];
+udbEvent.$inject = ["udbApi", "jsonLDLangFilter", "eventTranslator", "eventLabeller"];
+
 // Source: src/search/ui/search.controller.js
 /**
  * @ngdoc function
@@ -9775,7 +9779,7 @@ angular
   .controller('Search', Search);
 
 /* @ngInject */
-function Search($scope, udbApi, LuceneQueryBuilder, $window, $location, $modal, SearchResultViewer, eventTagger,
+function Search($scope, udbApi, LuceneQueryBuilder, $window, $location, $modal, SearchResultViewer, eventLabeller,
                 searchHelper, $rootScope, eventExporter) {
 
   var queryBuilder = LuceneQueryBuilder;
@@ -9806,7 +9810,7 @@ function Search($scope, udbApi, LuceneQueryBuilder, $window, $location, $modal, 
 
   /**
    * This debounce function can be used to delay searching when an input field changes.
-   * @param {String} A query string used to find events.
+   * @param {String} queryString A query string used to find events.
    */
   var debouncedFindEvents = _.debounce(function (queryString) {
     findEvents(queryString);
@@ -9814,7 +9818,7 @@ function Search($scope, udbApi, LuceneQueryBuilder, $window, $location, $modal, 
 
   /**
    *
-   * @param Query A query object used to update the interface and result viewer.
+   * @param {Query} query A query object used to update the interface and result viewer.
    */
   var updateQuery = function (query) {
     var realQuery = queryBuilder.unparse(query);
@@ -9830,7 +9834,7 @@ function Search($scope, udbApi, LuceneQueryBuilder, $window, $location, $modal, 
 
   /**
    * Fires off a search for events using a plain query string or a query object.
-   * @param {String|Query} A query string or object to search with.
+   * @param {String|Query} query A query string or object to search with.
    */
   var findEvents = function (query) {
     var offset = ($scope.resultViewer.currentPage - 1) * $scope.resultViewer.pageSize;
@@ -9857,28 +9861,28 @@ function Search($scope, udbApi, LuceneQueryBuilder, $window, $location, $modal, 
     });
   };
 
-  var tag = function () {
-    var taggingQuery = $scope.resultViewer.querySelected;
+  var label = function () {
+    var labellingQuery = $scope.resultViewer.querySelected;
 
-    if(taggingQuery) {
-      tagActiveQuery();
+    if (labellingQuery) {
+      labelActiveQuery();
     } else {
-      tagSelection();
+      labelSelection();
     }
   };
 
-  var tagSelection = function () {
+  var labelSelection = function () {
 
     var selectedIds = $scope.resultViewer.selectedIds;
 
     if (!selectedIds.length) {
-      $window.alert('First select the events you want to tag.');
+      $window.alert('First select the events you want to label.');
       return;
     }
 
     var modal = $modal.open({
-      templateUrl: 'templates/event-tag-modal.html',
-      controller: 'EventTagModalCtrl'
+      templateUrl: 'templates/event-label-modal.html',
+      controller: 'EventLabelModalCtrl'
     });
 
     modal.result.then(function (labels) {
@@ -9896,28 +9900,28 @@ function Search($scope, udbApi, LuceneQueryBuilder, $window, $location, $modal, 
       });
 
       _.each(labels, function (label) {
-        eventTagger.tagEventsById(eventIds, label);
+        eventLabeller.labelEventsById(eventIds, label);
       });
     });
   };
 
-  function tagActiveQuery() {
+  function labelActiveQuery() {
     var query = $scope.activeQuery,
-      eventCount = $scope.resultViewer.totalItems;
+        eventCount = $scope.resultViewer.totalItems;
 
     if (queryBuilder.isValid(query)) {
       var modal = $modal.open({
-        templateUrl: 'templates/event-tag-modal.html',
-        controller: 'EventTagModalCtrl'
+        templateUrl: 'templates/event-label-modal.html',
+        controller: 'EventLabelModalCtrl'
       });
 
       modal.result.then(function (labels) {
         _.each(labels, function (label) {
-          eventTagger.tagQuery(query.queryString, label, eventCount);
+          eventLabeller.labelQuery(query.queryString, label, eventCount);
         });
       });
     } else {
-      $window.alert('provide a valid query to tag');
+      $window.alert('provide a valid query to label');
     }
   }
 
@@ -9927,13 +9931,13 @@ function Search($scope, udbApi, LuceneQueryBuilder, $window, $location, $modal, 
         eventCount,
         selectedIds = [];
 
-    if(exportingQuery) {
+    if (exportingQuery) {
       eventCount = $scope.resultViewer.totalItems;
     } else {
       selectedIds = $scope.resultViewer.selectedIds;
 
       if (!selectedIds.length) {
-        $window.alert('First select the events you want to tag.');
+        $window.alert('First select the events you want to label.');
         return;
       } else {
         eventCount = selectedIds.length;
@@ -9957,7 +9961,7 @@ function Search($scope, udbApi, LuceneQueryBuilder, $window, $location, $modal, 
   }
 
   $scope.exportEvents = exportEvents;
-  $scope.tag = tag;
+  $scope.label = label;
 
   $scope.startEditing = function () {
     $scope.queryEditorShown = true;
@@ -9995,7 +9999,7 @@ function Search($scope, udbApi, LuceneQueryBuilder, $window, $location, $modal, 
   });
 
 }
-Search.$inject = ["$scope", "udbApi", "LuceneQueryBuilder", "$window", "$location", "$modal", "SearchResultViewer", "eventTagger", "searchHelper", "$rootScope", "eventExporter"];
+Search.$inject = ["$scope", "udbApi", "LuceneQueryBuilder", "$window", "$location", "$modal", "SearchResultViewer", "eventLabeller", "searchHelper", "$rootScope", "eventExporter"];
 
 // Source: src/search/ui/search.directive.js
 /**
@@ -10098,6 +10102,34 @@ $templateCache.put('templates/time-autocomplete.html',
   );
 
 
+  $templateCache.put('templates/event-label-modal.html',
+    "<div class=\"modal-body\">\n" +
+    "\n" +
+    "  <label>Labels</label>\n" +
+    "\n" +
+    "  <div class=\"row\">\n" +
+    "    <div class=\"col-lg-12\">\n" +
+    "      <input type=\"text\" ng-model=\"labelNames\" class=\"form-control\"/>\n" +
+    "    </div>\n" +
+    "\n" +
+    "    <div class=\"col-lg-12\">\n" +
+    "      <div class=\"checkbox\" ng-repeat=\"label in labelSelection\">\n" +
+    "        <label>\n" +
+    "          <input type=\"checkbox\" ng-model=\"label.selected\"/>\n" +
+    "          <span ng-bind=\"label.name\"></span>\n" +
+    "        </label>\n" +
+    "      </div>\n" +
+    "    </div>\n" +
+    "  </div>\n" +
+    "</div>\n" +
+    "\n" +
+    "<div class=\"modal-footer\">\n" +
+    "  <button class=\"btn btn-primary\" ng-click=\"ok()\">label</button>\n" +
+    "  <button class=\"btn btn-warning\" ng-click=\"close()\">annuleren</button>\n" +
+    "</div>"
+  );
+
+
   $templateCache.put('templates/base-job.template.html',
     "<p>\n" +
     "  <ins>\n" +
@@ -10154,34 +10186,6 @@ $templateCache.put('templates/time-autocomplete.html',
     "      </div>\n" +
     "    </div>\n" +
     "  </div>\n" +
-    "</div>"
-  );
-
-
-  $templateCache.put('templates/event-tag-modal.html',
-    "<div class=\"modal-body\">\n" +
-    "\n" +
-    "  <label>Labels</label>\n" +
-    "\n" +
-    "  <div class=\"row\">\n" +
-    "    <div class=\"col-lg-12\">\n" +
-    "      <input type=\"text\" ng-model=\"labelNames\" class=\"form-control\"/>\n" +
-    "    </div>\n" +
-    "\n" +
-    "    <div class=\"col-lg-12\">\n" +
-    "      <div class=\"checkbox\" ng-repeat=\"label in labelSelection\">\n" +
-    "        <label>\n" +
-    "          <input type=\"checkbox\" ng-model=\"label.selected\"/>\n" +
-    "          <span ng-bind=\"label.name\"></span>\n" +
-    "        </label>\n" +
-    "      </div>\n" +
-    "    </div>\n" +
-    "  </div>\n" +
-    "</div>\n" +
-    "\n" +
-    "<div class=\"modal-footer\">\n" +
-    "  <button class=\"btn btn-primary\" ng-click=\"ok()\">label</button>\n" +
-    "  <button class=\"btn btn-warning\" ng-click=\"close()\">annuleren</button>\n" +
     "</div>"
   );
 
@@ -11980,7 +11984,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "                <div class=\"col-sm-12 rv-first-column\">\n" +
     "                    <span ng-bind=\"resultViewer.querySelected ? resultViewer.totalItems : resultViewer.selectedIds.length\"></span> items geselecteerd\n" +
     "\n" +
-    "                    <button class=\"btn btn-default rv-action\" ng-click=\"tag()\">\n" +
+    "                    <button class=\"btn btn-default rv-action\" ng-click=\"label()\">\n" +
     "                        <i class=\"fa fa-tag\"></i> Labelen\n" +
     "                    </button>\n" +
     "                    <button class=\"btn btn-default rv-action\" ng-click=\"exportEvents()\">\n" +
@@ -12169,7 +12173,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "                          </div>\n" +
     "\n" +
     "                          <div ng-show=\"resultViewer.eventProperties.labels.visible\" class=\"udb-labels\">\n" +
-    "                              <span ng-hide=\"event.labels.length\">Dit evenement is nog niet getagd.</span>\n" +
+    "                              <span ng-hide=\"event.labels.length\">Dit evenement is nog niet gelabeld.</span>\n" +
     "                              <ui-select multiple ng-model=\"event.labels\" tagging tagging-label=\"(label toevoegen)\"\n" +
     "                                         ng-disabled=\"disabled\" reset-search-input=\"true\" tagging-tokens=\"ENTER|;\"\n" +
     "                                         on-select=\"labelAdded($item)\" on-remove=\"labelRemoved($item)\">\n" +

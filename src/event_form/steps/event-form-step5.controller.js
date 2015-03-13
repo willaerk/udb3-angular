@@ -301,26 +301,26 @@
      */
     function openOrganizerModal() {
 
-        var modalInstance = $modal.open({
-          templateUrl: 'templates/event-form-organizer-modal.html',
-          controller: 'EventFormOrganizerModalCtrl',
-        });
+      var modalInstance = $modal.open({
+        templateUrl: 'templates/event-form-organizer-modal.html',
+        controller: 'EventFormOrganizerModalCtrl',
+      });
 
-        modalInstance.result.then(function (organizer) {
-          EventFormData.organizer = organizer;
-          saveOrganizer();
-          $scope.organizer = '';
-        }, function () {
-          // modal dismissed.
-          $scope.organizer = '';
-          $scope.emptyOrganizerAutocomplete = false;
-          if (EventFormData.organizer.id) {
-            $scope.organizerCssClass = 'state-complete';
-          }
-          else {
-            $scope.organizerCssClass = 'state-incomplete';
-          }
-        });
+      modalInstance.result.then(function (organizer) {
+        EventFormData.organizer = organizer;
+        saveOrganizer();
+        $scope.organizer = '';
+      }, function () {
+        // modal dismissed.
+        $scope.organizer = '';
+        $scope.emptyOrganizerAutocomplete = false;
+        if (EventFormData.organizer.id) {
+          $scope.organizerCssClass = 'state-complete';
+        }
+        else {
+          $scope.organizerCssClass = 'state-incomplete';
+        }
+      });
 
     }
 
@@ -374,7 +374,7 @@
       // Only save with valid input.
       if ($scope.contactInfoForm.$valid) {
 
-      EventFormData.resetContactPoint();
+        EventFormData.resetContactPoint();
 
         // Copy all data to the correct contactpoint property.
         for (var i = 0; i < $scope.contactInfo.length; i++) {

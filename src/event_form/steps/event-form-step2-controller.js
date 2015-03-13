@@ -20,9 +20,9 @@
     $scope.eventFormData = EventFormData;
 
     $scope.calendarLabels = [
-      { 'label': 'Eén of meerdere dagen', 'id' : 'single', 'eventOnly' : true },
-      { 'label': 'Van ... tot ... ', 'id' : 'periodic', 'eventOnly' : true },
-      { 'label' : 'Permanent', 'id' : 'permanent', 'eventOnly' : false }
+      {'label': 'Eén of meerdere dagen', 'id' : 'single', 'eventOnly' : true},
+      {'label': 'Van ... tot ... ', 'id' : 'periodic', 'eventOnly' : true},
+      {'label' : 'Permanent', 'id' : 'permanent', 'eventOnly' : false}
     ];
     $scope.hasOpeningHours = false;
 
@@ -99,7 +99,7 @@
 
     /**
      * Toggle the starthour field for given timestamp.
-     * @param timestamp
+     * @param {string} timestamp
      *   Timestamp to change
      */
     function toggleStartHour(timestamp) {
@@ -117,7 +117,7 @@
 
     /**
      * Toggle the endhour field for given timestamp
-     * @param timestamp
+     * @param {string} timestamp
      *   Timestamp to change
      */
     function toggleEndHour(timestamp) {

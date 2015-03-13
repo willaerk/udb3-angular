@@ -28,7 +28,7 @@ function Udb3Content($q, $http, appConfig) {
    */
 
   this.getNoOmdEventsMessage = function() {
-    
+
     return $http.get(appConfig.udb3BaseUrl + '/omd/no_omd_events_message');
 
   };

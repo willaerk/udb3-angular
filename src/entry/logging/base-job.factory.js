@@ -41,7 +41,6 @@ function BaseJobFactory(JobStates) {
    */
   BaseJob.prototype.constructor = BaseJob;
 
-
   // The following functions are used to update the job state based on feedback of the server.
 
   BaseJob.prototype.fail = function () {
@@ -54,7 +53,7 @@ function BaseJobFactory(JobStates) {
   };
 
   BaseJob.prototype.finish = function () {
-    if(this.state !== JobStates.FAILED) {
+    if (this.state !== JobStates.FAILED) {
       this.state = JobStates.FINISHED;
     }
     this.progress = 100;
@@ -66,8 +65,8 @@ function BaseJobFactory(JobStates) {
    *
    * @param {object}  jobData
    */
-  BaseJob.prototype.info = function (jobData) {};
-
+  BaseJob.prototype.info = function (jobData) {
+  };
 
   /**
    * Renders the job description based on its details.
@@ -89,7 +88,7 @@ function BaseJobFactory(JobStates) {
   BaseJob.prototype.getTemplateName = function () {
     var templateName;
 
-    if(this.state === JobStates.FAILED) {
+    if (this.state === JobStates.FAILED) {
       templateName = 'failed-job';
     } else {
       templateName = 'base-job';
@@ -107,7 +106,7 @@ function BaseJobFactory(JobStates) {
 
     var duplicateTask = _.find(this.tasks, {id: task.id});
 
-    if(!duplicateTask) {
+    if (!duplicateTask) {
       this.tasks.push(task);
     }
   };
@@ -125,23 +124,22 @@ function BaseJobFactory(JobStates) {
    */
   BaseJob.prototype.findTask = function (taskData) {
     var taskId = taskData['event_id'], // jshint ignore:line
-        task =  _.find(this.tasks, { id: taskId});
+        task = _.find(this.tasks, {id: taskId});
 
-    if(!task) {
-      task = { id: taskId};
+    if (!task) {
+      task = {id: taskId};
       this.addTask(task);
     }
 
     return task;
   };
 
-
   // These functions are used to update this job's task state based on feedback from the server.
 
   BaseJob.prototype.failTask = function (taskData) {
     var task = this.findTask(taskData);
 
-    if(task) {
+    if (task) {
       task.state = 'failed';
       this.updateProgress();
     }
@@ -150,7 +148,7 @@ function BaseJobFactory(JobStates) {
   BaseJob.prototype.finishTask = function (taskData) {
     var task = this.findTask(taskData);
 
-    if(task) {
+    if (task) {
       task.state = 'finished';
       this.updateProgress();
     }
@@ -166,7 +164,6 @@ function BaseJobFactory(JobStates) {
     ++job.completedTaskCount;
     job.progress = (job.completedTaskCount / job.getTaskCount()) * 100;
   };
-
 
   return (BaseJob);
 }

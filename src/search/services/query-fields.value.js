@@ -50,7 +50,6 @@ angular
     {name: 'category_targetaudience_name', type: 'term', group: 'other', editable: true},
     {name: 'category_publicscope_name', type: 'term', group: 'other', editable: true},
 
-
     {name: 'like_count', type: 'number'},
     {name: 'recommend_count', type: 'number'},
     {name: 'attend_count', type: 'number'},

@@ -12,14 +12,15 @@ angular
   .service('udbApi', UdbApi);
 
 /* @ngInject */
-function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth, $cacheFactory, UdbEvent, UdbPlace, UdbOrganizer) {
+function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth,
+  $cacheFactory, UdbEvent, UdbPlace, UdbOrganizer) {
   var apiUrl = appConfig.baseApiUrl;
   var defaultApiConfig = {
-        withCredentials: true,
-        headers: {
-          'Content-Type': 'application/json'
-        },
-      };
+    withCredentials: true,
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  };
   var eventCache = $cacheFactory('eventCache');
 
   this.mainLanguage = 'nl';
@@ -39,7 +40,7 @@ function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth, $cacheFa
           start: offset
         };
 
-    if(queryString.length) {
+    if (queryString.length) {
       searchParams.query = queryString;
     }
     if (conditions !== undefined) {
@@ -57,35 +58,34 @@ function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth, $cacheFa
     });
 
     request
-    .success(function (data) {
-      deferredEvents.resolve(data);
-    })
-    .error(function () {
-      deferredEvents.reject();
-    });
+      .success(function (data) {
+        deferredEvents.resolve(data);
+      })
+      .error(function () {
+        deferredEvents.reject();
+      });
 
     return deferredEvents.promise;
   };
 
-  this.getEventById = function(eventId) {
+  this.getEventById = function (eventId) {
     var deferredEvent = $q.defer();
 
     var event = eventCache.get(eventId);
 
-    if(event) {
+    if (event) {
       deferredEvent.resolve(event);
     } else {
-      var eventRequest  = $http.get(
-        appConfig.baseApiUrl + 'event/' + eventId,
+      var eventRequest = $http.get(
+        appConfig.baseUrl + 'event/' + eventId,
         {
           headers: {
             'Accept': 'application/ld+json'
           }
         });
 
-      eventRequest.success(function(jsonEvent) {
-        var event = new UdbEvent();
-        event.parseJson(jsonEvent);
+      eventRequest.success(function (jsonEvent) {
+        var event = new UdbEvent(jsonEvent);
         eventCache.put(eventId, event);
         deferredEvent.resolve(event);
       });
@@ -165,19 +165,18 @@ function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth, $cacheFa
 
       return deferredOrganizer.promise;
     };
-
-  this.getEventHistoryById = function(eventId) {
+  this.getEventHistoryById = function (eventId) {
     var eventHistoryLoaded = $q.defer();
 
-    var eventHistoryRequest  = $http.get(
-        appConfig.baseUrl + 'event/' + eventId + '/history',
-        {
-          headers: {
-            'Accept': 'application/json'
-          }
-        });
+    var eventHistoryRequest = $http.get(
+      appConfig.baseUrl + 'event/' + eventId + '/history',
+      {
+        headers: {
+          'Accept': 'application/json'
+        }
+      });
 
-    eventHistoryRequest.success(function(eventHistory) {
+    eventHistoryRequest.success(function (eventHistory) {
       eventHistoryLoaded.resolve(eventHistory);
     });
 
@@ -189,12 +188,12 @@ function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth, $cacheFa
   };
 
   /**
-   * @returns {Promise} A list of tags wrapped as a promise.
+   * @returns {Promise} A list of labels wrapped as a promise.
    */
   this.getRecentLabels = function () {
     var deferredLabels = $q.defer();
 
-    var request = $http.get(apiUrl + 'user/keywords', {
+    var request = $http.get(apiUrl + 'user/labels', {
       withCredentials: true,
       headers: {
         'Accept': 'application/json'
@@ -220,7 +219,7 @@ function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth, $cacheFa
 
     var activeUser = uitidAuth.getUser();
 
-    if(activeUser) {
+    if (activeUser) {
       deferredUser.resolve(activeUser);
     } else {
 
@@ -228,7 +227,7 @@ function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth, $cacheFa
         withCredentials: true
       });
 
-      request.success(function(userData) {
+      request.success(function (userData) {
         $cookieStore.put('user', userData);
         deferredUser.resolve(userData);
       });
@@ -241,21 +240,21 @@ function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth, $cacheFa
     return deferredUser.promise;
   };
 
-  this.tagEvents = function (eventIds, label) {
-    return $http.post(appConfig.baseApiUrl + 'events/tag',
+  this.labelEvents = function (eventIds, label) {
+    return $http.post(appConfig.baseUrl + 'events/label',
       {
-        'keyword': label,
-        'events' : eventIds
+        'label': label,
+        'events': eventIds
       },
       defaultApiConfig
     );
   };
 
-  this.tagQuery = function (query, label) {
-    return $http.post(appConfig.baseApiUrl + 'query/tag',
+  this.labelQuery = function (query, label) {
+    return $http.post(appConfig.baseUrl + 'query/label',
       {
-        'keyword': label,
-        'query' : query
+        'label': label,
+        'query': query
       },
       defaultApiConfig
     );
@@ -271,11 +270,11 @@ function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth, $cacheFa
       perDay: perDay
     };
 
-    if(email) {
+    if (email) {
       exportData.email = email;
     }
 
-    return $http.post(appConfig.baseApiUrl + 'events/export/' + format, exportData, defaultApiConfig
+    return $http.post(appConfig.baseUrl + 'events/export/' + format, exportData, defaultApiConfig
     );
   };
 
@@ -294,39 +293,39 @@ function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth, $cacheFa
   /**
    * Update the property for a given id.
    *
-   * @param string id
+   * @param {string} id
    *   ID to update
-   * @param string type
+   * @param {string} type
    *   Type of entity to update
-   * @param string property
+   * @param {string} property
    *   Property to update
-   * @param string value
+   * @param {string} value
    *   Value to save
    */
-  this.updateProperty = function(eventId, type, property, value) {
+  this.updateProperty = function(id, type, property, value) {
 
     var updateData = {};
     updateData[property] = value;
 
     return $http.post(
-      appConfig.baseUrl + type + '/' + eventId + '/' + property,
+      appConfig.baseUrl + type + '/' + id + '/' + property,
       updateData,
       defaultApiConfig
     );
 
   };
 
-  this.tagEvent = function (eventId, label) {
+  this.labelEvent = function (eventId, label) {
     return $http.post(
-      appConfig.baseApiUrl + 'event/' + eventId + '/keywords',
-      { 'keyword': label},
+      appConfig.baseUrl + 'event/' + eventId + '/labels',
+      {'label': label},
       defaultApiConfig
     );
   };
 
-  this.untagEvent = function (eventId, label) {
+  this.unlabelEvent = function (eventId, label) {
     return $http.delete(
-      appConfig.baseApiUrl + 'event/' + eventId + '/keywords/' + label,
+      appConfig.baseUrl + 'event/' + eventId + '/labels/' + label,
       defaultApiConfig
     );
   };
@@ -363,9 +362,8 @@ function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth, $cacheFa
    */
   this.deleteOfferOrganizer = function(id, type, organizerId) {
 
-
     return $http.delete(
-      appConfig.baseApiUrl + type + '/' + id +'/organizer/' + organizerId,
+      appConfig.baseApiUrl + type + '/' + id + '/organizer/' + organizerId,
       {},
       defaultApiConfig
     );

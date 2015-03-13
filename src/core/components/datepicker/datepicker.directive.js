@@ -1,13 +1,13 @@
 (function () {
   'use strict';
 
-/**
- * @ngdoc directive
- * @name udb.core.directive:udbDatepicker
- * @description
- * # directive for datepicker integration
- */
-angular
+  /**
+   * @ngdoc directive
+   * @name udb.core.directive:udbDatepicker
+   * @description
+   * # directive for datepicker integration
+   */
+  angular
   .module('udb.core')
   .directive('udbDatepicker', udbDatepickerDirective);
 

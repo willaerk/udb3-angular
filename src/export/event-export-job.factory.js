@@ -17,7 +17,9 @@ function EventExportJobFactory(BaseJob, JobStates) {
   /**
    * @class EventExportJob
    * @constructor
-   * @param commandId
+   * @param   {string}    commandId
+   * @param   {number}    eventCount
+   * @param   {string}    format
    */
   var EventExportJob = function (commandId, eventCount, format) {
     BaseJob.call(this, commandId);
@@ -46,10 +48,10 @@ function EventExportJobFactory(BaseJob, JobStates) {
     return templateName;
   };
 
-  EventExportJob.prototype.getDescription = function() {
+  EventExportJob.prototype.getDescription = function () {
     var description = '';
 
-    if(this.state === JobStates.FAILED) {
+    if (this.state === JobStates.FAILED) {
       description = 'Exporteren van evenementen mislukt';
     } else {
       var exportExtension = this.exportUrl.split('.').pop();
@@ -60,7 +62,7 @@ function EventExportJobFactory(BaseJob, JobStates) {
   };
 
   EventExportJob.prototype.info = function (jobData) {
-    if(jobData.location) {
+    if (jobData.location) {
       this.exportUrl = jobData.location;
     }
   };

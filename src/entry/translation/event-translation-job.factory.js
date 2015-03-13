@@ -4,8 +4,8 @@
  * @ngdoc service
  * @name udb.entry.EventTranslationJob
  * @description
- * # Event Tag Job
- * This Is the factory that creates an event tag job
+ * # Event Label Job
+ * This Is the factory that creates an event label job
  */
 angular
   .module('udb.entry')

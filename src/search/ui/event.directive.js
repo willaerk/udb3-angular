@@ -11,7 +11,7 @@ angular
   .directive('udbEvent', udbEvent);
 
 /* @ngInject */
-function udbEvent(udbApi, jsonLDLangFilter, eventTranslator, eventTagger) {
+function udbEvent(udbApi, jsonLDLangFilter, eventTranslator, eventLabeller) {
   var event = {
     restrict: 'A',
     link: function postLink(scope, iElement, iAttrs) {
@@ -77,7 +77,7 @@ function udbEvent(udbApi, jsonLDLangFilter, eventTranslator, eventTagger) {
         {'lang': 'en'},
         {'lang': 'de'}
       ];
-      scope.availableLabels = eventTagger.recentLabels;
+      scope.availableLabels = eventLabeller.recentLabels;
 
       // The event object that's returned from the server
       var event;
@@ -89,7 +89,7 @@ function udbEvent(udbApi, jsonLDLangFilter, eventTranslator, eventTagger) {
         eventPromise.then(function (eventObject) {
           event = eventObject;
           updateTranslationState(event);
-          scope.availableLabels = _.union(event.labels, eventTagger.recentLabels);
+          scope.availableLabels = _.union(event.labels, eventLabeller.recentLabels);
           scope.event = jsonLDLangFilter(event, 'nl');
           scope.fetching = false;
         });
@@ -163,11 +163,11 @@ function udbEvent(udbApi, jsonLDLangFilter, eventTranslator, eventTagger) {
       }
 
       scope.labelAdded = function (label) {
-        eventTagger.tag(event, label);
+        eventLabeller.label(event, label);
       };
 
       scope.labelRemoved = function (label) {
-        eventTagger.untag(event, label);
+        eventLabeller.unlabel(event, label);
       };
     }
   };

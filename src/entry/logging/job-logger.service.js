@@ -108,8 +108,8 @@ function JobLogger(udbSocket, JobStates, EventExportJob) {
     updateJobLists();
   }
 
-  udbSocket.on('event_was_tagged', taskFinished);
-  udbSocket.on('event_was_not_tagged', taskFailed);
+  udbSocket.on('event_was_labelled', taskFinished);
+  udbSocket.on('event_was_not_labelled', taskFailed);
   udbSocket.on('task_completed', taskFinished);
   udbSocket.on('job_started', jobStarted);
   udbSocket.on('job_info', jobInfo);

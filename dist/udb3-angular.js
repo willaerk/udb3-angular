@@ -2100,7 +2100,7 @@ angular.module('udb.core')
     property: {
       'name': 'Naam',
       'description': 'Beschrijving',
-      'keywords': 'Labels',
+      'labels': 'Labels',
       'calendarSummary': 'Kalendersamenvatting',
       'image': 'Afbeelding',
       'location': 'Locatie',
@@ -2248,12 +2248,12 @@ function UdbApi($q, $http, appConfig, $cookieStore, uitidAuth, $cacheFactory, Ud
   };
 
   /**
-   * @returns {Promise} A list of tags wrapped as a promise.
+   * @returns {Promise} A list of labels wrapped as a promise.
    */
   this.getRecentLabels = function () {
     var deferredLabels = $q.defer();
 
-    var request = $http.get(apiUrl + 'user/keywords', {
+    var request = $http.get(apiUrl + 'user/labels', {
       withCredentials: true,
       headers: {
         'Accept': 'application/json'
@@ -2300,20 +2300,20 @@ function UdbApi($q, $http, appConfig, $cookieStore, uitidAuth, $cacheFactory, Ud
     return deferredUser.promise;
   };
 
-  this.tagEvents = function (eventIds, label) {
-    return $http.post(appConfig.baseUrl + 'events/tag',
+  this.labelEvents = function (eventIds, label) {
+    return $http.post(appConfig.baseUrl + 'events/label',
       {
-        'keyword': label,
+        'label': label,
         'events': eventIds
       },
       defaultApiConfig
     );
   };
 
-  this.tagQuery = function (query, label) {
-    return $http.post(appConfig.baseUrl + 'query/tag',
+  this.labelQuery = function (query, label) {
+    return $http.post(appConfig.baseUrl + 'query/label',
       {
-        'keyword': label,
+        'label': label,
         'query': query
       },
       defaultApiConfig
@@ -2350,17 +2350,17 @@ function UdbApi($q, $http, appConfig, $cookieStore, uitidAuth, $cacheFactory, Ud
     );
   };
 
-  this.tagEvent = function (eventId, label) {
+  this.labelEvent = function (eventId, label) {
     return $http.post(
-      appConfig.baseUrl + 'event/' + eventId + '/keywords',
-      {'keyword': label},
+      appConfig.baseUrl + 'event/' + eventId + '/labels',
+      {'label': label},
       defaultApiConfig
     );
   };
 
-  this.untagEvent = function (eventId, label) {
+  this.unlabelEvent = function (eventId, label) {
     return $http.delete(
-      appConfig.baseUrl + 'event/' + eventId + '/keywords/' + label,
+      appConfig.baseUrl + 'event/' + eventId + '/labels/' + label,
       defaultApiConfig
     );
   };
@@ -2433,7 +2433,7 @@ function UdbEventFactory() {
       this.calendarSummary = jsonEvent.calendarSummary;
       this.location = jsonEvent.location;
       this.image = jsonEvent.image;
-      this.labels = _.map(jsonEvent.keywords, function (label) {
+      this.labels = _.map(jsonEvent.labels, function (label) {
         return label;
       });
       if (jsonEvent.organizer) {
@@ -2465,10 +2465,10 @@ function UdbEventFactory() {
       }
     },
     /**
-     * Tag the event with a label or a list of labels
+     * Label the event with a label or a list of labels
      * @param {string|string[]} label
      */
-    tag: function (label) {
+    label: function (label) {
       var labels = [];
 
       if (_.isArray(label)) {
@@ -2482,10 +2482,10 @@ function UdbEventFactory() {
       this.labels = _.union(this.labels, labels);
     },
     /**
-     * Untag a label from an event
+     * Unlabel a label from an event
      * @param {string} labelName
      */
-    untag: function (labelName) {
+    unlabel: function (labelName) {
       _.remove(event.labels, function (label) {
         return label === labelName;
       });
@@ -2546,6 +2546,320 @@ function UitidAuth($window, $location, $http, appConfig, $cookieStore) {
 
 }
 UitidAuth.$inject = ["$window", "$location", "$http", "appConfig", "$cookieStore"];
+
+// Source: src/entry/labelling/event-label-batch-job.factory.js
+/**
+ * @ngdoc service
+ * @name udb.entry.EventLabelBatchJob
+ * @description
+ * # BaseJob
+ * This Is the factory that creates an event export job
+ */
+angular
+  .module('udb.entry')
+  .factory('EventLabelBatchJob', EventLabelBatchJobFactory);
+
+/* @ngInject */
+function EventLabelBatchJobFactory(BaseJob, JobStates) {
+
+  /**
+   * @class EventLabelBatchJob
+   * @constructor
+   * @param {string} commandId
+   * @param {string[]} eventIds
+   * @param {string} label
+   */
+  var EventLabelBatchJob = function (commandId, eventIds, label) {
+    BaseJob.call(this, commandId);
+    this.events = eventIds;
+    this.addEventsAsTask(eventIds);
+    this.label = label;
+  };
+
+  EventLabelBatchJob.prototype = Object.create(BaseJob.prototype);
+  EventLabelBatchJob.prototype.constructor = EventLabelBatchJob;
+
+  EventLabelBatchJob.prototype.addEventsAsTask = function (eventIds) {
+    var job = this;
+    _.forEach(eventIds, function (eventId) {
+      job.addTask({id: eventId});
+    });
+  };
+
+  EventLabelBatchJob.prototype.getDescription = function () {
+    var job = this,
+        description;
+
+    if (this.state === JobStates.FAILED) {
+      description = 'Labelen van evenementen mislukt';
+    } else {
+      description = 'Label ' + job.events.length + ' items met "' + job.label + '"';
+    }
+
+    return description;
+  };
+
+  return (EventLabelBatchJob);
+}
+EventLabelBatchJobFactory.$inject = ["BaseJob", "JobStates"];
+
+// Source: src/entry/labelling/event-label-job.factory.js
+/**
+ * @ngdoc service
+ * @name udb.entry.EventLabelJob
+ * @description
+ * # Event Label Job
+ * This Is the factory that creates an event label job
+ */
+angular
+  .module('udb.entry')
+  .factory('EventLabelJob', EventLabelJobFactory);
+
+/* @ngInject */
+function EventLabelJobFactory(BaseJob, JobStates) {
+
+  /**
+   * @class EventLabelJob
+   * @constructor
+   * @param {string} commandId
+   * @param {UdbEvent} event
+   * @param {string} label
+   * @param {boolean} unlabel set to true when unlabeling
+   */
+  var EventLabelJob = function (commandId, event, label, unlabel) {
+    BaseJob.call(this, commandId);
+    this.event = event;
+    this.label = label;
+    this.unlabel = !!unlabel || false;
+  };
+
+  EventLabelJob.prototype = Object.create(BaseJob.prototype);
+  EventLabelJob.prototype.constructor = EventLabelJob;
+
+  EventLabelJob.prototype.getDescription = function () {
+    var job = this,
+        description;
+
+    if (job.state === JobStates.FAILED) {
+      description = 'Labelen van evenement mislukt';
+    } else {
+      if (job.unlabel) {
+        description = 'Verwijder label "' + job.label + '" van "' + job.event.name.nl + '"';
+      } else {
+        description = 'Label "' + job.event.name.nl + '" met "' + job.label + '"';
+      }
+    }
+
+    return description;
+  };
+
+  return (EventLabelJob);
+}
+EventLabelJobFactory.$inject = ["BaseJob", "JobStates"];
+
+// Source: src/entry/labelling/event-label-modal.controller.js
+/**
+ * @ngdoc function
+ * @name udb.entry.controller:EventLabelModalCtrl
+ * @description
+ * # EventLabelModalCtrl
+ * Controller of the udb.entry
+ */
+angular
+  .module('udb.entry')
+  .controller('EventLabelModalCtrl', EventLabelModalCtrl);
+
+/* @ngInject */
+function EventLabelModalCtrl($scope, $modalInstance, udbApi) {
+  var labelPromise = udbApi.getRecentLabels();
+
+  var ok = function () {
+    // Get the labels selected by checkbox
+    var checkedLabels = $scope.labelSelection.filter(function (label) {
+      return label.selected;
+    }).map(function (label) {
+      return label.name;
+    });
+
+    //add the labels
+    var inputLabels = parseLabelInput($scope.labelNames);
+
+    // join arrays and remove doubles
+    var labels = _.union(checkedLabels, inputLabels);
+
+    $modalInstance.close(labels);
+  };
+
+  var close = function () {
+    $modalInstance.dismiss('cancel');
+  };
+
+  function parseLabelInput(stringWithLabels) {
+    //split sting into array of labels
+    var labels = stringWithLabels.split(';');
+
+    // trim whitespaces
+    labels = _.each(labels, function (label, index) {
+      labels[index] = label.trim();
+    });
+
+    // remove empty strings
+    labels = _.without(labels, '');
+
+    return labels;
+  }
+
+  labelPromise.then(function (labels) {
+    $scope.availableLabels = labels;
+    $scope.labelSelection = _.map(labels, function (label) {
+      return {'name': label, 'selected': false};
+    });
+  });
+  // ui-select can't get to this scope variable unless you reference it from the $parent scope.
+  // seems to be 1.3 specific issue, see: https://github.com/angular-ui/ui-select/issues/243
+  $scope.labels = [];
+  $scope.close = close;
+  $scope.ok = ok;
+  $scope.labelNames = '';
+}
+EventLabelModalCtrl.$inject = ["$scope", "$modalInstance", "udbApi"];
+
+// Source: src/entry/labelling/event-labeller.service.js
+/**
+ * @ngdoc service
+ * @name udb.entry.evenLabeller
+ * @description
+ * # eventLabeller
+ * Service in the udb.entry.
+ */
+angular
+  .module('udb.entry')
+  .service('eventLabeller', EventLabeller);
+
+/* @ngInject */
+function EventLabeller(jobLogger, udbApi, EventLabelJob, EventLabelBatchJob, QueryLabelJob) {
+
+  var eventLabeller = this;
+
+  // keep a cache of all the recently used labels
+  eventLabeller.recentLabels = ['some', 'recent', 'label'];
+
+  function updateRecentLabels() {
+    var labelPromise = udbApi.getRecentLabels();
+
+    labelPromise.then(function (labels) {
+      eventLabeller.recentLabels = labels;
+    });
+  }
+
+  // warm up the cache
+  updateRecentLabels();
+
+  /**
+   * Label an event with a label
+   * @param {UdbEvent} event
+   * @param {string} label
+   */
+  this.label = function (event, label) {
+    var jobPromise = udbApi.labelEvent(event.id, label);
+
+    jobPromise.success(function (jobData) {
+      event.label(label);
+      var job = new EventLabelJob(jobData.commandId, event, label);
+      jobLogger.addJob(job);
+    });
+  };
+
+  /**
+   * Unlabel a label from an event
+   * @param {UdbEvent} event
+   * @param {string} label
+   */
+  this.unlabel = function (event, label) {
+    var jobPromise = udbApi.unlabelEvent(event.id, label);
+
+    jobPromise.success(function (jobData) {
+      event.unlabel(label);
+      var job = new EventLabelJob(jobData.commandId, event, label, true);
+      jobLogger.addJob(job);
+    });
+  };
+
+  /**
+   * @param {string[]} eventIds
+   * @param {string} label
+   */
+  this.labelEventsById = function (eventIds, label) {
+    var jobPromise = udbApi.labelEvents(eventIds, label);
+
+    jobPromise.success(function (jobData) {
+      var job = new EventLabelBatchJob(jobData.commandId, eventIds, label);
+      console.log(job);
+      jobLogger.addJob(job);
+    });
+  };
+
+  /**
+   *
+   * @param {string} query
+   * @param {string} label
+   */
+  this.labelQuery = function (query, label, eventCount) {
+    var jobPromise = udbApi.labelQuery(query, label);
+    eventCount = eventCount || 0;
+
+    jobPromise.success(function (jobData) {
+      var job = new QueryLabelJob(jobData.commandId, eventCount, label);
+      jobLogger.addJob(job);
+    });
+
+  };
+}
+EventLabeller.$inject = ["jobLogger", "udbApi", "EventLabelJob", "EventLabelBatchJob", "QueryLabelJob"];
+
+// Source: src/entry/labelling/query-label-job.factory.js
+/**
+ * @ngdoc service
+ * @name udb.entry.QueryLabelJob
+ * @description
+ * # BaseJob
+ * This Is the factory that creates an event export job
+ */
+angular
+  .module('udb.entry')
+  .factory('QueryLabelJob', QueryLabelJobFactory);
+
+/* @ngInject */
+function QueryLabelJobFactory(BaseJob) {
+
+  /**
+   * @class QueryLabelJob
+   * @constructor
+   * @param {string} commandId
+   * @param {number} eventCount
+   * @param {string} label
+   */
+  var QueryLabelJob = function (commandId, eventCount, label) {
+    BaseJob.call(this, commandId);
+    this.eventCount = eventCount;
+    this.label = label;
+  };
+
+  QueryLabelJob.prototype = Object.create(BaseJob.prototype);
+  QueryLabelJob.prototype.constructor = QueryLabelJob;
+
+  QueryLabelJob.prototype.getTaskCount = function () {
+    return this.eventCount;
+  };
+
+  QueryLabelJob.prototype.getDescription = function() {
+    var job = this;
+    return 'Label ' + job.eventCount + ' evenementen met label "' + job.label + '".';
+  };
+
+  return (QueryLabelJob);
+}
+QueryLabelJobFactory.$inject = ["BaseJob"];
 
 // Source: src/entry/logging/base-job.factory.js
 /**
@@ -2852,8 +3166,8 @@ function JobLogger(udbSocket, JobStates, EventExportJob) {
     updateJobLists();
   }
 
-  udbSocket.on('event_was_tagged', taskFinished);
-  udbSocket.on('event_was_not_tagged', taskFailed);
+  udbSocket.on('event_was_labelled', taskFinished);
+  udbSocket.on('event_was_not_labelled', taskFailed);
   udbSocket.on('task_completed', taskFinished);
   udbSocket.on('job_started', jobStarted);
   udbSocket.on('job_info', jobInfo);
@@ -2992,327 +3306,13 @@ function udbWorkIndicator ($window, jobLogger) {
 }
 udbWorkIndicator.$inject = ["$window", "jobLogger"];
 
-// Source: src/entry/tagging/event-tag-batch-job.factory.js
-/**
- * @ngdoc service
- * @name udb.entry.EventTagBatchJob
- * @description
- * # BaseJob
- * This Is the factory that creates an event export job
- */
-angular
-  .module('udb.entry')
-  .factory('EventTagBatchJob', EventTagBatchJobFactory);
-
-/* @ngInject */
-function EventTagBatchJobFactory(BaseJob, JobStates) {
-
-  /**
-   * @class EventTagBatchJob
-   * @constructor
-   * @param {string} commandId
-   * @param {string[]} eventIds
-   * @param {string} label
-   */
-  var EventTagBatchJob = function (commandId, eventIds, label) {
-    BaseJob.call(this, commandId);
-    this.events = eventIds;
-    this.addEventsAsTask(eventIds);
-    this.label = label;
-  };
-
-  EventTagBatchJob.prototype = Object.create(BaseJob.prototype);
-  EventTagBatchJob.prototype.constructor = EventTagBatchJob;
-
-  EventTagBatchJob.prototype.addEventsAsTask = function (eventIds) {
-    var job = this;
-    _.forEach(eventIds, function (eventId) {
-      job.addTask({id: eventId});
-    });
-  };
-
-  EventTagBatchJob.prototype.getDescription = function () {
-    var job = this,
-        description;
-
-    if (this.state === JobStates.FAILED) {
-      description = 'Labelen van evenementen mislukt';
-    } else {
-      description = 'Label ' + job.events.length + ' items met "' + job.label + '"';
-    }
-
-    return description;
-  };
-
-  return (EventTagBatchJob);
-}
-EventTagBatchJobFactory.$inject = ["BaseJob", "JobStates"];
-
-// Source: src/entry/tagging/event-tag-job.factory.js
-/**
- * @ngdoc service
- * @name udb.entry.EventTagJob
- * @description
- * # Event Tag Job
- * This Is the factory that creates an event tag job
- */
-angular
-  .module('udb.entry')
-  .factory('EventTagJob', EventTagJobFactory);
-
-/* @ngInject */
-function EventTagJobFactory(BaseJob, JobStates) {
-
-  /**
-   * @class EventTagJob
-   * @constructor
-   * @param {string} commandId
-   * @param {UdbEvent} event
-   * @param {string} label
-   * @param {boolean} untag set to true when untagging
-   */
-  var EventTagJob = function (commandId, event, label, untag) {
-    BaseJob.call(this, commandId);
-    this.event = event;
-    this.label = label;
-    this.untag = !!untag || false;
-  };
-
-  EventTagJob.prototype = Object.create(BaseJob.prototype);
-  EventTagJob.prototype.constructor = EventTagJob;
-
-  EventTagJob.prototype.getDescription = function () {
-    var job = this,
-        description;
-
-    if (job.state === JobStates.FAILED) {
-      description = 'Labelen van evenement mislukt';
-    } else {
-      if (job.untag) {
-        description = 'Verwijder label "' + job.label + '" van "' + job.event.name.nl + '"';
-      } else {
-        description = 'Label "' + job.event.name.nl + '" met "' + job.label + '"';
-      }
-    }
-
-    return description;
-  };
-
-  return (EventTagJob);
-}
-EventTagJobFactory.$inject = ["BaseJob", "JobStates"];
-
-// Source: src/entry/tagging/event-tag-modal.controller.js
-/**
- * @ngdoc function
- * @name udb.entry.controller:EventTagModalCtrl
- * @description
- * # EventTagModalCtrl
- * Controller of the udb.entry
- */
-angular
-  .module('udb.entry')
-  .controller('EventTagModalCtrl', EventTagModalCtrl);
-
-/* @ngInject */
-function EventTagModalCtrl($scope, $modalInstance, udbApi) {
-  var labelPromise = udbApi.getRecentLabels();
-
-  var ok = function () {
-    // Get the labels selected by checkbox
-    var checkedLabels = $scope.labelSelection.filter(function (label) {
-      return label.selected;
-    }).map(function (label) {
-      return label.name;
-    });
-
-    //add the labels
-    var inputLabels = parseLabelInput($scope.labelNames);
-
-    // join arrays and remove doubles
-    var labels = _.union(checkedLabels, inputLabels);
-
-    $modalInstance.close(labels);
-  };
-
-  var close = function () {
-    $modalInstance.dismiss('cancel');
-  };
-
-  function parseLabelInput(stringWithLabels) {
-    //split sting into array of labels
-    var labels = stringWithLabels.split(';');
-
-    // trim whitespaces
-    labels = _.each(labels, function (label, index) {
-      labels[index] = label.trim();
-    });
-
-    // remove empty strings
-    labels = _.without(labels, '');
-
-    return labels;
-  }
-
-  labelPromise.then(function (labels) {
-    $scope.availableLabels = labels;
-    $scope.labelSelection = _.map(labels, function (label) {
-      return {'name': label, 'selected': false};
-    });
-  });
-  // ui-select can't get to this scope variable unless you reference it from the $parent scope.
-  // seems to be 1.3 specific issue, see: https://github.com/angular-ui/ui-select/issues/243
-  $scope.labels = [];
-  $scope.close = close;
-  $scope.ok = ok;
-  $scope.labelNames = '';
-}
-EventTagModalCtrl.$inject = ["$scope", "$modalInstance", "udbApi"];
-
-// Source: src/entry/tagging/event-tagger.service.js
-/**
- * @ngdoc service
- * @name udb.entry.evenTagger
- * @description
- * # eventTagger
- * Service in the udb.entry.
- */
-angular
-  .module('udb.entry')
-  .service('eventTagger', EventTagger);
-
-/* @ngInject */
-function EventTagger(jobLogger, udbApi, EventTagJob, EventTagBatchJob, QueryTagJob) {
-
-  var eventTagger = this;
-
-  // keep a cache of all the recently used labels
-  eventTagger.recentLabels = ['some', 'recent', 'label'];
-
-  function updateRecentLabels() {
-    var labelPromise = udbApi.getRecentLabels();
-
-    labelPromise.then(function (labels) {
-      eventTagger.recentLabels = labels;
-    });
-  }
-
-  // warm up the cache
-  updateRecentLabels();
-
-  /**
-   * Tag an event with a label
-   * @param {UdbEvent} event
-   * @param {string} label
-   */
-  this.tag = function (event, label) {
-    var jobPromise = udbApi.tagEvent(event.id, label);
-
-    jobPromise.success(function (jobData) {
-      event.tag(label);
-      var job = new EventTagJob(jobData.commandId, event, label);
-      jobLogger.addJob(job);
-    });
-  };
-
-  /**
-   * Untag a label from an event
-   * @param {UdbEvent} event
-   * @param {string} label
-   */
-  this.untag = function (event, label) {
-    var jobPromise = udbApi.untagEvent(event.id, label);
-
-    jobPromise.success(function (jobData) {
-      event.untag(label);
-      var job = new EventTagJob(jobData.commandId, event, label, true);
-      jobLogger.addJob(job);
-    });
-  };
-
-  /**
-   * @param {string[]} eventIds
-   * @param {string} label
-   */
-  this.tagEventsById = function (eventIds, label) {
-    var jobPromise = udbApi.tagEvents(eventIds, label);
-
-    jobPromise.success(function (jobData) {
-      var job = new EventTagBatchJob(jobData.commandId, eventIds, label);
-      console.log(job);
-      jobLogger.addJob(job);
-    });
-  };
-
-  /**
-   *
-   * @param {string} query
-   * @param {string} label
-   */
-  this.tagQuery = function (query, label, eventCount) {
-    var jobPromise = udbApi.tagQuery(query, label);
-    eventCount = eventCount || 0;
-
-    jobPromise.success(function (jobData) {
-      var job = new QueryTagJob(jobData.commandId, eventCount, label);
-      jobLogger.addJob(job);
-    });
-
-  };
-}
-EventTagger.$inject = ["jobLogger", "udbApi", "EventTagJob", "EventTagBatchJob", "QueryTagJob"];
-
-// Source: src/entry/tagging/query-tag-job.factory.js
-/**
- * @ngdoc service
- * @name udb.entry.QueryTagJob
- * @description
- * # BaseJob
- * This Is the factory that creates an event export job
- */
-angular
-  .module('udb.entry')
-  .factory('QueryTagJob', QueryTagJobFactory);
-
-/* @ngInject */
-function QueryTagJobFactory(BaseJob) {
-
-  /**
-   * @class QueryTagJob
-   * @constructor
-   * @param {string} commandId
-   * @param {number} eventCount
-   * @param {string} label
-   */
-  var QueryTagJob = function (commandId, eventCount, label) {
-    BaseJob.call(this, commandId);
-    this.eventCount = eventCount;
-    this.label = label;
-  };
-
-  QueryTagJob.prototype = Object.create(BaseJob.prototype);
-  QueryTagJob.prototype.constructor = QueryTagJob;
-
-  QueryTagJob.prototype.getTaskCount = function () {
-    return this.eventCount;
-  };
-
-  QueryTagJob.prototype.getDescription = function() {
-    var job = this;
-    return 'Tag ' + job.eventCount + ' evenementen met label "' + job.label + '".';
-  };
-
-  return (QueryTagJob);
-}
-QueryTagJobFactory.$inject = ["BaseJob"];
-
 // Source: src/entry/translation/event-translation-job.factory.js
 /**
  * @ngdoc service
  * @name udb.entry.EventTranslationJob
  * @description
- * # Event Tag Job
- * This Is the factory that creates an event tag job
+ * # Event Label Job
+ * This Is the factory that creates an event label job
  */
 angular
   .module('udb.entry')
@@ -3619,7 +3619,7 @@ function EventExportController($modalInstance, udbApi, eventExporter, queryField
   exporter.eventProperties = [
     {name: 'name', include: true, sortable: false, excludable: false},
     {name: 'description', include: false, sortable: false, excludable: true},
-    {name: 'keywords', include: false, sortable: false, excludable: true},
+    {name: 'labels', include: false, sortable: false, excludable: true},
     {name: 'calendarSummary', include: true, sortable: false, excludable: false},
     {name: 'image', include: true, sortable: false, excludable: true},
     {name: 'location', include: true, sortable: false, excludable: false},
@@ -4986,7 +4986,7 @@ angular
       'TITLE' : 'titel',
       'KEYWORDS' : 'label',
       'CITY' : 'gemeente',
-      'ORGANISER_KEYWORDS': 'organisatie-tag',
+      'ORGANISER_KEYWORDS': 'organisatie-label',
       'ZIPCODE' : 'postcode',
       'COUNTRY' : 'land',
       'PHYSICAL_GIS' : 'geo',
@@ -5421,7 +5421,7 @@ angular
   .directive('udbEvent', udbEvent);
 
 /* @ngInject */
-function udbEvent(udbApi, jsonLDLangFilter, eventTranslator, eventTagger) {
+function udbEvent(udbApi, jsonLDLangFilter, eventTranslator, eventLabeller) {
   var event = {
     restrict: 'A',
     link: function postLink(scope, iElement, iAttrs) {
@@ -5487,7 +5487,7 @@ function udbEvent(udbApi, jsonLDLangFilter, eventTranslator, eventTagger) {
         {'lang': 'en'},
         {'lang': 'de'}
       ];
-      scope.availableLabels = eventTagger.recentLabels;
+      scope.availableLabels = eventLabeller.recentLabels;
 
       // The event object that's returned from the server
       var event;
@@ -5499,7 +5499,7 @@ function udbEvent(udbApi, jsonLDLangFilter, eventTranslator, eventTagger) {
         eventPromise.then(function (eventObject) {
           event = eventObject;
           updateTranslationState(event);
-          scope.availableLabels = _.union(event.labels, eventTagger.recentLabels);
+          scope.availableLabels = _.union(event.labels, eventLabeller.recentLabels);
           scope.event = jsonLDLangFilter(event, 'nl');
           scope.fetching = false;
         });
@@ -5573,18 +5573,18 @@ function udbEvent(udbApi, jsonLDLangFilter, eventTranslator, eventTagger) {
       }
 
       scope.labelAdded = function (label) {
-        eventTagger.tag(event, label);
+        eventLabeller.label(event, label);
       };
 
       scope.labelRemoved = function (label) {
-        eventTagger.untag(event, label);
+        eventLabeller.unlabel(event, label);
       };
     }
   };
 
   return event;
 }
-udbEvent.$inject = ["udbApi", "jsonLDLangFilter", "eventTranslator", "eventTagger"];
+udbEvent.$inject = ["udbApi", "jsonLDLangFilter", "eventTranslator", "eventLabeller"];
 
 // Source: src/search/ui/search.controller.js
 /**
@@ -5599,7 +5599,7 @@ angular
   .controller('Search', Search);
 
 /* @ngInject */
-function Search($scope, udbApi, LuceneQueryBuilder, $window, $location, $modal, SearchResultViewer, eventTagger,
+function Search($scope, udbApi, LuceneQueryBuilder, $window, $location, $modal, SearchResultViewer, eventLabeller,
                 searchHelper, $rootScope, eventExporter) {
 
   var queryBuilder = LuceneQueryBuilder;
@@ -5681,28 +5681,28 @@ function Search($scope, udbApi, LuceneQueryBuilder, $window, $location, $modal, 
     });
   };
 
-  var tag = function () {
-    var taggingQuery = $scope.resultViewer.querySelected;
+  var label = function () {
+    var labellingQuery = $scope.resultViewer.querySelected;
 
-    if (taggingQuery) {
-      tagActiveQuery();
+    if (labellingQuery) {
+      labelActiveQuery();
     } else {
-      tagSelection();
+      labelSelection();
     }
   };
 
-  var tagSelection = function () {
+  var labelSelection = function () {
 
     var selectedIds = $scope.resultViewer.selectedIds;
 
     if (!selectedIds.length) {
-      $window.alert('First select the events you want to tag.');
+      $window.alert('First select the events you want to label.');
       return;
     }
 
     var modal = $modal.open({
-      templateUrl: 'templates/event-tag-modal.html',
-      controller: 'EventTagModalCtrl'
+      templateUrl: 'templates/event-label-modal.html',
+      controller: 'EventLabelModalCtrl'
     });
 
     modal.result.then(function (labels) {
@@ -5720,28 +5720,28 @@ function Search($scope, udbApi, LuceneQueryBuilder, $window, $location, $modal, 
       });
 
       _.each(labels, function (label) {
-        eventTagger.tagEventsById(eventIds, label);
+        eventLabeller.labelEventsById(eventIds, label);
       });
     });
   };
 
-  function tagActiveQuery() {
+  function labelActiveQuery() {
     var query = $scope.activeQuery,
         eventCount = $scope.resultViewer.totalItems;
 
     if (queryBuilder.isValid(query)) {
       var modal = $modal.open({
-        templateUrl: 'templates/event-tag-modal.html',
-        controller: 'EventTagModalCtrl'
+        templateUrl: 'templates/event-label-modal.html',
+        controller: 'EventLabelModalCtrl'
       });
 
       modal.result.then(function (labels) {
         _.each(labels, function (label) {
-          eventTagger.tagQuery(query.queryString, label, eventCount);
+          eventLabeller.labelQuery(query.queryString, label, eventCount);
         });
       });
     } else {
-      $window.alert('provide a valid query to tag');
+      $window.alert('provide a valid query to label');
     }
   }
 
@@ -5757,7 +5757,7 @@ function Search($scope, udbApi, LuceneQueryBuilder, $window, $location, $modal, 
       selectedIds = $scope.resultViewer.selectedIds;
 
       if (!selectedIds.length) {
-        $window.alert('First select the events you want to tag.');
+        $window.alert('First select the events you want to label.');
         return;
       } else {
         eventCount = selectedIds.length;
@@ -5781,7 +5781,7 @@ function Search($scope, udbApi, LuceneQueryBuilder, $window, $location, $modal, 
   }
 
   $scope.exportEvents = exportEvents;
-  $scope.tag = tag;
+  $scope.label = label;
 
   $scope.startEditing = function () {
     $scope.queryEditorShown = true;
@@ -5819,7 +5819,7 @@ function Search($scope, udbApi, LuceneQueryBuilder, $window, $location, $modal, 
   });
 
 }
-Search.$inject = ["$scope", "udbApi", "LuceneQueryBuilder", "$window", "$location", "$modal", "SearchResultViewer", "eventTagger", "searchHelper", "$rootScope", "eventExporter"];
+Search.$inject = ["$scope", "udbApi", "LuceneQueryBuilder", "$window", "$location", "$modal", "SearchResultViewer", "eventLabeller", "searchHelper", "$rootScope", "eventExporter"];
 
 // Source: src/search/ui/search.directive.js
 /**
@@ -5845,7 +5845,35 @@ function searchDirective() {
 
 // Source: .tmp/udb3-angular.templates.js
 angular.module('udb.core').run(['$templateCache', function($templateCache) {
-$templateCache.put('templates/base-job.template.html',
+$templateCache.put('templates/event-label-modal.html',
+    "<div class=\"modal-body\">\n" +
+    "\n" +
+    "  <label>Labels</label>\n" +
+    "\n" +
+    "  <div class=\"row\">\n" +
+    "    <div class=\"col-lg-12\">\n" +
+    "      <input type=\"text\" ng-model=\"labelNames\" class=\"form-control\"/>\n" +
+    "    </div>\n" +
+    "\n" +
+    "    <div class=\"col-lg-12\">\n" +
+    "      <div class=\"checkbox\" ng-repeat=\"label in labelSelection\">\n" +
+    "        <label>\n" +
+    "          <input type=\"checkbox\" ng-model=\"label.selected\"/>\n" +
+    "          <span ng-bind=\"label.name\"></span>\n" +
+    "        </label>\n" +
+    "      </div>\n" +
+    "    </div>\n" +
+    "  </div>\n" +
+    "</div>\n" +
+    "\n" +
+    "<div class=\"modal-footer\">\n" +
+    "  <button class=\"btn btn-primary\" ng-click=\"ok()\">label</button>\n" +
+    "  <button class=\"btn btn-warning\" ng-click=\"close()\">annuleren</button>\n" +
+    "</div>"
+  );
+
+
+  $templateCache.put('templates/base-job.template.html',
     "<p>\n" +
     "  <ins>\n" +
     "    <span ng-bind=\"::job.created | date:'HH:mm'\"></span> <i class=\"fa fa-circle-o-notch fa-spin udb-job-busy\"\n" +
@@ -5901,34 +5929,6 @@ $templateCache.put('templates/base-job.template.html',
     "      </div>\n" +
     "    </div>\n" +
     "  </div>\n" +
-    "</div>"
-  );
-
-
-  $templateCache.put('templates/event-tag-modal.html',
-    "<div class=\"modal-body\">\n" +
-    "\n" +
-    "  <label>Labels</label>\n" +
-    "\n" +
-    "  <div class=\"row\">\n" +
-    "    <div class=\"col-lg-12\">\n" +
-    "      <input type=\"text\" ng-model=\"labelNames\" class=\"form-control\"/>\n" +
-    "    </div>\n" +
-    "\n" +
-    "    <div class=\"col-lg-12\">\n" +
-    "      <div class=\"checkbox\" ng-repeat=\"label in labelSelection\">\n" +
-    "        <label>\n" +
-    "          <input type=\"checkbox\" ng-model=\"label.selected\"/>\n" +
-    "          <span ng-bind=\"label.name\"></span>\n" +
-    "        </label>\n" +
-    "      </div>\n" +
-    "    </div>\n" +
-    "  </div>\n" +
-    "</div>\n" +
-    "\n" +
-    "<div class=\"modal-footer\">\n" +
-    "  <button class=\"btn btn-primary\" ng-click=\"ok()\">label</button>\n" +
-    "  <button class=\"btn btn-warning\" ng-click=\"close()\">annuleren</button>\n" +
     "</div>"
   );
 
@@ -6440,7 +6440,7 @@ $templateCache.put('templates/base-job.template.html',
     "                <div class=\"col-sm-12 rv-first-column\">\n" +
     "                    <span ng-bind=\"resultViewer.querySelected ? resultViewer.totalItems : resultViewer.selectedIds.length\"></span> items geselecteerd\n" +
     "\n" +
-    "                    <button class=\"btn btn-default rv-action\" ng-click=\"tag()\">\n" +
+    "                    <button class=\"btn btn-default rv-action\" ng-click=\"label()\">\n" +
     "                        <i class=\"fa fa-tag\"></i> Labelen\n" +
     "                    </button>\n" +
     "                    <button class=\"btn btn-default rv-action\" ng-click=\"exportEvents()\">\n" +
@@ -6629,7 +6629,7 @@ $templateCache.put('templates/base-job.template.html',
     "                          </div>\n" +
     "\n" +
     "                          <div ng-show=\"resultViewer.eventProperties.labels.visible\" class=\"udb-labels\">\n" +
-    "                              <span ng-hide=\"event.labels.length\">Dit evenement is nog niet getagd.</span>\n" +
+    "                              <span ng-hide=\"event.labels.length\">Dit evenement is nog niet gelabeld.</span>\n" +
     "                              <ui-select multiple ng-model=\"event.labels\" tagging tagging-label=\"(label toevoegen)\"\n" +
     "                                         ng-disabled=\"disabled\" reset-search-input=\"true\" tagging-tokens=\"ENTER|;\"\n" +
     "                                         on-select=\"labelAdded($item)\" on-remove=\"labelRemoved($item)\">\n" +

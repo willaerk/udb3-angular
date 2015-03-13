@@ -12,7 +12,7 @@ angular
   .controller('Search', Search);
 
 /* @ngInject */
-function Search($scope, udbApi, LuceneQueryBuilder, $window, $location, $modal, SearchResultViewer, eventTagger,
+function Search($scope, udbApi, LuceneQueryBuilder, $window, $location, $modal, SearchResultViewer, eventLabeller,
                 searchHelper, $rootScope, eventExporter) {
 
   var queryBuilder = LuceneQueryBuilder;
@@ -94,28 +94,28 @@ function Search($scope, udbApi, LuceneQueryBuilder, $window, $location, $modal, 
     });
   };
 
-  var tag = function () {
-    var taggingQuery = $scope.resultViewer.querySelected;
+  var label = function () {
+    var labellingQuery = $scope.resultViewer.querySelected;
 
-    if (taggingQuery) {
-      tagActiveQuery();
+    if (labellingQuery) {
+      labelActiveQuery();
     } else {
-      tagSelection();
+      labelSelection();
     }
   };
 
-  var tagSelection = function () {
+  var labelSelection = function () {
 
     var selectedIds = $scope.resultViewer.selectedIds;
 
     if (!selectedIds.length) {
-      $window.alert('First select the events you want to tag.');
+      $window.alert('First select the events you want to label.');
       return;
     }
 
     var modal = $modal.open({
-      templateUrl: 'templates/event-tag-modal.html',
-      controller: 'EventTagModalCtrl'
+      templateUrl: 'templates/event-label-modal.html',
+      controller: 'EventLabelModalCtrl'
     });
 
     modal.result.then(function (labels) {
@@ -133,28 +133,28 @@ function Search($scope, udbApi, LuceneQueryBuilder, $window, $location, $modal, 
       });
 
       _.each(labels, function (label) {
-        eventTagger.tagEventsById(eventIds, label);
+        eventLabeller.labelEventsById(eventIds, label);
       });
     });
   };
 
-  function tagActiveQuery() {
+  function labelActiveQuery() {
     var query = $scope.activeQuery,
         eventCount = $scope.resultViewer.totalItems;
 
     if (queryBuilder.isValid(query)) {
       var modal = $modal.open({
-        templateUrl: 'templates/event-tag-modal.html',
-        controller: 'EventTagModalCtrl'
+        templateUrl: 'templates/event-label-modal.html',
+        controller: 'EventLabelModalCtrl'
       });
 
       modal.result.then(function (labels) {
         _.each(labels, function (label) {
-          eventTagger.tagQuery(query.queryString, label, eventCount);
+          eventLabeller.labelQuery(query.queryString, label, eventCount);
         });
       });
     } else {
-      $window.alert('provide a valid query to tag');
+      $window.alert('provide a valid query to label');
     }
   }
 
@@ -170,7 +170,7 @@ function Search($scope, udbApi, LuceneQueryBuilder, $window, $location, $modal, 
       selectedIds = $scope.resultViewer.selectedIds;
 
       if (!selectedIds.length) {
-        $window.alert('First select the events you want to tag.');
+        $window.alert('First select the events you want to label.');
         return;
       } else {
         eventCount = selectedIds.length;
@@ -194,7 +194,7 @@ function Search($scope, udbApi, LuceneQueryBuilder, $window, $location, $modal, 
   }
 
   $scope.exportEvents = exportEvents;
-  $scope.tag = tag;
+  $scope.label = label;
 
   $scope.startEditing = function () {
     $scope.queryEditorShown = true;

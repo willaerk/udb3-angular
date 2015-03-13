@@ -116,12 +116,12 @@ this.getEventHistoryById = function(eventId) {
 };
 
 /**
- * @returns {Promise} A list of tags wrapped as a promise.
+ * @returns {Promise} A list of labels wrapped as a promise.
  */
 this.getRecentLabels = function () {
   var deferredLabels = $q.defer();
 
-  var request = $http.get(apiUrl + 'user/keywords', {
+  var request = $http.get(apiUrl + 'user/labels', {
     withCredentials: true,
     headers: {
       'Accept': 'application/json'
@@ -168,20 +168,20 @@ this.getRecentLabels = function () {
     return deferredUser.promise;
   };
 
-this.tagEvents = function (eventIds, label) {
-  return $http.post(appConfig.baseUrl + 'events/tag',
+this.labelEvents = function (eventIds, label) {
+  return $http.post(appConfig.baseUrl + 'events/label',
     {
-      'keyword': label,
+      'label': label,
       'events' : eventIds
     },
     defaultApiConfig
   );
 };
 
-this.tagQuery = function (query, label) {
-  return $http.post(appConfig.baseUrl + 'query/tag',
+this.labelQuery = function (query, label) {
+  return $http.post(appConfig.baseUrl + 'query/label',
     {
-      'keyword': label,
+      'label': label,
       'query' : query
     },
     defaultApiConfig
@@ -218,17 +218,17 @@ this.translateEventProperty = function (eventId, property, language, translation
   );
 };
 
-this.tagEvent = function (eventId, label) {
+this.labelEvent = function (eventId, label) {
   return $http.post(
-    appConfig.baseUrl + 'event/' + eventId + '/keywords',
-    { 'keyword': label},
+    appConfig.baseUrl + 'event/' + eventId + '/labels',
+    { 'label': label},
     defaultApiConfig
   );
 };
 
-this.untagEvent = function (eventId, label) {
+this.unlabelEvent = function (eventId, label) {
   return $http.delete(
-    appConfig.baseUrl + 'event/' + eventId + '/keywords/' + label,
+    appConfig.baseUrl + 'event/' + eventId + '/labels/' + label,
     defaultApiConfig
   );
 };

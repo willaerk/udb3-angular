@@ -15,11 +15,11 @@ angular
 function UdbApi($q, $http, appConfig, $cookieStore, uitidAuth, $cacheFactory, UdbEvent) {
   var apiUrl = appConfig.baseApiUrl;
   var defaultApiConfig = {
-        withCredentials: true,
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      };
+    withCredentials: true,
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  };
   var eventCache = $cacheFactory('eventCache');
 
   /**
@@ -35,7 +35,7 @@ function UdbApi($q, $http, appConfig, $cookieStore, uitidAuth, $cacheFactory, Ud
           start: offset
         };
 
-    if(queryString.length) {
+    if (queryString.length) {
       searchParams.query = queryString;
     }
 
@@ -48,55 +48,55 @@ function UdbApi($q, $http, appConfig, $cookieStore, uitidAuth, $cacheFactory, Ud
     });
 
     request
-    .success(function (data) {
-      deferredEvents.resolve(data);
-    })
-    .error(function () {
-      deferredEvents.reject();
-    });
+      .success(function (data) {
+        deferredEvents.resolve(data);
+      })
+      .error(function () {
+        deferredEvents.reject();
+      });
 
     return deferredEvents.promise;
   };
 
-this.getEventById = function(eventId) {
-  var deferredEvent = $q.defer();
+  this.getEventById = function (eventId) {
+    var deferredEvent = $q.defer();
 
-  var event = eventCache.get(eventId);
+    var event = eventCache.get(eventId);
 
-  if(event) {
-    deferredEvent.resolve(event);
-  } else {
-    var eventRequest  = $http.get(
-      appConfig.baseUrl + 'event/' + eventId,
-      {
-        headers: {
-          'Accept': 'application/ld+json'
-        }
+    if (event) {
+      deferredEvent.resolve(event);
+    } else {
+      var eventRequest = $http.get(
+        appConfig.baseUrl + 'event/' + eventId,
+        {
+          headers: {
+            'Accept': 'application/ld+json'
+          }
+        });
+
+      eventRequest.success(function (jsonEvent) {
+        var event = new UdbEvent(jsonEvent);
+        eventCache.put(eventId, event);
+        deferredEvent.resolve(event);
       });
 
-    eventRequest.success(function(jsonEvent) {
-      var event = new UdbEvent(jsonEvent);
-      eventCache.put(eventId, event);
-      deferredEvent.resolve(event);
-    });
+      eventRequest.error(function () {
+        deferredEvent.reject();
+      });
+    }
 
-    eventRequest.error(function () {
-      deferredEvent.reject();
-    });
-  }
+    return deferredEvent.promise;
+  };
 
-  return deferredEvent.promise;
-};
+  this.getEventByLDId = function (eventLDId) {
+    var eventId = eventLDId.split('/').pop();
+    return this.getEventById(eventId);
+  };
 
-this.getEventByLDId = function (eventLDId) {
-  var eventId = eventLDId.split('/').pop();
-  return this.getEventById(eventId);
-};
+  this.getEventHistoryById = function (eventId) {
+    var eventHistoryLoaded = $q.defer();
 
-this.getEventHistoryById = function(eventId) {
-  var eventHistoryLoaded = $q.defer();
-
-  var eventHistoryRequest  = $http.get(
+    var eventHistoryRequest = $http.get(
       appConfig.baseUrl + 'event/' + eventId + '/history',
       {
         headers: {
@@ -104,50 +104,50 @@ this.getEventHistoryById = function(eventId) {
         }
       });
 
-  eventHistoryRequest.success(function(eventHistory) {
-    eventHistoryLoaded.resolve(eventHistory);
-  });
-
-  eventHistoryRequest.error(function () {
-    eventHistoryLoaded.reject();
-  });
-
-  return eventHistoryLoaded.promise;
-};
-
-/**
- * @returns {Promise} A list of labels wrapped as a promise.
- */
-this.getRecentLabels = function () {
-  var deferredLabels = $q.defer();
-
-  var request = $http.get(apiUrl + 'user/labels', {
-    withCredentials: true,
-    headers: {
-      'Accept': 'application/json'
-    }
-  });
-
-  request
-    .success(function (data) {
-      deferredLabels.resolve(data);
-    })
-    .error(function () {
-      deferredLabels.reject();
+    eventHistoryRequest.success(function (eventHistory) {
+      eventHistoryLoaded.resolve(eventHistory);
     });
 
-  return deferredLabels.promise;
-};
+    eventHistoryRequest.error(function () {
+      eventHistoryLoaded.reject();
+    });
 
-/**
- * @returns {Promise} A promise with the credentials of the currently logged in user.
- */
+    return eventHistoryLoaded.promise;
+  };
+
+  /**
+   * @returns {Promise} A list of labels wrapped as a promise.
+   */
+  this.getRecentLabels = function () {
+    var deferredLabels = $q.defer();
+
+    var request = $http.get(apiUrl + 'user/labels', {
+      withCredentials: true,
+      headers: {
+        'Accept': 'application/json'
+      }
+    });
+
+    request
+      .success(function (data) {
+        deferredLabels.resolve(data);
+      })
+      .error(function () {
+        deferredLabels.reject();
+      });
+
+    return deferredLabels.promise;
+  };
+
+  /**
+   * @returns {Promise} A promise with the credentials of the currently logged in user.
+   */
   this.getMe = function () {
     var deferredUser = $q.defer();
 
     var activeUser = uitidAuth.getUser();
 
-    if(activeUser) {
+    if (activeUser) {
       deferredUser.resolve(activeUser);
     } else {
 
@@ -155,7 +155,7 @@ this.getRecentLabels = function () {
         withCredentials: true
       });
 
-      request.success(function(userData) {
+      request.success(function (userData) {
         $cookieStore.put('user', userData);
         deferredUser.resolve(userData);
       });
@@ -168,68 +168,68 @@ this.getRecentLabels = function () {
     return deferredUser.promise;
   };
 
-this.labelEvents = function (eventIds, label) {
-  return $http.post(appConfig.baseUrl + 'events/label',
-    {
-      'label': label,
-      'events' : eventIds
-    },
-    defaultApiConfig
-  );
-};
-
-this.labelQuery = function (query, label) {
-  return $http.post(appConfig.baseUrl + 'query/label',
-    {
-      'label': label,
-      'query' : query
-    },
-    defaultApiConfig
-  );
-};
-
-this.exportEvents = function (query, email, format, properties, perDay, selection) {
-
-  var exportData = {
-    query: query,
-    selection: selection || [],
-    order: {},
-    include: properties,
-    perDay: perDay
+  this.labelEvents = function (eventIds, label) {
+    return $http.post(appConfig.baseUrl + 'events/label',
+      {
+        'label': label,
+        'events': eventIds
+      },
+      defaultApiConfig
+    );
   };
 
-  if(email) {
-    exportData.email = email;
-  }
+  this.labelQuery = function (query, label) {
+    return $http.post(appConfig.baseUrl + 'query/label',
+      {
+        'label': label,
+        'query': query
+      },
+      defaultApiConfig
+    );
+  };
 
-  return $http.post(appConfig.baseUrl + 'events/export/' + format, exportData, defaultApiConfig
-  );
-};
+  this.exportEvents = function (query, email, format, properties, perDay, selection) {
 
-this.translateEventProperty = function (eventId, property, language, translation) {
+    var exportData = {
+      query: query,
+      selection: selection || [],
+      order: {},
+      include: properties,
+      perDay: perDay
+    };
 
-  var translationData = {};
-  translationData[property] = translation;
+    if (email) {
+      exportData.email = email;
+    }
 
-  return $http.post(
-    appConfig.baseUrl + 'event/' + eventId + '/' + language + '/' + property,
-    translationData,
-    defaultApiConfig
-  );
-};
+    return $http.post(appConfig.baseUrl + 'events/export/' + format, exportData, defaultApiConfig
+    );
+  };
 
-this.labelEvent = function (eventId, label) {
-  return $http.post(
-    appConfig.baseUrl + 'event/' + eventId + '/labels',
-    { 'label': label},
-    defaultApiConfig
-  );
-};
+  this.translateEventProperty = function (eventId, property, language, translation) {
 
-this.unlabelEvent = function (eventId, label) {
-  return $http.delete(
-    appConfig.baseUrl + 'event/' + eventId + '/labels/' + label,
-    defaultApiConfig
-  );
-};
+    var translationData = {};
+    translationData[property] = translation;
+
+    return $http.post(
+      appConfig.baseUrl + 'event/' + eventId + '/' + language + '/' + property,
+      translationData,
+      defaultApiConfig
+    );
+  };
+
+  this.labelEvent = function (eventId, label) {
+    return $http.post(
+      appConfig.baseUrl + 'event/' + eventId + '/labels',
+      {'label': label},
+      defaultApiConfig
+    );
+  };
+
+  this.unlabelEvent = function (eventId, label) {
+    return $http.delete(
+      appConfig.baseUrl + 'event/' + eventId + '/labels/' + label,
+      defaultApiConfig
+    );
+  };
 }

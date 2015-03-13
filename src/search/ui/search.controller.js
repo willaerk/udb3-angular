@@ -43,7 +43,7 @@ function Search($scope, udbApi, LuceneQueryBuilder, $window, $location, $modal, 
 
   /**
    * This debounce function can be used to delay searching when an input field changes.
-   * @param {String} A query string used to find events.
+   * @param {String} queryString A query string used to find events.
    */
   var debouncedFindEvents = _.debounce(function (queryString) {
     findEvents(queryString);
@@ -51,7 +51,7 @@ function Search($scope, udbApi, LuceneQueryBuilder, $window, $location, $modal, 
 
   /**
    *
-   * @param Query A query object used to update the interface and result viewer.
+   * @param {Query} query A query object used to update the interface and result viewer.
    */
   var updateQuery = function (query) {
     var realQuery = queryBuilder.unparse(query);
@@ -67,7 +67,7 @@ function Search($scope, udbApi, LuceneQueryBuilder, $window, $location, $modal, 
 
   /**
    * Fires off a search for events using a plain query string or a query object.
-   * @param {String|Query} A query string or object to search with.
+   * @param {String|Query} query A query string or object to search with.
    */
   var findEvents = function (query) {
     var offset = ($scope.resultViewer.currentPage - 1) * $scope.resultViewer.pageSize;
@@ -97,7 +97,7 @@ function Search($scope, udbApi, LuceneQueryBuilder, $window, $location, $modal, 
   var label = function () {
     var labellingQuery = $scope.resultViewer.querySelected;
 
-    if(labellingQuery) {
+    if (labellingQuery) {
       labelActiveQuery();
     } else {
       labelSelection();
@@ -140,7 +140,7 @@ function Search($scope, udbApi, LuceneQueryBuilder, $window, $location, $modal, 
 
   function labelActiveQuery() {
     var query = $scope.activeQuery,
-      eventCount = $scope.resultViewer.totalItems;
+        eventCount = $scope.resultViewer.totalItems;
 
     if (queryBuilder.isValid(query)) {
       var modal = $modal.open({
@@ -164,7 +164,7 @@ function Search($scope, udbApi, LuceneQueryBuilder, $window, $location, $modal, 
         eventCount,
         selectedIds = [];
 
-    if(exportingQuery) {
+    if (exportingQuery) {
       eventCount = $scope.resultViewer.totalItems;
     } else {
       selectedIds = $scope.resultViewer.selectedIds;

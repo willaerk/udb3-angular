@@ -2131,7 +2131,6 @@ angular.module('udb.core')
   }
 );
 
-
 // Source: src/core/udb-api.service.js
 /**
  * @ngdoc service
@@ -2148,11 +2147,11 @@ angular
 function UdbApi($q, $http, appConfig, $cookieStore, uitidAuth, $cacheFactory, UdbEvent) {
   var apiUrl = appConfig.baseApiUrl;
   var defaultApiConfig = {
-        withCredentials: true,
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      };
+    withCredentials: true,
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  };
   var eventCache = $cacheFactory('eventCache');
 
   /**
@@ -2168,7 +2167,7 @@ function UdbApi($q, $http, appConfig, $cookieStore, uitidAuth, $cacheFactory, Ud
           start: offset
         };
 
-    if(queryString.length) {
+    if (queryString.length) {
       searchParams.query = queryString;
     }
 
@@ -2181,55 +2180,55 @@ function UdbApi($q, $http, appConfig, $cookieStore, uitidAuth, $cacheFactory, Ud
     });
 
     request
-    .success(function (data) {
-      deferredEvents.resolve(data);
-    })
-    .error(function () {
-      deferredEvents.reject();
-    });
+      .success(function (data) {
+        deferredEvents.resolve(data);
+      })
+      .error(function () {
+        deferredEvents.reject();
+      });
 
     return deferredEvents.promise;
   };
 
-this.getEventById = function(eventId) {
-  var deferredEvent = $q.defer();
+  this.getEventById = function (eventId) {
+    var deferredEvent = $q.defer();
 
-  var event = eventCache.get(eventId);
+    var event = eventCache.get(eventId);
 
-  if(event) {
-    deferredEvent.resolve(event);
-  } else {
-    var eventRequest  = $http.get(
-      appConfig.baseUrl + 'event/' + eventId,
-      {
-        headers: {
-          'Accept': 'application/ld+json'
-        }
+    if (event) {
+      deferredEvent.resolve(event);
+    } else {
+      var eventRequest = $http.get(
+        appConfig.baseUrl + 'event/' + eventId,
+        {
+          headers: {
+            'Accept': 'application/ld+json'
+          }
+        });
+
+      eventRequest.success(function (jsonEvent) {
+        var event = new UdbEvent(jsonEvent);
+        eventCache.put(eventId, event);
+        deferredEvent.resolve(event);
       });
 
-    eventRequest.success(function(jsonEvent) {
-      var event = new UdbEvent(jsonEvent);
-      eventCache.put(eventId, event);
-      deferredEvent.resolve(event);
-    });
+      eventRequest.error(function () {
+        deferredEvent.reject();
+      });
+    }
 
-    eventRequest.error(function () {
-      deferredEvent.reject();
-    });
-  }
+    return deferredEvent.promise;
+  };
 
-  return deferredEvent.promise;
-};
+  this.getEventByLDId = function (eventLDId) {
+    var eventId = eventLDId.split('/').pop();
+    return this.getEventById(eventId);
+  };
 
-this.getEventByLDId = function (eventLDId) {
-  var eventId = eventLDId.split('/').pop();
-  return this.getEventById(eventId);
-};
+  this.getEventHistoryById = function (eventId) {
+    var eventHistoryLoaded = $q.defer();
 
-this.getEventHistoryById = function(eventId) {
-  var eventHistoryLoaded = $q.defer();
-
-  var eventHistoryRequest  = $http.get(
+    var eventHistoryRequest = $http.get(
       appConfig.baseUrl + 'event/' + eventId + '/history',
       {
         headers: {
@@ -2237,50 +2236,50 @@ this.getEventHistoryById = function(eventId) {
         }
       });
 
-  eventHistoryRequest.success(function(eventHistory) {
-    eventHistoryLoaded.resolve(eventHistory);
-  });
-
-  eventHistoryRequest.error(function () {
-    eventHistoryLoaded.reject();
-  });
-
-  return eventHistoryLoaded.promise;
-};
-
-/**
- * @returns {Promise} A list of labels wrapped as a promise.
- */
-this.getRecentLabels = function () {
-  var deferredLabels = $q.defer();
-
-  var request = $http.get(apiUrl + 'user/labels', {
-    withCredentials: true,
-    headers: {
-      'Accept': 'application/json'
-    }
-  });
-
-  request
-    .success(function (data) {
-      deferredLabels.resolve(data);
-    })
-    .error(function () {
-      deferredLabels.reject();
+    eventHistoryRequest.success(function (eventHistory) {
+      eventHistoryLoaded.resolve(eventHistory);
     });
 
-  return deferredLabels.promise;
-};
+    eventHistoryRequest.error(function () {
+      eventHistoryLoaded.reject();
+    });
 
-/**
- * @returns {Promise} A promise with the credentials of the currently logged in user.
- */
+    return eventHistoryLoaded.promise;
+  };
+
+  /**
+   * @returns {Promise} A list of labels wrapped as a promise.
+   */
+  this.getRecentLabels = function () {
+    var deferredLabels = $q.defer();
+
+    var request = $http.get(apiUrl + 'user/labels', {
+      withCredentials: true,
+      headers: {
+        'Accept': 'application/json'
+      }
+    });
+
+    request
+      .success(function (data) {
+        deferredLabels.resolve(data);
+      })
+      .error(function () {
+        deferredLabels.reject();
+      });
+
+    return deferredLabels.promise;
+  };
+
+  /**
+   * @returns {Promise} A promise with the credentials of the currently logged in user.
+   */
   this.getMe = function () {
     var deferredUser = $q.defer();
 
     var activeUser = uitidAuth.getUser();
 
-    if(activeUser) {
+    if (activeUser) {
       deferredUser.resolve(activeUser);
     } else {
 
@@ -2288,7 +2287,7 @@ this.getRecentLabels = function () {
         withCredentials: true
       });
 
-      request.success(function(userData) {
+      request.success(function (userData) {
         $cookieStore.put('user', userData);
         deferredUser.resolve(userData);
       });
@@ -2301,70 +2300,70 @@ this.getRecentLabels = function () {
     return deferredUser.promise;
   };
 
-this.labelEvents = function (eventIds, label) {
-  return $http.post(appConfig.baseUrl + 'events/label',
-    {
-      'label': label,
-      'events' : eventIds
-    },
-    defaultApiConfig
-  );
-};
-
-this.labelQuery = function (query, label) {
-  return $http.post(appConfig.baseUrl + 'query/label',
-    {
-      'label': label,
-      'query' : query
-    },
-    defaultApiConfig
-  );
-};
-
-this.exportEvents = function (query, email, format, properties, perDay, selection) {
-
-  var exportData = {
-    query: query,
-    selection: selection || [],
-    order: {},
-    include: properties,
-    perDay: perDay
+  this.labelEvents = function (eventIds, label) {
+    return $http.post(appConfig.baseUrl + 'events/label',
+      {
+        'label': label,
+        'events': eventIds
+      },
+      defaultApiConfig
+    );
   };
 
-  if(email) {
-    exportData.email = email;
-  }
+  this.labelQuery = function (query, label) {
+    return $http.post(appConfig.baseUrl + 'query/label',
+      {
+        'label': label,
+        'query': query
+      },
+      defaultApiConfig
+    );
+  };
 
-  return $http.post(appConfig.baseUrl + 'events/export/' + format, exportData, defaultApiConfig
-  );
-};
+  this.exportEvents = function (query, email, format, properties, perDay, selection) {
 
-this.translateEventProperty = function (eventId, property, language, translation) {
+    var exportData = {
+      query: query,
+      selection: selection || [],
+      order: {},
+      include: properties,
+      perDay: perDay
+    };
 
-  var translationData = {};
-  translationData[property] = translation;
+    if (email) {
+      exportData.email = email;
+    }
 
-  return $http.post(
-    appConfig.baseUrl + 'event/' + eventId + '/' + language + '/' + property,
-    translationData,
-    defaultApiConfig
-  );
-};
+    return $http.post(appConfig.baseUrl + 'events/export/' + format, exportData, defaultApiConfig
+    );
+  };
 
-this.labelEvent = function (eventId, label) {
-  return $http.post(
-    appConfig.baseUrl + 'event/' + eventId + '/labels',
-    { 'label': label},
-    defaultApiConfig
-  );
-};
+  this.translateEventProperty = function (eventId, property, language, translation) {
 
-this.unlabelEvent = function (eventId, label) {
-  return $http.delete(
-    appConfig.baseUrl + 'event/' + eventId + '/labels/' + label,
-    defaultApiConfig
-  );
-};
+    var translationData = {};
+    translationData[property] = translation;
+
+    return $http.post(
+      appConfig.baseUrl + 'event/' + eventId + '/' + language + '/' + property,
+      translationData,
+      defaultApiConfig
+    );
+  };
+
+  this.labelEvent = function (eventId, label) {
+    return $http.post(
+      appConfig.baseUrl + 'event/' + eventId + '/labels',
+      {'label': label},
+      defaultApiConfig
+    );
+  };
+
+  this.unlabelEvent = function (eventId, label) {
+    return $http.delete(
+      appConfig.baseUrl + 'event/' + eventId + '/labels/' + label,
+      defaultApiConfig
+    );
+  };
 }
 UdbApi.$inject = ["$q", "$http", "appConfig", "$cookieStore", "uitidAuth", "$cacheFactory", "UdbEvent"];
 
@@ -2420,7 +2419,7 @@ function UdbEventFactory() {
   /**
    * @class UdbEvent
    * @constructor
-   * @param jsonEvent
+   * @param {object}  jsonEvent
    */
   var UdbEvent = function (jsonEvent) {
     this.parseJson(jsonEvent);
@@ -2583,15 +2582,15 @@ function EventLabelBatchJobFactory(BaseJob, JobStates) {
   EventLabelBatchJob.prototype.addEventsAsTask = function (eventIds) {
     var job = this;
     _.forEach(eventIds, function (eventId) {
-      job.addTask({ id: eventId});
+      job.addTask({id: eventId});
     });
   };
 
-  EventLabelBatchJob.prototype.getDescription = function() {
+  EventLabelBatchJob.prototype.getDescription = function () {
     var job = this,
         description;
 
-    if(this.state === JobStates.FAILED) {
+    if (this.state === JobStates.FAILED) {
       description = 'Labelen van evenementen mislukt';
     } else {
       description = 'Label ' + job.events.length + ' items met "' + job.label + '"';
@@ -2637,14 +2636,14 @@ function EventLabelJobFactory(BaseJob, JobStates) {
   EventLabelJob.prototype = Object.create(BaseJob.prototype);
   EventLabelJob.prototype.constructor = EventLabelJob;
 
-  EventLabelJob.prototype.getDescription = function() {
+  EventLabelJob.prototype.getDescription = function () {
     var job = this,
         description;
 
-    if(job.state === JobStates.FAILED) {
+    if (job.state === JobStates.FAILED) {
       description = 'Labelen van evenement mislukt';
     } else {
-      if(job.unlabel) {
+      if (job.unlabel) {
         description = 'Verwijder label "' + job.label + '" van "' + job.event.name.nl + '"';
       } else {
         description = 'Label "' + job.event.name.nl + '" met "' + job.label + '"';
@@ -2904,7 +2903,6 @@ function BaseJobFactory(JobStates) {
    */
   BaseJob.prototype.constructor = BaseJob;
 
-
   // The following functions are used to update the job state based on feedback of the server.
 
   BaseJob.prototype.fail = function () {
@@ -2917,7 +2915,7 @@ function BaseJobFactory(JobStates) {
   };
 
   BaseJob.prototype.finish = function () {
-    if(this.state !== JobStates.FAILED) {
+    if (this.state !== JobStates.FAILED) {
       this.state = JobStates.FINISHED;
     }
     this.progress = 100;
@@ -2929,8 +2927,8 @@ function BaseJobFactory(JobStates) {
    *
    * @param {object}  jobData
    */
-  BaseJob.prototype.info = function (jobData) {};
-
+  BaseJob.prototype.info = function (jobData) {
+  };
 
   /**
    * Renders the job description based on its details.
@@ -2952,7 +2950,7 @@ function BaseJobFactory(JobStates) {
   BaseJob.prototype.getTemplateName = function () {
     var templateName;
 
-    if(this.state === JobStates.FAILED) {
+    if (this.state === JobStates.FAILED) {
       templateName = 'failed-job';
     } else {
       templateName = 'base-job';
@@ -2970,7 +2968,7 @@ function BaseJobFactory(JobStates) {
 
     var duplicateTask = _.find(this.tasks, {id: task.id});
 
-    if(!duplicateTask) {
+    if (!duplicateTask) {
       this.tasks.push(task);
     }
   };
@@ -2988,23 +2986,22 @@ function BaseJobFactory(JobStates) {
    */
   BaseJob.prototype.findTask = function (taskData) {
     var taskId = taskData['event_id'], // jshint ignore:line
-        task =  _.find(this.tasks, { id: taskId});
+        task = _.find(this.tasks, {id: taskId});
 
-    if(!task) {
-      task = { id: taskId};
+    if (!task) {
+      task = {id: taskId};
       this.addTask(task);
     }
 
     return task;
   };
 
-
   // These functions are used to update this job's task state based on feedback from the server.
 
   BaseJob.prototype.failTask = function (taskData) {
     var task = this.findTask(taskData);
 
-    if(task) {
+    if (task) {
       task.state = 'failed';
       this.updateProgress();
     }
@@ -3013,7 +3010,7 @@ function BaseJobFactory(JobStates) {
   BaseJob.prototype.finishTask = function (taskData) {
     var task = this.findTask(taskData);
 
-    if(task) {
+    if (task) {
       task.state = 'finished';
       this.updateProgress();
     }
@@ -3029,7 +3026,6 @@ function BaseJobFactory(JobStates) {
     ++job.completedTaskCount;
     job.progress = (job.completedTaskCount / job.getTaskCount()) * 100;
   };
-
 
   return (BaseJob);
 }
@@ -3085,36 +3081,36 @@ function JobLogger(udbSocket, JobStates, EventExportJob) {
 
   /**
    * Finds a job  by id
-   * @param jobId
+   * @param {string}  jobId
    * @returns {BaseJob|undefined}
    */
-  function findJob (jobId) {
-    return _.find(jobs, { id: jobId});
+  function findJob(jobId) {
+    return _.find(jobs, {id: jobId});
   }
 
-  function jobStarted (data) {
+  function jobStarted(data) {
     var job = findJob(data['job_id']);
 
-    if(job) {
+    if (job) {
       job.start(data);
       console.log('job with id: ' + job.id + ' started');
       updateJobLists();
     }
   }
 
-  function jobInfo (data) {
+  function jobInfo(data) {
     var job = findJob(data['job_id']);
 
-    if(job) {
+    if (job) {
       job.info(data);
       console.log('job with id: ' + job.id + ' received some info.');
     }
   }
 
-  function jobFinished (data) {
+  function jobFinished(data) {
     var job = findJob(data['job_id']);
 
-    if(job) {
+    if (job) {
       job.finish(data);
       console.log('job with id: ' + job.id + ' finished');
       updateJobLists();
@@ -3124,26 +3120,26 @@ function JobLogger(udbSocket, JobStates, EventExportJob) {
   function jobFailed(data) {
     var job = findJob(data['job_id']);
 
-    if(job) {
+    if (job) {
       job.fail(data);
       console.log('job with id: ' + job.id + ' failed');
       updateJobLists();
     }
   }
 
-  function taskFinished (data) {
+  function taskFinished(data) {
     var job = findJob(data['job_id']);
 
-    if(job) {
+    if (job) {
       job.finishTask(data);
       console.log('Task of job with id: ' + job.id + ' finished.');
     }
   }
 
-  function taskFailed (data) {
+  function taskFailed(data) {
     var job = findJob(data['job_id']);
 
-    if(job) {
+    if (job) {
       job.failTask(data);
       console.log('Task of job with id: ' + job.id + ' failed. Error message: ' + data.error);
     }
@@ -3155,7 +3151,7 @@ function JobLogger(udbSocket, JobStates, EventExportJob) {
         activeJobs = _.filter(visibleJobs, {state: JobStates.STARTED});
 
     failedJobs = _.filter(visibleJobs, {state: JobStates.FAILED});
-    finishedExportJobs = _.filter(visibleJobs, function(job) {
+    finishedExportJobs = _.filter(visibleJobs, function (job) {
       return job instanceof EventExportJob && job.state === JobStates.FINISHED;
     });
     queuedJobs = activeJobs.concat(newJobs);
@@ -3228,6 +3224,7 @@ angular
     FAILED: 'failed',
     FINISHED: 'finished'
   });
+
 // Source: src/entry/logging/job.directive.js
 /**
  * @ngdoc directive
@@ -3344,11 +3341,11 @@ function EventTranslationJobFactory(BaseJob, JobStates) {
   EventTranslationJob.prototype = Object.create(BaseJob.prototype);
   EventTranslationJob.prototype.constructor = EventTranslationJob;
 
-  EventTranslationJob.prototype.getDescription = function() {
+  EventTranslationJob.prototype.getDescription = function () {
     var job = this,
-      description;
+        description;
 
-    if(this.state === JobStates.FAILED) {
+    if (this.state === JobStates.FAILED) {
       description = 'Vertalen van evenement mislukt';
     } else {
       var propertyName;
@@ -3542,7 +3539,9 @@ function EventExportJobFactory(BaseJob, JobStates) {
   /**
    * @class EventExportJob
    * @constructor
-   * @param commandId
+   * @param   {string}    commandId
+   * @param   {number}    eventCount
+   * @param   {string}    format
    */
   var EventExportJob = function (commandId, eventCount, format) {
     BaseJob.call(this, commandId);
@@ -3571,10 +3570,10 @@ function EventExportJobFactory(BaseJob, JobStates) {
     return templateName;
   };
 
-  EventExportJob.prototype.getDescription = function() {
+  EventExportJob.prototype.getDescription = function () {
     var description = '';
 
-    if(this.state === JobStates.FAILED) {
+    if (this.state === JobStates.FAILED) {
       description = 'Exporteren van evenementen mislukt';
     } else {
       var exportExtension = this.exportUrl.split('.').pop();
@@ -3585,7 +3584,7 @@ function EventExportJobFactory(BaseJob, JobStates) {
   };
 
   EventExportJob.prototype.info = function (jobData) {
-    if(jobData.location) {
+    if (jobData.location) {
       this.exportUrl = jobData.location;
     }
   };
@@ -3618,59 +3617,26 @@ function EventExportController($modalInstance, udbApi, eventExporter, queryField
   exporter.dayByDay = false;
 
   exporter.eventProperties = [
-    { name: 'name', include: true, sortable: false, excludable: false},
-    { name: 'description', include: false, sortable: false, excludable: true},
-    { name: 'labels', include: false, sortable: false, excludable: true},
-    { name: 'calendarSummary', include: true, sortable: false, excludable: false},
-    { name: 'image', include: true, sortable: false, excludable: true},
-    { name: 'location', include: true, sortable: false, excludable: false},
-    { name: 'address', include: true, sortable: false, excludable: true},
-    { name: 'organizer', include: false, sortable: false, excludable: true},
-    { name: 'bookingInfo', include: true, sortable: false, excludable: true},
-    { name: 'creator', include: false, sortable: false, excludable: true},
-    { name: 'terms.theme', include: true, sortable: false, excludable: true},
-    { name: 'terms.eventtype', include: true, sortable: false, excludable: true},
-    { name: 'created', include: false, sortable: false, excludable: true},
-    { name: 'endDate', include: false, sortable: false, excludable: true},
-    { name: 'startDate', include: false, sortable: false, excludable: true},
-    { name: 'calendarType', include: false, sortable: false, excludable: true},
-    { name: 'sameAs', include: false, sortable: false, excludable: true},
-    { name: 'typicalAgeRange', include: false, sortable: false, excludable: true},
-    { name: 'language', include: false, sortable: false, excludable: true}
+    {name: 'name', include: true, sortable: false, excludable: false},
+    {name: 'description', include: false, sortable: false, excludable: true},
+    {name: 'labels', include: false, sortable: false, excludable: true},
+    {name: 'calendarSummary', include: true, sortable: false, excludable: false},
+    {name: 'image', include: true, sortable: false, excludable: true},
+    {name: 'location', include: true, sortable: false, excludable: false},
+    {name: 'address', include: true, sortable: false, excludable: true},
+    {name: 'organizer', include: false, sortable: false, excludable: true},
+    {name: 'bookingInfo', include: true, sortable: false, excludable: true},
+    {name: 'creator', include: false, sortable: false, excludable: true},
+    {name: 'terms.theme', include: true, sortable: false, excludable: true},
+    {name: 'terms.eventtype', include: true, sortable: false, excludable: true},
+    {name: 'created', include: false, sortable: false, excludable: true},
+    {name: 'endDate', include: false, sortable: false, excludable: true},
+    {name: 'startDate', include: false, sortable: false, excludable: true},
+    {name: 'calendarType', include: false, sortable: false, excludable: true},
+    {name: 'sameAs', include: false, sortable: false, excludable: true},
+    {name: 'typicalAgeRange', include: false, sortable: false, excludable: true},
+    {name: 'language', include: false, sortable: false, excludable: true}
   ];
-
-  //exporter.fieldSorters = [];
-  //
-  //exporter.getUnsortedFields = function (includeName) {
-  //  var sortedFieldNames = _.map(exporter.fieldSorters, 'fieldName');
-  //
-  //  if(includeName) {
-  //    sortedFieldNames = _.without(sortedFieldNames, includeName);
-  //  }
-  //
-  //  var unsortedFields = _.filter(queryFields, function (field) {
-  //    return !_.contains(sortedFieldNames, field.name);
-  //  });
-  //
-  //  return unsortedFields;
-  //};
-  //
-  //exporter.addSorter = function () {
-  //  var unsortedFields = exporter.getUnsortedFields();
-  //
-  //  if(unsortedFields.length) {
-  //    var fieldSorter = {
-  //      fieldName: unsortedFields[0].name,
-  //      order: 'asc'
-  //    };
-  //
-  //    exporter.fieldSorters.push(fieldSorter);
-  //  } else {
-  //    $window.alert('Already sorting on every possible field');
-  //  }
-  //
-  //};
-  //exporter.addSorter();
 
   exporter.exportFormats = [
     {
@@ -3690,21 +3656,22 @@ function EventExportController($modalInstance, udbApi, eventExporter, queryField
    * You can add a callback to its incomplete property which will be used to check if a step is completed.
    */
   exporter.steps = [
-    { name: 'format' },
-    { name: 'filter',
+    {name: 'format'},
+    {
+      name: 'filter',
       incomplete: function () {
-        return !_.find(exporter.eventProperties, function(property) {
+        return !_.find(exporter.eventProperties, function (property) {
           return property.include === true;
         });
       }
     },
     //{name: 'sort' },
-    { name: 'confirm' }
+    {name: 'confirm'}
   ];
 
   var activeStep = 0;
   exporter.nextStep = function () {
-    if(exporter.isStepCompleted()) {
+    if (exporter.isStepCompleted()) {
       setActiveStep(activeStep + 1);
     }
   };
@@ -3715,7 +3682,7 @@ function EventExportController($modalInstance, udbApi, eventExporter, queryField
 
   exporter.isStepCompleted = function () {
 
-    if(activeStep === -1) {
+    if (activeStep === -1) {
       return true;
     }
 
@@ -3724,9 +3691,9 @@ function EventExportController($modalInstance, udbApi, eventExporter, queryField
   };
 
   function setActiveStep(stepIndex) {
-    if(stepIndex < 0) {
+    if (stepIndex < 0) {
       activeStep = 0;
-    } else if(stepIndex > exporter.steps.length) {
+    } else if (stepIndex > exporter.steps.length) {
       activeStep = exporter.steps.length;
     } else {
       activeStep = stepIndex;
@@ -3739,7 +3706,7 @@ function EventExportController($modalInstance, udbApi, eventExporter, queryField
 
   exporter.getActiveStepName = function () {
 
-    if(activeStep === -1) {
+    if (activeStep === -1) {
       return 'finished';
     }
 
@@ -3759,9 +3726,9 @@ function EventExportController($modalInstance, udbApi, eventExporter, queryField
 
   exporter.format = exporter.exportFormats[0].type;
   exporter.email = '';
-  
+
   udbApi.getMe().then(function (user) {
-    if(user.mbox) {
+    if (user.mbox) {
       exporter.email = user.mbox;
     }
   });
@@ -3911,10 +3878,10 @@ function udbQueryEditorField() {
     restrict: 'E',
     link: function postLink(scope, element, attrs) {
 
-      function getParentGroup () {
+      function getParentGroup() {
         var parentGroup;
 
-        if(isSubGroup()) {
+        if (isSubGroup()) {
           parentGroup = scope.$parent.field;
         } else {
           parentGroup = scope.rootGroup;
@@ -3925,7 +3892,7 @@ function udbQueryEditorField() {
 
       function getOperatorClass() {
         var operatorClass;
-        if(isSubGroup() && scope.$index === 0) {
+        if (isSubGroup() && scope.$index === 0) {
           operatorClass = 'AND';
         } else {
           operatorClass = scope.$index ? 'OR' : 'FIRST';
@@ -3954,12 +3921,12 @@ function udbQueryEditorField() {
 
       scope.addSubGroup = function (index) {
         var rootGroup = scope.rootGroup,
-          treeGroupId = _.uniqueId(),
+            treeGroupId = _.uniqueId(),
             group = getParentGroup();
 
         group.treeGroupId = treeGroupId;
 
-        if(isSubGroup()) {
+        if (isSubGroup()) {
           index = _.findIndex(rootGroup.nodes, function (group) {
             return group.treeGroupId === treeGroupId;
           });
@@ -3974,6 +3941,7 @@ function udbQueryEditorField() {
     }
   };
 }
+
 // Source: src/search/components/query-editor.directive.js
 /**
  * @ngdoc directive
@@ -4007,7 +3975,7 @@ function udbQueryEditor(
 
       // use the first occurrence of a group name to order it against the other groups
       var orderedGroups = _.chain(qe.fields)
-        .map(function(field) {
+        .map(function (field) {
           return field.group;
         })
         .uniq()
@@ -4024,7 +3992,6 @@ function udbQueryEditor(
         });
       });
 
-      qe.operators = ['AND', 'OR'];
       qe.groupedQueryTree = {
         type: 'root',
         nodes: [
@@ -4042,7 +4009,6 @@ function udbQueryEditor(
           }
         ]
       };
-      qe.colorScheme = ['rgb(141,211,199)', 'rgb(255,255,179)', 'rgb(190,186,218)', 'rgb(251,128,114)', 'rgb(128,177,211)', 'rgb(253,180,98)', 'rgb(179,222,105)', 'rgb(252,205,229)', 'rgb(217,217,217)', 'rgb(188,128,189)', 'rgb(204,235,197)'];
 
       // Holds options for both term and choice query-field types
       qe.transformers = {};
@@ -4071,7 +4037,8 @@ function udbQueryEditor(
       /**
        * Add a field to a group
        *
-       * @param {number}  groupIndex  The index of the group to add the field to
+       * @param  {object}  group       The group to add the field to
+       * @param {number}  fieldIndex  The index of the field after which to add
        */
       qe.addField = function (group, fieldIndex) {
 
@@ -4113,26 +4080,26 @@ function udbQueryEditor(
       qe.unwrapSubGroups = function () {
         var root = qe.groupedQueryTree;
 
-        _.forEach(root.nodes, function(group) {
-            var firstNode = group.nodes[0];
+        _.forEach(root.nodes, function (group) {
+          var firstNode = group.nodes[0];
 
-            if(firstNode.nodes) {
-              var firstNodeChildren = firstNode.nodes;
-              group.nodes.splice(0, 1);
-              _.forEach(firstNodeChildren, function (node, index) {
-                group.nodes.splice(index, 0, node);
-              });
-            }
+          if (firstNode.nodes) {
+            var firstNodeChildren = firstNode.nodes;
+            group.nodes.splice(0, 1);
+            _.forEach(firstNodeChildren, function (node, index) {
+              group.nodes.splice(index, 0, node);
+            });
+          }
         });
       };
 
       qe.removeEmptyGroups = function () {
         var root = qe.groupedQueryTree;
 
-        _.forEach(root.nodes, function(group) {
-            _.remove(group.nodes, function (node) {
-              return node.nodes && node.nodes.length === 0;
-            });
+        _.forEach(root.nodes, function (group) {
+          _.remove(group.nodes, function (node) {
+            return node.nodes && node.nodes.length === 0;
+          });
         });
       };
 
@@ -4145,7 +4112,7 @@ function udbQueryEditor(
       };
 
       qe.removeGroup = function (groupIndex) {
-        if(qe.canRemoveGroup()) {
+        if (qe.canRemoveGroup()) {
           var root = qe.groupedQueryTree,
               group = root.nodes[groupIndex];
 
@@ -4195,9 +4162,9 @@ function udbQueryEditor(
 
       qe.updateFieldType = function (field) {
         var fieldName = field.field,
-          queryField = _.find(queryFields, function (field) {
-            return field.name === fieldName;
-          });
+            queryField = _.find(queryFields, function (field) {
+              return field.name === fieldName;
+            });
 
         if (field.fieldType !== queryField.type) {
           // TODO: Maybe try to do a type conversion?
@@ -4304,6 +4271,7 @@ function udbSearchBar(searchHelper, $rootScope) {
   };
 }
 udbSearchBar.$inject = ["searchHelper", "$rootScope"];
+
 // Source: src/search/filters/currency.filter.js
 /**
  * @ngdoc filter
@@ -4359,16 +4327,16 @@ angular.module('udb.search')
 function JsonLDLangFilter() {
   return function (jsonLDObject, preferredLanguage, shouldFallback) {
     var translatedObject = _.cloneDeep(jsonLDObject),
-      containedProperties = ['name', 'description'],
-      languages = ['nl', 'en', 'fr', 'de'],
-    // set a default language if none is specified
-      language = preferredLanguage || 'nl';
+        containedProperties = ['name', 'description'],
+        languages = ['nl', 'en', 'fr', 'de'],
+        // set a default language if none is specified
+        language = preferredLanguage || 'nl';
 
     _.each(containedProperties, function (property) {
       // make sure the property is set on the object
       if (translatedObject[property]) {
         var translatedProperty = translatedObject[property][language],
-          langIndex = 0;
+            langIndex = 0;
 
         // if there is no translation available for the provided language or default language
         // check for a default language
@@ -4387,7 +4355,6 @@ function JsonLDLangFilter() {
     return translatedObject;
   };
 }
-
 
 // Source: src/search/services/field-type-transformers.value.js
 /**
@@ -4468,12 +4435,12 @@ function LuceneQueryBuilder(LuceneQueryParser, QueryTreeValidator, QueryTreeTran
 
   var printTerm = function (node) {
     var term = node.term,
-      isRangeExpression = (node.lowerBound || node.upperBound);
+        isRangeExpression = (node.lowerBound || node.upperBound);
 
     if (isRangeExpression) {
       var min = node.lowerBound || '*',
-        max = node.upperBound || '*',
-        inclusive = node.inclusive;
+          max = node.upperBound || '*',
+          inclusive = node.inclusive;
 
       if (min instanceof Date) {
         min = min.toISOString();
@@ -4523,7 +4490,7 @@ function LuceneQueryBuilder(LuceneQueryParser, QueryTreeValidator, QueryTreeTran
 
     if (branch.left) {
       var result,
-        operator = (branch.operator === implicitToken) ? ' ' : (' ' + branch.operator + ' ');
+          operator = (branch.operator === implicitToken) ? ' ' : (' ' + branch.operator + ' ');
 
       if (branch.right) {
         result = unparseNode(branch.left, depth + 1, sentence);
@@ -4546,7 +4513,7 @@ function LuceneQueryBuilder(LuceneQueryParser, QueryTreeValidator, QueryTreeTran
 
     } else {
       var fieldQuery = '',
-        term = printTerm(branch);
+          term = printTerm(branch);
 
       if (branch.field !== implicitToken && branch.field !== null) {
         var fieldPrefix = '';
@@ -4583,13 +4550,12 @@ function LuceneQueryBuilder(LuceneQueryParser, QueryTreeValidator, QueryTreeTran
     return queryString;
   };
 
-
   function printTreeField(field) {
     if (field.fieldType === 'date-range') {
       cleanUpDateRangeField(field);
     }
     var transformedField = transformField(field);
-    return  transformedField.field + ':' + printTerm(transformedField);
+    return transformedField.field + ':' + printTerm(transformedField);
   }
 
   /**
@@ -4611,12 +4577,12 @@ function LuceneQueryBuilder(LuceneQueryParser, QueryTreeValidator, QueryTreeTran
         _.forEach(group.nodes, function (field, fieldIndex) {
 
           // check if the field is actually a sub group
-          if(field.type === 'group') {
+          if (field.type === 'group') {
 
             var subGroup = field,
                 subGroupString = ' ';
 
-            if(subGroup.nodes.length === 1) {
+            if (subGroup.nodes.length === 1) {
               var singleField = subGroup.nodes[0];
               subGroupString += subGroup.operator + ' ' + printTreeField(singleField);
             } else {
@@ -4640,7 +4606,7 @@ function LuceneQueryBuilder(LuceneQueryParser, QueryTreeValidator, QueryTreeTran
           }
         });
 
-        if(root.nodes.length > 1 && group.nodes.length > 1) {
+        if (root.nodes.length > 1 && group.nodes.length > 1) {
           nodeString = '(' + nodeString + ')';
         }
       } else {
@@ -4876,7 +4842,7 @@ function LuceneQueryBuilder(LuceneQueryParser, QueryTreeValidator, QueryTreeTran
 
           if (fieldType.type === 'date-range') {
             var startDate = moment(field.lowerBound),
-              endDate = moment(field.upperBound);
+                endDate = moment(field.upperBound);
 
             if (startDate.isValid() && endDate.isValid()) {
               if (startDate.isSame(endDate, 'day')) {
@@ -4962,13 +4928,13 @@ function LuceneQueryBuilder(LuceneQueryParser, QueryTreeValidator, QueryTreeTran
    */
   function makeField(node, fieldName) {
     var fieldType = _.find(queryFields, function (type) {
-        return type.name === node.field;
-      }),
-      field = {
-        field: fieldName || node.field,
-        fieldType: fieldType || 'string',
-        transformer: node.transformer || '='
-      };
+          return type.name === node.field;
+        }),
+        field = {
+          field: fieldName || node.field,
+          fieldType: fieldType || 'string',
+          transformer: node.transformer || '='
+        };
 
     if (node.lowerBound || node.upperBound) {
       field.lowerBound = node.lowerBound || undefined;
@@ -5104,7 +5070,6 @@ angular
     {name: 'category_facility_name', type: 'term', group: 'other', editable: true},
     {name: 'category_targetaudience_name', type: 'term', group: 'other', editable: true},
     {name: 'category_publicscope_name', type: 'term', group: 'other', editable: true},
-
 
     {name: 'like_count', type: 'number'},
     {name: 'recommend_count', type: 'number'},
@@ -5279,9 +5244,9 @@ angular.module('udb.search')
   .factory('SearchResultViewer', function () {
 
     var SelectionState = {
-      ALL: { 'name': 'all', 'icon': 'fa-check-square' },
-      NONE: { 'name': 'none', 'icon': 'fa-square-o' },
-      SOME: { 'name': 'some', 'icon': 'fa-minus-square' }
+      ALL: {'name': 'all', 'icon': 'fa-check-square'},
+      NONE: {'name': 'none', 'icon': 'fa-square-o'},
+      SOME: {'name': 'some', 'icon': 'fa-minus-square'}
     };
 
     var identifyItem = function (event) {
@@ -5291,16 +5256,16 @@ angular.module('udb.search')
     /**
      * @class SearchResultViewer
      * @constructor
-     * @param pagSize
+     * @param    {number}     pageSize        The number of items shown per page
      *
-     * @property {object[]}   events       - A list of json-LD event objects
-     * @property {number}     pageSize     - The current page size
-     * @property {number}     totalItems   - The total items found
-     * @property {number}     currentPage  - The index of the current page without zeroing
-     * @property {boolean}    loading      - A flag to indicate the period between changing of the query and
-     *                                       receiving of the results.
-     * @property {object} eventProperties A list of event properties that can be shown complementary
-     * @property {array} eventSpecifics A list of specific event info that can be shown exclusively
+     * @property {object[]}   events          A list of json-LD event objects
+     * @property {number}     pageSize        The current page size
+     * @property {number}     totalItems      The total items found
+     * @property {number}     currentPage     The index of the current page without zeroing
+     * @property {boolean}    loading         A flag to indicate the period between changing of the query and
+     *                                        receiving of the results.
+     * @property {object}     eventProperties A list of event properties that can be shown complementary
+     * @property {array}      eventSpecifics  A list of specific event info that can be shown exclusively
      * @property {SelectionState} selectionState Enum that keeps the state of selected results
      */
     var SearchResultViewer = function (pageSize) {
@@ -5315,9 +5280,9 @@ angular.module('udb.search')
         image: {name: 'Afbeelding', visible: false}
       };
       this.eventSpecifics = [
-        { id: 'input', name: 'Invoer-informatie'},
-        { id: 'price', name: 'Prijs-informatie'},
-        { id: 'translation', name: 'Vertaalstatus'}
+        {id: 'input', name: 'Invoer-informatie'},
+        {id: 'price', name: 'Prijs-informatie'},
+        {id: 'translation', name: 'Vertaalstatus'}
       ];
       this.activeSpecific = this.eventSpecifics[0];
       this.selectedIds = [];
@@ -5329,9 +5294,9 @@ angular.module('udb.search')
       toggleSelection: function () {
         var state = this.selectionState;
 
-        if( state === SelectionState.SOME || state === SelectionState.ALL) {
+        if (state === SelectionState.SOME || state === SelectionState.ALL) {
           this.deselectPageItems();
-          if(this.querySelected) {
+          if (this.querySelected) {
             this.deselectAll();
             this.querySelected = false;
           }
@@ -5345,13 +5310,13 @@ angular.module('udb.search')
       },
       updateSelectionState: function () {
         var selectedIds = this.selectedIds,
-            selectedPageItems = _.filter(this.events, function(event) {
+            selectedPageItems = _.filter(this.events, function (event) {
               return _.contains(selectedIds, identifyItem(event));
             });
 
-        if(selectedPageItems.length === this.pageSize) {
+        if (selectedPageItems.length === this.pageSize) {
           this.selectionState = SelectionState.ALL;
-        } else if (selectedPageItems.length > 0 ) {
+        } else if (selectedPageItems.length > 0) {
           this.selectionState = SelectionState.SOME;
         } else {
           this.selectionState = SelectionState.NONE;
@@ -5360,15 +5325,17 @@ angular.module('udb.search')
       toggleSelectId: function (id) {
 
         // Prevent toggling individual items when the whole query is selected
-        if(this.querySelected) {
+        if (this.querySelected) {
           return;
         }
 
         var selectedIds = this.selectedIds,
-          isSelected = _.contains(selectedIds, id);
+            isSelected = _.contains(selectedIds, id);
 
-        if(isSelected) {
-          _.remove(selectedIds, function(iid) { return id === iid; });
+        if (isSelected) {
+          _.remove(selectedIds, function (iid) {
+            return id === iid;
+          });
         } else {
           selectedIds.push(id);
         }
@@ -5392,7 +5359,7 @@ angular.module('udb.search')
       },
       selectPageItems: function () {
         var events = this.events,
-          selectedIds = this.selectedIds;
+            selectedIds = this.selectedIds;
 
         _.each(events, function (event) {
           selectedIds.push(identifyItem(event));
@@ -5412,7 +5379,7 @@ angular.module('udb.search')
         viewer.totalItems = pagedResults.totalItems || 0;
 
         viewer.loading = false;
-        if(this.querySelected) {
+        if (this.querySelected) {
           this.selectPageItems();
         }
         this.updateSelectionState();
@@ -5467,11 +5434,11 @@ function udbEvent(udbApi, jsonLDLangFilter, eventTranslator, eventLabeller) {
 
       function updateTranslationState(event) {
         var languages = {'en': false, 'fr': false, 'de': false},
-          properties = ['name', 'description'];
+            properties = ['name', 'description'];
 
         _.forEach(languages, function (language, languageKey) {
           var translationCount = 0,
-            state;
+              state;
 
           _.forEach(properties, function (property) {
             if (event[property] && event[property][languageKey]) {
@@ -5544,7 +5511,7 @@ function udbEvent(udbApi, jsonLDLangFilter, eventTranslator, eventLabeller) {
       /**
        * Sets the provided language as active or toggles it off when already active
        *
-       * @param lang
+       * @param {String} lang
        */
       function toggleLanguage(lang) {
 
@@ -5561,14 +5528,14 @@ function udbEvent(udbApi, jsonLDLangFilter, eventTranslator, eventLabeller) {
 
       scope.hasPropertyChanged = function (propertyName) {
         var lang = scope.activeLanguage,
-          translation = scope.eventTranslation;
+            translation = scope.eventTranslation;
 
         return scope.eventTranslation && event[propertyName][lang] !== translation[propertyName];
       };
 
       scope.undoPropertyChanges = function (propertyName) {
         var lang = scope.activeLanguage,
-          translation = scope.eventTranslation;
+            translation = scope.eventTranslation;
 
         if (translation) {
           translation[propertyName] = event[propertyName][lang];
@@ -5577,7 +5544,7 @@ function udbEvent(udbApi, jsonLDLangFilter, eventTranslator, eventLabeller) {
 
       scope.applyPropertyChanges = function (propertyName) {
         var translation = scope.eventTranslation[propertyName],
-          apiProperty;
+            apiProperty;
 
         // TODO: this is hacky, should decide on consistent name for this property
         if (propertyName === 'name') {
@@ -5594,7 +5561,7 @@ function udbEvent(udbApi, jsonLDLangFilter, eventTranslator, eventLabeller) {
 
       function translateEventProperty(property, translation, apiProperty) {
         var language = scope.activeLanguage,
-          udbProperty = apiProperty || property;
+            udbProperty = apiProperty || property;
 
         if (translation && translation !== event[property][language]) {
           var translationPromise = eventTranslator.translateProperty(event, udbProperty, language, translation);
@@ -5663,7 +5630,7 @@ function Search($scope, udbApi, LuceneQueryBuilder, $window, $location, $modal, 
 
   /**
    * This debounce function can be used to delay searching when an input field changes.
-   * @param {String} A query string used to find events.
+   * @param {String} queryString A query string used to find events.
    */
   var debouncedFindEvents = _.debounce(function (queryString) {
     findEvents(queryString);
@@ -5671,7 +5638,7 @@ function Search($scope, udbApi, LuceneQueryBuilder, $window, $location, $modal, 
 
   /**
    *
-   * @param Query A query object used to update the interface and result viewer.
+   * @param {Query} query A query object used to update the interface and result viewer.
    */
   var updateQuery = function (query) {
     var realQuery = queryBuilder.unparse(query);
@@ -5687,7 +5654,7 @@ function Search($scope, udbApi, LuceneQueryBuilder, $window, $location, $modal, 
 
   /**
    * Fires off a search for events using a plain query string or a query object.
-   * @param {String|Query} A query string or object to search with.
+   * @param {String|Query} query A query string or object to search with.
    */
   var findEvents = function (query) {
     var offset = ($scope.resultViewer.currentPage - 1) * $scope.resultViewer.pageSize;
@@ -5717,7 +5684,7 @@ function Search($scope, udbApi, LuceneQueryBuilder, $window, $location, $modal, 
   var label = function () {
     var labellingQuery = $scope.resultViewer.querySelected;
 
-    if(labellingQuery) {
+    if (labellingQuery) {
       labelActiveQuery();
     } else {
       labelSelection();
@@ -5760,7 +5727,7 @@ function Search($scope, udbApi, LuceneQueryBuilder, $window, $location, $modal, 
 
   function labelActiveQuery() {
     var query = $scope.activeQuery,
-      eventCount = $scope.resultViewer.totalItems;
+        eventCount = $scope.resultViewer.totalItems;
 
     if (queryBuilder.isValid(query)) {
       var modal = $modal.open({
@@ -5784,7 +5751,7 @@ function Search($scope, udbApi, LuceneQueryBuilder, $window, $location, $modal, 
         eventCount,
         selectedIds = [];
 
-    if(exportingQuery) {
+    if (exportingQuery) {
       eventCount = $scope.resultViewer.totalItems;
     } else {
       selectedIds = $scope.resultViewer.selectedIds;

@@ -15,16 +15,16 @@ angular.module('udb.search')
 function JsonLDLangFilter() {
   return function (jsonLDObject, preferredLanguage, shouldFallback) {
     var translatedObject = _.cloneDeep(jsonLDObject),
-      containedProperties = ['name', 'description'],
-      languages = ['nl', 'en', 'fr', 'de'],
-    // set a default language if none is specified
-      language = preferredLanguage || 'nl';
+        containedProperties = ['name', 'description'],
+        languages = ['nl', 'en', 'fr', 'de'],
+        // set a default language if none is specified
+        language = preferredLanguage || 'nl';
 
     _.each(containedProperties, function (property) {
       // make sure the property is set on the object
       if (translatedObject[property]) {
         var translatedProperty = translatedObject[property][language],
-          langIndex = 0;
+            langIndex = 0;
 
         // if there is no translation available for the provided language or default language
         // check for a default language
@@ -43,4 +43,3 @@ function JsonLDLangFilter() {
     return translatedObject;
   };
 }
-

@@ -34,15 +34,15 @@ function EventLabelBatchJobFactory(BaseJob, JobStates) {
   EventLabelBatchJob.prototype.addEventsAsTask = function (eventIds) {
     var job = this;
     _.forEach(eventIds, function (eventId) {
-      job.addTask({ id: eventId});
+      job.addTask({id: eventId});
     });
   };
 
-  EventLabelBatchJob.prototype.getDescription = function() {
+  EventLabelBatchJob.prototype.getDescription = function () {
     var job = this,
         description;
 
-    if(this.state === JobStates.FAILED) {
+    if (this.state === JobStates.FAILED) {
       description = 'Labelen van evenementen mislukt';
     } else {
       description = 'Label ' + job.events.length + ' items met "' + job.label + '"';

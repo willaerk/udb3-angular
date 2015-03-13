@@ -32,14 +32,14 @@ function EventLabelJobFactory(BaseJob, JobStates) {
   EventLabelJob.prototype = Object.create(BaseJob.prototype);
   EventLabelJob.prototype.constructor = EventLabelJob;
 
-  EventLabelJob.prototype.getDescription = function() {
+  EventLabelJob.prototype.getDescription = function () {
     var job = this,
         description;
 
-    if(job.state === JobStates.FAILED) {
+    if (job.state === JobStates.FAILED) {
       description = 'Labelen van evenement mislukt';
     } else {
-      if(job.unlabel) {
+      if (job.unlabel) {
         description = 'Verwijder label "' + job.label + '" van "' + job.event.name.nl + '"';
       } else {
         description = 'Label "' + job.event.name.nl + '" met "' + job.label + '"';

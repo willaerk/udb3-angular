@@ -34,7 +34,12 @@ function UdbPlaceFactory() {
   };
 
   UdbPlace.prototype = {
-    parseJson: function (json) {
+    parseJson: function (jsonPlace) {
+
+      this.id = jsonPlace['@id'].split('/').pop();
+      this.name = jsonPlace.name || {};
+      this.description = jsonPlace.description || {};
+      this.mediaObject = jsonPlace.mediaObject || [];
 
     },
 

@@ -83,7 +83,7 @@
       var uploaded = 0;
 
       eventCrud.addImage(EventFormData, image, $scope.description, $scope.copyright).then(function (jsonResponse) {
-        EventFormData.addMediaObject(jsonResponse.data.url, jsonResponse.thumbnailUrl, $scope.description, $scope.copyright, image);
+        EventFormData.addMediaObject(jsonResponse.data.url, jsonResponse.data.thumbnailUrl, $scope.description, $scope.copyright, image);
         uploaded++;
         if (uploaded === $scope.imagesToUpload.length) {
           $modalInstance.close();

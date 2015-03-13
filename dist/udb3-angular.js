@@ -2922,9 +2922,8 @@ function UdbEventFactory() {
       this.mediaObject = jsonEvent.mediaObject || [];
       this.url = '/event/' + this.id;
       this.sameAs = jsonEvent.sameAs;
-      if (jsonEvent.typicalAgeRange) {
-        this.typicalAgeRange = jsonEvent.typicalAgeRange;
-      }
+      this.typicalAgeRange = jsonEvent.typicalAgeRange || '';
+
       if (jsonEvent.available) {
         this.available = jsonEvent.available;
       }
@@ -3297,7 +3296,12 @@ function UdbPlaceFactory() {
   };
 
   UdbPlace.prototype = {
-    parseJson: function (json) {
+    parseJson: function (jsonPlace) {
+
+      this.id = jsonPlace['@id'].split('/').pop();
+      this.name = jsonPlace.name || {};
+      this.description = jsonPlace.description || {};
+      this.mediaObject = jsonPlace.mediaObject || [];
 
     },
 
@@ -5252,7 +5256,7 @@ angular
       var uploaded = 0;
 
       eventCrud.addImage(EventFormData, image, $scope.description, $scope.copyright).then(function (jsonResponse) {
-        EventFormData.addMediaObject(jsonResponse.data.url, jsonResponse.thumbnailUrl, $scope.description, $scope.copyright, image);
+        EventFormData.addMediaObject(jsonResponse.data.url, jsonResponse.data.thumbnailUrl, $scope.description, $scope.copyright, image);
         uploaded++;
         if (uploaded === $scope.imagesToUpload.length) {
           $modalInstance.close();
@@ -5603,8 +5607,13 @@ function EventFormOpeningHoursDirective() {
         });
 
       }
-      else {
-        var place = udbApi.getPlaceById();
+      else if (offerType === 'place') {
+        udbApi.getPlaceById(itemId).then(function(place) {
+          EventFormData.id = place['@id'];
+          EventFormData.mediaObject = place.mediaObject;
+          EventFormData.name = place.name;
+          $scope.loaded = true;
+        });
       }
 
     }

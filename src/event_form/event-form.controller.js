@@ -30,8 +30,13 @@
         });
 
       }
-      else {
-        var place = udbApi.getPlaceById();
+      else if (offerType === 'place') {
+        udbApi.getPlaceById(itemId).then(function(place) {
+          EventFormData.id = place['@id'];
+          EventFormData.mediaObject = place.mediaObject;
+          EventFormData.name = place.name;
+          $scope.loaded = true;
+        });
       }
 
     }

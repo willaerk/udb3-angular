@@ -94,9 +94,8 @@ function UdbEventFactory() {
       this.mediaObject = jsonEvent.mediaObject || [];
       this.url = '/event/' + this.id;
       this.sameAs = jsonEvent.sameAs;
-      if (jsonEvent.typicalAgeRange) {
-        this.typicalAgeRange = jsonEvent.typicalAgeRange;
-      }
+      this.typicalAgeRange = jsonEvent.typicalAgeRange || '';
+
       if (jsonEvent.available) {
         this.available = jsonEvent.available;
       }

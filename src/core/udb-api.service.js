@@ -18,7 +18,7 @@ function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth, $cacheFa
         withCredentials: true,
         headers: {
           'Content-Type': 'application/json'
-        }
+        },
       };
   var eventCache = $cacheFactory('eventCache');
 
@@ -376,7 +376,9 @@ function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth, $cacheFa
    */
   this.addImage = function(id, type, image, description, copyrightHolder) {
 
-    var options = defaultApiConfig;
+    // Don't use defaultApiConfig, $upload adds custom stuff to it.
+    var options = {};
+    options.withCredentials = true;
     options.url = appConfig.baseApiUrl + type + '/' + id + '/image';
     options.fields = {
       description: description,
@@ -396,7 +398,9 @@ function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth, $cacheFa
     // Image is also changed.
     if (image) {
 
-      var options = defaultApiConfig;
+      // Don't use defaultApiConfig, $upload adds custom stuff to it.
+      var options = {};
+      options.withCredentials = true;
       options.url = appConfig.baseApiUrl + type + '/' + id + '/image/' + indexToUpdate;
       options.fields = {
         description: description,

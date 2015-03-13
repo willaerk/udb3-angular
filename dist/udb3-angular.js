@@ -2405,7 +2405,7 @@ function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth, $cacheFa
         withCredentials: true,
         headers: {
           'Content-Type': 'application/json'
-        }
+        },
       };
   var eventCache = $cacheFactory('eventCache');
 
@@ -2763,7 +2763,9 @@ function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth, $cacheFa
    */
   this.addImage = function(id, type, image, description, copyrightHolder) {
 
-    var options = defaultApiConfig;
+    // Don't use defaultApiConfig, $upload adds custom stuff to it.
+    var options = {};
+    options.withCredentials = true;
     options.url = appConfig.baseApiUrl + type + '/' + id + '/image';
     options.fields = {
       description: description,
@@ -2783,7 +2785,9 @@ function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth, $cacheFa
     // Image is also changed.
     if (image) {
 
-      var options = defaultApiConfig;
+      // Don't use defaultApiConfig, $upload adds custom stuff to it.
+      var options = {};
+      options.withCredentials = true;
       options.url = appConfig.baseApiUrl + type + '/' + id + '/image/' + indexToUpdate;
       options.fields = {
         description: description,
@@ -3907,6 +3911,7 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
    */
   this.updateImage = function(item, indexToUpdate, image, description, copyrightHolder) {
 
+console.log(image);
     var jobPromise = udbApi.updateImage(item.id, item.getType(), indexToUpdate, image, description, copyrightHolder);
 
     jobPromise.success(function (jobData) {
@@ -5256,7 +5261,7 @@ angular
       var uploaded = 0;
 
       eventCrud.addImage(EventFormData, image, $scope.description, $scope.copyright).then(function (jsonResponse) {
-        EventFormData.addMediaObject(jsonResponse.data.url, jsonResponse.data.thumbnailUrl, $scope.description, $scope.copyright, image);
+        EventFormData.addMediaObject(jsonResponse.data.url, jsonResponse.data.thumbnailUrl, $scope.description, $scope.copyright);
         uploaded++;
         if (uploaded === $scope.imagesToUpload.length) {
           $modalInstance.close();
@@ -5273,8 +5278,8 @@ angular
      */
     function updateImage(image) {
 
-      eventCrud.updateImage(EventFormData, indexToEdit, image, $scope.description, $scope.copyright).then(function (data) {
-          EventFormData.editMediaObject(indexToEdit, data.url, data.thumbnailUrl, $scope.description, $scope.copyright, image);
+      eventCrud.updateImage(EventFormData, indexToEdit, image, $scope.description, $scope.copyright).then(function (jsonResponse) {
+          EventFormData.editMediaObject(indexToEdit, jsonResponse.data.url, jsonResponse.data.thumbnailUrl, $scope.description, $scope.copyright);
           $modalInstance.close();
       }, function() {
         $scope.saving = false;
@@ -5600,7 +5605,7 @@ function EventFormOpeningHoursDirective() {
 
       if (offerType === 'event') {
         udbApi.getEventById(itemId).then(function(event) {
-          EventFormData.id = event['@id'];
+          EventFormData.id = event.id;
           EventFormData.isEvent = true;
           EventFormData.isPlace = false;
           EventFormData.mediaObject = event.mediaObject;
@@ -5618,7 +5623,7 @@ function EventFormOpeningHoursDirective() {
         udbApi.getPlaceById(itemId).then(function(place) {
           EventFormData.isEvent = false;
           EventFormData.isPlace = true;
-          EventFormData.id = place['@id'];
+          EventFormData.id = place.id;
           EventFormData.mediaObject = place.mediaObject;
           EventFormData.name = place.name;
           $scope.loaded = true;
@@ -10461,8 +10466,8 @@ $templateCache.put('templates/time-autocomplete.html',
     "    <p ng-show=\"showAgreements\">Je staat op het punt (een) afbeelding(en) toe te voegen en openbaar te verspreiden. Je dient daartoe alle geldende auteurs- en portretrechten te respecteren, alsook alle andere toepasselijke wetgeving. Je kan daarvoor aansprakelijk worden gehouden, zoals vastgelegd in de <a href=\"#\">algemene voorwaarden</a>. <a href=\"#\">Meer informatie over copyright</a></p>\n" +
     "    <div ng-hide=\"showAgreements\">\n" +
     "      <div class=\"form-group\">\n" +
-    "        <label for=\"exampleInputFile\">Selecteer je foto('s)</label>\n" +
-    "        <input type=\"file\" ng-model=\"imagesToUpload\" multiple ng-file-select ng-multiple=\"true\" accept=\"'image/*'\">\n" +
+    "        <label for=\"inputFile\">Selecteer je foto('s)</label>\n" +
+    "        <input type=\"file\" id=\"inputFile\" ng-model=\"imagesToUpload\" multiple ng-file-select ng-multiple=\"true\" accept=\"'image/*'\">\n" +
     "        <p class=\"help-block\">\n" +
     "          De maximale grootte van je afbeelding is 5 MB en heeft als type .jpeg, .gif of .png</p>\n" +
     "      </div>\n" +
@@ -11575,7 +11580,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "            <p class=\"muted\">Voeg een afbeelding toe zodat je bezoekers je activiteit beter herkennen.</p>\n" +
     "          </div>\n" +
     "\n" +
-    "          <div class=\"image-upload-list state complete\">\n" +
+    "          <div class=\"image-upload-list state complete\" ng-if=\"eventFormData.mediaObject.length > 0\">\n" +
     "            <h4>Afbeeldingen</h4>\n" +
     "            <div ng-repeat=\"(key, mediaObject) in eventFormData.mediaObject\" class=\"uploaded-image\">\n" +
     "              <div class=\"media\">\n" +

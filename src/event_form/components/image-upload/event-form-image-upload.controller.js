@@ -83,7 +83,7 @@
       var uploaded = 0;
 
       eventCrud.addImage(EventFormData, image, $scope.description, $scope.copyright).then(function (jsonResponse) {
-        EventFormData.addMediaObject(jsonResponse.data.url, jsonResponse.data.thumbnailUrl, $scope.description, $scope.copyright, image);
+        EventFormData.addMediaObject(jsonResponse.data.url, jsonResponse.data.thumbnailUrl, $scope.description, $scope.copyright);
         uploaded++;
         if (uploaded === $scope.imagesToUpload.length) {
           $modalInstance.close();
@@ -100,8 +100,8 @@
      */
     function updateImage(image) {
 
-      eventCrud.updateImage(EventFormData, indexToEdit, image, $scope.description, $scope.copyright).then(function (data) {
-          EventFormData.editMediaObject(indexToEdit, data.url, data.thumbnailUrl, $scope.description, $scope.copyright, image);
+      eventCrud.updateImage(EventFormData, indexToEdit, image, $scope.description, $scope.copyright).then(function (jsonResponse) {
+          EventFormData.editMediaObject(indexToEdit, jsonResponse.data.url, jsonResponse.data.thumbnailUrl, $scope.description, $scope.copyright);
           $modalInstance.close();
       }, function() {
         $scope.saving = false;

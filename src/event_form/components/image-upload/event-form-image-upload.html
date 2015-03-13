@@ -9,8 +9,8 @@
     <p ng-show="showAgreements">Je staat op het punt (een) afbeelding(en) toe te voegen en openbaar te verspreiden. Je dient daartoe alle geldende auteurs- en portretrechten te respecteren, alsook alle andere toepasselijke wetgeving. Je kan daarvoor aansprakelijk worden gehouden, zoals vastgelegd in de <a href="#">algemene voorwaarden</a>. <a href="#">Meer informatie over copyright</a></p>
     <div ng-hide="showAgreements">
       <div class="form-group">
-        <label for="exampleInputFile">Selecteer je foto('s)</label>
-        <input type="file" ng-model="imagesToUpload" multiple ng-file-select ng-multiple="true" accept="'image/*'">
+        <label for="inputFile">Selecteer je foto('s)</label>
+        <input type="file" id="inputFile" ng-model="imagesToUpload" multiple ng-file-select ng-multiple="true" accept="'image/*'">
         <p class="help-block">
           De maximale grootte van je afbeelding is 5 MB en heeft als type .jpeg, .gif of .png</p>
       </div>

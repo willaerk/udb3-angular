@@ -23,7 +23,7 @@
 
       if (offerType === 'event') {
         udbApi.getEventById(itemId).then(function(event) {
-          EventFormData.id = event['@id'];
+          EventFormData.id = event.id;
           EventFormData.isEvent = true;
           EventFormData.isPlace = false;
           EventFormData.mediaObject = event.mediaObject;
@@ -41,7 +41,7 @@
         udbApi.getPlaceById(itemId).then(function(place) {
           EventFormData.isEvent = false;
           EventFormData.isPlace = true;
-          EventFormData.id = place['@id'];
+          EventFormData.id = place.id;
           EventFormData.mediaObject = place.mediaObject;
           EventFormData.name = place.name;
           $scope.loaded = true;

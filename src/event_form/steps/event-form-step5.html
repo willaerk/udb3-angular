@@ -393,7 +393,7 @@
             <p class="muted">Voeg een afbeelding toe zodat je bezoekers je activiteit beter herkennen.</p>
           </div>
 
-          <div class="image-upload-list state complete">
+          <div class="image-upload-list state complete" ng-if="eventFormData.mediaObject.length > 0">
             <h4>Afbeeldingen</h4>
             <div ng-repeat="(key, mediaObject) in eventFormData.mediaObject" class="uploaded-image">
               <div class="media">

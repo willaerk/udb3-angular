@@ -7,4 +7,10 @@
  * The udb event-detail module
  */
 angular
-  .module('udb.event-detail', []);
+  .module('udb.event-detail', [
+    'ngAnimate',
+    'ngSanitize',
+    'ui.bootstrap',
+    'udb.config',
+    'udb.entry'
+  ]);

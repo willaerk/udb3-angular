@@ -103,7 +103,13 @@ angular
  * The udb event-detail module
  */
 angular
-  .module('udb.event-detail', []);
+  .module('udb.event-detail', [
+    'ngAnimate',
+    'ngSanitize',
+    'ui.bootstrap',
+    'udb.config',
+    'udb.entry'
+  ]);
 
 /**
  * @ngdoc module
@@ -3559,10 +3565,9 @@ UitidAuth.$inject = ["$window", "$location", "$http", "appConfig", "$cookieStore
             var item = $scope.userContent[key];
 
             // set urls
-            $scope.userContent[key].editUrl = 'http://www.google.be';
-            $scope.userContent[key].exampleUrl = 'http://www.google.be';
-            $scope.userContent[key].deleteUrl = 'http://www.google.be';
-
+            $scope.userContent[key].editUrl = '/udb3/' + item.type + '/edit/' + item.id;
+            $scope.userContent[key].exampleUrl = '/udb3/' + item.type + '/' + item.id;
+            $scope.userContent[key].deleteUrl = '/udb3/' + item.type + '/delete/' + item.id;
 
             // User has omd events if events have been added with startdate 2015-09-13.
             if ((item.type === 'event') && (item.details.payload.calendar.startDate.substring(0,10) === '2015-09-13')) {
@@ -4808,6 +4813,25 @@ function EventTranslator(jobLogger, udbApi, EventTranslationJob) {
 }
 EventTranslator.$inject = ["jobLogger", "udbApi", "EventTranslationJob"];
 
+// Source: src/event-detail/event-detail.directive.js
+/**
+ * @ngdoc directive
+ * @name udb.event-detail.directive:event-detail.html
+ * @description
+ * # udb event-detail directive
+ */
+angular
+  .module('udb.event-detail')
+  .directive('udbEventDetail', udbEventDetailDirective);
+
+/* @ngInject */
+function udbEventDetailDirective() {
+  return {
+    templateUrl: 'templates/event-detail.html',
+    restrict: 'EA',
+    controller: EventDetail // jshint ignore:line
+  };
+}
 // Source: src/event-detail/ui/event-detail.controller.js
 /**
  * @ngdoc function

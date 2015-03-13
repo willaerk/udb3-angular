@@ -24,18 +24,32 @@
       if (offerType === 'event') {
         udbApi.getEventById(itemId).then(function(event) {
           EventFormData.id = event['@id'];
+          EventFormData.isEvent = true;
+          EventFormData.isPlace = false;
           EventFormData.mediaObject = event.mediaObject;
           EventFormData.name = event.name;
           $scope.loaded = true;
+          EventFormData.showStep(1);
+          EventFormData.showStep(2);
+          EventFormData.showStep(3);
+          EventFormData.showStep(4);
+          EventFormData.showStep(5);
         });
 
       }
       else if (offerType === 'place') {
         udbApi.getPlaceById(itemId).then(function(place) {
+          EventFormData.isEvent = false;
+          EventFormData.isPlace = true;
           EventFormData.id = place['@id'];
           EventFormData.mediaObject = place.mediaObject;
           EventFormData.name = place.name;
           $scope.loaded = true;
+          EventFormData.showStep(1);
+          EventFormData.showStep(2);
+          EventFormData.showStep(3);
+          EventFormData.showStep(4);
+          EventFormData.showStep(5);
         });
       }
 

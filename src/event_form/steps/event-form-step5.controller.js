@@ -15,26 +15,6 @@
   /* @ngInject */
   function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizers, $modal) {
 
-    EventFormData.showStep(5);
-
-    // Work hardcoded on this id for now.
-    // Event
-    // local event nils
-    EventFormData.id = '9bd5b8dc-6637-4f93-afe4-1707c71b1b37';
-
-    // local event jochen
-    // EventFormData.id = 'bc47b5e6-a7ae-4737-a6e0-bb7b243f1989';
-
-    // Place
-    // local place nils
-    EventFormData.id = '1c16ad11-071c-40da-bdc6-9ec4e866fdb0';
-
-    // local place jochen
-    // EventFormData.id = 'x';
-
-    EventFormData.isEvent = true;
-    EventFormData.isPlace = false;
-
     // Scope vars.
     $scope.eventFormData = EventFormData; // main storage for event form.
 

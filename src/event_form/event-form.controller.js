@@ -13,19 +13,16 @@
     .controller('EventFormCtrl', EventFormController);
 
   /* @ngInject */
-  function EventFormController($scope, EventFormData, udbApi) {
+  function EventFormController($scope, itemId, offerType, EventFormData, udbApi) {
 
     // Other controllers won't load untill this boolean is set to true.
     $scope.loaded = false;
 
     // Fill the event form data if an event is beïng edited.
-    var eventForm = angular.element('#event-form');
-    var id = eventForm.data('id');
-    if (id) {
+    if (itemId) {
 
-      var type = eventForm.data('type');
-      if (type === 'event') {
-        udbApi.getEventById(id).then(function(event) {
+      if (offerType === 'event') {
+        udbApi.getEventById(itemId).then(function(event) {
           EventFormData.id = event['@id'];
           EventFormData.mediaObject = event.mediaObject;
           EventFormData.name = event.name;

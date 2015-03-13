@@ -12,8 +12,8 @@ angular
     .controller('EventDetailController', EventDetail);
 
 /* @ngInject */
-function EventDetail($scope, $routeParams, $location, udbApi, jsonLDLangFilter, locationTypes) {
-  $scope.eventId = $routeParams.eventId;
+function EventDetail($scope, itemId, $location, udbApi, jsonLDLangFilter, locationTypes) {
+  $scope.eventId = itemId;
   $scope.eventIdIsInvalid = false;
   $scope.eventHistory = [];
 

@@ -111,7 +111,7 @@
     $scope.facilitiesCssClass = 'state-incomplete';
     $scope.facilitiesInapplicable = false;
     $scope.selectedFacilities = EventFormData.facilities;
-console.log(EventFormData.mediaObject.length);
+
     // Image upload vars.
     $scope.imageCssClass = EventFormData.mediaObject.length > 0 ? 'state-complete' : 'state-incomplete';
 

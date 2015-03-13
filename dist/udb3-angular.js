@@ -4817,8 +4817,8 @@ angular
     .controller('EventDetailController', EventDetail);
 
 /* @ngInject */
-function EventDetail($scope, $routeParams, $location, udbApi, jsonLDLangFilter, locationTypes) {
-  $scope.eventId = $routeParams.eventId;
+function EventDetail($scope, itemId, $location, udbApi, jsonLDLangFilter, locationTypes) {
+  $scope.eventId = itemId;
   $scope.eventIdIsInvalid = false;
   $scope.eventHistory = [];
 
@@ -4911,7 +4911,7 @@ function EventDetail($scope, $routeParams, $location, udbApi, jsonLDLangFilter, 
     return tabId === activeTabId;
   };
 }
-EventDetail.$inject = ["$scope", "$routeParams", "$location", "udbApi", "jsonLDLangFilter", "locationTypes"];
+EventDetail.$inject = ["$scope", "itemId", "$location", "udbApi", "jsonLDLangFilter", "locationTypes"];
 
 // Source: src/event_form/components/calendartypes/event-form-period.directive.js
 /**
@@ -5586,23 +5586,20 @@ function EventFormOpeningHoursDirective() {
     .controller('EventFormCtrl', EventFormController);
 
   /* @ngInject */
-  function EventFormController($scope, EventFormData, udbApi) {
+  function EventFormController($scope, itemId, offerType, EventFormData, udbApi) {
 
+    // Other controllers won't load untill this boolean is set to true.
     $scope.loaded = false;
 
     // Fill the event form data if an event is beïng edited.
-    var eventForm = angular.element('#event-form');
-    var id = eventForm.data('id');
-    if (id) {
+    if (itemId) {
 
-      var type = eventForm.data('type');
-      if (type === 'event') {
-        udbApi.getEventById(id).then(function(event) {
+      if (offerType === 'event') {
+        udbApi.getEventById(itemId).then(function(event) {
           EventFormData.id = event['@id'];
           EventFormData.mediaObject = event.mediaObject;
           EventFormData.name = event.name;
-        console.log('loaded');
-        $scope.loaded = true;
+          $scope.loaded = true;
         });
 
       }
@@ -5616,7 +5613,7 @@ function EventFormOpeningHoursDirective() {
     }
 
   }
-  EventFormController.$inject = ["$scope", "EventFormData", "udbApi"];
+  EventFormController.$inject = ["$scope", "itemId", "offerType", "EventFormData", "udbApi"];
 
 })();
 
@@ -7084,7 +7081,7 @@ EventFormFacilities.$inject = ["$q", "$http", "$cacheFactory", "appConfig"];
     $scope.facilitiesCssClass = 'state-incomplete';
     $scope.facilitiesInapplicable = false;
     $scope.selectedFacilities = EventFormData.facilities;
-console.log(EventFormData.mediaObject.length);
+
     // Image upload vars.
     $scope.imageCssClass = EventFormData.mediaObject.length > 0 ? 'state-complete' : 'state-incomplete';
 
@@ -10770,7 +10767,7 @@ $templateCache.put('templates/time-autocomplete.html',
 
 
   $templateCache.put('templates/event-form.html',
-    "<div ng-controller=\"EventFormCtrl as eventForm\">\n" +
+    "<div ng-controller=\"EventFormCtrl as eventForm\" data-type=\"{{your_type_variable}}\" data-itemid=\"{{your_item_id_variable}}\">\n" +
     "  <udb-event-form-step1></udb-event-form-step1>\n" +
     "  <udb-event-form-step2></udb-event-form-step2>\n" +
     "  <udb-event-form-step3></udb-event-form-step3>\n" +

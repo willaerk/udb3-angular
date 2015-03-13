@@ -2472,7 +2472,8 @@ function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth,
         });
 
       eventRequest.success(function (jsonEvent) {
-        var event = new UdbEvent(jsonEvent);
+        var event = new UdbEvent();
+        event.parseJson(jsonEvent);
         eventCache.put(eventId, event);
         deferredEvent.resolve(event);
       });
@@ -4965,362 +4966,350 @@ function EventFormTimestampDirective() {
 }
 
 // Source: src/event_form/components/contact-info/contact-info-validation.directive.js
-(function () {
 /**
- * @ngdoc directive
- * @name udb.core.directive:udbContactInfoValidation
- * @description
- * # directive for contact info validation
- */
-  angular
+* @ngdoc directive
+* @name udb.core.directive:udbContactInfoValidation
+* @description
+* # directive for contact info validation
+*/
+angular
   .module('udb.core')
   .directive('udbContactInfoValidation', UdbContactInfoValidationDirective);
 
-  function UdbContactInfoValidationDirective() {
+function UdbContactInfoValidationDirective() {
 
-    var URL_REGEXP = /^(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?$/;
-    var EMAIL_REGEXP = /^[a-z0-9!#$%&'*+\/=?^_`{|}~.-]+@[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)*$/i;
+  var URL_REGEXP = /^(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?$/;
+  var EMAIL_REGEXP = /^[a-z0-9!#$%&'*+\/=?^_`{|}~.-]+@[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)*$/i;
 
-    return {
-      restrict: 'A',
-      require: 'ngModel',
-      link: function(scope, elem, attrs, ngModel) {
+  return {
+    restrict: 'A',
+    require: 'ngModel',
+    link: function(scope, elem, attrs, ngModel) {
 
-        // Scope methods.
-        scope.validateInfo = validateInfo;
-        scope.clearInfo = clearInfo;
+      // Scope methods.
+      scope.validateInfo = validateInfo;
+      scope.clearInfo = clearInfo;
+      scope.infoErrorMessage = '';
+
+      /**
+       * Validate the entered info.
+       */
+      function validateInfo() {
+
+        ngModel.$setValidity('contactinfo', true);
         scope.infoErrorMessage = '';
 
-        /**
-         * Validate the entered info.
-         */
-        function validateInfo() {
+        if (ngModel.$modelValue.type === 'email' && !EMAIL_REGEXP.test(ngModel.$modelValue.value)) {
+          EMAIL_REGEXP.test(ngModel.$modelValue.value);
+          scope.infoErrorMessage = 'Gelieve een geldig email adres in te vullen';
+          ngModel.$setValidity('contactinfo', false);
 
-          ngModel.$setValidity('contactinfo', true);
-          scope.infoErrorMessage = '';
+        }
+        else if (ngModel.$modelValue.type === 'url') {
 
-          if (ngModel.$modelValue.type === 'email' && !EMAIL_REGEXP.test(ngModel.$modelValue.value)) {
-            EMAIL_REGEXP.test(ngModel.$modelValue.value);
-            scope.infoErrorMessage = 'Gelieve een geldig email adres in te vullen';
+          var viewValue = ngModel.$viewValue;
+          // Autoset http://.
+          if (ngModel.$modelValue.value.substring(0, 7) !== 'http://') {
+            viewValue.value = 'http://' + viewValue.value;
+            ngModel.$setViewValue(viewValue);
+          }
+
+          if (!URL_REGEXP.test(viewValue.value)) {
+            scope.infoErrorMessage = 'Gelieve een geldige url in te vullen';
             ngModel.$setValidity('contactinfo', false);
-
-          }
-          else if (ngModel.$modelValue.type === 'url') {
-
-            var viewValue = ngModel.$viewValue;
-            // Autoset http://.
-            if (ngModel.$modelValue.value.substring(0, 7) !== 'http://') {
-              viewValue.value = 'http://' + viewValue.value;
-              ngModel.$setViewValue(viewValue);
-            }
-
-            if (!URL_REGEXP.test(viewValue.value)) {
-              scope.infoErrorMessage = 'Gelieve een geldige url in te vullen';
-              ngModel.$setValidity('contactinfo', false);
-            }
           }
         }
+      }
 
-        /**
-         * Clear the entered info when switching type.
-         */
-        function clearInfo() {
-          ngModel.$modelValue.value = '';
-          scope.infoErrorMessage = '';
-          ngModel.$setValidity('contactinfo', true);
-        }
+      /**
+       * Clear the entered info when switching type.
+       */
+      function clearInfo() {
+        ngModel.$modelValue.value = '';
+        scope.infoErrorMessage = '';
+        ngModel.$setValidity('contactinfo', true);
+      }
 
-      },
+    },
 
-    };
+  };
 
-  }
-
-})();
+}
 
 // Source: src/event_form/components/facilities-modal/event-form-facilities-modal.controller.js
-(function () {
 /**
-   * @ngdoc function
-   * @name udbApp.controller:EventFormFacilitiesModalCtrl
-   * @description
-   * # EventFormFacilitiesModalCtrl
-   * Modal for selecting facilities.
+ * @ngdoc function
+ * @name udbApp.controller:EventFormFacilitiesModalCtrl
+ * @description
+ * # EventFormFacilitiesModalCtrl
+ * Modal for selecting facilities.
+ */
+angular
+  .module('udb.event-form')
+  .controller('EventFormFacilitiesModalCtrl', EventFormFacilitiesModalController);
+
+/* @ngInject */
+function EventFormFacilitiesModalController($scope, $modalInstance, EventFormData, eventCrud, eventFormFacilities) {
+
+  // Scope vars.
+  $scope.saving = false;
+  $scope.error = false;
+
+  $scope.facilities = {
+    motor : [],
+    visual : [],
+    hearing : []
+  };
+
+  var eventPromise = eventFormFacilities.getFacilities();
+  eventPromise.then(function (facilities) {
+    $scope.facilities = facilities;
+  });
+
+  // Scope functions.
+  $scope.cancel = cancel;
+  $scope.saveFacilities = saveFacilities;
+
+  /**
+   * Cancel the modal.
    */
-  angular
-    .module('udb.event-form')
-    .controller('EventFormFacilitiesModalCtrl', EventFormFacilitiesModalController);
+  function cancel() {
+    $modalInstance.dismiss('cancel');
+  }
 
-  /* @ngInject */
-  function EventFormFacilitiesModalController($scope, $modalInstance, EventFormData, eventCrud, eventFormFacilities) {
+  /**
+   * Save the selected facilities in db.
+   */
+  function saveFacilities() {
 
-    // Scope vars.
-    $scope.saving = false;
+    EventFormData.facilities = [];
+
+    // Add all selected motor facilities.
+    var i;
+    for (i = 0; i < $scope.facilities.motor.length; i++) {
+      if ($scope.facilities.motor[i].selected) {
+        EventFormData.facilities.push($scope.facilities.motor[i]);
+      }
+    }
+
+    // Add all selected visual facilities.
+    for (i = 0; i < $scope.facilities.visual.length; i++) {
+      if ($scope.facilities.visual[i].selected) {
+        EventFormData.facilities.push($scope.facilities.visual[i]);
+      }
+    }
+
+    // Add all selected hearing facilities.
+    for (i = 0; i < $scope.facilities.hearing.length; i++) {
+      if ($scope.facilities.hearing[i].selected) {
+        EventFormData.facilities.push($scope.facilities.hearing[i]);
+      }
+    }
+
+    $scope.saving = true;
     $scope.error = false;
 
-    $scope.facilities = {
-      motor : [],
-      visual : [],
-      hearing : []
-    };
+    var promise = eventCrud.updateFacilities(EventFormData);
+    promise.then(function() {
 
-    var eventPromise = eventFormFacilities.getFacilities();
-    eventPromise.then(function (facilities) {
-      $scope.facilities = facilities;
+      $scope.saving = false;
+      $modalInstance.close();
+
+    }, function() {
+      $scope.error = true;
+      $scope.saving = false;
     });
-
-    // Scope functions.
-    $scope.cancel = cancel;
-    $scope.saveFacilities = saveFacilities;
-
-    /**
-     * Cancel the modal.
-     */
-    function cancel() {
-      $modalInstance.dismiss('cancel');
-    }
-
-    /**
-     * Save the selected facilities in db.
-     */
-    function saveFacilities() {
-
-      EventFormData.facilities = [];
-
-      // Add all selected motor facilities.
-      var i;
-      for (i = 0; i < $scope.facilities.motor.length; i++) {
-        if ($scope.facilities.motor[i].selected) {
-          EventFormData.facilities.push($scope.facilities.motor[i]);
-        }
-      }
-
-      // Add all selected visual facilities.
-      for (i = 0; i < $scope.facilities.visual.length; i++) {
-        if ($scope.facilities.visual[i].selected) {
-          EventFormData.facilities.push($scope.facilities.visual[i]);
-        }
-      }
-
-      // Add all selected hearing facilities.
-      for (i = 0; i < $scope.facilities.hearing.length; i++) {
-        if ($scope.facilities.hearing[i].selected) {
-          EventFormData.facilities.push($scope.facilities.hearing[i]);
-        }
-      }
-
-      $scope.saving = true;
-      $scope.error = false;
-
-      var promise = eventCrud.updateFacilities(EventFormData);
-      promise.then(function() {
-
-        $scope.saving = false;
-        $modalInstance.close();
-
-      }, function() {
-        $scope.error = true;
-        $scope.saving = false;
-      });
-    }
-
   }
-  EventFormFacilitiesModalController.$inject = ["$scope", "$modalInstance", "EventFormData", "eventCrud", "eventFormFacilities"];
 
-})();
+}
+EventFormFacilitiesModalController.$inject = ["$scope", "$modalInstance", "EventFormData", "eventCrud", "eventFormFacilities"];
 
 // Source: src/event_form/components/image-delete/event-form-image-delete.controller.js
-(function () {
 /**
-   * @ngdoc function
-   * @name udbApp.controller:EventFormImageDeleteCtrl
-   * @description
-   * # EventFormImageDeleteCtrl
-   * Modal for deleting images.
+ * @ngdoc function
+ * @name udbApp.controller:EventFormImageDeleteCtrl
+ * @description
+ * # EventFormImageDeleteCtrl
+ * Modal for deleting images.
+ */
+angular
+  .module('udb.event-form')
+  .controller('EventFormImageDeleteCtrl', EventFormImageDeleteController);
+
+/* @ngInject */
+function EventFormImageDeleteController($scope, $modalInstance, EventFormData, eventCrud, indexToDelete) {
+
+  // Scope vars.
+  $scope.saving = false;
+  $scope.error = false;
+
+  // Scope functions.
+  $scope.cancel = cancel;
+  $scope.deleteImage = deleteImage;
+
+  /**
+   * Cancel the modal.
    */
-  angular
-    .module('udb.event-form')
-    .controller('EventFormImageDeleteCtrl', EventFormImageDeleteController);
+  function cancel() {
+    $modalInstance.dismiss('cancel');
+  }
 
-  /* @ngInject */
-  function EventFormImageDeleteController($scope, $modalInstance, EventFormData, eventCrud, indexToDelete) {
+  /**
+   * Upload the images and save it to db.
+   */
+  function deleteImage() {
 
-    // Scope vars.
-    $scope.saving = false;
+    $scope.saving = true;
     $scope.error = false;
 
-    // Scope functions.
-    $scope.cancel = cancel;
-    $scope.deleteImage = deleteImage;
-
-    /**
-     * Cancel the modal.
-     */
-    function cancel() {
-      $modalInstance.dismiss('cancel');
-    }
-
-    /**
-     * Upload the images and save it to db.
-     */
-    function deleteImage() {
-
-      $scope.saving = true;
-      $scope.error = false;
-
-      eventCrud.deleteImage(EventFormData, indexToDelete).then(function() {
-        EventFormData.deleteMediaObject(indexToDelete);
-        $scope.saving = false;
-        $modalInstance.close();
-      }, function() {
-        $scope.error = true;
-        $scope.saving = false;
-      });
-
-    }
+    eventCrud.deleteImage(EventFormData, indexToDelete).then(function() {
+      EventFormData.deleteMediaObject(indexToDelete);
+      $scope.saving = false;
+      $modalInstance.close();
+    }, function() {
+      $scope.error = true;
+      $scope.saving = false;
+    });
 
   }
-  EventFormImageDeleteController.$inject = ["$scope", "$modalInstance", "EventFormData", "eventCrud", "indexToDelete"];
 
-})();
+}
+EventFormImageDeleteController.$inject = ["$scope", "$modalInstance", "EventFormData", "eventCrud", "indexToDelete"];
 
 // Source: src/event_form/components/image-upload/event-form-image-upload.controller.js
-(function () {
 /**
-   * @ngdoc function
-   * @name udbApp.controller:EventFormImageUploadCtrl
-   * @description
-   * # EventFormImageUploadCtrl
-   * Modal for uploading images.
+ * @ngdoc function
+ * @name udbApp.controller:EventFormImageUploadCtrl
+ * @description
+ * # EventFormImageUploadCtrl
+ * Modal for uploading images.
+ */
+angular
+  .module('udb.event-form')
+  .controller('EventFormImageUploadCtrl', EventFormImageUploadController);
+
+/* @ngInject */
+function EventFormImageUploadController($scope, $modalInstance, EventFormData, eventCrud, indexToEdit) {
+
+  // Scope vars.
+  $scope.saving = false;
+  $scope.error = false;
+  $scope.showAgreements = true;
+  $scope.modalTitle = 'Gebruiksvoorwaarden';
+  $scope.imagesToUpload = [];
+  $scope.description = '';
+  $scope.copyright = '';
+
+  var mediaObject = null;
+  // An object to edit was given.
+  if (indexToEdit >= 0) {
+    mediaObject = EventFormData.mediaObject[indexToEdit];
+    $scope.description = mediaObject.description;
+    $scope.copyright = mediaObject.copyrightHolder;
+    acceptAgreements();
+  }
+
+  // Scope functions.
+  $scope.acceptAgreements = acceptAgreements;
+  $scope.cancel = cancel;
+  $scope.uploadImages = uploadImages;
+
+  /**
+   * Accept the agreements.
    */
-  angular
-    .module('udb.event-form')
-    .controller('EventFormImageUploadCtrl', EventFormImageUploadController);
+  function acceptAgreements() {
+    $scope.modalTitle = 'Nieuwe afbeelding toevoegen';
+    $scope.showAgreements = false;
+  }
 
-  /* @ngInject */
-  function EventFormImageUploadController($scope, $modalInstance, EventFormData, eventCrud, indexToEdit) {
+  /**
+   * Cancel the modal.
+   */
+  function cancel() {
+    $modalInstance.dismiss('cancel');
+  }
 
-    // Scope vars.
-    $scope.saving = false;
+  /**
+   * Upload the images and save it to db.
+   */
+  function uploadImages() {
+
+    $scope.saving = true;
     $scope.error = false;
-    $scope.showAgreements = true;
-    $scope.modalTitle = 'Gebruiksvoorwaarden';
-    $scope.imagesToUpload = [];
-    $scope.description = '';
-    $scope.copyright = '';
 
-    var mediaObject = null;
-    // An object to edit was given.
-    if (indexToEdit >= 0) {
-      mediaObject = EventFormData.mediaObject[indexToEdit];
-      $scope.description = mediaObject.description;
-      $scope.copyright = mediaObject.copyrightHolder;
-      acceptAgreements();
+    // If we are editing, imagesToUpload is not required.
+    if (mediaObject) {
+      // Will be undefined if no upload was done in edit.
+      updateImage($scope.imagesToUpload[0]);
     }
-
-    // Scope functions.
-    $scope.acceptAgreements = acceptAgreements;
-    $scope.cancel = cancel;
-    $scope.uploadImages = uploadImages;
-
-    /**
-     * Accept the agreements.
-     */
-    function acceptAgreements() {
-      $scope.modalTitle = 'Nieuwe afbeelding toevoegen';
-      $scope.showAgreements = false;
-    }
-
-    /**
-     * Cancel the modal.
-     */
-    function cancel() {
-      $modalInstance.dismiss('cancel');
-    }
-
-    /**
-     * Upload the images and save it to db.
-     */
-    function uploadImages() {
-
-      $scope.saving = true;
-      $scope.error = false;
-
-      // If we are editing, imagesToUpload is not required.
-      if (mediaObject) {
-        // Will be undefined if no upload was done in edit.
-        updateImage($scope.imagesToUpload[0]);
+    else {
+      // IE8/9 can't handle array. Upload 1 by 1.
+      for (var i = 0; i < $scope.imagesToUpload.length; i++) {
+        addImage($scope.imagesToUpload[i]);
       }
-      else {
-        // IE8/9 can't handle array. Upload 1 by 1.
-        for (var i = 0; i < $scope.imagesToUpload.length; i++) {
-          addImage($scope.imagesToUpload[i]);
-        }
-      }
-
-    }
-
-    /**
-     * Upload and add an image.
-     */
-    function addImage(image) {
-
-      var uploaded = 0;
-
-      eventCrud.addImage(
-        EventFormData,
-        image,
-        $scope.description,
-        $scope.copyright
-      ).then(function (jsonResponse) {
-        EventFormData.addMediaObject(
-          jsonResponse.data.url,
-          jsonResponse.data.thumbnailUrl,
-          $scope.description,
-          $scope.copyright
-        );
-        uploaded++;
-        if (uploaded === $scope.imagesToUpload.length) {
-          $modalInstance.close();
-        }
-      }, function() {
-        $scope.saving = false;
-        $scope.error = true;
-      });
-
-    }
-
-    /**
-     * Update an image or the description.
-     */
-    function updateImage(image) {
-
-      eventCrud.updateImage(
-        EventFormData,
-        indexToEdit,
-        image,
-        $scope.description,
-        $scope.copyright
-      ).then(function (jsonResponse) {
-        EventFormData.editMediaObject(
-          indexToEdit,
-          jsonResponse.data.url,
-          jsonResponse.data.thumbnailUrl,
-          $scope.description,
-          $scope.copyright
-        );
-        $modalInstance.close();
-      }, function() {
-        $scope.saving = false;
-        $scope.error = true;
-      });
-
     }
 
   }
-  EventFormImageUploadController.$inject = ["$scope", "$modalInstance", "EventFormData", "eventCrud", "indexToEdit"];
 
-})();
+  /**
+   * Upload and add an image.
+   */
+  function addImage(image) {
+
+    var uploaded = 0;
+
+    eventCrud.addImage(
+      EventFormData,
+      image,
+      $scope.description,
+      $scope.copyright
+    ).then(function (jsonResponse) {
+      EventFormData.addMediaObject(
+        jsonResponse.data.url,
+        jsonResponse.data.thumbnailUrl,
+        $scope.description,
+        $scope.copyright
+      );
+      uploaded++;
+      if (uploaded === $scope.imagesToUpload.length) {
+        $modalInstance.close();
+      }
+    }, function() {
+      $scope.saving = false;
+      $scope.error = true;
+    });
+
+  }
+
+  /**
+   * Update an image or the description.
+   */
+  function updateImage(image) {
+
+    eventCrud.updateImage(
+      EventFormData,
+      indexToEdit,
+      image,
+      $scope.description,
+      $scope.copyright
+    ).then(function (jsonResponse) {
+      EventFormData.editMediaObject(
+        indexToEdit,
+        jsonResponse.data.url,
+        jsonResponse.data.thumbnailUrl,
+        $scope.description,
+        $scope.copyright
+      );
+      $modalInstance.close();
+    }, function() {
+      $scope.saving = false;
+      $scope.error = true;
+    });
+
+  }
+
+}
+EventFormImageUploadController.$inject = ["$scope", "$modalInstance", "EventFormData", "eventCrud", "indexToEdit"];
 
 // Source: src/event_form/components/openinghours/openinghours.directive.js
 /**
@@ -5342,138 +5331,135 @@ function EventFormOpeningHoursDirective() {
 }
 
 // Source: src/event_form/components/organizer/event-form-organizer-modal.controller.js
-(function () {
 /**
-   * @ngdoc function
-   * @name udbApp.controller:EventFormOrganizerModalCtrl
-   * @description
-   * # EventFormOrganizerModalCtrl
-   * Modal for adding an organizer.
+ * @ngdoc function
+ * @name udbApp.controller:EventFormOrganizerModalCtrl
+ * @description
+ * # EventFormOrganizerModalCtrl
+ * Modal for adding an organizer.
+ */
+angular
+  .module('udb.event-form')
+  .controller('EventFormOrganizerModalCtrl', EventFormOrganizerModalController);
+
+/* @ngInject */
+function EventFormOrganizerModalController($scope, $modalInstance, udbOrganizers, eventCrud) {
+
+  // Scope vars.
+  $scope.organizersFound = false;
+  $scope.saving = false;
+  $scope.error = false;
+  $scope.showValidation = false;
+  $scope.organizers = [];
+
+  $scope.newOrganizer = {
+    name : '',
+    address : {
+      street : '',
+      number : '',
+      city : '',
+      postalCode: '',
+      country : 'BE'
+    },
+    contact: []
+  };
+
+  // Scope functions.
+  $scope.cancel = cancel;
+  $scope.addOrganizerContactInfo = addOrganizerContactInfo;
+  $scope.deleteOrganizerContactInfo = deleteOrganizerContactInfo;
+  $scope.validateNewOrganizer = validateNewOrganizer;
+  $scope.selectOrganizer = selectOrganizer;
+  $scope.saveOrganizer = saveOrganizer;
+
+  /**
+   * Cancel the modal.
    */
-  angular
-    .module('udb.event-form')
-    .controller('EventFormOrganizerModalCtrl', EventFormOrganizerModalController);
+  function cancel() {
+    $modalInstance.dismiss('cancel');
+  }
 
-  /* @ngInject */
-  function EventFormOrganizerModalController($scope, $modalInstance, udbOrganizers, eventCrud) {
+  /**
+   * Add a contact info entry for an organizer.
+   */
+  function addOrganizerContactInfo(type) {
+    $scope.newOrganizer.contact.push({
+      type : type,
+      value : ''
+    });
+  }
 
-    // Scope vars.
-    $scope.organizersFound = false;
-    $scope.saving = false;
+  /**
+   * Remove a given key of the contact info.
+   */
+  function deleteOrganizerContactInfo(index) {
+    $scope.newOrganizer.contact.splice(index, 1);
+  }
+
+  /**
+   * Validate the new organizer.
+   */
+  function validateNewOrganizer() {
+
+    $scope.showValidation = true;
+    // Forms are automatically known in scope.
+    if (!$scope.organizerForm.$valid) {
+      return;
+    }
+
+    var promise = udbOrganizers.searchDuplicates($scope.newOrganizer.name, $scope.newOrganizer.postalCode);
+
     $scope.error = false;
-    $scope.showValidation = false;
-    $scope.organizers = [];
+    $scope.saving = true;
 
-    $scope.newOrganizer = {
-      name : '',
-      address : {
-        street : '',
-        number : '',
-        city : '',
-        postalCode: '',
-        country : 'BE'
-      },
-      contact: []
-    };
+    promise.then(function (data) {
 
-    // Scope functions.
-    $scope.cancel = cancel;
-    $scope.addOrganizerContactInfo = addOrganizerContactInfo;
-    $scope.deleteOrganizerContactInfo = deleteOrganizerContactInfo;
-    $scope.validateNewOrganizer = validateNewOrganizer;
-    $scope.selectOrganizer = selectOrganizer;
-    $scope.saveOrganizer = saveOrganizer;
-
-    /**
-     * Cancel the modal.
-     */
-    function cancel() {
-      $modalInstance.dismiss('cancel');
-    }
-
-    /**
-     * Add a contact info entry for an organizer.
-     */
-    function addOrganizerContactInfo(type) {
-      $scope.newOrganizer.contact.push({
-        type : type,
-        value : ''
-      });
-    }
-
-    /**
-     * Remove a given key of the contact info.
-     */
-    function deleteOrganizerContactInfo(index) {
-      $scope.newOrganizer.contact.splice(index, 1);
-    }
-
-    /**
-     * Validate the new organizer.
-     */
-    function validateNewOrganizer() {
-
-      $scope.showValidation = true;
-      // Forms are automatically known in scope.
-      if (!$scope.organizerForm.$valid) {
-        return;
+      // Set the results for the duplicates modal,
+      if (data.length > 0) {
+        $scope.organizersFound = true;
+        $scope.organizers = data;
+        $scope.saving = false;
+      }
+      // or save the event immediataly if no duplicates were found.
+      else {
+        saveOrganizer();
       }
 
-      var promise = udbOrganizers.searchDuplicates($scope.newOrganizer.name, $scope.newOrganizer.postalCode);
-
-      $scope.error = false;
-      $scope.saving = true;
-
-      promise.then(function (data) {
-
-        // Set the results for the duplicates modal,
-        if (data.length > 0) {
-          $scope.organizersFound = true;
-          $scope.organizers = data;
-          $scope.saving = false;
-        }
-        // or save the event immediataly if no duplicates were found.
-        else {
-          saveOrganizer();
-        }
-
-      }, function() {
-        $scope.error = true;
-        $scope.saving = false;
-      });
-
-    }
-
-    /**
-     * Select the organizer that should be used.
-     */
-    function selectOrganizer(organizer) {
-      $modalInstance.close(organizer);
-    }
-
-    /**
-     * Save the new organizer in db.
-     */
-    function saveOrganizer() {
-
-      $scope.saving = true;
-      $scope.error = false;
-
-      var promise = eventCrud.createOrganizer($scope.newOrganizer);
-      promise.then(function(jsonResponse) {
-        $scope.newOrganizer.id = jsonResponse.data.organizerId;
-        selectOrganizer($scope.newOrganizer);
-        $scope.saving = false;
-      }, function() {
-        $scope.error = true;
-        $scope.saving = false;
-      });
-    }
+    }, function() {
+      $scope.error = true;
+      $scope.saving = false;
+    });
 
   }
-  EventFormOrganizerModalController.$inject = ["$scope", "$modalInstance", "udbOrganizers", "eventCrud"];
 
-})();
+  /**
+   * Select the organizer that should be used.
+   */
+  function selectOrganizer(organizer) {
+    $modalInstance.close(organizer);
+  }
+
+  /**
+   * Save the new organizer in db.
+   */
+  function saveOrganizer() {
+
+    $scope.saving = true;
+    $scope.error = false;
+
+    var promise = eventCrud.createOrganizer($scope.newOrganizer);
+    promise.then(function(jsonResponse) {
+      $scope.newOrganizer.id = jsonResponse.data.organizerId;
+      selectOrganizer($scope.newOrganizer);
+      $scope.saving = false;
+    }, function() {
+      $scope.error = true;
+      $scope.saving = false;
+    });
+  }
+
+}
+EventFormOrganizerModalController.$inject = ["$scope", "$modalInstance", "udbOrganizers", "eventCrud"];
 
 // Source: src/event_form/components/place/event-form-place-modal.controller.js
 (function () {
@@ -5612,68 +5598,65 @@ function EventFormOpeningHoursDirective() {
 })();
 
 // Source: src/event_form/event-form.controller.js
-(function () {
 /**
-   * @ngdoc function
-   * @name udbApp.controller:EventFormCtrl
-   * @description
-   * # EventFormCtrl
-   * Init the event form
-   */
-  angular
-    .module('udb.event-form')
-    .controller('EventFormCtrl', EventFormController);
+ * @ngdoc function
+ * @name udbApp.controller:EventFormCtrl
+ * @description
+ * # EventFormCtrl
+ * Init the event form
+ */
+angular
+  .module('udb.event-form')
+  .controller('EventFormCtrl', EventFormController);
 
-  /* @ngInject */
-  function EventFormController($scope, itemId, offerType, EventFormData, udbApi) {
+/* @ngInject */
+function EventFormController($scope, itemId, offerType, EventFormData, udbApi) {
 
-    // Other controllers won't load untill this boolean is set to true.
-    $scope.loaded = false;
+  // Other controllers won't load untill this boolean is set to true.
+  $scope.loaded = false;
 
-    // Fill the event form data if an event is beïng edited.
-    if (itemId) {
+  // Fill the event form data if an event is beïng edited.
+  if (itemId) {
 
-      if (offerType === 'event') {
-        udbApi.getEventById(itemId).then(function(event) {
-          EventFormData.id = event.id;
-          EventFormData.isEvent = true;
-          EventFormData.isPlace = false;
-          EventFormData.mediaObject = event.mediaObject;
-          EventFormData.name = event.name;
-          $scope.loaded = true;
-          EventFormData.showStep(1);
-          EventFormData.showStep(2);
-          EventFormData.showStep(3);
-          EventFormData.showStep(4);
-          EventFormData.showStep(5);
-        });
-
-      }
-      else if (offerType === 'place') {
-        udbApi.getPlaceById(itemId).then(function(place) {
-          EventFormData.isEvent = false;
-          EventFormData.isPlace = true;
-          EventFormData.id = place.id;
-          EventFormData.mediaObject = place.mediaObject;
-          EventFormData.name = place.name;
-          $scope.loaded = true;
-          EventFormData.showStep(1);
-          EventFormData.showStep(2);
-          EventFormData.showStep(3);
-          EventFormData.showStep(4);
-          EventFormData.showStep(5);
-        });
-      }
+    if (offerType === 'event') {
+      udbApi.getEventById(itemId).then(function(event) {
+        EventFormData.id = event.id;
+        EventFormData.isEvent = true;
+        EventFormData.isPlace = false;
+        EventFormData.mediaObject = event.mediaObject;
+        EventFormData.name = event.name;
+        $scope.loaded = true;
+        EventFormData.showStep(1);
+        EventFormData.showStep(2);
+        EventFormData.showStep(3);
+        EventFormData.showStep(4);
+        EventFormData.showStep(5);
+      });
 
     }
-    else {
-      $scope.loaded = true;
+    else if (offerType === 'place') {
+      udbApi.getPlaceById(itemId).then(function(place) {
+        EventFormData.isEvent = false;
+        EventFormData.isPlace = true;
+        EventFormData.id = place.id;
+        EventFormData.mediaObject = place.mediaObject;
+        EventFormData.name = place.name;
+        $scope.loaded = true;
+        EventFormData.showStep(1);
+        EventFormData.showStep(2);
+        EventFormData.showStep(3);
+        EventFormData.showStep(4);
+        EventFormData.showStep(5);
+      });
     }
 
   }
-  EventFormController.$inject = ["$scope", "itemId", "offerType", "EventFormData", "udbApi"];
+  else {
+    $scope.loaded = true;
+  }
 
-})();
+}
+EventFormController.$inject = ["$scope", "itemId", "offerType", "EventFormData", "udbApi"];
 
 // Source: src/event_form/event-form.data.js
 /**
@@ -6176,1530 +6159,1515 @@ function EventFormFacilities($q, $http, $cacheFactory, appConfig) {
 EventFormFacilities.$inject = ["$q", "$http", "$cacheFactory", "appConfig"];
 
 // Source: src/event_form/steps/event-form-step1.controller.js
-(function () {
 /**
-   * @ngdoc function
-   * @name udbApp.controller:EventFormStep1Ctrl
-   * @description
-   * # EventFormStep1Ctrl
-   * Step 1 of the event form
+ * @ngdoc function
+ * @name udbApp.controller:EventFormStep1Ctrl
+ * @description
+ * # EventFormStep1Ctrl
+ * Step 1 of the event form
+ */
+angular
+  .module('udb.event-form')
+  .controller('EventFormStep1Ctrl', EventFormStep1Controller);
+
+/* @ngInject */
+function EventFormStep1Controller($scope, EventFormData, UdbEvent, UdbPlace, eventTypes) {
+
+  // main storage for event form.
+  $scope.eventFormData = EventFormData;
+
+  // Categories, event types, places.
+  $scope.eventTypeLabels = [];
+  $scope.placeLabels = [];
+  $scope.activeEventType = ''; // Current active event type.
+  $scope.activeEventTypeLabel = ''; // Current active event type label.
+  // Load the categories asynchronously.
+  var eventPromise = eventTypes.getCategories();
+  eventPromise.then(function (categories) {
+    $scope.eventTypeLabels = categories.event;
+    $scope.placeLabels = categories.place;
+  });
+
+  $scope.mustRefine = false;
+  $scope.showAllEventTypes = false;
+  $scope.showAllPlaces = false;
+  $scope.eventThemeLabels = [];
+  $scope.activeTheme = '';
+  $scope.activeThemeLabel = '';
+
+  $scope.setEventType = setEventType;
+  $scope.resetEventType = resetEventType;
+  $scope.toggleEventTypes = toggleEventTypes;
+  $scope.togglePlaces = togglePlaces;
+  $scope.setTheme = setTheme;
+  $scope.resetTheme = resetTheme;
+
+  /**
+   * Click listener on the event type buttons.
+   * Activate the selected event type.
    */
-  angular
-    .module('udb.event-form')
-    .controller('EventFormStep1Ctrl', EventFormStep1Controller);
+  function setEventType(type, label, isEvent) {
 
-  /* @ngInject */
-  function EventFormStep1Controller($scope, EventFormData, UdbEvent, UdbPlace, eventTypes) {
+    $scope.activeEventType = type;
 
-    // main storage for event form.
-    $scope.eventFormData = EventFormData;
+    // User selected an event.
+    if (isEvent) {
+      EventFormData.isEvent = true;
+      EventFormData.isPlace = false;
 
-    // Categories, event types, places.
-    $scope.eventTypeLabels = [];
-    $scope.placeLabels = [];
-    $scope.activeEventType = ''; // Current active event type.
-    $scope.activeEventTypeLabel = ''; // Current active event type label.
-    // Load the categories asynchronously.
-    var eventPromise = eventTypes.getCategories();
-    eventPromise.then(function (categories) {
-      $scope.eventTypeLabels = categories.event;
-      $scope.placeLabels = categories.place;
-    });
+      for (var i = 0; i < $scope.eventTypeLabels.length; i++) {
+        if ($scope.eventTypeLabels[i].id === type) {
+          $scope.activeEventType = $scope.eventTypeLabels[i].id;
+          $scope.activeEventTypeLabel = $scope.eventTypeLabels[i].label;
 
-    $scope.mustRefine = false;
-    $scope.showAllEventTypes = false;
-    $scope.showAllPlaces = false;
-    $scope.eventThemeLabels = [];
-    $scope.activeTheme = '';
-    $scope.activeThemeLabel = '';
-
-    $scope.setEventType = setEventType;
-    $scope.resetEventType = resetEventType;
-    $scope.toggleEventTypes = toggleEventTypes;
-    $scope.togglePlaces = togglePlaces;
-    $scope.setTheme = setTheme;
-    $scope.resetTheme = resetTheme;
-
-    /**
-     * Click listener on the event type buttons.
-     * Activate the selected event type.
-     */
-    function setEventType(type, label, isEvent) {
-
-      $scope.activeEventType = type;
-
-      // User selected an event.
-      if (isEvent) {
-        EventFormData.isEvent = true;
-        EventFormData.isPlace = false;
-
-        for (var i = 0; i < $scope.eventTypeLabels.length; i++) {
-          if ($scope.eventTypeLabels[i].id === type) {
-            $scope.activeEventType = $scope.eventTypeLabels[i].id;
-            $scope.activeEventTypeLabel = $scope.eventTypeLabels[i].label;
-
-            if ($scope.eventTypeLabels[i].themes && $scope.eventTypeLabels[i].themes.length > 0) {
-              $scope.eventThemeLabels = $scope.eventTypeLabels[i].themes;
-              $scope.mustRefine = true;
-            }
-            else {
-              $scope.mustRefine = false;
-            }
-
-            break;
+          if ($scope.eventTypeLabels[i].themes && $scope.eventTypeLabels[i].themes.length > 0) {
+            $scope.eventThemeLabels = $scope.eventTypeLabels[i].themes;
+            $scope.mustRefine = true;
           }
-        }
-
-      }
-      // User selected a place.
-      else {
-
-        // Reset calendar if user switched to permanent.
-        if (EventFormData.calendarType !== 'permanent') {
-          EventFormData.resetCalendar();
-        }
-
-        EventFormData.isEvent = false;
-        EventFormData.isPlace = true;
-
-        for (var j = 0; j < $scope.placeLabels.length; j++) {
-          if ($scope.placeLabels[j].id === type) {
-            $scope.activeEventType = $scope.placeLabels[j].id;
-            $scope.activeEventTypeLabel = $scope.placeLabels[j].label;
-
-            if ($scope.eventTypeLabels[j].themes && $scope.eventTypeLabels[j].themes.length > 0) {
-              $scope.eventThemeLabels = $scope.eventTypeLabels[j].themes;
-              $scope.mustRefine = true;
-            }
-            else {
-              $scope.mustRefine = false;
-            }
-
-            break;
+          else {
+            $scope.mustRefine = false;
           }
-        }
 
-        // Places are default permanent. Users should not see a selection.
-        EventFormData.calendarType = 'permanent';
-        EventFormData.activeCalendarType = 'permanent';
-        EventFormData.activeCalendarLabel = 'Permanent';
-        if (EventFormData.openingHours.length === 0) {
-          EventFormData.addOpeningHour('', '', '');
-        }
-        EventFormData.showStep(3);
-
-      }
-
-      // Check if previous event type was the same.
-      // If so, just show the previous entered data.
-      if (EventFormData.eventType === type) {
-        return;
-      }
-
-      EventFormData.eventType = type;
-      EventFormData.setEventType(type, label);
-      EventFormData.theme = {};
-
-      if (!$scope.mustRefine) {
-        EventFormData.showStep(2);
-      }
-
-    }
-
-    /**
-     * Click listener to reset the event type. User can select a new event type.
-     */
-    function resetEventType() {
-      $scope.activeEventType = '';
-      $scope.activeEventTypeLabel = '';
-      $scope.activeTheme = '';
-      $scope.activeThemeLabel = '';
-    }
-
-    /**
-     * Click listener to set the active theme.
-     * @param {string} id
-     * @param {string} label
-     */
-    function setTheme(id, label) {
-
-      $scope.activeTheme = id;
-
-      for (var i = 0; i < $scope.eventThemeLabels.length; i++) {
-        if ($scope.eventThemeLabels[i].id === id) {
-          $scope.activeThemeLabel = $scope.eventThemeLabels[i].label;
           break;
         }
       }
 
-      // Check if previous event theme was the same.
-      // If so, just show the previous entered data.
-      if (EventFormData.theme === id) {
-        return;
+    }
+    // User selected a place.
+    else {
+
+      // Reset calendar if user switched to permanent.
+      if (EventFormData.calendarType !== 'permanent') {
+        EventFormData.resetCalendar();
       }
 
-      EventFormData.setTheme(id, label);
+      EventFormData.isEvent = false;
+      EventFormData.isPlace = true;
 
-      EventFormData.showStep(2);
-      $scope.mustRefine = false;
+      for (var j = 0; j < $scope.placeLabels.length; j++) {
+        if ($scope.placeLabels[j].id === type) {
+          $scope.activeEventType = $scope.placeLabels[j].id;
+          $scope.activeEventTypeLabel = $scope.placeLabels[j].label;
 
-    }
+          if ($scope.eventTypeLabels[j].themes && $scope.eventTypeLabels[j].themes.length > 0) {
+            $scope.eventThemeLabels = $scope.eventTypeLabels[j].themes;
+            $scope.mustRefine = true;
+          }
+          else {
+            $scope.mustRefine = false;
+          }
 
-    /**
-     * Click listener to reset the active theme.
-     */
-    function resetTheme() {
-      $scope.mustRefine = true;
-      $scope.activeTheme = '';
-    }
-
-    /**
-     * Click listener to toggle the event types list.
-     */
-    function toggleEventTypes() {
-      $scope.showAllEventTypes = !$scope.showAllEventTypes;
-    }
-
-    /**
-     * Click listener to toggle th places list.
-     */
-    function togglePlaces() {
-      $scope.showAllPlaces = !$scope.showAllPlaces;
-    }
-
-  }
-  EventFormStep1Controller.$inject = ["$scope", "EventFormData", "UdbEvent", "UdbPlace", "eventTypes"];
-
-})();
-
-// Source: src/event_form/steps/event-form-step2-controller.js
-(function () {
-/**
-   * @ngdoc function
-   * @name udbApp.controller:EventFormStep2Ctrl
-   * @description
-   * # EventFormStep2Ctrl
-   * Step 2 of the event form
-   */
-  angular
-    .module('udb.event-form')
-    .controller('EventFormStep2Ctrl', EventFormStep2Controller);
-
-  /* @ngInject */
-  function EventFormStep2Controller($scope, EventFormData, UdbOpeningHours) {
-
-    // Scope vars.
-    // main storage for event form.
-    $scope.eventFormData = EventFormData;
-
-    $scope.calendarLabels = [
-      {'label': 'Eén of meerdere dagen', 'id' : 'single', 'eventOnly' : true},
-      {'label': 'Van ... tot ... ', 'id' : 'periodic', 'eventOnly' : true},
-      {'label' : 'Permanent', 'id' : 'permanent', 'eventOnly' : false}
-    ];
-    $scope.hasOpeningHours = false;
-
-    // Scope functions
-    $scope.setCalendarType = setCalendarType;
-    $scope.resetCalendar = resetCalendar;
-    $scope.addTimestamp = addTimestamp;
-    $scope.toggleStartHour = toggleStartHour;
-    $scope.toggleEndHour = toggleEndHour;
-    $scope.saveOpeninghHourDaySelection = saveOpeninghHourDaySelection;
-
-    // Mapping between machine name of days and real output.
-    var dayNames = {
-      'monday' : 'Maandag',
-      'tuesday' : 'Dinsdag',
-      'wednesday' : 'Woensdag',
-      'thursday' : 'Donderdag',
-      'friday' : 'Vrijdag',
-      'saturday' : 'Zaterdag',
-      'sunday' : 'Zondag'
-    };
-
-    /**
-     * Click listener on the calendar type buttons.
-     * Activate the selected calendar type.
-     */
-    function setCalendarType(type) {
-
-      EventFormData.showStep(3);
-
-      var calendarLabel = '';
-      for (var i = 0; i < $scope.calendarLabels.length; i++) {
-        if ($scope.calendarLabels[i].id === type) {
-          calendarLabel = $scope.calendarLabels[i].label;
           break;
         }
       }
 
-      // Check if previous calendar type was the same.
-      // If so, we don't need to create new openinghours. Just show the previous entered data.
-      if (EventFormData.calendarType === type) {
-        return;
-      }
-
-      // A type is choosen, start a complet new calendar, removing old dat
-      $scope.hasOpeningHours = false;
-      EventFormData.resetCalendar();
-      EventFormData.activeCalendarType = type;
-      EventFormData.calendarType = type;
-      EventFormData.activeCalendarLabel = calendarLabel;
-
-      if (type === 'single') {
-        addTimestamp();
-      }
-      else if (type === 'periodic' || type === 'permanent') {
+      // Places are default permanent. Users should not see a selection.
+      EventFormData.calendarType = 'permanent';
+      EventFormData.activeCalendarType = 'permanent';
+      EventFormData.activeCalendarLabel = 'Permanent';
+      if (EventFormData.openingHours.length === 0) {
         EventFormData.addOpeningHour('', '', '');
       }
+      EventFormData.showStep(3);
 
     }
 
-    /**
-     * Click listener to reset the calendar. User can select a new calendar type.
-     */
-    function resetCalendar() {
-      EventFormData.activeCalendarType = '';
+    // Check if previous event type was the same.
+    // If so, just show the previous entered data.
+    if (EventFormData.eventType === type) {
+      return;
     }
 
-    /**
-     * Add a single date to the item.
-     */
-    function addTimestamp() {
-      EventFormData.addTimestamp('', '', '');
-    }
+    EventFormData.eventType = type;
+    EventFormData.setEventType(type, label);
+    EventFormData.theme = {};
 
-    /**
-     * Toggle the starthour field for given timestamp.
-     * @param {string} timestamp
-     *   Timestamp to change
-     */
-    function toggleStartHour(timestamp) {
-
-      timestamp.showStartHour = !timestamp.showStartHour;
-
-      // If we hide the textfield, empty all other time fields.
-      if (!timestamp.showStartHour) {
-        timestamp.startHour = '';
-        timestamp.endHour = '';
-        timestamp.showEndHour = false;
-      }
-
-    }
-
-    /**
-     * Toggle the endhour field for given timestamp
-     * @param {string} timestamp
-     *   Timestamp to change
-     */
-    function toggleEndHour(timestamp) {
-
-      timestamp.showEndHour = !timestamp.showEndHour;
-
-      // If we hide the textfield, empty also the input.
-      if (!timestamp.showEndHour) {
-        timestamp.endHour = '';
-      }
-
-    }
-
-    /**
-     * Change listener on the day selection of opening hours.
-     * Create human labels for the day selection.
-     */
-    function saveOpeninghHourDaySelection(index, daysOfWeek) {
-
-      var humanValues = [];
-      if (daysOfWeek instanceof Array) {
-        for (var i in daysOfWeek) {
-          humanValues.push(dayNames[daysOfWeek[i]]);
-        }
-      }
-
-      EventFormData.openingHours[index].label = humanValues.join(', ');
-
+    if (!$scope.mustRefine) {
+      EventFormData.showStep(2);
     }
 
   }
-  EventFormStep2Controller.$inject = ["$scope", "EventFormData", "UdbOpeningHours"];
 
-})();
+  /**
+   * Click listener to reset the event type. User can select a new event type.
+   */
+  function resetEventType() {
+    $scope.activeEventType = '';
+    $scope.activeEventTypeLabel = '';
+    $scope.activeTheme = '';
+    $scope.activeThemeLabel = '';
+  }
+
+  /**
+   * Click listener to set the active theme.
+   * @param {string} id
+   * @param {string} label
+   */
+  function setTheme(id, label) {
+
+    $scope.activeTheme = id;
+
+    for (var i = 0; i < $scope.eventThemeLabels.length; i++) {
+      if ($scope.eventThemeLabels[i].id === id) {
+        $scope.activeThemeLabel = $scope.eventThemeLabels[i].label;
+        break;
+      }
+    }
+
+    // Check if previous event theme was the same.
+    // If so, just show the previous entered data.
+    if (EventFormData.theme === id) {
+      return;
+    }
+
+    EventFormData.setTheme(id, label);
+
+    EventFormData.showStep(2);
+    $scope.mustRefine = false;
+
+  }
+
+  /**
+   * Click listener to reset the active theme.
+   */
+  function resetTheme() {
+    $scope.mustRefine = true;
+    $scope.activeTheme = '';
+  }
+
+  /**
+   * Click listener to toggle the event types list.
+   */
+  function toggleEventTypes() {
+    $scope.showAllEventTypes = !$scope.showAllEventTypes;
+  }
+
+  /**
+   * Click listener to toggle th places list.
+   */
+  function togglePlaces() {
+    $scope.showAllPlaces = !$scope.showAllPlaces;
+  }
+
+}
+EventFormStep1Controller.$inject = ["$scope", "EventFormData", "UdbEvent", "UdbPlace", "eventTypes"];
+
+// Source: src/event_form/steps/event-form-step2-controller.js
+/**
+ * @ngdoc function
+ * @name udbApp.controller:EventFormStep2Ctrl
+ * @description
+ * # EventFormStep2Ctrl
+ * Step 2 of the event form
+ */
+angular
+  .module('udb.event-form')
+  .controller('EventFormStep2Ctrl', EventFormStep2Controller);
+
+/* @ngInject */
+function EventFormStep2Controller($scope, EventFormData, UdbOpeningHours) {
+
+  // Scope vars.
+  // main storage for event form.
+  $scope.eventFormData = EventFormData;
+
+  $scope.calendarLabels = [
+    {'label': 'Eén of meerdere dagen', 'id' : 'single', 'eventOnly' : true},
+    {'label': 'Van ... tot ... ', 'id' : 'periodic', 'eventOnly' : true},
+    {'label' : 'Permanent', 'id' : 'permanent', 'eventOnly' : false}
+  ];
+  $scope.hasOpeningHours = false;
+
+  // Scope functions
+  $scope.setCalendarType = setCalendarType;
+  $scope.resetCalendar = resetCalendar;
+  $scope.addTimestamp = addTimestamp;
+  $scope.toggleStartHour = toggleStartHour;
+  $scope.toggleEndHour = toggleEndHour;
+  $scope.saveOpeninghHourDaySelection = saveOpeninghHourDaySelection;
+
+  // Mapping between machine name of days and real output.
+  var dayNames = {
+    'monday' : 'Maandag',
+    'tuesday' : 'Dinsdag',
+    'wednesday' : 'Woensdag',
+    'thursday' : 'Donderdag',
+    'friday' : 'Vrijdag',
+    'saturday' : 'Zaterdag',
+    'sunday' : 'Zondag'
+  };
+
+  /**
+   * Click listener on the calendar type buttons.
+   * Activate the selected calendar type.
+   */
+  function setCalendarType(type) {
+
+    EventFormData.showStep(3);
+
+    var calendarLabel = '';
+    for (var i = 0; i < $scope.calendarLabels.length; i++) {
+      if ($scope.calendarLabels[i].id === type) {
+        calendarLabel = $scope.calendarLabels[i].label;
+        break;
+      }
+    }
+
+    // Check if previous calendar type was the same.
+    // If so, we don't need to create new openinghours. Just show the previous entered data.
+    if (EventFormData.calendarType === type) {
+      return;
+    }
+
+    // A type is choosen, start a complet new calendar, removing old dat
+    $scope.hasOpeningHours = false;
+    EventFormData.resetCalendar();
+    EventFormData.activeCalendarType = type;
+    EventFormData.calendarType = type;
+    EventFormData.activeCalendarLabel = calendarLabel;
+
+    if (type === 'single') {
+      addTimestamp();
+    }
+    else if (type === 'periodic' || type === 'permanent') {
+      EventFormData.addOpeningHour('', '', '');
+    }
+
+  }
+
+  /**
+   * Click listener to reset the calendar. User can select a new calendar type.
+   */
+  function resetCalendar() {
+    EventFormData.activeCalendarType = '';
+  }
+
+  /**
+   * Add a single date to the item.
+   */
+  function addTimestamp() {
+    EventFormData.addTimestamp('', '', '');
+  }
+
+  /**
+   * Toggle the starthour field for given timestamp.
+   * @param {string} timestamp
+   *   Timestamp to change
+   */
+  function toggleStartHour(timestamp) {
+
+    timestamp.showStartHour = !timestamp.showStartHour;
+
+    // If we hide the textfield, empty all other time fields.
+    if (!timestamp.showStartHour) {
+      timestamp.startHour = '';
+      timestamp.endHour = '';
+      timestamp.showEndHour = false;
+    }
+
+  }
+
+  /**
+   * Toggle the endhour field for given timestamp
+   * @param {string} timestamp
+   *   Timestamp to change
+   */
+  function toggleEndHour(timestamp) {
+
+    timestamp.showEndHour = !timestamp.showEndHour;
+
+    // If we hide the textfield, empty also the input.
+    if (!timestamp.showEndHour) {
+      timestamp.endHour = '';
+    }
+
+  }
+
+  /**
+   * Change listener on the day selection of opening hours.
+   * Create human labels for the day selection.
+   */
+  function saveOpeninghHourDaySelection(index, daysOfWeek) {
+
+    var humanValues = [];
+    if (daysOfWeek instanceof Array) {
+      for (var i in daysOfWeek) {
+        humanValues.push(dayNames[daysOfWeek[i]]);
+      }
+    }
+
+    EventFormData.openingHours[index].label = humanValues.join(', ');
+
+  }
+
+}
+EventFormStep2Controller.$inject = ["$scope", "EventFormData", "UdbOpeningHours"];
 
 // Source: src/event_form/steps/event-form-step3.controller.js
-(function () {
 /**
-   * @ngdoc function
-   * @name udbApp.controller:EventFormStep3Ctrl
-   * @description
-   * # EventFormStep3Ctrl
-   * Step 3 of the event form
+ * @ngdoc function
+ * @name udbApp.controller:EventFormStep3Ctrl
+ * @description
+ * # EventFormStep3Ctrl
+ * Step 3 of the event form
+ */
+angular
+  .module('udb.event-form')
+  .controller('EventFormStep3Ctrl', EventFormStep3Controller);
+
+/* @ngInject */
+function EventFormStep3Controller($scope, EventFormData, cityAutocomplete, eventTypes, $modal) {
+
+  // Scope vars.
+  // main storage for event form.
+  $scope.eventFormData = EventFormData;
+
+  // Autocomplete model field for the City/Postal code.
+  $scope.cityAutocompleteTextField = '';
+
+  // Autocomplete model field for the Location.
+  $scope.locationAutocompleteTextField = '';
+
+  // Autocomplete helper vars.
+  $scope.searchingCities = false;
+  $scope.cityAutoCompleteError = false;
+  $scope.searchingLocation = false;
+  $scope.locationAutoCompleteError = false;
+  $scope.locationsSearched = false;
+
+  $scope.selectedCity = '';
+  $scope.selectedLocation = '';
+  $scope.placeStreetAddress = '';
+  $scope.placeLocationNumber = '';
+  $scope.openPlaceModal = openPlaceModal;
+  $scope.place = {
+    'name': '',
+    'eventType' : '',
+    'address': {
+      'addressCountry': '',
+      'addressLocality': '',
+      'postalCode': '',
+      'streetAddress': ''
+    }
+  };
+
+  // Validation.
+  $scope.showValidation = false;
+
+  // Convenient scope variables for current controller (in multistep).
+  $scope.locationsForCity = [];
+
+  getLocationCategories();
+
+  // Scope functions.
+  $scope.getCities = getCities;
+  $scope.selectCity = selectCity;
+  $scope.selectLocation = selectLocation;
+  $scope.changeCitySelection = changeCitySelection;
+  $scope.changeLocationSelection = changeLocationSelection;
+  $scope.validatePlace = validatePlace;
+  $scope.changeStreetAddress = changeStreetAddress;
+  $scope.getLocations = getLocations;
+
+  /**
+   * Automplete function for cities.
    */
-  angular
-    .module('udb.event-form')
-    .controller('EventFormStep3Ctrl', EventFormStep3Controller);
+  function getCities(value) {
 
-  /* @ngInject */
-  function EventFormStep3Controller($scope, EventFormData, cityAutocomplete, eventTypes, $modal) {
-
-    // Scope vars.
-    // main storage for event form.
-    $scope.eventFormData = EventFormData;
-
-    // Autocomplete model field for the City/Postal code.
-    $scope.cityAutocompleteTextField = '';
-
-    // Autocomplete model field for the Location.
-    $scope.locationAutocompleteTextField = '';
-
-    // Autocomplete helper vars.
-    $scope.searchingCities = false;
+    $scope.searchingCities = true;
     $scope.cityAutoCompleteError = false;
-    $scope.searchingLocation = false;
-    $scope.locationAutoCompleteError = false;
-    $scope.locationsSearched = false;
 
+    var promise = cityAutocomplete.getCities(value, EventFormData.location.address.postalCode);
+    return promise.then(function (cities) {
+      $scope.searchingCities = false;
+      return cities.data;
+    }, function() {
+      $scope.searchingCities = false;
+      $scope.cityAutoCompleteError = true;
+      return [];
+    });
+  }
+
+  /**
+   * Select City.
+   * @returns {undefined}
+   */
+  function selectCity($item, $model, $label) {
+
+    EventFormData.resetLocation();
+    var location = $scope.eventFormData.getLocation();
+    location.address.postalCode = $item.zip;
+    location.address.addressLocality = $item.name;
+    EventFormData.setLocation(location);
+
+    $scope.cityAutocompleteTextField = '';
+    $scope.selectedCity = $label;
+    $scope.selectedLocation = '';
+
+  }
+
+  /**
+   * Change a city selection.
+   * @returns {undefined}
+   */
+  function changeCitySelection() {
+
+    EventFormData.resetLocation();
     $scope.selectedCity = '';
     $scope.selectedLocation = '';
-    $scope.placeStreetAddress = '';
-    $scope.placeLocationNumber = '';
-    $scope.openPlaceModal = openPlaceModal;
-    $scope.place = {
-      'name': '',
-      'eventType' : '',
-      'address': {
-        'addressCountry': '',
-        'addressLocality': '',
-        'postalCode': '',
-        'streetAddress': ''
-      }
-    };
+    $scope.cityAutocompleteTextField = '';
+    $scope.locationsSearched = false;
+    $scope.locationAutocompleteTextField = '';
+    EventFormData.showStep4 = false;
 
-    // Validation.
-    $scope.showValidation = false;
+  }
 
-    // Convenient scope variables for current controller (in multistep).
-    $scope.locationsForCity = [];
+  /**
+   * Select location.
+   * @returns {undefined}
+   */
+  function selectLocation($item, $model, $label) {
 
-    getLocationCategories();
+    // Assign selection, hide the location field and show the selection.
+    $scope.selectedLocation = $label;
+    $scope.locationAutocompleteTextField = '';
 
-    // Scope functions.
-    $scope.getCities = getCities;
-    $scope.selectCity = selectCity;
-    $scope.selectLocation = selectLocation;
-    $scope.changeCitySelection = changeCitySelection;
-    $scope.changeLocationSelection = changeLocationSelection;
-    $scope.validatePlace = validatePlace;
-    $scope.changeStreetAddress = changeStreetAddress;
-    $scope.getLocations = getLocations;
+    var location = EventFormData.getLocation();
+    location.id = $model;
+    location.name = $label;
+    EventFormData.setLocation(location);
 
-    /**
-     * Automplete function for cities.
-     */
-    function getCities(value) {
+    EventFormData.showStep4 = true;
 
-      $scope.searchingCities = true;
-      $scope.cityAutoCompleteError = false;
+  }
 
-      var promise = cityAutocomplete.getCities(value, EventFormData.location.address.postalCode);
-      return promise.then(function (cities) {
-        $scope.searchingCities = false;
-        return cities.data;
-      }, function() {
-        $scope.searchingCities = false;
-        $scope.cityAutoCompleteError = true;
-        return [];
-      });
-    }
+  /**
+   * Change selected location.
+   * @returns {undefined}
+   */
+  function changeLocationSelection() {
 
-    /**
-     * Select City.
-     * @returns {undefined}
-     */
-    function selectCity($item, $model, $label) {
+    // Reset only the location data of the location.
+    var location = EventFormData.getLocation();
+    location.id = '';
+    location.name = '';
+    EventFormData.setLocation(location);
 
-      EventFormData.resetLocation();
-      var location = $scope.eventFormData.getLocation();
-      location.address.postalCode = $item.zip;
-      location.address.addressLocality = $item.name;
-      EventFormData.setLocation(location);
+    //$scope.selectedCity = '';
+    $scope.selectedLocation = '';
+    $scope.locationAutocompleteTextField = '';
+    $scope.locationsSearched = false;
 
-      $scope.cityAutocompleteTextField = '';
-      $scope.selectedCity = $label;
-      $scope.selectedLocation = '';
+    EventFormData.showStep4 = false;
 
-    }
+  }
 
-    /**
-     * Change a city selection.
-     * @returns {undefined}
-     */
-    function changeCitySelection() {
+  /**
+   * Get locations for Event.
+   * @returns {undefined}
+   */
+  function getLocations($viewValue) {
 
-      EventFormData.resetLocation();
-      $scope.selectedCity = '';
-      $scope.selectedLocation = '';
-      $scope.cityAutocompleteTextField = '';
+    $scope.searchingLocation = true;
+    $scope.locationAutoCompleteError = false;
+
+    var promise = cityAutocomplete.getLocationsForCity($viewValue, EventFormData.location.address.postalCode);
+    return promise.then(function (cities) {
+      $scope.locationsForCity = cities.data;
+      $scope.locationsSearched = true;
+      $scope.searchingLocation = false;
+      return $scope.locationsForCity;
+    }, function() {
       $scope.locationsSearched = false;
-      $scope.locationAutocompleteTextField = '';
-      EventFormData.showStep4 = false;
+      $scope.searchingLocation = false;
+      $scope.locationAutoCompleteError = true;
+      return [];
+    });
 
-    }
+  }
 
-    /**
-     * Select location.
-     * @returns {undefined}
-     */
-    function selectLocation($item, $model, $label) {
+  /**
+   * Get the location categories.
+   * @returns {undefined}
+   */
+  function getLocationCategories() {
+
+    var eventPromise = eventTypes.getCategories();
+    eventPromise.then(function (categories) {
+      $scope.categories = categories.place;
+    });
+
+  }
+
+  /**
+   * Open the organizer modal.
+   */
+  function openPlaceModal() {
+
+    var modalInstance = $modal.open({
+      templateUrl: 'templates/event-form-place-modal.html',
+      controller: 'EventFormPlaceModalCtrl',
+      resolve: {
+        location: function () {
+          return $scope.eventFormData.location;
+        },
+        categories: function () {
+          return $scope.categories;
+        }
+      }
+    });
+
+    modalInstance.result.then(function (place) {
+
+      // Assign the just saved place to the event form data.
+      EventFormData.place = place;
 
       // Assign selection, hide the location field and show the selection.
-      $scope.selectedLocation = $label;
-      $scope.locationAutocompleteTextField = '';
+      $scope.selectedCity = place.address.postalCode + ' ' + place.address.addressLocality;
+      $scope.selectedLocation = place.getName('nl');
 
-      var location = EventFormData.getLocation();
-      location.id = $model;
-      location.name = $label;
-      EventFormData.setLocation(location);
-
-      EventFormData.showStep4 = true;
-
-    }
-
-    /**
-     * Change selected location.
-     * @returns {undefined}
-     */
-    function changeLocationSelection() {
-
-      // Reset only the location data of the location.
-      var location = EventFormData.getLocation();
-      location.id = '';
-      location.name = '';
-      EventFormData.setLocation(location);
-
-      //$scope.selectedCity = '';
-      $scope.selectedLocation = '';
-      $scope.locationAutocompleteTextField = '';
-      $scope.locationsSearched = false;
-
-      EventFormData.showStep4 = false;
-
-    }
-
-    /**
-     * Get locations for Event.
-     * @returns {undefined}
-     */
-    function getLocations($viewValue) {
-
-      $scope.searchingLocation = true;
-      $scope.locationAutoCompleteError = false;
-
-      var promise = cityAutocomplete.getLocationsForCity($viewValue, EventFormData.location.address.postalCode);
-      return promise.then(function (cities) {
-        $scope.locationsForCity = cities.data;
-        $scope.locationsSearched = true;
-        $scope.searchingLocation = false;
-        return $scope.locationsForCity;
-      }, function() {
-        $scope.locationsSearched = false;
-        $scope.searchingLocation = false;
-        $scope.locationAutoCompleteError = true;
-        return [];
-      });
-
-    }
-
-    /**
-     * Get the location categories.
-     * @returns {undefined}
-     */
-    function getLocationCategories() {
-
-      var eventPromise = eventTypes.getCategories();
-      eventPromise.then(function (categories) {
-        $scope.categories = categories.place;
-      });
-
-    }
-
-    /**
-     * Open the organizer modal.
-     */
-    function openPlaceModal() {
-
-      var modalInstance = $modal.open({
-        templateUrl: 'templates/event-form-place-modal.html',
-        controller: 'EventFormPlaceModalCtrl',
-        resolve: {
-          location: function () {
-            return $scope.eventFormData.location;
-          },
-          categories: function () {
-            return $scope.categories;
-          }
+      var location = {
+        'id' : place.id,
+        'name': place.getName('nl'),
+        'address': {
+            'addressCountry': 'BE',
+            'addressLocality': place.address.addressLocality,
+            'postalCode': place.address.postalCode,
+            'streetAddress': place.address.streetAddress
         }
-      });
-
-      modalInstance.result.then(function (place) {
-
-        // Assign the just saved place to the event form data.
-        EventFormData.place = place;
-
-        // Assign selection, hide the location field and show the selection.
-        $scope.selectedCity = place.address.postalCode + ' ' + place.address.addressLocality;
-        $scope.selectedLocation = place.getName('nl');
-
-        var location = {
-          'id' : place.id,
-          'name': place.getName('nl'),
-          'address': {
-              'addressCountry': 'BE',
-              'addressLocality': place.address.addressLocality,
-              'postalCode': place.address.postalCode,
-              'streetAddress': place.address.streetAddress
-          }
-        };
-        EventFormData.setLocation(location);
-
-        EventFormData.showStep4 = true;
-
-      });
-
-    }
-
-    /**
-     * Validate Place
-     * @returns {undefined}
-     */
-    function validatePlace() {
-
-      // Forms are automatically known in scope.
-      $scope.showValidation = true;
-      if (!$scope.step3Form.$valid) {
-        return;
-      }
-
-      var location = EventFormData.getLocation();
-      location.address.addressCountry = 'BE';
-      location.address.streetAddress = EventFormData.placeStreet + ' ' + EventFormData.placeNumber;
+      };
       EventFormData.setLocation(location);
-
-      $scope.selectedLocation = location.address.streetAddress;
 
       EventFormData.showStep4 = true;
 
-    }
-
-    /**
-     * Change StreetAddress
-     * @returns {undefined}
-     */
-    function changeStreetAddress() {
-
-      // Reset only the street/number data of the location.
-      var location = EventFormData.getLocation();
-      location.address.addressCountry = '';
-      location.address.streetAddress = '';
-      EventFormData.setLocation(location);
-
-      $scope.selectedLocation = '';
-
-      EventFormData.showStep4 = false;
-
-    }
+    });
 
   }
-  EventFormStep3Controller.$inject = ["$scope", "EventFormData", "cityAutocomplete", "eventTypes", "$modal"];
 
-})();
+  /**
+   * Validate Place
+   * @returns {undefined}
+   */
+  function validatePlace() {
+
+    // Forms are automatically known in scope.
+    $scope.showValidation = true;
+    if (!$scope.step3Form.$valid) {
+      return;
+    }
+
+    var location = EventFormData.getLocation();
+    location.address.addressCountry = 'BE';
+    location.address.streetAddress = EventFormData.placeStreet + ' ' + EventFormData.placeNumber;
+    EventFormData.setLocation(location);
+
+    $scope.selectedLocation = location.address.streetAddress;
+
+    EventFormData.showStep4 = true;
+
+  }
+
+  /**
+   * Change StreetAddress
+   * @returns {undefined}
+   */
+  function changeStreetAddress() {
+
+    // Reset only the street/number data of the location.
+    var location = EventFormData.getLocation();
+    location.address.addressCountry = '';
+    location.address.streetAddress = '';
+    EventFormData.setLocation(location);
+
+    $scope.selectedLocation = '';
+
+    EventFormData.showStep4 = false;
+
+  }
+
+}
+EventFormStep3Controller.$inject = ["$scope", "EventFormData", "cityAutocomplete", "eventTypes", "$modal"];
 
 // Source: src/event_form/steps/event-form-step4.controller.js
-(function () {
 /**
-   * @ngdoc function
-   * @name udbApp.controller:EventFormStep4Ctrl
-   * @description
-   * # EventFormStep4Ctrl
-   * Step 4 of the event form
+ * @ngdoc function
+ * @name udbApp.controller:EventFormStep4Ctrl
+ * @description
+ * # EventFormStep4Ctrl
+ * Step 4 of the event form
+ */
+angular
+  .module('udb.event-form')
+  .controller('EventFormStep4Ctrl', EventFormStep4Controller);
+
+/* @ngInject */
+function EventFormStep4Controller($scope, EventFormData, udbApi, appConfig, SearchResultViewer, eventCrud, $modal) {
+
+  // Scope vars.
+  // main storage for event form.
+  $scope.eventFormData = EventFormData;
+
+  $scope.infoMissing = false;
+  $scope.duplicatesSearched = false;
+  $scope.saving = false;
+  $scope.error = false;
+  $scope.udb3DashboardUrl = appConfig.udb3BaseUrl;
+  $scope.activeTitle = '';
+  $scope.currentDuplicateId = '';
+  $scope.currentDuplicateDelta = 0;
+
+  $scope.setTitle = setTitle;
+  $scope.validateEvent = validateEvent;
+  $scope.saveEvent = saveEvent;
+  $scope.setActiveDuplicate = setActiveDuplicate;
+  $scope.previousDuplicate = previousDuplicate;
+  $scope.nextDuplicate = nextDuplicate;
+  $scope.resultViewer = new SearchResultViewer();
+
+  /**
+   * Set the title
    */
-  angular
-    .module('udb.event-form')
-    .controller('EventFormStep4Ctrl', EventFormStep4Controller);
+  function setTitle() {
+    // Set the name.
+    EventFormData.setName($scope.activeTitle, 'nl');
+  }
 
-  /* @ngInject */
-  function EventFormStep4Controller($scope, EventFormData, udbApi, appConfig, SearchResultViewer, eventCrud, $modal) {
+  /**
+   * Validate date after step 4 to enter step 5.
+   */
+  function validateEvent() {
 
-    // Scope vars.
-    // main storage for event form.
-    $scope.eventFormData = EventFormData;
-
+    // First check if all data is correct.
     $scope.infoMissing = false;
-    $scope.duplicatesSearched = false;
-    $scope.saving = false;
-    $scope.error = false;
-    $scope.udb3DashboardUrl = appConfig.udb3BaseUrl;
-    $scope.activeTitle = '';
-    $scope.currentDuplicateId = '';
-    $scope.currentDuplicateDelta = 0;
-
-    $scope.setTitle = setTitle;
-    $scope.validateEvent = validateEvent;
-    $scope.saveEvent = saveEvent;
-    $scope.setActiveDuplicate = setActiveDuplicate;
-    $scope.previousDuplicate = previousDuplicate;
-    $scope.nextDuplicate = nextDuplicate;
-    $scope.resultViewer = new SearchResultViewer();
-
-    /**
-     * Set the title
-     */
-    function setTitle() {
-      // Set the name.
-      EventFormData.setName($scope.activeTitle, 'nl');
+    if (EventFormData.calendarType === 'single' && EventFormData.timestamps[0].date === '') {
+      $scope.infoMissing = true;
+    }
+    else if (EventFormData.calendarType === 'periodic' &&
+      (EventFormData.startDate === '' || EventFormData.endDate === '')
+    ) {
+      $scope.infoMissing = true;
     }
 
-    /**
-     * Validate date after step 4 to enter step 5.
-     */
-    function validateEvent() {
+    if (!EventFormData.type.id) {
+      $scope.infoMissing = true;
+    }
 
-      // First check if all data is correct.
-      $scope.infoMissing = false;
-      if (EventFormData.calendarType === 'single' && EventFormData.timestamps[0].date === '') {
-        $scope.infoMissing = true;
+    if (EventFormData.isEvent && !EventFormData.location.id) {
+      $scope.infoMissing = true;
+    }
+    else if (EventFormData.isPlace && !EventFormData.placeStreet) {
+      $scope.infoMissing = true;
+    }
+
+    if ($scope.infoMissing) {
+      return;
+    }
+
+    $scope.saving = true;
+    $scope.error = false;
+
+    //$scope.eventFormData.selectedLocation
+    //// is Event
+    // http://search-prod.lodgon.com/search/rest/search?q=*&fq=type:event&fq=location_cdbid:81E9C76C-BA61-0F30-45F5CD2279ACEBFC
+    // http://search-prod.lodgon.com/search/rest/detail/event/86E40542-B934-58DD-69AF85AC7FCEC934
+    // http://search-prod.lodgon.com/search/rest/search?q=*&fq=type:event&fq=street:Dr.%20Mathijsenstraat
+    //
+    // IsPlace
+    // location_contactinfo_zipcode
+    //http://search-prod.lodgon.com/search/rest/search?q=*&fq=type:event&fq=zipcode:9000
+    var params = {};
+    var location = EventFormData.getLocation();
+
+    if (EventFormData.isEvent) {
+      params = {locationCdbId : location.id};
+    }
+    else {
+      params = {locationZip : location.address.postalCode};
+    }
+
+    // Load the candidate duplicates asynchronously.
+    // Duplicates are found on existing identical properties:
+    // - title is the same
+    // - on the same location.
+    var promise = udbApi.findEvents($scope.activeTitle, 0, params);
+
+    $scope.resultViewer.loading = true;
+    $scope.duplicatesSearched = true;
+
+    promise.then(function (data) {
+
+      // Set the results for the duplicates modal,
+      if (data.totalItems > 0) {
+        $scope.saving = false;
+        $scope.resultViewer.setResults(data);
       }
-      else if (EventFormData.calendarType === 'periodic' &&
-        (EventFormData.startDate === '' || EventFormData.endDate === '')
-      ) {
-        $scope.infoMissing = true;
+      // or save the event immediataly if no duplicates were found.
+      else {
+        saveEvent();
       }
 
-      if (!EventFormData.type.id) {
-        $scope.infoMissing = true;
-      }
+    }, function() {
+      // Error while saving.
+      $scope.error = true;
+      $scope.saving = false;
+    });
 
-      if (EventFormData.isEvent && !EventFormData.location.id) {
-        $scope.infoMissing = true;
-      }
-      else if (EventFormData.isPlace && !EventFormData.placeStreet) {
-        $scope.infoMissing = true;
-      }
+  }
 
-      if ($scope.infoMissing) {
-        return;
-      }
+  /**
+   * Save Event for the first time.
+   */
+  function saveEvent() {
 
-      $scope.saving = true;
-      $scope.error = false;
+    $scope.error = false;
+    $scope.saving = true;
 
-      //$scope.eventFormData.selectedLocation
-      //// is Event
-      // http://search-prod.lodgon.com/search/rest/search?q=*&fq=type:event&fq=location_cdbid:81E9C76C-BA61-0F30-45F5CD2279ACEBFC
-      // http://search-prod.lodgon.com/search/rest/detail/event/86E40542-B934-58DD-69AF85AC7FCEC934
-      // http://search-prod.lodgon.com/search/rest/search?q=*&fq=type:event&fq=street:Dr.%20Mathijsenstraat
-      //
-      // IsPlace
-      // location_contactinfo_zipcode
-      //http://search-prod.lodgon.com/search/rest/search?q=*&fq=type:event&fq=zipcode:9000
-      var params = {};
-      var location = EventFormData.getLocation();
-
+    var eventCrudPromise = eventCrud.createEvent($scope.eventFormData);
+    eventCrudPromise.then(function(jsonResponse) {
       if (EventFormData.isEvent) {
-        params = {locationCdbId : location.id};
+        EventFormData.id = jsonResponse.data.eventId;
       }
       else {
-        params = {locationZip : location.address.postalCode};
+        EventFormData.id = jsonResponse.data.placeId;
       }
 
-      // Load the candidate duplicates asynchronously.
-      // Duplicates are found on existing identical properties:
-      // - title is the same
-      // - on the same location.
-      var promise = udbApi.findEvents($scope.activeTitle, 0, params);
+      updateLastUpdated();
+      $scope.saving = false;
+      $scope.resultViewer = new SearchResultViewer();
+      EventFormData.showStep(5);
 
-      $scope.resultViewer.loading = true;
-      $scope.duplicatesSearched = true;
+    }, function() {
+      // Error while saving.
+      $scope.error = true;
+      $scope.saving = false;
+    });
 
-      promise.then(function (data) {
+  }
 
-        // Set the results for the duplicates modal,
-        if (data.totalItems > 0) {
-          $scope.saving = false;
-          $scope.resultViewer.setResults(data);
-        }
-        // or save the event immediataly if no duplicates were found.
-        else {
-          saveEvent();
-        }
+  /**
+   * Update the last updated time.
+   */
+  function updateLastUpdated() {
+    // Last updated is not in scope. Themers are free to choose where to place it.
+    angular.element('#last-updated').show();
+    angular.element('#last-updated span').html(moment(Date.now()).format('HH:mm'));
+  }
 
-      }, function() {
-        // Error while saving.
-        $scope.error = true;
-        $scope.saving = false;
-      });
+  /**
+   * Set a focus to a duplicate
+   * @param {type} id
+   */
+  function setActiveDuplicate(id) {
 
-    }
-
-    /**
-     * Save Event for the first time.
-     */
-    function saveEvent() {
-
-      $scope.error = false;
-      $scope.saving = true;
-
-      var eventCrudPromise = eventCrud.createEvent($scope.eventFormData);
-      eventCrudPromise.then(function(jsonResponse) {
-        if (EventFormData.isEvent) {
-          EventFormData.id = jsonResponse.data.eventId;
-        }
-        else {
-          EventFormData.id = jsonResponse.data.placeId;
-        }
-
-        updateLastUpdated();
-        $scope.saving = false;
-        $scope.resultViewer = new SearchResultViewer();
-        EventFormData.showStep(5);
-
-      }, function() {
-        // Error while saving.
-        $scope.error = true;
-        $scope.saving = false;
-      });
-
-    }
-
-    /**
-     * Update the last updated time.
-     */
-    function updateLastUpdated() {
-      // Last updated is not in scope. Themers are free to choose where to place it.
-      angular.element('#last-updated').show();
-      angular.element('#last-updated span').html(moment(Date.now()).format('HH:mm'));
-    }
-
-    /**
-     * Set a focus to a duplicate
-     * @param {type} id
-     */
-    function setActiveDuplicate(id) {
-
-      for (var duplicateId in $scope.resultViewer.events) {
-        var eventId = $scope.resultViewer.events[duplicateId]['@id'].split('/').pop();
-        if (eventId === id) {
-          $scope.currentDuplicateId = id;
-          $scope.currentDuplicateDelta = parseInt(duplicateId) + 1;
-        }
+    for (var duplicateId in $scope.resultViewer.events) {
+      var eventId = $scope.resultViewer.events[duplicateId]['@id'].split('/').pop();
+      if (eventId === id) {
+        $scope.currentDuplicateId = id;
+        $scope.currentDuplicateDelta = parseInt(duplicateId) + 1;
       }
-
-    }
-
-    /**
-     * Set the previous duplicate active or close modal.
-     */
-    function previousDuplicate() {
-
-      var previousDelta = parseInt($scope.currentDuplicateDelta) - 2;
-      if ($scope.resultViewer.events[previousDelta] !== undefined) {
-        var eventId = $scope.resultViewer.events[previousDelta]['@id'].split('/').pop();
-        $scope.currentDuplicateId = eventId;
-        $scope.currentDuplicateDelta = parseInt(previousDelta) + 1;
-      }
-
-    }
-
-    /**
-     * Set the next duplicate active or close modal.
-     */
-    function nextDuplicate() {
-
-      var nextDelta = parseInt($scope.currentDuplicateDelta);
-      if ($scope.resultViewer.events[nextDelta] !== undefined) {
-        var eventId = $scope.resultViewer.events[nextDelta]['@id'].split('/').pop();
-        $scope.currentDuplicateId = eventId;
-        $scope.currentDuplicateDelta = parseInt(nextDelta) + 1;
-      }
-
     }
 
   }
-  EventFormStep4Controller.$inject = ["$scope", "EventFormData", "udbApi", "appConfig", "SearchResultViewer", "eventCrud", "$modal"];
 
-})();
+  /**
+   * Set the previous duplicate active or close modal.
+   */
+  function previousDuplicate() {
+
+    var previousDelta = parseInt($scope.currentDuplicateDelta) - 2;
+    if ($scope.resultViewer.events[previousDelta] !== undefined) {
+      var eventId = $scope.resultViewer.events[previousDelta]['@id'].split('/').pop();
+      $scope.currentDuplicateId = eventId;
+      $scope.currentDuplicateDelta = parseInt(previousDelta) + 1;
+    }
+
+  }
+
+  /**
+   * Set the next duplicate active or close modal.
+   */
+  function nextDuplicate() {
+
+    var nextDelta = parseInt($scope.currentDuplicateDelta);
+    if ($scope.resultViewer.events[nextDelta] !== undefined) {
+      var eventId = $scope.resultViewer.events[nextDelta]['@id'].split('/').pop();
+      $scope.currentDuplicateId = eventId;
+      $scope.currentDuplicateDelta = parseInt(nextDelta) + 1;
+    }
+
+  }
+
+}
+EventFormStep4Controller.$inject = ["$scope", "EventFormData", "udbApi", "appConfig", "SearchResultViewer", "eventCrud", "$modal"];
 
 // Source: src/event_form/steps/event-form-step5.controller.js
-(function () {
 /**
-   * @ngdoc function
-   * @name udbApp.controller:EventFormStep5Ctrl
-   * @description
-   * # EventFormStep5Ctrl
-   * Step 5 of the event form
+ * @ngdoc function
+ * @name udbApp.controller:EventFormStep5Ctrl
+ * @description
+ * # EventFormStep5Ctrl
+ * Step 5 of the event form
+ */
+angular
+  .module('udb.event-form')
+  .controller('EventFormStep5Ctrl', EventFormStep5Controller);
+
+/* @ngInject */
+function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizers, $modal) {
+
+  // Scope vars.
+  $scope.eventFormData = EventFormData; // main storage for event form.
+
+  // Description vars.
+  $scope.description = EventFormData.getDescription('nl');
+  $scope.descriptionCssClass = $scope.description ? 'state-complete' : 'state-incomplete';
+  $scope.savingDescription = false;
+  $scope.descriptionError = false;
+
+  // Age range vars
+  $scope.savingAgeRange = false;
+  $scope.ageRangeError = false;
+  $scope.ageRange = 0;
+  $scope.ageCssClass = EventFormData.ageRange ? 'state-complete' : 'state-incomplete';
+  $scope.minAge = '';
+
+  // Organizer vars.
+  $scope.organizerCssClass = EventFormData.organizer.id ? 'state-complete' : 'state-incomplete';
+  $scope.organizer = '';
+  $scope.emptyOrganizerAutocomplete = false;
+  $scope.loadingOrganizers = false;
+  $scope.organizerError = false;
+  $scope.savingOrganizer = false;
+
+  // Booking & tickets vars.
+  $scope.bookingInfo = {
+    price : '',
+    currency : 'EUR',
+    availabilityStarts : '',
+    availabilityEnds : '',
+    name : '',
+    description : '',
+    url : '',
+    urlLabel : 'Koop tickets',
+    email : '',
+    phone : '',
+    validFrom : '',
+    validThrough : ''
+  };
+  $scope.bookingModel = {
+    url : '',
+    urlRequired : false,
+    urlLabel : '',
+    urlLabelCustom : '',
+    email : '',
+    emailRequired : false,
+    phone : '',
+    phoneRequired : false,
+    availabilityStarts : '',
+    availabilityEnds : ''
+  };
+  $scope.viaWebsite = false;
+  $scope.viaEmail = false;
+  $scope.viaPhone = false;
+  $scope.websitePreviewEnabled = false;
+  $scope.bookingPeriodPreviewEnabled = false;
+  $scope.bookingPeriodShowValidation = false;
+  $scope.enableBookingType = enableBookingType;
+  $scope.saveBookingType = saveBookingType;
+  $scope.validateBookingType = validateBookingType;
+  $scope.resetBookingType = resetBookingType;
+  $scope.saveWebsitePreview = saveWebsitePreview;
+  $scope.enableWebsitePreview = enableWebsitePreview;
+  $scope.saveBookingPeriod = saveBookingPeriod;
+  $scope.enableBookingPeriodPreview = enableBookingPeriodPreview;
+
+  // Contactinfo vars.
+  $scope.contactInfoCssClass = EventFormData.contactPoint.length ? 'state-complete' : 'state-incomplete';
+  $scope.savingContactInfo = false;
+  $scope.contactInfoError = false;
+  $scope.contactInfo = [];
+
+  // Facilities vars.
+  $scope.facilitiesCssClass = 'state-incomplete';
+  $scope.facilitiesInapplicable = false;
+  $scope.selectedFacilities = EventFormData.facilities;
+
+  // Image upload vars.
+  $scope.imageCssClass = EventFormData.mediaObject.length > 0 ? 'state-complete' : 'state-incomplete';
+
+  // Scope functions.
+  // Description functions.
+  $scope.saveDescription = saveDescription;
+
+  // Age range functions.
+  $scope.saveAgeRange = saveAgeRange;
+  $scope.changeAgeRange = changeAgeRange;
+  $scope.setAllAges = setAllAges;
+  $scope.resetAgeRange = resetAgeRange;
+
+  // Organizer functions.
+  $scope.getOrganizers = getOrganizers;
+  $scope.selectOrganizer = selectOrganizer;
+  $scope.deleteOrganizer = deleteOrganizer;
+  $scope.openOrganizerModal = openOrganizerModal;
+
+  // Contact info functions.
+  $scope.deleteContactInfo = deleteContactInfo;
+  $scope.saveContactInfo = saveContactInfo;
+  $scope.addContactInfo = addContactInfo;
+
+  // Facilities functions.
+  $scope.openFacilitiesModal = openFacilitiesModal;
+  $scope.setFacilitiesInapplicable = setFacilitiesInapplicable;
+
+  // Image upload functions.
+  $scope.openUploadImageModal = openUploadImageModal;
+  $scope.openDeleteImageModal = openDeleteImageModal;
+
+  // Check if we have a minAge set on load.
+  if (EventFormData.minAge) {
+    $scope.ageCssClass = 'state-complete';
+  }
+
+  // Add empty contact.
+  addContactInfo();
+
+  /**
+   * Save the description.
    */
-  angular
-    .module('udb.event-form')
-    .controller('EventFormStep5Ctrl', EventFormStep5Controller);
+  function saveDescription() {
 
-  /* @ngInject */
-  function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizers, $modal) {
-
-    // Scope vars.
-    $scope.eventFormData = EventFormData; // main storage for event form.
-
-    // Description vars.
-    $scope.description = EventFormData.getDescription('nl');
-    $scope.descriptionCssClass = $scope.description ? 'state-complete' : 'state-incomplete';
-    $scope.savingDescription = false;
+    $scope.savingDescription = true;
     $scope.descriptionError = false;
 
-    // Age range vars
-    $scope.savingAgeRange = false;
+    EventFormData.setDescription($scope.description, 'nl');
+
+    var promise = eventCrud.updateDescription(EventFormData, $scope.description);
+    promise.then(function() {
+
+      $scope.savingDescription = false;
+      updateLastUpdated();
+
+      // Toggle correct class.
+      if ($scope.description) {
+        $scope.descriptionCssClass = 'state-complete';
+      }
+      else {
+        $scope.descriptionCssClass = 'state-incomplete';
+      }
+
+    },
+    // Error occured, show message.
+    function() {
+      $scope.savingDescription = false;
+      $scope.descriptionError = true;
+    });
+
+  }
+
+  /**
+   * Listener on the age range selection.
+   */
+  function changeAgeRange() {
+
+    $scope.ageRange = parseInt($scope.ageRange);
+
+    if ($scope.ageRange > 0) {
+      $scope.ageCssClass = 'state-complete';
+    }
+    else {
+      setAllAges();
+      saveAgeRange();
+    }
+
+  }
+
+  /**
+   * Save the age range.
+   */
+  function saveAgeRange() {
+
+    $scope.savingAgeRange = true;
     $scope.ageRangeError = false;
+
+    if ($scope.ageRange > 0) {
+
+      if ($scope.ageRange === 12 || $scope.ageRange === 18) {
+        EventFormData.typicalAgeRange = $scope.minAge + '-' + $scope.ageRange;
+      }
+      else {
+        EventFormData.typicalAgeRange = $scope.ageRange + '-';
+      }
+
+    }
+    else {
+      EventFormData.typicalAgeRange = $scope.ageRange;
+    }
+
+    var promise = eventCrud.updateTypicalAgeRange(EventFormData);
+    promise.then(function() {
+      $scope.savingAgeRange = false;
+      updateLastUpdated();
+      $scope.ageCssClass = 'state-complete';
+    }, function() {
+      // Error occured.
+      $scope.savingAgeRange = false;
+      $scope.ageRangeError = true;
+    });
+
+  }
+
+  /**
+   * Set to all ages.
+   */
+  function setAllAges() {
+    $scope.ageRange = -1;
+    EventFormData.setAgeRange(-1);
+    $scope.ageCssClass = 'state-complete';
+  }
+
+  /**
+   * Reset the age selection.
+   */
+  function resetAgeRange() {
     $scope.ageRange = 0;
-    $scope.ageCssClass = EventFormData.ageRange ? 'state-complete' : 'state-incomplete';
     $scope.minAge = '';
+    $scope.ageCssClass = 'state-incomplete';
+  }
 
-    // Organizer vars.
-    $scope.organizerCssClass = EventFormData.organizer.id ? 'state-complete' : 'state-incomplete';
-    $scope.organizer = '';
-    $scope.emptyOrganizerAutocomplete = false;
-    $scope.loadingOrganizers = false;
-    $scope.organizerError = false;
-    $scope.savingOrganizer = false;
+  /**
+   * Update the last updated time.
+   */
+  function updateLastUpdated() {
+    // Last updated is not in scope. Themers are free to choose where to place it.
+    angular.element('#last-updated').show();
+    angular.element('#last-updated span').html(moment(Date.now()).format('HH:mm'));
+  }
 
-    // Booking & tickets vars.
-    $scope.bookingInfo = {
-      price : '',
-      currency : 'EUR',
-      availabilityStarts : '',
-      availabilityEnds : '',
-      name : '',
-      description : '',
-      url : '',
-      urlLabel : 'Koop tickets',
-      email : '',
-      phone : '',
-      validFrom : '',
-      validThrough : ''
-    };
-    $scope.bookingModel = {
-      url : '',
-      urlRequired : false,
-      urlLabel : '',
-      urlLabelCustom : '',
-      email : '',
-      emailRequired : false,
-      phone : '',
-      phoneRequired : false,
-      availabilityStarts : '',
-      availabilityEnds : ''
-    };
-    $scope.viaWebsite = false;
-    $scope.viaEmail = false;
-    $scope.viaPhone = false;
-    $scope.websitePreviewEnabled = false;
-    $scope.bookingPeriodPreviewEnabled = false;
-    $scope.bookingPeriodShowValidation = false;
-    $scope.enableBookingType = enableBookingType;
-    $scope.saveBookingType = saveBookingType;
-    $scope.validateBookingType = validateBookingType;
-    $scope.resetBookingType = resetBookingType;
-    $scope.saveWebsitePreview = saveWebsitePreview;
-    $scope.enableWebsitePreview = enableWebsitePreview;
-    $scope.saveBookingPeriod = saveBookingPeriod;
-    $scope.enableBookingPeriodPreview = enableBookingPeriodPreview;
+  /**
+   * Autocomplete callback for organizers.
+   */
+  function getOrganizers(value) {
 
-    // Contactinfo vars.
-    $scope.contactInfoCssClass = EventFormData.contactPoint.length ? 'state-complete' : 'state-incomplete';
-    $scope.savingContactInfo = false;
-    $scope.contactInfoError = false;
-    $scope.contactInfo = [];
+    $scope.loadingOrganizers = true;
 
-    // Facilities vars.
-    $scope.facilitiesCssClass = 'state-incomplete';
-    $scope.facilitiesInapplicable = false;
-    $scope.selectedFacilities = EventFormData.facilities;
+    return udbOrganizers.suggestOrganizers(value).then(function (organizers) {
 
-    // Image upload vars.
-    $scope.imageCssClass = EventFormData.mediaObject.length > 0 ? 'state-complete' : 'state-incomplete';
-
-    // Scope functions.
-    // Description functions.
-    $scope.saveDescription = saveDescription;
-
-    // Age range functions.
-    $scope.saveAgeRange = saveAgeRange;
-    $scope.changeAgeRange = changeAgeRange;
-    $scope.setAllAges = setAllAges;
-    $scope.resetAgeRange = resetAgeRange;
-
-    // Organizer functions.
-    $scope.getOrganizers = getOrganizers;
-    $scope.selectOrganizer = selectOrganizer;
-    $scope.deleteOrganizer = deleteOrganizer;
-    $scope.openOrganizerModal = openOrganizerModal;
-
-    // Contact info functions.
-    $scope.deleteContactInfo = deleteContactInfo;
-    $scope.saveContactInfo = saveContactInfo;
-    $scope.addContactInfo = addContactInfo;
-
-    // Facilities functions.
-    $scope.openFacilitiesModal = openFacilitiesModal;
-    $scope.setFacilitiesInapplicable = setFacilitiesInapplicable;
-
-    // Image upload functions.
-    $scope.openUploadImageModal = openUploadImageModal;
-    $scope.openDeleteImageModal = openDeleteImageModal;
-
-    // Check if we have a minAge set on load.
-    if (EventFormData.minAge) {
-      $scope.ageCssClass = 'state-complete';
-    }
-
-    // Add empty contact.
-    addContactInfo();
-
-    /**
-     * Save the description.
-     */
-    function saveDescription() {
-
-      $scope.savingDescription = true;
-      $scope.descriptionError = false;
-
-      EventFormData.setDescription($scope.description, 'nl');
-
-      var promise = eventCrud.updateDescription(EventFormData, $scope.description);
-      promise.then(function() {
-
-        $scope.savingDescription = false;
-        updateLastUpdated();
-
-        // Toggle correct class.
-        if ($scope.description) {
-          $scope.descriptionCssClass = 'state-complete';
-        }
-        else {
-          $scope.descriptionCssClass = 'state-incomplete';
-        }
-
-      },
-      // Error occured, show message.
-      function() {
-        $scope.savingDescription = false;
-        $scope.descriptionError = true;
-      });
-
-    }
-
-    /**
-     * Listener on the age range selection.
-     */
-    function changeAgeRange() {
-
-      $scope.ageRange = parseInt($scope.ageRange);
-
-      if ($scope.ageRange > 0) {
-        $scope.ageCssClass = 'state-complete';
-      }
-      else {
-        setAllAges();
-        saveAgeRange();
-      }
-
-    }
-
-    /**
-     * Save the age range.
-     */
-    function saveAgeRange() {
-
-      $scope.savingAgeRange = true;
-      $scope.ageRangeError = false;
-
-      if ($scope.ageRange > 0) {
-
-        if ($scope.ageRange === 12 || $scope.ageRange === 18) {
-          EventFormData.typicalAgeRange = $scope.minAge + '-' + $scope.ageRange;
-        }
-        else {
-          EventFormData.typicalAgeRange = $scope.ageRange + '-';
-        }
-
-      }
-      else {
-        EventFormData.typicalAgeRange = $scope.ageRange;
-      }
-
-      var promise = eventCrud.updateTypicalAgeRange(EventFormData);
-      promise.then(function() {
-        $scope.savingAgeRange = false;
-        updateLastUpdated();
-        $scope.ageCssClass = 'state-complete';
-      }, function() {
-        // Error occured.
-        $scope.savingAgeRange = false;
-        $scope.ageRangeError = true;
-      });
-
-    }
-
-    /**
-     * Set to all ages.
-     */
-    function setAllAges() {
-      $scope.ageRange = -1;
-      EventFormData.setAgeRange(-1);
-      $scope.ageCssClass = 'state-complete';
-    }
-
-    /**
-     * Reset the age selection.
-     */
-    function resetAgeRange() {
-      $scope.ageRange = 0;
-      $scope.minAge = '';
-      $scope.ageCssClass = 'state-incomplete';
-    }
-
-    /**
-     * Update the last updated time.
-     */
-    function updateLastUpdated() {
-      // Last updated is not in scope. Themers are free to choose where to place it.
-      angular.element('#last-updated').show();
-      angular.element('#last-updated span').html(moment(Date.now()).format('HH:mm'));
-    }
-
-    /**
-     * Autocomplete callback for organizers.
-     */
-    function getOrganizers(value) {
-
-      $scope.loadingOrganizers = true;
-
-      return udbOrganizers.suggestOrganizers(value).then(function (organizers) {
-
-        if (organizers.length > 0) {
-          $scope.emptyOrganizerAutocomplete = false;
-        }
-        else {
-          $scope.emptyOrganizerAutocomplete = true;
-        }
-
-        $scope.loadingOrganizers = false;
-
-        return organizers;
-
-      });
-
-    }
-
-    /**
-     * Select listener on the typeahead.
-     */
-    function selectOrganizer() {
-      EventFormData.organizer = $scope.organizer;
-      saveOrganizer();
-    }
-
-    /**
-     * Delete the selected organiser.
-     */
-    function deleteOrganizer() {
-
-      $scope.organizerError = false;
-
-      var promise = eventCrud.deleteOfferOrganizer(EventFormData);
-      promise.then(function() {
-        updateLastUpdated();
-        $scope.organizerCssClass = 'state-incomplete';
-        EventFormData.resetOrganizer();
-        $scope.savingOrganizer = false;
-      }, function() {
-        $scope.organizerError = true;
-        $scope.savingOrganizer = false;
-      });
-
-    }
-
-    /**
-     * Open the organizer modal.
-     */
-    function openOrganizerModal() {
-
-      var modalInstance = $modal.open({
-        templateUrl: 'templates/event-form-organizer-modal.html',
-        controller: 'EventFormOrganizerModalCtrl',
-      });
-
-      modalInstance.result.then(function (organizer) {
-        EventFormData.organizer = organizer;
-        saveOrganizer();
-        $scope.organizer = '';
-      }, function () {
-        // modal dismissed.
-        $scope.organizer = '';
+      if (organizers.length > 0) {
         $scope.emptyOrganizerAutocomplete = false;
-        if (EventFormData.organizer.id) {
-          $scope.organizerCssClass = 'state-complete';
-        }
-        else {
-          $scope.organizerCssClass = 'state-incomplete';
-        }
-      });
+      }
+      else {
+        $scope.emptyOrganizerAutocomplete = true;
+      }
 
-    }
+      $scope.loadingOrganizers = false;
 
-    /**
-     * Save the selected organizer in the backend.
-     */
-    function saveOrganizer() {
+      return organizers;
 
-      $scope.emptyOrganizerAutocomplete = false;
-      $scope.organizerError = false;
-      $scope.savingOrganizer = true;
+    });
 
+  }
+
+  /**
+   * Select listener on the typeahead.
+   */
+  function selectOrganizer() {
+    EventFormData.organizer = $scope.organizer;
+    saveOrganizer();
+  }
+
+  /**
+   * Delete the selected organiser.
+   */
+  function deleteOrganizer() {
+
+    $scope.organizerError = false;
+
+    var promise = eventCrud.deleteOfferOrganizer(EventFormData);
+    promise.then(function() {
+      updateLastUpdated();
+      $scope.organizerCssClass = 'state-incomplete';
+      EventFormData.resetOrganizer();
+      $scope.savingOrganizer = false;
+    }, function() {
+      $scope.organizerError = true;
+      $scope.savingOrganizer = false;
+    });
+
+  }
+
+  /**
+   * Open the organizer modal.
+   */
+  function openOrganizerModal() {
+
+    var modalInstance = $modal.open({
+      templateUrl: 'templates/event-form-organizer-modal.html',
+      controller: 'EventFormOrganizerModalCtrl',
+    });
+
+    modalInstance.result.then(function (organizer) {
+      EventFormData.organizer = organizer;
+      saveOrganizer();
       $scope.organizer = '';
-      var promise = eventCrud.updateOrganizer(EventFormData);
+    }, function () {
+      // modal dismissed.
+      $scope.organizer = '';
+      $scope.emptyOrganizerAutocomplete = false;
+      if (EventFormData.organizer.id) {
+        $scope.organizerCssClass = 'state-complete';
+      }
+      else {
+        $scope.organizerCssClass = 'state-incomplete';
+      }
+    });
+
+  }
+
+  /**
+   * Save the selected organizer in the backend.
+   */
+  function saveOrganizer() {
+
+    $scope.emptyOrganizerAutocomplete = false;
+    $scope.organizerError = false;
+    $scope.savingOrganizer = true;
+
+    $scope.organizer = '';
+    var promise = eventCrud.updateOrganizer(EventFormData);
+    promise.then(function() {
+      updateLastUpdated();
+      $scope.organizerCssClass = 'state-complete';
+      $scope.savingOrganizer = false;
+    }, function() {
+      $scope.organizerError = true;
+      $scope.savingOrganizer = false;
+    });
+  }
+
+  /**
+   * Add contact info.
+   */
+  function addContactInfo() {
+    $scope.contactInfo.push({
+      type : '',
+      value : ''
+    });
+
+  }
+
+  /**
+   * Delete a given contact info item.
+   */
+  function deleteContactInfo(index) {
+    $scope.contactInfo.splice(index, 1);
+  }
+
+  /**
+   * Save the contact info.
+   */
+  function saveContactInfo() {
+
+    $scope.savingContactInfo = true;
+    $scope.contactInfoError = false;
+
+    // Only save with valid input.
+    if ($scope.contactInfoForm.$valid) {
+
+      EventFormData.resetContactPoint();
+
+      // Copy all data to the correct contactpoint property.
+      for (var i = 0; i < $scope.contactInfo.length; i++) {
+        if ($scope.contactInfo.type === 'url') {
+          EventFormData.contactPoint.url.push($scope.contactInfo.value);
+        }
+        else if ($scope.contactInfo.type === 'phone') {
+          EventFormData.contactPoint.phone.push($scope.contactInfo.value);
+        }
+        else if ($scope.contactInfo.type === 'email') {
+          EventFormData.contactPoint.email.push($scope.contactInfo.value);
+        }
+      }
+
+      var promise = eventCrud.updateContactPoint(EventFormData);
       promise.then(function() {
         updateLastUpdated();
-        $scope.organizerCssClass = 'state-complete';
-        $scope.savingOrganizer = false;
+        $scope.contactInfoCssClass = 'state-complete';
+        $scope.savingContactInfo = false;
       }, function() {
-        $scope.organizerError = true;
-        $scope.savingOrganizer = false;
-      });
-    }
-
-    /**
-     * Add contact info.
-     */
-    function addContactInfo() {
-      $scope.contactInfo.push({
-        type : '',
-        value : ''
+        $scope.contactInfoError = true;
+        $scope.savingContactInfo = false;
       });
 
     }
+  }
 
-    /**
-     * Delete a given contact info item.
-     */
-    function deleteContactInfo(index) {
-      $scope.contactInfo.splice(index, 1);
-    }
+  /**
+   * Open the facilities modal.
+   */
+  function openFacilitiesModal() {
 
-    /**
-     * Save the contact info.
-     */
-    function saveContactInfo() {
+    var modalInstance = $modal.open({
+      templateUrl: 'templates/event-form-facilities-modal.html',
+      controller: 'EventFormFacilitiesModalCtrl',
+    });
 
-      $scope.savingContactInfo = true;
-      $scope.contactInfoError = false;
+    modalInstance.result.then(function () {
 
-      // Only save with valid input.
-      if ($scope.contactInfoForm.$valid) {
+      $scope.facilitiesCssClass = 'state-complete';
+      $scope.selectedFacilities = EventFormData.facilities;
 
-        EventFormData.resetContactPoint();
-
-        // Copy all data to the correct contactpoint property.
-        for (var i = 0; i < $scope.contactInfo.length; i++) {
-          if ($scope.contactInfo.type === 'url') {
-            EventFormData.contactPoint.url.push($scope.contactInfo.value);
-          }
-          else if ($scope.contactInfo.type === 'phone') {
-            EventFormData.contactPoint.phone.push($scope.contactInfo.value);
-          }
-          else if ($scope.contactInfo.type === 'email') {
-            EventFormData.contactPoint.email.push($scope.contactInfo.value);
-          }
-        }
-
-        var promise = eventCrud.updateContactPoint(EventFormData);
-        promise.then(function() {
-          updateLastUpdated();
-          $scope.contactInfoCssClass = 'state-complete';
-          $scope.savingContactInfo = false;
-        }, function() {
-          $scope.contactInfoError = true;
-          $scope.savingContactInfo = false;
-        });
-
-      }
-    }
-
-    /**
-     * Open the facilities modal.
-     */
-    function openFacilitiesModal() {
-
-      var modalInstance = $modal.open({
-        templateUrl: 'templates/event-form-facilities-modal.html',
-        controller: 'EventFormFacilitiesModalCtrl',
-      });
-
-      modalInstance.result.then(function () {
-
-        $scope.facilitiesCssClass = 'state-complete';
-        $scope.selectedFacilities = EventFormData.facilities;
-
-        if (EventFormData.facilities.length > 0) {
-          $scope.facilitiesInapplicable = false;
-        }
-        else {
-          $scope.facilitiesInapplicable = true;
-        }
-      }, function () {
-        // modal dismissed.
-        if (EventFormData.facilities.length > 0 || $scope.facilitiesInapplicable) {
-          $scope.facilitiesCssClass = 'state-complete';
-        }
-        else {
-          $scope.facilitiesCssClass = 'state-incomplete';
-        }
-      });
-
-    }
-
-    /**
-     * Remove all facilities and set it to inapplicable.
-     */
-    function setFacilitiesInapplicable() {
-
-      // Delete facilities.
       if (EventFormData.facilities.length > 0) {
-
-        $scope.facilitiesError = false;
-        EventFormData.facilities = [];
-
-        var promise = eventCrud.updateFacilities(EventFormData);
-        promise.then(function() {
-          $scope.savingFacilities = false;
-          $scope.facilitiesInapplicable = true;
-          $scope.facilitiesCssClass = 'state-complete';
-        }, function() {
-          $scope.savingFacilities = false;
-          $scope.facilitiesError = true;
-        });
-
+        $scope.facilitiesInapplicable = false;
       }
       else {
         $scope.facilitiesInapplicable = true;
+      }
+    }, function () {
+      // modal dismissed.
+      if (EventFormData.facilities.length > 0 || $scope.facilitiesInapplicable) {
         $scope.facilitiesCssClass = 'state-complete';
       }
-    }
-
-    /**
-     * Enables a booking type.
-     */
-    function enableBookingType(type) {
-      if (type === 'website') {
-        $scope.viaWebsite = !$scope.viaWebsite;
+      else {
+        $scope.facilitiesCssClass = 'state-incomplete';
       }
-      else if (type === 'email') {
-        $scope.viaEmail = !$scope.viaEmail;
-      }
-      else if (type === 'phone') {
-        $scope.viaPhone = !$scope.viaPhone;
-      }
-    }
-
-    /**
-     * Validates a booking type.
-     */
-    function validateBookingType(type) {
-
-      if (type === 'website') {
-        $scope.bookingModel.urlRequired = true;
-        $scope.bookingModel.emailRequired = false;
-        $scope.bookingModel.phoneRequired = false;
-      }
-      else if (type === 'email') {
-        $scope.bookingModel.emailRequired = true;
-        $scope.bookingModel.urlRequired = false;
-        $scope.bookingModel.phoneRequired = false;
-      }
-      else if (type === 'phone') {
-        $scope.bookingModel.phoneRequired = true;
-        $scope.bookingModel.emailRequired = false;
-        $scope.bookingModel.urlRequired = false;
-      }
-
-      // Forms are automatically known in scope.
-      if (!$scope.step5TicketsForm.$valid) {
-        return;
-      }
-
-      saveBookingType(type);
-
-    }
-
-    /**
-     * Temporarily save a booking type.
-     */
-    function saveBookingType(type) {
-      if (type === 'website') {
-        $scope.viaWebsite = true;
-        $scope.bookingInfo.url = $scope.bookingModel.url;
-      }
-      else if (type === 'email') {
-        $scope.viaEmail = true;
-        $scope.bookingInfo.email = $scope.bookingModel.email;
-      }
-      else if (type === 'phone') {
-        $scope.viaPhone = true;
-        $scope.bookingInfo.phone = $scope.bookingModel.phone;
-      }
-      saveBookingInfo();
-    }
-
-    /**
-     * @param {type} type
-     */
-    function resetBookingType(type) {
-      if (type === 'website') {
-        $scope.bookingInfo.url = $scope.bookingModel.url = '';
-      }
-      else if (type === 'email') {
-        $scope.bookingInfo.email = $scope.bookingModel.email = '';
-      }
-      else if (type === 'phone') {
-        $scope.bookingInfo.phone = $scope.bookingModel.phone = '';
-      }
-    }
-
-    /**
-     * Save the website preview settings.
-     */
-    function saveWebsitePreview() {
-      $scope.websitePreviewEnabled = false;
-      $scope.bookingInfo.urlLabel = $scope.bookingModel.urlLabel;
-      if ($scope.bookingModel.urlLabelCustom !== '') {
-        $scope.bookingInfo.urlLabel = $scope.bookingModel.urlLabelCustom;
-      }
-      saveBookingInfo();
-    }
-
-    /**
-     * Enable the website preview modal.
-     */
-    function enableWebsitePreview() {
-      $scope.websitePreviewEnabled = true;
-    }
-
-    /**
-     * Save the booking period settings.
-     */
-    function saveBookingPeriod() {
-
-      $scope.bookingPeriodShowValidation = true;
-
-      // Forms are automatically known in scope.
-      if (!$scope.step5TicketsForm.$valid) {
-        return;
-      }
-
-      $scope.bookingPeriodPreviewEnabled = false;
-
-      $scope.bookingInfo.availabilityStarts = $scope.bookingModel.availabilityStarts;
-      $scope.bookingInfo.availabilityEnds = $scope.bookingModel.availabilityEnds;
-
-      saveBookingInfo();
-
-    }
-
-    /**
-     * Enable the booking period preview modal.
-     */
-    function enableBookingPeriodPreview() {
-      $scope.bookingPeriodPreviewEnabled = true;
-    }
-
-    /**
-     * Saves the booking info
-     */
-    function saveBookingInfo() {
-
-      EventFormData.setBookingInfo($scope.bookingInfo);
-
-      var promise = eventCrud.updateBookingInfo(EventFormData);
-      promise.then(function() {
-        updateLastUpdated();
-      }, function() {
-      });
-    }
-
-    /**
-     * Open the upload modal.
-     */
-    function openUploadImageModal(indexToEdit) {
-
-      var modalInstance = $modal.open({
-        templateUrl: 'templates/event-form-image-upload.html',
-        controller: 'EventFormImageUploadCtrl',
-        resolve: {
-          indexToEdit: function () {
-            return indexToEdit;
-          },
-        }
-      });
-
-      modalInstance.result.then(function () {
-        $scope.imageCssClass = 'state-complete';
-      }, function () {
-        // modal dismissed.
-        if (EventFormData.mediaObject.length > 0) {
-          $scope.imageCssClass = 'state-complete';
-        }
-        else {
-          $scope.imageCssClass = 'state-incomplete';
-        }
-      });
-
-    }
-
-    /**
-     * Open the modal to delete an image.
-     */
-    function openDeleteImageModal(indexToDelete) {
-
-      var modalInstance = $modal.open({
-        templateUrl: 'templates/event-form-image-delete.html',
-        controller: 'EventFormImageDeleteCtrl',
-        resolve: {
-          indexToDelete: function () {
-            return indexToDelete;
-          },
-        }
-      });
-
-      modalInstance.result.then(function () {
-        if (EventFormData.mediaObject.length > 0) {
-          $scope.imageCssClass = 'state-complete';
-        }
-        else {
-          $scope.imageCssClass = 'state-incomplete';
-        }
-      }, function () {
-        // modal dismissed.
-        if (EventFormData.mediaObject.length > 0) {
-          $scope.imageCssClass = 'state-complete';
-        }
-        else {
-          $scope.imageCssClass = 'state-incomplete';
-        }
-      });
-
-    }
+    });
 
   }
-  EventFormStep5Controller.$inject = ["$scope", "EventFormData", "eventCrud", "udbOrganizers", "$modal"];
 
-})();
+  /**
+   * Remove all facilities and set it to inapplicable.
+   */
+  function setFacilitiesInapplicable() {
+
+    // Delete facilities.
+    if (EventFormData.facilities.length > 0) {
+
+      $scope.facilitiesError = false;
+      EventFormData.facilities = [];
+
+      var promise = eventCrud.updateFacilities(EventFormData);
+      promise.then(function() {
+        $scope.savingFacilities = false;
+        $scope.facilitiesInapplicable = true;
+        $scope.facilitiesCssClass = 'state-complete';
+      }, function() {
+        $scope.savingFacilities = false;
+        $scope.facilitiesError = true;
+      });
+
+    }
+    else {
+      $scope.facilitiesInapplicable = true;
+      $scope.facilitiesCssClass = 'state-complete';
+    }
+  }
+
+  /**
+   * Enables a booking type.
+   */
+  function enableBookingType(type) {
+    if (type === 'website') {
+      $scope.viaWebsite = !$scope.viaWebsite;
+    }
+    else if (type === 'email') {
+      $scope.viaEmail = !$scope.viaEmail;
+    }
+    else if (type === 'phone') {
+      $scope.viaPhone = !$scope.viaPhone;
+    }
+  }
+
+  /**
+   * Validates a booking type.
+   */
+  function validateBookingType(type) {
+
+    if (type === 'website') {
+      $scope.bookingModel.urlRequired = true;
+      $scope.bookingModel.emailRequired = false;
+      $scope.bookingModel.phoneRequired = false;
+    }
+    else if (type === 'email') {
+      $scope.bookingModel.emailRequired = true;
+      $scope.bookingModel.urlRequired = false;
+      $scope.bookingModel.phoneRequired = false;
+    }
+    else if (type === 'phone') {
+      $scope.bookingModel.phoneRequired = true;
+      $scope.bookingModel.emailRequired = false;
+      $scope.bookingModel.urlRequired = false;
+    }
+
+    // Forms are automatically known in scope.
+    if (!$scope.step5TicketsForm.$valid) {
+      return;
+    }
+
+    saveBookingType(type);
+
+  }
+
+  /**
+   * Temporarily save a booking type.
+   */
+  function saveBookingType(type) {
+    if (type === 'website') {
+      $scope.viaWebsite = true;
+      $scope.bookingInfo.url = $scope.bookingModel.url;
+    }
+    else if (type === 'email') {
+      $scope.viaEmail = true;
+      $scope.bookingInfo.email = $scope.bookingModel.email;
+    }
+    else if (type === 'phone') {
+      $scope.viaPhone = true;
+      $scope.bookingInfo.phone = $scope.bookingModel.phone;
+    }
+    saveBookingInfo();
+  }
+
+  /**
+   * @param {type} type
+   */
+  function resetBookingType(type) {
+    if (type === 'website') {
+      $scope.bookingInfo.url = $scope.bookingModel.url = '';
+    }
+    else if (type === 'email') {
+      $scope.bookingInfo.email = $scope.bookingModel.email = '';
+    }
+    else if (type === 'phone') {
+      $scope.bookingInfo.phone = $scope.bookingModel.phone = '';
+    }
+  }
+
+  /**
+   * Save the website preview settings.
+   */
+  function saveWebsitePreview() {
+    $scope.websitePreviewEnabled = false;
+    $scope.bookingInfo.urlLabel = $scope.bookingModel.urlLabel;
+    if ($scope.bookingModel.urlLabelCustom !== '') {
+      $scope.bookingInfo.urlLabel = $scope.bookingModel.urlLabelCustom;
+    }
+    saveBookingInfo();
+  }
+
+  /**
+   * Enable the website preview modal.
+   */
+  function enableWebsitePreview() {
+    $scope.websitePreviewEnabled = true;
+  }
+
+  /**
+   * Save the booking period settings.
+   */
+  function saveBookingPeriod() {
+
+    $scope.bookingPeriodShowValidation = true;
+
+    // Forms are automatically known in scope.
+    if (!$scope.step5TicketsForm.$valid) {
+      return;
+    }
+
+    $scope.bookingPeriodPreviewEnabled = false;
+
+    $scope.bookingInfo.availabilityStarts = $scope.bookingModel.availabilityStarts;
+    $scope.bookingInfo.availabilityEnds = $scope.bookingModel.availabilityEnds;
+
+    saveBookingInfo();
+
+  }
+
+  /**
+   * Enable the booking period preview modal.
+   */
+  function enableBookingPeriodPreview() {
+    $scope.bookingPeriodPreviewEnabled = true;
+  }
+
+  /**
+   * Saves the booking info
+   */
+  function saveBookingInfo() {
+
+    EventFormData.setBookingInfo($scope.bookingInfo);
+
+    var promise = eventCrud.updateBookingInfo(EventFormData);
+    promise.then(function() {
+      updateLastUpdated();
+    }, function() {
+    });
+  }
+
+  /**
+   * Open the upload modal.
+   */
+  function openUploadImageModal(indexToEdit) {
+
+    var modalInstance = $modal.open({
+      templateUrl: 'templates/event-form-image-upload.html',
+      controller: 'EventFormImageUploadCtrl',
+      resolve: {
+        indexToEdit: function () {
+          return indexToEdit;
+        },
+      }
+    });
+
+    modalInstance.result.then(function () {
+      $scope.imageCssClass = 'state-complete';
+    }, function () {
+      // modal dismissed.
+      if (EventFormData.mediaObject.length > 0) {
+        $scope.imageCssClass = 'state-complete';
+      }
+      else {
+        $scope.imageCssClass = 'state-incomplete';
+      }
+    });
+
+  }
+
+  /**
+   * Open the modal to delete an image.
+   */
+  function openDeleteImageModal(indexToDelete) {
+
+    var modalInstance = $modal.open({
+      templateUrl: 'templates/event-form-image-delete.html',
+      controller: 'EventFormImageDeleteCtrl',
+      resolve: {
+        indexToDelete: function () {
+          return indexToDelete;
+        },
+      }
+    });
+
+    modalInstance.result.then(function () {
+      if (EventFormData.mediaObject.length > 0) {
+        $scope.imageCssClass = 'state-complete';
+      }
+      else {
+        $scope.imageCssClass = 'state-incomplete';
+      }
+    }, function () {
+      // modal dismissed.
+      if (EventFormData.mediaObject.length > 0) {
+        $scope.imageCssClass = 'state-complete';
+      }
+      else {
+        $scope.imageCssClass = 'state-incomplete';
+      }
+    });
+
+  }
+
+}
+EventFormStep5Controller.$inject = ["$scope", "EventFormData", "eventCrud", "udbOrganizers", "$modal"];
 
 // Source: src/export/event-export-job.factory.js
 /**

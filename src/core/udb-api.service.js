@@ -85,7 +85,8 @@ function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth,
         });
 
       eventRequest.success(function (jsonEvent) {
-        var event = new UdbEvent(jsonEvent);
+        var event = new UdbEvent();
+        event.parseJson(jsonEvent);
         eventCache.put(eventId, event);
         deferredEvent.resolve(event);
       });

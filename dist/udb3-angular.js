@@ -4832,6 +4832,7 @@ function udbEventDetailDirective() {
     controller: EventDetail // jshint ignore:line
   };
 }
+
 // Source: src/event-detail/ui/event-detail.controller.js
 /**
  * @ngdoc function

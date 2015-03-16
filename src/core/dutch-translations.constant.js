@@ -303,7 +303,7 @@ angular.module('udb.core')
     property: {
       'name': 'Naam',
       'description': 'Beschrijving',
-      'keywords': 'Labels',
+      'labels': 'Labels',
       'calendarSummary': 'Kalendersamenvatting',
       'image': 'Afbeelding',
       'location': 'Locatie',
@@ -333,4 +333,3 @@ angular.module('udb.core')
     }
   }
 );
-

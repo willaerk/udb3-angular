@@ -4,8 +4,8 @@
  * @ngdoc service
  * @name udb.entry.EventTranslationJob
  * @description
- * # Event Tag Job
- * This Is the factory that creates an event tag job
+ * # Event Label Job
+ * This Is the factory that creates an event label job
  */
 angular
   .module('udb.entry')
@@ -34,11 +34,11 @@ function EventTranslationJobFactory(BaseJob, JobStates) {
   EventTranslationJob.prototype = Object.create(BaseJob.prototype);
   EventTranslationJob.prototype.constructor = EventTranslationJob;
 
-  EventTranslationJob.prototype.getDescription = function() {
+  EventTranslationJob.prototype.getDescription = function () {
     var job = this,
-      description;
+        description;
 
-    if(this.state === JobStates.FAILED) {
+    if (this.state === JobStates.FAILED) {
       description = 'Vertalen van evenement mislukt';
     } else {
       var propertyName;

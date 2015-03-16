@@ -11,9 +11,9 @@ angular.module('udb.search')
   .factory('SearchResultViewer', function () {
 
     var SelectionState = {
-      ALL: { 'name': 'all', 'icon': 'fa-check-square' },
-      NONE: { 'name': 'none', 'icon': 'fa-square-o' },
-      SOME: { 'name': 'some', 'icon': 'fa-minus-square' }
+      ALL: {'name': 'all', 'icon': 'fa-check-square'},
+      NONE: {'name': 'none', 'icon': 'fa-square-o'},
+      SOME: {'name': 'some', 'icon': 'fa-minus-square'}
     };
 
     var identifyItem = function (event) {
@@ -23,16 +23,16 @@ angular.module('udb.search')
     /**
      * @class SearchResultViewer
      * @constructor
-     * @param pagSize
+     * @param    {number}     pageSize        The number of items shown per page
      *
-     * @property {object[]}   events       - A list of json-LD event objects
-     * @property {number}     pageSize     - The current page size
-     * @property {number}     totalItems   - The total items found
-     * @property {number}     currentPage  - The index of the current page without zeroing
-     * @property {boolean}    loading      - A flag to indicate the period between changing of the query and
-     *                                       receiving of the results.
-     * @property {object} eventProperties A list of event properties that can be shown complementary
-     * @property {array} eventSpecifics A list of specific event info that can be shown exclusively
+     * @property {object[]}   events          A list of json-LD event objects
+     * @property {number}     pageSize        The current page size
+     * @property {number}     totalItems      The total items found
+     * @property {number}     currentPage     The index of the current page without zeroing
+     * @property {boolean}    loading         A flag to indicate the period between changing of the query and
+     *                                        receiving of the results.
+     * @property {object}     eventProperties A list of event properties that can be shown complementary
+     * @property {array}      eventSpecifics  A list of specific event info that can be shown exclusively
      * @property {SelectionState} selectionState Enum that keeps the state of selected results
      */
     var SearchResultViewer = function (pageSize) {
@@ -47,9 +47,9 @@ angular.module('udb.search')
         image: {name: 'Afbeelding', visible: false}
       };
       this.eventSpecifics = [
-        { id: 'input', name: 'Invoer-informatie'},
-        { id: 'price', name: 'Prijs-informatie'},
-        { id: 'translation', name: 'Vertaalstatus'}
+        {id: 'input', name: 'Invoer-informatie'},
+        {id: 'price', name: 'Prijs-informatie'},
+        {id: 'translation', name: 'Vertaalstatus'}
       ];
       this.activeSpecific = this.eventSpecifics[0];
       this.selectedIds = [];
@@ -61,9 +61,9 @@ angular.module('udb.search')
       toggleSelection: function () {
         var state = this.selectionState;
 
-        if( state === SelectionState.SOME || state === SelectionState.ALL) {
+        if (state === SelectionState.SOME || state === SelectionState.ALL) {
           this.deselectPageItems();
-          if(this.querySelected) {
+          if (this.querySelected) {
             this.deselectAll();
             this.querySelected = false;
           }
@@ -77,13 +77,13 @@ angular.module('udb.search')
       },
       updateSelectionState: function () {
         var selectedIds = this.selectedIds,
-            selectedPageItems = _.filter(this.events, function(event) {
+            selectedPageItems = _.filter(this.events, function (event) {
               return _.contains(selectedIds, identifyItem(event));
             });
 
-        if(selectedPageItems.length === this.pageSize) {
+        if (selectedPageItems.length === this.pageSize) {
           this.selectionState = SelectionState.ALL;
-        } else if (selectedPageItems.length > 0 ) {
+        } else if (selectedPageItems.length > 0) {
           this.selectionState = SelectionState.SOME;
         } else {
           this.selectionState = SelectionState.NONE;
@@ -92,15 +92,17 @@ angular.module('udb.search')
       toggleSelectId: function (id) {
 
         // Prevent toggling individual items when the whole query is selected
-        if(this.querySelected) {
+        if (this.querySelected) {
           return;
         }
 
         var selectedIds = this.selectedIds,
-          isSelected = _.contains(selectedIds, id);
+            isSelected = _.contains(selectedIds, id);
 
-        if(isSelected) {
-          _.remove(selectedIds, function(iid) { return id === iid; });
+        if (isSelected) {
+          _.remove(selectedIds, function (iid) {
+            return id === iid;
+          });
         } else {
           selectedIds.push(id);
         }
@@ -124,7 +126,7 @@ angular.module('udb.search')
       },
       selectPageItems: function () {
         var events = this.events,
-          selectedIds = this.selectedIds;
+            selectedIds = this.selectedIds;
 
         _.each(events, function (event) {
           selectedIds.push(identifyItem(event));
@@ -144,7 +146,7 @@ angular.module('udb.search')
         viewer.totalItems = pagedResults.totalItems || 0;
 
         viewer.loading = false;
-        if(this.querySelected) {
+        if (this.querySelected) {
           this.selectPageItems();
         }
         this.updateSelectionState();

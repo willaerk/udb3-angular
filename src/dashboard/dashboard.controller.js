@@ -54,7 +54,8 @@
             $scope.userContent[key].deleteUrl = '/udb3/' + item.type + '/delete/' + item.id;
 
             // User has omd events if events have been added with startdate 2015-09-13.
-            if ((item.type === 'event') && (item.details.payload.calendar.startDate.substring(0,10) === '2015-09-13')) {
+            var startDate = item.details.payload.calendar.startDate.substring(0, 10);
+            if (item.type === 'event' && startDate === '2015-09-13') {
               $scope.noOmdEvents = false;
             }
           }

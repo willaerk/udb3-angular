@@ -17,8 +17,8 @@ function EventCrudJobFactory(BaseJob) {
    * @class EventCrudJob
    * @constructor
    * @param {string} commandId
+   * @param {EventFormData} item
    * @param {string} action
-   * @param {UdbEvent|UdbPlace} item
    */
   var EventCrudJob = function (commandId, item, action) {
     BaseJob.call(this, commandId);

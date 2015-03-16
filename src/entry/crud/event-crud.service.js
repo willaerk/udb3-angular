@@ -59,7 +59,13 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
    */
   this.updateDescription = function(item) {
 
-    var jobPromise = udbApi.translateProperty(item.id, item.getType(), 'description', udbApi.mainLanguage, item.description.nl);
+    var jobPromise = udbApi.translateProperty(
+      item.id,
+      item.getType(),
+      'description',
+      udbApi.mainLanguage,
+      item.description.nl
+    );
 
     jobPromise.success(function (jobData) {
       var job = new EventCrudJob(jobData.commandId, item, 'updateTypicalAgeRange');
@@ -188,9 +194,9 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
    * Add a new image to the item.
    *
    * @param {EventFormData} item
-   * @param File image
-   * @param string description
-   * @param string copyrightHolder
+   * @param {File} image
+   * @param {string} description
+   * @param {string} copyrightHolder
    * @returns {EventCrud.addImage.jobPromise}
    */
   this.addImage = function(item, image, description, copyrightHolder) {
@@ -210,10 +216,10 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
    * Update an image of the item.
    *
    * @param {EventFormData} item
-   * @param int indexToUpdate
-   * @param File|null image
-   * @param string description
-   * @param string copyrightHolder
+   * @param {int} indexToUpdate
+   * @param {File|null} image
+   * @param {string} description
+   * @param {string} copyrightHolder
    * @returns {EventCrud.updateImage.jobPromise}
    */
   this.updateImage = function(item, indexToUpdate, image, description, copyrightHolder) {
@@ -233,7 +239,7 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
    * Delete an image of the item.
    *
    * @param {EventFormData} item
-   * @param int indexToDelete
+   * @param {int} indexToDelete
    * @returns {EventCrud.deleteImage.jobPromise}
    */
   this.deleteImage = function(item, indexToDelete) {

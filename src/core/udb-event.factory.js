@@ -50,7 +50,7 @@ function UdbEventFactory() {
   /**
    * @class UdbEvent
    * @constructor
-   * @param jsonEvent
+   * @param {object}  jsonEvent
    */
   var UdbEvent = function () {
     this.id = '';
@@ -69,7 +69,7 @@ function UdbEventFactory() {
       this.calendarSummary = jsonEvent.calendarSummary;
       this.location = jsonEvent.location;
       this.image = jsonEvent.image;
-      this.labels = _.map(jsonEvent.keywords, function (label) {
+      this.labels = _.map(jsonEvent.labels, function (label) {
         return label;
       });
       if (jsonEvent.organizer) {
@@ -194,10 +194,10 @@ function UdbEventFactory() {
     },
 
     /**
-     * Tag the event with a label or a list of labels
+     * Label the event with a label or a list of labels
      * @param {string|string[]} label
      */
-    tag: function (label) {
+    label: function (label) {
       var labels = [];
 
       if (_.isArray(label)) {
@@ -212,10 +212,10 @@ function UdbEventFactory() {
     },
 
     /**
-     * Untag a label from an event
+     * Unlabel a label from an event
      * @param {string} labelName
      */
-    untag: function (labelName) {
+    unlabel: function (labelName) {
       _.remove(event.labels, function (label) {
         return label === labelName;
       });

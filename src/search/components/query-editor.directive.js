@@ -32,7 +32,7 @@ function udbQueryEditor(
 
       // use the first occurrence of a group name to order it against the other groups
       var orderedGroups = _.chain(qe.fields)
-        .map(function(field) {
+        .map(function (field) {
           return field.group;
         })
         .uniq()
@@ -49,7 +49,6 @@ function udbQueryEditor(
         });
       });
 
-      qe.operators = ['AND', 'OR'];
       qe.groupedQueryTree = {
         type: 'root',
         nodes: [
@@ -67,7 +66,6 @@ function udbQueryEditor(
           }
         ]
       };
-      qe.colorScheme = ['rgb(141,211,199)', 'rgb(255,255,179)', 'rgb(190,186,218)', 'rgb(251,128,114)', 'rgb(128,177,211)', 'rgb(253,180,98)', 'rgb(179,222,105)', 'rgb(252,205,229)', 'rgb(217,217,217)', 'rgb(188,128,189)', 'rgb(204,235,197)'];
 
       // Holds options for both term and choice query-field types
       qe.transformers = {};
@@ -96,7 +94,8 @@ function udbQueryEditor(
       /**
        * Add a field to a group
        *
-       * @param {number}  groupIndex  The index of the group to add the field to
+       * @param  {object}  group       The group to add the field to
+       * @param {number}  fieldIndex  The index of the field after which to add
        */
       qe.addField = function (group, fieldIndex) {
 
@@ -138,26 +137,26 @@ function udbQueryEditor(
       qe.unwrapSubGroups = function () {
         var root = qe.groupedQueryTree;
 
-        _.forEach(root.nodes, function(group) {
-            var firstNode = group.nodes[0];
+        _.forEach(root.nodes, function (group) {
+          var firstNode = group.nodes[0];
 
-            if(firstNode.nodes) {
-              var firstNodeChildren = firstNode.nodes;
-              group.nodes.splice(0, 1);
-              _.forEach(firstNodeChildren, function (node, index) {
-                group.nodes.splice(index, 0, node);
-              });
-            }
+          if (firstNode.nodes) {
+            var firstNodeChildren = firstNode.nodes;
+            group.nodes.splice(0, 1);
+            _.forEach(firstNodeChildren, function (node, index) {
+              group.nodes.splice(index, 0, node);
+            });
+          }
         });
       };
 
       qe.removeEmptyGroups = function () {
         var root = qe.groupedQueryTree;
 
-        _.forEach(root.nodes, function(group) {
-            _.remove(group.nodes, function (node) {
-              return node.nodes && node.nodes.length === 0;
-            });
+        _.forEach(root.nodes, function (group) {
+          _.remove(group.nodes, function (node) {
+            return node.nodes && node.nodes.length === 0;
+          });
         });
       };
 
@@ -170,7 +169,7 @@ function udbQueryEditor(
       };
 
       qe.removeGroup = function (groupIndex) {
-        if(qe.canRemoveGroup()) {
+        if (qe.canRemoveGroup()) {
           var root = qe.groupedQueryTree,
               group = root.nodes[groupIndex];
 
@@ -220,9 +219,9 @@ function udbQueryEditor(
 
       qe.updateFieldType = function (field) {
         var fieldName = field.field,
-          queryField = _.find(queryFields, function (field) {
-            return field.name === fieldName;
-          });
+            queryField = _.find(queryFields, function (field) {
+              return field.name === fieldName;
+            });
 
         if (field.fieldType !== queryField.type) {
           // TODO: Maybe try to do a type conversion?

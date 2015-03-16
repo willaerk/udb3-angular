@@ -12,7 +12,7 @@ angular
   .controller('Search', Search);
 
 /* @ngInject */
-function Search($scope, udbApi, LuceneQueryBuilder, $window, $location, $modal, SearchResultViewer, eventTagger,
+function Search($scope, udbApi, LuceneQueryBuilder, $window, $location, $modal, SearchResultViewer, eventLabeller,
                 searchHelper, $rootScope, eventExporter) {
 
   var queryBuilder = LuceneQueryBuilder;
@@ -43,7 +43,7 @@ function Search($scope, udbApi, LuceneQueryBuilder, $window, $location, $modal, 
 
   /**
    * This debounce function can be used to delay searching when an input field changes.
-   * @param {String} A query string used to find events.
+   * @param {String} queryString A query string used to find events.
    */
   var debouncedFindEvents = _.debounce(function (queryString) {
     findEvents(queryString);
@@ -51,7 +51,7 @@ function Search($scope, udbApi, LuceneQueryBuilder, $window, $location, $modal, 
 
   /**
    *
-   * @param Query A query object used to update the interface and result viewer.
+   * @param {Query} query A query object used to update the interface and result viewer.
    */
   var updateQuery = function (query) {
     var realQuery = queryBuilder.unparse(query);
@@ -67,7 +67,7 @@ function Search($scope, udbApi, LuceneQueryBuilder, $window, $location, $modal, 
 
   /**
    * Fires off a search for events using a plain query string or a query object.
-   * @param {String|Query} A query string or object to search with.
+   * @param {String|Query} query A query string or object to search with.
    */
   var findEvents = function (query) {
     var offset = ($scope.resultViewer.currentPage - 1) * $scope.resultViewer.pageSize;
@@ -94,28 +94,28 @@ function Search($scope, udbApi, LuceneQueryBuilder, $window, $location, $modal, 
     });
   };
 
-  var tag = function () {
-    var taggingQuery = $scope.resultViewer.querySelected;
+  var label = function () {
+    var labellingQuery = $scope.resultViewer.querySelected;
 
-    if(taggingQuery) {
-      tagActiveQuery();
+    if (labellingQuery) {
+      labelActiveQuery();
     } else {
-      tagSelection();
+      labelSelection();
     }
   };
 
-  var tagSelection = function () {
+  var labelSelection = function () {
 
     var selectedIds = $scope.resultViewer.selectedIds;
 
     if (!selectedIds.length) {
-      $window.alert('First select the events you want to tag.');
+      $window.alert('First select the events you want to label.');
       return;
     }
 
     var modal = $modal.open({
-      templateUrl: 'templates/event-tag-modal.html',
-      controller: 'EventTagModalCtrl'
+      templateUrl: 'templates/event-label-modal.html',
+      controller: 'EventLabelModalCtrl'
     });
 
     modal.result.then(function (labels) {
@@ -133,28 +133,28 @@ function Search($scope, udbApi, LuceneQueryBuilder, $window, $location, $modal, 
       });
 
       _.each(labels, function (label) {
-        eventTagger.tagEventsById(eventIds, label);
+        eventLabeller.labelEventsById(eventIds, label);
       });
     });
   };
 
-  function tagActiveQuery() {
+  function labelActiveQuery() {
     var query = $scope.activeQuery,
-      eventCount = $scope.resultViewer.totalItems;
+        eventCount = $scope.resultViewer.totalItems;
 
     if (queryBuilder.isValid(query)) {
       var modal = $modal.open({
-        templateUrl: 'templates/event-tag-modal.html',
-        controller: 'EventTagModalCtrl'
+        templateUrl: 'templates/event-label-modal.html',
+        controller: 'EventLabelModalCtrl'
       });
 
       modal.result.then(function (labels) {
         _.each(labels, function (label) {
-          eventTagger.tagQuery(query.queryString, label, eventCount);
+          eventLabeller.labelQuery(query.queryString, label, eventCount);
         });
       });
     } else {
-      $window.alert('provide a valid query to tag');
+      $window.alert('provide a valid query to label');
     }
   }
 
@@ -164,13 +164,13 @@ function Search($scope, udbApi, LuceneQueryBuilder, $window, $location, $modal, 
         eventCount,
         selectedIds = [];
 
-    if(exportingQuery) {
+    if (exportingQuery) {
       eventCount = $scope.resultViewer.totalItems;
     } else {
       selectedIds = $scope.resultViewer.selectedIds;
 
       if (!selectedIds.length) {
-        $window.alert('First select the events you want to tag.');
+        $window.alert('First select the events you want to label.');
         return;
       } else {
         eventCount = selectedIds.length;
@@ -194,7 +194,7 @@ function Search($scope, udbApi, LuceneQueryBuilder, $window, $location, $modal, 
   }
 
   $scope.exportEvents = exportEvents;
-  $scope.tag = tag;
+  $scope.label = label;
 
   $scope.startEditing = function () {
     $scope.queryEditorShown = true;

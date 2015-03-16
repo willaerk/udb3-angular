@@ -1,13 +1,13 @@
 (function () {
   'use strict';
 
-/**
- * @ngdoc directive
- * @name udb.core.directive:udbMultiselect
- * @description
- * # directive for bootstrap-multiselect integration
- */
-angular
+  /**
+   * @ngdoc directive
+   * @name udb.core.directive:udbMultiselect
+   * @description
+   * # directive for bootstrap-multiselect integration
+   */
+  angular
   .module('udb.core')
   .directive('udbTimeAutocomplete', udbTimeAutocompleteDirective);
 
@@ -33,25 +33,24 @@ angular
      */
     function generateTimes() {
 
-      var startMinute = 60;
       var increment = 15;
       var date = new Date(2015, 1, 1, 0, 0);
       var options = [];
       var hourLen = 60;
       var hours = 24;
 
-      for(var i = 0, loopInt = hours * (hourLen/increment); i < loopInt; i++){
+      for (var i = 0, loopInt = hours * (hourLen / increment); i < loopInt; i++) {
 
         date.setMinutes(date.getMinutes() + increment);
         var h = date.getHours();
         var m = date.getMinutes();
 
-        if(('' + h).length === 1){
-            h = '0' + h;
+        if (('' + h).length === 1) {
+          h = '0' + h;
         }
 
-        if(('' + m).length === 1){
-            m = '0' + m;
+        if (('' + m).length === 1) {
+          m = '0' + m;
         }
 
         var label = h + ':' + m;
@@ -61,7 +60,6 @@ angular
       return options;
 
     }
-
 
   }
 

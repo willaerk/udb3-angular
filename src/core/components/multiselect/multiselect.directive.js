@@ -1,13 +1,13 @@
 (function () {
   'use strict';
 
-/**
- * @ngdoc directive
- * @name udb.core.directive:udbMultiselect
- * @description
- * # directive for bootstrap-multiselect integration
- */
-angular
+  /**
+   * @ngdoc directive
+   * @name udb.core.directive:udbMultiselect
+   * @description
+   * # directive for bootstrap-multiselect integration
+   */
+  angular
   .module('udb.core')
   .directive('udbMultiselect', udbMultiselectDirective);
 
@@ -23,7 +23,7 @@ angular
             if (options.length > 0) {
               var labels = [];
               options.each(function() {
-                labels.push(angular.element(this).html().substring(0,2));
+                labels.push(angular.element(this).html().substring(0, 2));
               });
               return labels.join(', ') + ' ';
             }

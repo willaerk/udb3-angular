@@ -2,17 +2,17 @@
 
 /**
  * @ngdoc function
- * @name udb.entry.controller:EventTagModalCtrl
+ * @name udb.entry.controller:EventLabelModalCtrl
  * @description
- * # EventTagModalCtrl
+ * # EventLabelModalCtrl
  * Controller of the udb.entry
  */
 angular
   .module('udb.entry')
-  .controller('EventTagModalCtrl', EventTagModalCtrl);
+  .controller('EventLabelModalCtrl', EventLabelModalCtrl);
 
 /* @ngInject */
-function EventTagModalCtrl($scope, $modalInstance, udbApi) {
+function EventLabelModalCtrl($scope, $modalInstance, udbApi) {
   var labelPromise = udbApi.getRecentLabels();
 
   var ok = function () {

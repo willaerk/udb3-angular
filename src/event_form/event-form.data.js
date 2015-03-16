@@ -57,7 +57,7 @@ function EventFormDataFactory(UdbEvent, UdbPlace) {
 
     /**
      * Show the given step.
-     * @param int stepNumber
+     * @param {number} stepNumber
      */
     showStep: function(stepNumber) {
       this['showStep' + stepNumber] = true;
@@ -65,7 +65,7 @@ function EventFormDataFactory(UdbEvent, UdbPlace) {
 
     /**
      * Hide the given step.
-     * @param int stepNumber
+     * @param {number} stepNumber
      */
     hideStep: function (stepNumber) {
       this['showStep' + stepNumber] = false;
@@ -248,7 +248,7 @@ function EventFormDataFactory(UdbEvent, UdbPlace) {
      * Remove the openinghour with the given index.
      */
     removeOpeningHour: function(index) {
-       this.openingHours.splice(index, 1);
+      this.openingHours.splice(index, 1);
     },
 
     /**
@@ -287,7 +287,6 @@ function EventFormDataFactory(UdbEvent, UdbPlace) {
         email : []
       };
     },
-
 
     /**
      * Sets the booking info array.

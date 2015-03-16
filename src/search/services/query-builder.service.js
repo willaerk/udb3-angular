@@ -58,12 +58,12 @@ function LuceneQueryBuilder(LuceneQueryParser, QueryTreeValidator, QueryTreeTran
 
   var printTerm = function (node) {
     var term = node.term,
-      isRangeExpression = (node.lowerBound || node.upperBound);
+        isRangeExpression = (node.lowerBound || node.upperBound);
 
     if (isRangeExpression) {
       var min = node.lowerBound || '*',
-        max = node.upperBound || '*',
-        inclusive = node.inclusive;
+          max = node.upperBound || '*',
+          inclusive = node.inclusive;
 
       if (min instanceof Date) {
         min = min.toISOString();
@@ -113,7 +113,7 @@ function LuceneQueryBuilder(LuceneQueryParser, QueryTreeValidator, QueryTreeTran
 
     if (branch.left) {
       var result,
-        operator = (branch.operator === implicitToken) ? ' ' : (' ' + branch.operator + ' ');
+          operator = (branch.operator === implicitToken) ? ' ' : (' ' + branch.operator + ' ');
 
       if (branch.right) {
         result = unparseNode(branch.left, depth + 1, sentence);
@@ -136,7 +136,7 @@ function LuceneQueryBuilder(LuceneQueryParser, QueryTreeValidator, QueryTreeTran
 
     } else {
       var fieldQuery = '',
-        term = printTerm(branch);
+          term = printTerm(branch);
 
       if (branch.field !== implicitToken && branch.field !== null) {
         var fieldPrefix = '';
@@ -173,13 +173,12 @@ function LuceneQueryBuilder(LuceneQueryParser, QueryTreeValidator, QueryTreeTran
     return queryString;
   };
 
-
   function printTreeField(field) {
     if (field.fieldType === 'date-range') {
       cleanUpDateRangeField(field);
     }
     var transformedField = transformField(field);
-    return  transformedField.field + ':' + printTerm(transformedField);
+    return transformedField.field + ':' + printTerm(transformedField);
   }
 
   /**
@@ -201,12 +200,12 @@ function LuceneQueryBuilder(LuceneQueryParser, QueryTreeValidator, QueryTreeTran
         _.forEach(group.nodes, function (field, fieldIndex) {
 
           // check if the field is actually a sub group
-          if(field.type === 'group') {
+          if (field.type === 'group') {
 
             var subGroup = field,
                 subGroupString = ' ';
 
-            if(subGroup.nodes.length === 1) {
+            if (subGroup.nodes.length === 1) {
               var singleField = subGroup.nodes[0];
               subGroupString += subGroup.operator + ' ' + printTreeField(singleField);
             } else {
@@ -230,7 +229,7 @@ function LuceneQueryBuilder(LuceneQueryParser, QueryTreeValidator, QueryTreeTran
           }
         });
 
-        if(root.nodes.length > 1 && group.nodes.length > 1) {
+        if (root.nodes.length > 1 && group.nodes.length > 1) {
           nodeString = '(' + nodeString + ')';
         }
       } else {
@@ -466,7 +465,7 @@ function LuceneQueryBuilder(LuceneQueryParser, QueryTreeValidator, QueryTreeTran
 
           if (fieldType.type === 'date-range') {
             var startDate = moment(field.lowerBound),
-              endDate = moment(field.upperBound);
+                endDate = moment(field.upperBound);
 
             if (startDate.isValid() && endDate.isValid()) {
               if (startDate.isSame(endDate, 'day')) {
@@ -552,13 +551,13 @@ function LuceneQueryBuilder(LuceneQueryParser, QueryTreeValidator, QueryTreeTran
    */
   function makeField(node, fieldName) {
     var fieldType = _.find(queryFields, function (type) {
-        return type.name === node.field;
-      }),
-      field = {
-        field: fieldName || node.field,
-        fieldType: fieldType || 'string',
-        transformer: node.transformer || '='
-      };
+          return type.name === node.field;
+        }),
+        field = {
+          field: fieldName || node.field,
+          fieldType: fieldType || 'string',
+          transformer: node.transformer || '='
+        };
 
     if (node.lowerBound || node.upperBound) {
       field.lowerBound = node.lowerBound || undefined;

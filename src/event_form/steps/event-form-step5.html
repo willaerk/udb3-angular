@@ -145,35 +145,35 @@
         </div>
 
         <form name="step5TicketsForm" class="css-form">
-          <div class="row extra-tickets-website">
+          <div class="row extra-tickets-website" ng-class="bookingInfoCssClass">
             <div class="extra-task state-incomplete">
               <div class="col-sm-3">
-                <em class="extra-task-label">Reservatie &amp; tickets</em>
+                <em class="extra-task-label">Reservatie &amp; tickets</em> <i class="fa fa-circle-o-notch fa-spin" ng-show="savingBookingInfo"></i>
               </div>
               <div class="col-sm-8">
                 <section class="state incomplete">
 
                   <div class="checkbox">
                     <label>
-                      <input type="checkbox" class="reservatie-website-check reservatie-check" ng-click="enableBookingType('website')">Via website</label>
+                      <input type="checkbox" class="reservatie-website-check reservatie-check" ng-model="viaWebsite" ng-click="toggleBookingType('website')">Via website</label>
                   </div>
                   <div class="reservatie-website-info reservatie-info" ng-show="viaWebsite">
-                    <div class="reservatie-info-stap1" ng-show="bookingInfo.url === ''">
+                    <div class="reservatie-info-stap1" ng-show="editBookingUrl">
                       <div class="form-inline">
                         <label>URL voor tickets en reservaties</label><br>
                         <div class="form-group">
-                          <input type="url" class="form-control" name="url" ng-model="bookingModel.url" ng-required="viaWebsite">
+                          <input type="url" class="form-control" name="url" ng-model="eventFormData.bookingInfo.url" ng-required="viaWebsite">
                           <span class="help-block" ng-show="bookingModel.urlRequired && !step5TicketsForm.url.$valid">Gelieve een geldig formaat te gebruiken</span>
                         </div>
                         <a class="btn btn-primary reservatie-info-stap1-controleren" ng-click="validateBookingType('website')">Opslaan</a>
                       </div>
                     </div>
-                    <div class="reservatie-info-stap2" ng-show="bookingInfo.url !== ''">
-                      <p>{{ bookingInfo.url}} <a href="" class="btn btn-link" ng-click="resetBookingType('website')">Wijzigen</a></p>
+                    <div class="reservatie-info-stap2" ng-hide="editBookingUrl">
+                      <p>{{ eventFormData.bookingInfo.url}} <a href="" class="btn btn-link" ng-click="editBookingUrl = true">Wijzigen</a></p>
                       <div class="weergave">
                         <p><small class="text-muted">VOORBEELDWEERGAVE</small></p>
                         <p>
-                          <a class="btn btn-info" target="_blank" href="{{ bookingInfo.url}}">{{ bookingInfo.urlLabel}}</a>
+                          <a class="btn btn-info" target="_blank" href="{{ eventFormData.bookingInfo.url}}">{{ eventFormData.bookingInfo.urlLabel}}</a>
                           <a class="btn btn-link" href="#" ng-click="enableWebsitePreview()" data-toggle="modal" data-target="#extra-tickets-website-weergave">Wijzigen</a>
                         </p>
                       </div>
@@ -223,20 +223,20 @@
               </div>
               <div class="col-sm-8">
                 <div class="checkbox">
-                  <label><input type="checkbox" class="reservatie-telefoon-check reservatie-check" ng-click="enableBookingType('phone')">Via telefoon</label>
+                  <label><input type="checkbox" class="reservatie-telefoon-check reservatie-check" ng-model="viaPhone">Via telefoon</label>
                 </div>
                 <div class="reservatie-telefoon-info reservatie-info" ng-show="viaPhone">
-                  <div class="reservatie-telefoon-filling" ng-show="bookingInfo.phone === ''">
+                  <div class="reservatie-telefoon-filling" ng-show="editBookingPhone">
 
                     <label>Telefoonnummer voor tickets of reservaties</label><br>
                     <div class="form-inline">
-                      <input type="text" class="form-control" name="phone" ng-model="bookingModel.phone" ng-required="viaPhone">
+                      <input type="text" class="form-control" name="phone" ng-model="eventFormData.bookingInfo.phone" ng-required="viaPhone">
                       <span class="help-block" ng-show="bookingModel.phoneRequired && step5TicketsForm.phone.$error.required">Gelieve een geldig formaat te gebruiken</span>
                       <a class="btn btn-primary reservatie-telefoon-opslaan" ng-click="validateBookingType('phone')">Opslaan</a>
                     </div>
                   </div>
-                  <div class="reservatie-telefoon-complete" ng-show="bookingInfo.phone !== ''">
-                    <p>{{ bookingInfo.phone}}  <a class="btn btn-link" ng-click="resetBookingType('phone')">Wijzigen</a></p>
+                  <div class="reservatie-telefoon-complete" ng-hide="editBookingPhone">
+                    <p>{{ eventFormData.bookingInfo.phone}}  <a class="btn btn-link" ng-click="editBookingPhone = true">Wijzigen</a></p>
                   </div>
                 </div>
               </div>
@@ -250,34 +250,34 @@
               <div class="col-sm-8">
                 <div class="checkbox">
                   <label>
-                    <input type="checkbox" class="reservatie-email-check reservatie-check" ng-click="enableBookingType('email')">Via e-mail</label>
+                    <input type="checkbox" class="reservatie-email-check reservatie-check" ng-model="viaEmail">Via e-mail</label>
                 </div>
                 <div class="reservatie-email-info reservatie-info" ng-show="viaEmail">
-                  <div class="reservatie-email-filling" ng-show="bookingInfo.email === ''">
+                  <div class="reservatie-email-filling" ng-show="editBookingEmail">
                     <label>E-mailadres voor tickets of reservaties</label><br>
                     <div class="form-inline">
-                      <input type="email" class="form-control" name="email" ng-model="bookingModel.email" ng-required="viaEmail">
+                      <input type="email" class="form-control" name="email" ng-model="eventFormData.bookingInfo.email" ng-required="viaEmail">
                       <span class="help-block" ng-show="bookingModel.emailRequired && !step5TicketsForm.email.$valid">Gelieve een geldig formaat te gebruiken</span>
                       <a class="btn btn-primary reservatie-email-opslaan" ng-click="validateBookingType('email')">Opslaan</a>
                     </div>
                   </div>
-                  <div class="reservatie-email-complete" ng-show="bookingInfo.email !== ''">
-                    <p>{{ bookingInfo.email}}  <a class="btn btn-link" ng-click="resetBookingType('email')">Wijzigen</a></p>
+                  <div class="reservatie-email-complete" ng-hide="editBookingEmail">
+                    <p>{{ eventFormData.bookingInfo.email}}  <a class="btn btn-link" ng-click="editBookingEmail = true">Wijzigen</a></p>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-          <div class="row extra-tickets-periode" style="display: block;">
+          <div class="row extra-tickets-periode">
             <div class="extra-task">
               <div class="col-sm-3">
                 <!--<em class="extra-task-label">Reservatie &amp; tickets</em>-->
               </div>
-              <div class="col-sm-8" ng-show="bookingInfo.availabilityStarts === ''">
+              <div class="col-sm-8" ng-hide="eventFormData.bookingInfo.availabilityStarts">
                 <p><a class="reservatie-periode-toevoegen" href="#" ng-click="enableBookingPeriodPreview()" data-toggle="modal" data-target="#extra-tickets-periode-toevoegen">Reservatie-periode toevoegen</a></p>
               </div>
-              <div class="col-sm-8" ng-hide="bookingInfo.availabilityStarts === ''">
-                <p>Van {{ bookingInfo.availabilityStarts | date:'dd-MM-yyyy' }} tot {{ bookingInfo.availabilityEnds | date:'dd-MM-yyyy'  }} <a class="reservatie-periode-toevoegen" href="#" ng-click="enableBookingPeriodPreview()" data-toggle="modal" data-target="#extra-tickets-periode-toevoegen">Reservatie-periode wijzigen</a></p>
+              <div class="col-sm-8" ng-show="eventFormData.bookingInfo.availabilityStarts">
+                <p>Van {{ eventFormData.bookingInfo.availabilityStarts | date:'dd-MM-yyyy' }} tot {{ eventFormData.bookingInfo.availabilityEnds | date:'dd-MM-yyyy'  }} <a class="reservatie-periode-toevoegen" href="#" ng-click="enableBookingPeriodPreview()" data-toggle="modal" data-target="#extra-tickets-periode-toevoegen">Reservatie-periode wijzigen</a></p>
               </div>
             </div>
           </div>
@@ -316,6 +316,11 @@
             </div>
             <!-- /.modal-dialog -->
           </div>
+
+          <div class="alert alert-danger" ng-show="bookingInfoError">
+            Er ging iets fout bij het bewaren van de info.
+          </div>
+
         </form>
 
         <div class="row extra-contact">
@@ -348,7 +353,7 @@
                         <button type="button" class="close" aria-label="Close" ng-click="deleteContactInfo(key)"><span aria-hidden="true">&times;</span></button>
                       </td>
                     </tr>
-                    <tr><td colspan="3"><a ng-click="addContactInfo()">Meer contactgegevens toevoegen</a></td></tr>
+                    <tr><td colspan="3"><a ng-click="addContactInfo('', '')">Meer contactgegevens toevoegen</a></td></tr>
                   </table>
                 </form>
               </section>

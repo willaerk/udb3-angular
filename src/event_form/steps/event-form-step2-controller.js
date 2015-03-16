@@ -23,7 +23,7 @@ function EventFormStep2Controller($scope, EventFormData, UdbOpeningHours) {
     {'label': 'Van ... tot ... ', 'id' : 'periodic', 'eventOnly' : true},
     {'label' : 'Permanent', 'id' : 'permanent', 'eventOnly' : false}
   ];
-  $scope.hasOpeningHours = false;
+  $scope.hasOpeningHours = EventFormData.openingHours.length > 0;
 
   // Scope functions
   $scope.setCalendarType = setCalendarType;
@@ -35,14 +35,24 @@ function EventFormStep2Controller($scope, EventFormData, UdbOpeningHours) {
 
   // Mapping between machine name of days and real output.
   var dayNames = {
-    'monday' : 'Maandag',
-    'tuesday' : 'Dinsdag',
-    'wednesday' : 'Woensdag',
-    'thursday' : 'Donderdag',
-    'friday' : 'Vrijdag',
-    'saturday' : 'Zaterdag',
-    'sunday' : 'Zondag'
+    monday : 'Maandag',
+    tuesday : 'Dinsdag',
+    wednesday : 'Woensdag',
+    thursday : 'Donderdag',
+    friday : 'Vrijdag',
+    saturday : 'Zaterdag',
+    sunday : 'Zondag'
   };
+
+  // Set form default correct for the editing calendar type.
+  if (EventFormData.calendarType) {
+    initCalendar();
+  }
+
+  // Load the correct labels.
+  if ($scope.hasOpeningHours) {
+    initOpeningHours();
+  }
 
   /**
    * Click listener on the calendar type buttons.
@@ -51,14 +61,6 @@ function EventFormStep2Controller($scope, EventFormData, UdbOpeningHours) {
   function setCalendarType(type) {
 
     EventFormData.showStep(3);
-
-    var calendarLabel = '';
-    for (var i = 0; i < $scope.calendarLabels.length; i++) {
-      if ($scope.calendarLabels[i].id === type) {
-        calendarLabel = $scope.calendarLabels[i].label;
-        break;
-      }
-    }
 
     // Check if previous calendar type was the same.
     // If so, we don't need to create new openinghours. Just show the previous entered data.
@@ -69,17 +71,43 @@ function EventFormStep2Controller($scope, EventFormData, UdbOpeningHours) {
     // A type is choosen, start a complet new calendar, removing old dat
     $scope.hasOpeningHours = false;
     EventFormData.resetCalendar();
-    EventFormData.activeCalendarType = type;
     EventFormData.calendarType = type;
-    EventFormData.activeCalendarLabel = calendarLabel;
 
-    if (type === 'single') {
+    if (EventFormData.calendarType === 'single') {
       addTimestamp();
     }
-    else if (type === 'periodic' || type === 'permanent') {
+    else if (EventFormData.calendarType === 'periodic' || EventFormData.calendarType === 'permanent') {
       EventFormData.addOpeningHour('', '', '');
     }
 
+    initCalendar();
+
+  }
+
+  /**
+   * Init the calendar for the current selected calendar type.
+   */
+  function initCalendar() {
+
+    var calendarLabel = '';
+    for (var i = 0; i < $scope.calendarLabels.length; i++) {
+      if ($scope.calendarLabels[i].id === EventFormData.calendarType) {
+        calendarLabel = $scope.calendarLabels[i].label;
+        break;
+      }
+    }
+    EventFormData.activeCalendarType = EventFormData.calendarType;
+    EventFormData.activeCalendarLabel = calendarLabel;
+
+  }
+
+  /**
+   * Init the opening hours.
+   */
+  function initOpeningHours() {
+    for (var i = 0; i < EventFormData.openingHours.length; i++) {
+      saveOpeninghHourDaySelection(i, EventFormData.openingHours[i].dayOfWeek);
+    }
   }
 
   /**
@@ -134,12 +162,12 @@ function EventFormStep2Controller($scope, EventFormData, UdbOpeningHours) {
    * Change listener on the day selection of opening hours.
    * Create human labels for the day selection.
    */
-  function saveOpeninghHourDaySelection(index, daysOfWeek) {
+  function saveOpeninghHourDaySelection(index, dayOfWeek) {
 
     var humanValues = [];
-    if (daysOfWeek instanceof Array) {
-      for (var i in daysOfWeek) {
-        humanValues.push(dayNames[daysOfWeek[i]]);
+    if (dayOfWeek instanceof Array) {
+      for (var i in dayOfWeek) {
+        humanValues.push(dayNames[dayOfWeek[i]]);
       }
     }
 

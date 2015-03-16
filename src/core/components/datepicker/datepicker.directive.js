@@ -19,15 +19,17 @@
       link: function (scope, elem, attrs, ngModel) {
 
         var options = {
-        format: 'd MM yyyy',
-           language: 'nl-BE',
-           beforeShowDay: function(date) {
-             var dateFormat = date.getUTCFullYear() + '-' + date.getUTCMonth() + '-' + date.getUTCDate();
-             if (attrs.highlightDate && dateFormat === attrs.highlightDate) {
-               return {classes: 'highlight'};
-             }
-           }
+          date : attrs.defaultDate,
+          format: 'd MM yyyy',
+          language: 'nl-BE',
+          beforeShowDay: function(date) {
+            var dateFormat = date.getUTCFullYear() + '-' + date.getUTCMonth() + '-' + date.getUTCDate();
+            if (attrs.highlightDate && dateFormat === attrs.highlightDate) {
+              return {classes: 'highlight'};
+            }
+          }
         };
+
         elem.datepicker(options).on('changeDate', function(e) {
           ngModel.$setViewValue(e.date);
         });

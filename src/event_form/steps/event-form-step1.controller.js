@@ -12,7 +12,7 @@ angular
   .controller('EventFormStep1Ctrl', EventFormStep1Controller);
 
 /* @ngInject */
-function EventFormStep1Controller($scope, EventFormData, UdbEvent, UdbPlace, eventTypes) {
+function EventFormStep1Controller($scope, EventFormData, eventTypes) {
 
   // main storage for event form.
   $scope.eventFormData = EventFormData;
@@ -20,8 +20,6 @@ function EventFormStep1Controller($scope, EventFormData, UdbEvent, UdbPlace, eve
   // Categories, event types, places.
   $scope.eventTypeLabels = [];
   $scope.placeLabels = [];
-  $scope.activeEventType = ''; // Current active event type.
-  $scope.activeEventTypeLabel = ''; // Current active event type label.
   // Load the categories asynchronously.
   var eventPromise = eventTypes.getCategories();
   eventPromise.then(function (categories) {
@@ -33,8 +31,11 @@ function EventFormStep1Controller($scope, EventFormData, UdbEvent, UdbPlace, eve
   $scope.showAllEventTypes = false;
   $scope.showAllPlaces = false;
   $scope.eventThemeLabels = [];
-  $scope.activeTheme = '';
-  $scope.activeThemeLabel = '';
+
+  $scope.activeEventType = EventFormData.type.id ? EventFormData.type.id : ''; // Current active event type.
+  $scope.activeEventTypeLabel = EventFormData.type.label ? EventFormData.type.label : ''; // Current active event type label
+  $scope.activeTheme = EventFormData.theme.id ? EventFormData.theme.id : '';
+  $scope.activeThemeLabel = EventFormData.theme.label ? EventFormData.theme.label : '';
 
   $scope.setEventType = setEventType;
   $scope.resetEventType = resetEventType;

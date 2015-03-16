@@ -1882,15 +1882,17 @@ CityAutocomplete.$inject = ["$q", "$http", "appConfig"];
       link: function (scope, elem, attrs, ngModel) {
 
         var options = {
-        format: 'd MM yyyy',
-           language: 'nl-BE',
-           beforeShowDay: function(date) {
-             var dateFormat = date.getUTCFullYear() + '-' + date.getUTCMonth() + '-' + date.getUTCDate();
-             if (attrs.highlightDate && dateFormat === attrs.highlightDate) {
-               return {classes: 'highlight'};
-             }
-           }
+          date : attrs.defaultDate,
+          format: 'd MM yyyy',
+          language: 'nl-BE',
+          beforeShowDay: function(date) {
+            var dateFormat = date.getUTCFullYear() + '-' + date.getUTCMonth() + '-' + date.getUTCDate();
+            if (attrs.highlightDate && dateFormat === attrs.highlightDate) {
+              return {classes: 'highlight'};
+            }
+          }
         };
+
         elem.datepicker(options).on('changeDate', function(e) {
           ngModel.$setViewValue(e.date);
         });
@@ -2857,7 +2859,7 @@ function UdbEventFactory() {
     });
 
     if (category) {
-      return category.label;
+      return category;
     }
 
     return;
@@ -2922,10 +2924,14 @@ function UdbEventFactory() {
       this.calendarType = jsonEvent.calendarType || '';
       this.startDate = jsonEvent.startDate;
       this.endDate = jsonEvent.endDate;
+      this.subEvent = jsonEvent.subEvent || [];
+      this.openingHours = jsonEvent.openingHours || [];
       this.mediaObject = jsonEvent.mediaObject || [];
+      this.typicalAgeRange = jsonEvent.typicalAgeRange || '';
+      this.bookingInfo = jsonEvent.bookingInfo || {};
+      this.contactPoint = jsonEvent.contactPoint || {};
       this.url = '/event/' + this.id;
       this.sameAs = jsonEvent.sameAs;
-      this.typicalAgeRange = jsonEvent.typicalAgeRange || '';
 
       if (jsonEvent.available) {
         this.available = jsonEvent.available;
@@ -3280,6 +3286,18 @@ angular
 /* @ngInject */
 function UdbPlaceFactory() {
 
+  function getCategoryByType(jsonEvent, domain) {
+    var category = _.find(jsonEvent.terms, function (category) {
+      return category.domain === domain;
+    });
+
+    if (category) {
+      return category;
+    }
+
+    return;
+  }
+
   /**
    * @class UdbPlace
    * @constructor
@@ -3304,7 +3322,16 @@ function UdbPlaceFactory() {
 
       this.id = jsonPlace['@id'].split('/').pop();
       this.name = jsonPlace.name || {};
+      this.type = getCategoryByType(jsonPlace, 'eventtype') || {};
+      this.theme = getCategoryByType(jsonPlace, 'theme') || {};
       this.description = jsonPlace.description || {};
+      this.calendarType = jsonPlace.calendarType || '';
+      this.startDate = jsonPlace.startDate;
+      this.endDate = jsonPlace.endDate;
+      this.openingHours = jsonPlace.openingHours || [];
+      this.typicalAgeRange = jsonPlace.typicalAgeRange || '';
+      this.bookingInfo = jsonPlace.bookingInfo || {};
+      this.contactPoint = jsonPlace.contactPoint || {};
       this.mediaObject = jsonPlace.mediaObject || [];
 
     },
@@ -5610,43 +5637,26 @@ angular
   .controller('EventFormCtrl', EventFormController);
 
 /* @ngInject */
-function EventFormController($scope, itemId, offerType, EventFormData, udbApi) {
+function EventFormController($scope, eventId, offerType, EventFormData, udbApi) {
 
   // Other controllers won't load untill this boolean is set to true.
   $scope.loaded = false;
 
   // Fill the event form data if an event is beïng edited.
-  if (itemId) {
+  if (eventId) {
 
     if (offerType === 'event') {
-      udbApi.getEventById(itemId).then(function(event) {
-        EventFormData.id = event.id;
+      udbApi.getEventById(eventId).then(function(event) {
         EventFormData.isEvent = true;
         EventFormData.isPlace = false;
-        EventFormData.mediaObject = event.mediaObject;
-        EventFormData.name = event.name;
-        $scope.loaded = true;
-        EventFormData.showStep(1);
-        EventFormData.showStep(2);
-        EventFormData.showStep(3);
-        EventFormData.showStep(4);
-        EventFormData.showStep(5);
+        copyItemDataToFormData(event);
       });
-
     }
     else if (offerType === 'place') {
-      udbApi.getPlaceById(itemId).then(function(place) {
+      udbApi.getPlaceById(eventId).then(function(place) {
         EventFormData.isEvent = false;
         EventFormData.isPlace = true;
-        EventFormData.id = place.id;
-        EventFormData.mediaObject = place.mediaObject;
-        EventFormData.name = place.name;
-        $scope.loaded = true;
-        EventFormData.showStep(1);
-        EventFormData.showStep(2);
-        EventFormData.showStep(3);
-        EventFormData.showStep(4);
-        EventFormData.showStep(5);
+        copyItemDataToFormData(place);
       });
     }
 
@@ -5655,8 +5665,78 @@ function EventFormController($scope, itemId, offerType, EventFormData, udbApi) {
     $scope.loaded = true;
   }
 
+  /**
+   * Copy all item data to form data so it can be used for edting.
+   * var {UdbEvent|UdbPlace} item
+   */
+  function copyItemDataToFormData(item) {
+
+    console.log(item);
+    // Properties that exactly match.
+    var sameProperties = [
+      'id',
+      'name',
+      'type',
+      'theme',
+      'openingHours',
+      'description',
+      'typicalAgeRange',
+      'organizer',
+      'bookingInfo',
+      'contactPoint',
+      'mediaObject'
+    ];
+    for (var i = 0; i < sameProperties.length; i++) {
+      if (item[sameProperties[i]]) {
+        EventFormData[sameProperties[i]] = item[sameProperties[i]];
+      }
+    }
+
+    EventFormData.calendarType = item.calendarType === 'multiple' ? 'single' : item.calendarType;
+
+    // Set correct date object for start and end.
+    if (item.startDate) {
+      EventFormData.startDate = new Date(item.startDate);
+    }
+
+    if (item.endDate) {
+      EventFormData.endDate = new Date(item.endDate);
+    }
+
+    // SubEvents are timestamps.
+    if (EventFormData.calendarType === 'single' && item.subEvent) {
+      for (var j = 0; j < item.subEvent.length; j++) {
+        var subEvent = item.subEvent[j];
+        var startDate = new Date(subEvent.startDate);
+        var endDate = new Date(subEvent.endDate);
+        var startHour = startDate.getHours() + ':' + startDate.getMinutes();
+        var endHour = endDate.getHours() + ':' + endDate.getMinutes();
+        EventFormData.addTimestamp(startDate, startHour === '00:00' ? '' : endHour === '00:00' ? '' : endHour);
+      }
+    }
+
+    // Copy location.
+    if (item.location && item.location['@id']) {
+      EventFormData.location = {
+        id : item.location['@id'].split('/').pop(),
+        name : item.location.name,
+        address : item.location.address
+      };
+    }
+
+    $scope.loaded = true;
+    EventFormData.showStep(1);
+    EventFormData.showStep(2);
+    EventFormData.showStep(3);
+    EventFormData.showStep(4);
+    EventFormData.showStep(5);
+
+    console.log(EventFormData);
+
+  }
+
 }
-EventFormController.$inject = ["$scope", "itemId", "offerType", "EventFormData", "udbApi"];
+EventFormController.$inject = ["$scope", "eventId", "offerType", "EventFormData", "udbApi"];
 
 // Source: src/event_form/event-form.data.js
 /**
@@ -5892,10 +5972,10 @@ function EventFormDataFactory(UdbEvent, UdbPlace) {
     /**
      * Add a timestamp to the timestamps array.
      */
-    addOpeningHour: function(daysOfWeek, opens, closes) {
+    addOpeningHour: function(dayOfWeek, opens, closes) {
 
       this.openingHours.push({
-        'daysOfWeek' : daysOfWeek,
+        'daysOfWeek' : dayOfWeek,
         'opens' : opens,
         'closes' : closes,
         'label' : ''
@@ -6171,7 +6251,7 @@ angular
   .controller('EventFormStep1Ctrl', EventFormStep1Controller);
 
 /* @ngInject */
-function EventFormStep1Controller($scope, EventFormData, UdbEvent, UdbPlace, eventTypes) {
+function EventFormStep1Controller($scope, EventFormData, eventTypes) {
 
   // main storage for event form.
   $scope.eventFormData = EventFormData;
@@ -6179,8 +6259,6 @@ function EventFormStep1Controller($scope, EventFormData, UdbEvent, UdbPlace, eve
   // Categories, event types, places.
   $scope.eventTypeLabels = [];
   $scope.placeLabels = [];
-  $scope.activeEventType = ''; // Current active event type.
-  $scope.activeEventTypeLabel = ''; // Current active event type label.
   // Load the categories asynchronously.
   var eventPromise = eventTypes.getCategories();
   eventPromise.then(function (categories) {
@@ -6192,8 +6270,11 @@ function EventFormStep1Controller($scope, EventFormData, UdbEvent, UdbPlace, eve
   $scope.showAllEventTypes = false;
   $scope.showAllPlaces = false;
   $scope.eventThemeLabels = [];
-  $scope.activeTheme = '';
-  $scope.activeThemeLabel = '';
+
+  $scope.activeEventType = EventFormData.type.id ? EventFormData.type.id : ''; // Current active event type.
+  $scope.activeEventTypeLabel = EventFormData.type.label ? EventFormData.type.label : ''; // Current active event type label
+  $scope.activeTheme = EventFormData.theme.id ? EventFormData.theme.id : '';
+  $scope.activeThemeLabel = EventFormData.theme.label ? EventFormData.theme.label : '';
 
   $scope.setEventType = setEventType;
   $scope.resetEventType = resetEventType;
@@ -6350,7 +6431,7 @@ function EventFormStep1Controller($scope, EventFormData, UdbEvent, UdbPlace, eve
   }
 
 }
-EventFormStep1Controller.$inject = ["$scope", "EventFormData", "UdbEvent", "UdbPlace", "eventTypes"];
+EventFormStep1Controller.$inject = ["$scope", "EventFormData", "eventTypes"];
 
 // Source: src/event_form/steps/event-form-step2-controller.js
 /**
@@ -6376,7 +6457,7 @@ function EventFormStep2Controller($scope, EventFormData, UdbOpeningHours) {
     {'label': 'Van ... tot ... ', 'id' : 'periodic', 'eventOnly' : true},
     {'label' : 'Permanent', 'id' : 'permanent', 'eventOnly' : false}
   ];
-  $scope.hasOpeningHours = false;
+  $scope.hasOpeningHours = EventFormData.openingHours.length > 0;
 
   // Scope functions
   $scope.setCalendarType = setCalendarType;
@@ -6388,14 +6469,24 @@ function EventFormStep2Controller($scope, EventFormData, UdbOpeningHours) {
 
   // Mapping between machine name of days and real output.
   var dayNames = {
-    'monday' : 'Maandag',
-    'tuesday' : 'Dinsdag',
-    'wednesday' : 'Woensdag',
-    'thursday' : 'Donderdag',
-    'friday' : 'Vrijdag',
-    'saturday' : 'Zaterdag',
-    'sunday' : 'Zondag'
+    monday : 'Maandag',
+    tuesday : 'Dinsdag',
+    wednesday : 'Woensdag',
+    thursday : 'Donderdag',
+    friday : 'Vrijdag',
+    saturday : 'Zaterdag',
+    sunday : 'Zondag'
   };
+
+  // Set form default correct for the editing calendar type.
+  if (EventFormData.calendarType) {
+    initCalendar();
+  }
+
+  // Load the correct labels.
+  if ($scope.hasOpeningHours) {
+    initOpeningHours();
+  }
 
   /**
    * Click listener on the calendar type buttons.
@@ -6404,14 +6495,6 @@ function EventFormStep2Controller($scope, EventFormData, UdbOpeningHours) {
   function setCalendarType(type) {
 
     EventFormData.showStep(3);
-
-    var calendarLabel = '';
-    for (var i = 0; i < $scope.calendarLabels.length; i++) {
-      if ($scope.calendarLabels[i].id === type) {
-        calendarLabel = $scope.calendarLabels[i].label;
-        break;
-      }
-    }
 
     // Check if previous calendar type was the same.
     // If so, we don't need to create new openinghours. Just show the previous entered data.
@@ -6422,17 +6505,43 @@ function EventFormStep2Controller($scope, EventFormData, UdbOpeningHours) {
     // A type is choosen, start a complet new calendar, removing old dat
     $scope.hasOpeningHours = false;
     EventFormData.resetCalendar();
-    EventFormData.activeCalendarType = type;
     EventFormData.calendarType = type;
-    EventFormData.activeCalendarLabel = calendarLabel;
 
-    if (type === 'single') {
+    if (EventFormData.calendarType === 'single') {
       addTimestamp();
     }
-    else if (type === 'periodic' || type === 'permanent') {
+    else if (EventFormData.calendarType === 'periodic' || EventFormData.calendarType === 'permanent') {
       EventFormData.addOpeningHour('', '', '');
     }
 
+    initCalendar();
+
+  }
+
+  /**
+   * Init the calendar for the current selected calendar type.
+   */
+  function initCalendar() {
+
+    var calendarLabel = '';
+    for (var i = 0; i < $scope.calendarLabels.length; i++) {
+      if ($scope.calendarLabels[i].id === EventFormData.calendarType) {
+        calendarLabel = $scope.calendarLabels[i].label;
+        break;
+      }
+    }
+    EventFormData.activeCalendarType = EventFormData.calendarType;
+    EventFormData.activeCalendarLabel = calendarLabel;
+
+  }
+
+  /**
+   * Init the opening hours.
+   */
+  function initOpeningHours() {
+    for (var i = 0; i < EventFormData.openingHours.length; i++) {
+      saveOpeninghHourDaySelection(i, EventFormData.openingHours[i].dayOfWeek);
+    }
   }
 
   /**
@@ -6487,12 +6596,12 @@ function EventFormStep2Controller($scope, EventFormData, UdbOpeningHours) {
    * Change listener on the day selection of opening hours.
    * Create human labels for the day selection.
    */
-  function saveOpeninghHourDaySelection(index, daysOfWeek) {
+  function saveOpeninghHourDaySelection(index, dayOfWeek) {
 
     var humanValues = [];
-    if (daysOfWeek instanceof Array) {
-      for (var i in daysOfWeek) {
-        humanValues.push(dayNames[daysOfWeek[i]]);
+    if (dayOfWeek instanceof Array) {
+      for (var i in dayOfWeek) {
+        humanValues.push(dayNames[dayOfWeek[i]]);
       }
     }
 
@@ -6537,19 +6646,7 @@ function EventFormStep3Controller($scope, EventFormData, cityAutocomplete, event
 
   $scope.selectedCity = '';
   $scope.selectedLocation = '';
-  $scope.placeStreetAddress = '';
-  $scope.placeLocationNumber = '';
   $scope.openPlaceModal = openPlaceModal;
-  $scope.place = {
-    'name': '',
-    'eventType' : '',
-    'address': {
-      'addressCountry': '',
-      'addressLocality': '',
-      'postalCode': '',
-      'streetAddress': ''
-    }
-  };
 
   // Validation.
   $scope.showValidation = false;
@@ -6568,6 +6665,12 @@ function EventFormStep3Controller($scope, EventFormData, cityAutocomplete, event
   $scope.validatePlace = validatePlace;
   $scope.changeStreetAddress = changeStreetAddress;
   $scope.getLocations = getLocations;
+
+  // Default values
+  if (EventFormData.location && EventFormData.location.name) {
+    $scope.selectedCity = EventFormData.location.address.postalCode + ' ' + EventFormData.location.address.addressLocality;
+    $scope.selectedLocation = EventFormData.location.name;
+  }
 
   /**
    * Automplete function for cities.
@@ -6812,25 +6915,15 @@ function EventFormStep4Controller($scope, EventFormData, udbApi, appConfig, Sear
   $scope.saving = false;
   $scope.error = false;
   $scope.udb3DashboardUrl = appConfig.udb3BaseUrl;
-  $scope.activeTitle = '';
   $scope.currentDuplicateId = '';
   $scope.currentDuplicateDelta = 0;
 
-  $scope.setTitle = setTitle;
   $scope.validateEvent = validateEvent;
   $scope.saveEvent = saveEvent;
   $scope.setActiveDuplicate = setActiveDuplicate;
   $scope.previousDuplicate = previousDuplicate;
   $scope.nextDuplicate = nextDuplicate;
   $scope.resultViewer = new SearchResultViewer();
-
-  /**
-   * Set the title
-   */
-  function setTitle() {
-    // Set the name.
-    EventFormData.setName($scope.activeTitle, 'nl');
-  }
 
   /**
    * Validate date after step 4 to enter step 5.
@@ -6866,7 +6959,6 @@ function EventFormStep4Controller($scope, EventFormData, udbApi, appConfig, Sear
     $scope.saving = true;
     $scope.error = false;
 
-    //$scope.eventFormData.selectedLocation
     //// is Event
     // http://search-prod.lodgon.com/search/rest/search?q=*&fq=type:event&fq=location_cdbid:81E9C76C-BA61-0F30-45F5CD2279ACEBFC
     // http://search-prod.lodgon.com/search/rest/detail/event/86E40542-B934-58DD-69AF85AC7FCEC934
@@ -6889,7 +6981,7 @@ function EventFormStep4Controller($scope, EventFormData, udbApi, appConfig, Sear
     // Duplicates are found on existing identical properties:
     // - title is the same
     // - on the same location.
-    var promise = udbApi.findEvents($scope.activeTitle, 0, params);
+    var promise = udbApi.findEvents(EventFormData.name.nl, 0, params);
 
     $scope.resultViewer.loading = true;
     $scope.duplicatesSearched = true;
@@ -6922,7 +7014,7 @@ function EventFormStep4Controller($scope, EventFormData, udbApi, appConfig, Sear
     $scope.error = false;
     $scope.saving = true;
 
-    var eventCrudPromise = eventCrud.createEvent($scope.eventFormData);
+    var eventCrudPromise = eventCrud.createEvent(EventFormData);
     eventCrudPromise.then(function(jsonResponse) {
       if (EventFormData.isEvent) {
         EventFormData.id = jsonResponse.data.eventId;
@@ -7032,7 +7124,7 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
   $scope.minAge = '';
 
   // Organizer vars.
-  $scope.organizerCssClass = EventFormData.organizer.id ? 'state-complete' : 'state-incomplete';
+  $scope.organizerCssClass = EventFormData.organizer.name ? 'state-complete' : 'state-incomplete';
   $scope.organizer = '';
   $scope.emptyOrganizerAutocomplete = false;
   $scope.loadingOrganizers = false;
@@ -7040,49 +7132,32 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
   $scope.savingOrganizer = false;
 
   // Booking & tickets vars.
-  $scope.bookingInfo = {
-    price : '',
-    currency : 'EUR',
-    availabilityStarts : '',
-    availabilityEnds : '',
-    name : '',
-    description : '',
-    url : '',
-    urlLabel : 'Koop tickets',
-    email : '',
-    phone : '',
-    validFrom : '',
-    validThrough : ''
-  };
+  $scope.editBookingPhone = EventFormData.bookingInfo.phone ? false : true;
+  $scope.editBookingEmail = EventFormData.bookingInfo.email ? false : true;
+  $scope.editBookingUrl = EventFormData.bookingInfo.url ? false : true;
   $scope.bookingModel = {
-    url : '',
     urlRequired : false,
-    urlLabel : '',
-    urlLabelCustom : '',
-    email : '',
     emailRequired : false,
-    phone : '',
     phoneRequired : false,
-    availabilityStarts : '',
-    availabilityEnds : ''
   };
-  $scope.viaWebsite = false;
-  $scope.viaEmail = false;
-  $scope.viaPhone = false;
+
+  $scope.viaWebsite =  EventFormData.bookingInfo.url ? true : false;
+  $scope.viaEmail = EventFormData.bookingInfo.email ? true : false;
+  $scope.viaPhone = EventFormData.bookingInfo.phone ? true : false;
   $scope.websitePreviewEnabled = false;
   $scope.bookingPeriodPreviewEnabled = false;
   $scope.bookingPeriodShowValidation = false;
-  $scope.enableBookingType = enableBookingType;
+  $scope.bookingInfoCssClass = EventFormData.bookingInfo.length > 0 ? 'state-complete' : 'state-incomplete';
+
   $scope.saveBookingType = saveBookingType;
   $scope.validateBookingType = validateBookingType;
-  $scope.resetBookingType = resetBookingType;
   $scope.saveWebsitePreview = saveWebsitePreview;
   $scope.enableWebsitePreview = enableWebsitePreview;
   $scope.saveBookingPeriod = saveBookingPeriod;
   $scope.enableBookingPeriodPreview = enableBookingPeriodPreview;
 
   // Contactinfo vars.
-  $scope.contactInfoCssClass = EventFormData.contactPoint.length ? 'state-complete' : 'state-incomplete';
+  $scope.contactInfoCssClass = 'state-incomplete';
   $scope.savingContactInfo = false;
   $scope.contactInfoError = false;
   $scope.contactInfo = [];
@@ -7124,13 +7199,11 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
   $scope.openUploadImageModal = openUploadImageModal;
   $scope.openDeleteImageModal = openDeleteImageModal;
 
-  // Check if we have a minAge set on load.
-  if (EventFormData.minAge) {
-    $scope.ageCssClass = 'state-complete';
-  }
+  // Init the controller for editing.
+  initEditForm();
 
   // Add empty contact.
-  addContactInfo();
+  addContactInfo('', '');
 
   /**
    * Save the description.
@@ -7348,10 +7421,10 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
   /**
    * Add contact info.
    */
-  function addContactInfo() {
+  function addContactInfo(type, value) {
     $scope.contactInfo.push({
-      type : '',
-      value : ''
+      type : type,
+      value : value
     });
 
   }
@@ -7378,14 +7451,14 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
 
       // Copy all data to the correct contactpoint property.
       for (var i = 0; i < $scope.contactInfo.length; i++) {
-        if ($scope.contactInfo.type === 'url') {
-          EventFormData.contactPoint.url.push($scope.contactInfo.value);
+        if ($scope.contactInfo[i].type === 'url') {
+          EventFormData.contactPoint.url.push($scope.contactInfo[i].value);
         }
-        else if ($scope.contactInfo.type === 'phone') {
-          EventFormData.contactPoint.phone.push($scope.contactInfo.value);
+        else if ($scope.contactInfo[i].type === 'phone') {
+          EventFormData.contactPoint.phone.push($scope.contactInfo[i].value);
         }
-        else if ($scope.contactInfo.type === 'email') {
-          EventFormData.contactPoint.email.push($scope.contactInfo.value);
+        else if ($scope.contactInfo[i].type === 'email') {
+          EventFormData.contactPoint.email.push($scope.contactInfo[i].value);
         }
       }
 
@@ -7464,21 +7537,6 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
   }
 
   /**
-   * Enables a booking type.
-   */
-  function enableBookingType(type) {
-    if (type === 'website') {
-      $scope.viaWebsite = !$scope.viaWebsite;
-    }
-    else if (type === 'email') {
-      $scope.viaEmail = !$scope.viaEmail;
-    }
-    else if (type === 'phone') {
-      $scope.viaPhone = !$scope.viaPhone;
-    }
-  }
-
-  /**
    * Validates a booking type.
    */
   function validateBookingType(type) {
@@ -7512,34 +7570,10 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
    * Temporarily save a booking type.
    */
   function saveBookingType(type) {
-    if (type === 'website') {
-      $scope.viaWebsite = true;
-      $scope.bookingInfo.url = $scope.bookingModel.url;
-    }
-    else if (type === 'email') {
-      $scope.viaEmail = true;
-      $scope.bookingInfo.email = $scope.bookingModel.email;
-    }
-    else if (type === 'phone') {
-      $scope.viaPhone = true;
-      $scope.bookingInfo.phone = $scope.bookingModel.phone;
-    }
+    $scope.editBookingPhone = false;
+    $scope.editBookingEmail = false;
+    $scope.editBookingUrl = false;
     saveBookingInfo();
-  }
-
-  /**
-   * @param {type} type
-   */
-  function resetBookingType(type) {
-    if (type === 'website') {
-      $scope.bookingInfo.url = $scope.bookingModel.url = '';
-    }
-    else if (type === 'email') {
-      $scope.bookingInfo.email = $scope.bookingModel.email = '';
-    }
-    else if (type === 'phone') {
-      $scope.bookingInfo.phone = $scope.bookingModel.phone = '';
-    }
   }
 
   /**
@@ -7547,9 +7581,9 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
    */
   function saveWebsitePreview() {
     $scope.websitePreviewEnabled = false;
-    $scope.bookingInfo.urlLabel = $scope.bookingModel.urlLabel;
+    EventFormData.bookingInfo.urlLabel = $scope.bookingModel.urlLabel;
     if ($scope.bookingModel.urlLabelCustom !== '') {
-      $scope.bookingInfo.urlLabel = $scope.bookingModel.urlLabelCustom;
+      EventFormData.bookingInfo.urlLabel = $scope.bookingModel.urlLabelCustom;
     }
     saveBookingInfo();
   }
@@ -7575,8 +7609,8 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
 
     $scope.bookingPeriodPreviewEnabled = false;
 
-    $scope.bookingInfo.availabilityStarts = $scope.bookingModel.availabilityStarts;
-    $scope.bookingInfo.availabilityEnds = $scope.bookingModel.availabilityEnds;
+    EventFormData.bookingInfo.availabilityStarts = $scope.bookingModel.availabilityStarts;
+    EventFormData.bookingInfo.availabilityEnds = $scope.bookingModel.availabilityEnds;
 
     saveBookingInfo();
 
@@ -7594,12 +7628,18 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
    */
   function saveBookingInfo() {
 
-    EventFormData.setBookingInfo($scope.bookingInfo);
+    $scope.savingBookingInfo = true;
+    $scope.bookingInfoError = false;
 
     var promise = eventCrud.updateBookingInfo(EventFormData);
     promise.then(function() {
       updateLastUpdated();
+      $scope.bookingInfoCssClass = 'state-complete';
+      $scope.savingBookingInfo = false;
+      $scope.bookingInfoError = false;
     }, function() {
+      $scope.savingBookingInfo = false;
+      $scope.bookingInfoError = true;
     });
   }
 
@@ -7663,6 +7703,50 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
         $scope.imageCssClass = 'state-incomplete';
       }
     });
+
+  }
+
+  /**
+   * Init this step for editing.
+   */
+  function initEditForm() {
+
+    // On edit set state default to complete.
+    if (EventFormData.id) {
+      $scope.ageCssClass = 'state-complete';
+      $scope.ageRange = -1;
+      if (EventFormData.typicalAgeRange) {
+        var range = EventFormData.typicalAgeRange.split('-');
+        $scope.ageRange = range[1] ? range[1] : -1;
+        $scope.minAge = parseInt(range[0]);
+      }
+    }
+
+    // Add websites.
+    var i = 0;
+    if (EventFormData.contactPoint.url) {
+      for (i = 0; i < EventFormData.contactPoint.url.length; i++) {
+        addContactInfo('url', EventFormData.contactPoint.url[i]);
+      }
+    }
+
+    // Add mails
+    if (EventFormData.contactPoint.email) {
+      for (i = 0; i < EventFormData.contactPoint.email.length; i++) {
+        addContactInfo('email', EventFormData.contactPoint.email[i]);
+      }
+    }
+
+    // Add phones
+    if (EventFormData.contactPoint.phone) {
+      for (i = 0; i < EventFormData.contactPoint.phone.length; i++) {
+        addContactInfo('phone', EventFormData.contactPoint.phone[i]);
+      }
+    }
+
+    if ($scope.contactInfo.length > 0) {
+      $scope.contactInfoCssClass = 'state-complete';
+    }
 
   }
 
@@ -10200,7 +10284,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "            </tr>\n" +
     "            <tr>\n" +
     "              <td><strong>Type</strong></td>\n" +
-    "              <td>{{event.type}}</td>\n" +
+    "              <td>{{event.type.label}}</td>\n" +
     "            </tr>\n" +
     "            <tr>\n" +
     "              <td><strong>Beschrijving</strong></td>\n" +
@@ -10299,7 +10383,8 @@ $templateCache.put('templates/time-autocomplete.html',
     "    <section class=\"add-date\">\n" +
     "      <div class=\"form-group\">\n" +
     "        <p class=\"module-title\">Vanaf</p>\n" +
-    "        <div udb-datepicker highlight-date=\"2015-8-12\" ng-model=\"eventFormData.startDate\"></div>\n" +
+    "        <div data-ng-if=\"eventFormData.startDate\" udb-datepicker highlight-date=\"2015-8-12\" ng-model=\"eventFormData.startDate\" data-default-date=\"{{ eventFormData.startDate|date:'dd/MM/yyyy' }}\" data-date=\"20/03/2015\"></div>\n" +
+    "        <div data-ng-if=\"!eventFormData.startDate\" udb-datepicker highlight-date=\"2015-8-12\" ng-model=\"eventFormData.startDate\"></div>\n" +
     "      </div>\n" +
     "    </section>\n" +
     "  </div>\n" +
@@ -10308,7 +10393,8 @@ $templateCache.put('templates/time-autocomplete.html',
     "    <section class=\"add-date\">\n" +
     "      <div class=\"form-group\">\n" +
     "        <p class=\"module-title\">Tot en met</p>\n" +
-    "        <div udb-datepicker highlight-date=\"2015-8-12\" ng-model=\"eventFormData.endDate\"></div>\n" +
+    "        <div data-ng-if=\"eventFormData.endDate\" udb-datepicker highlight-date=\"2015-8-12\" ng-model=\"eventFormData.endDate\" data-default-date=\"{{ eventFormData.endDate|date:'dd/MM/yyyy' }}\"></div>\n" +
+    "        <div data-ng-if=\"!eventFormData.endDate\" udb-datepicker highlight-date=\"2015-8-12\" ng-model=\"eventFormData.endDate\"></div>\n" +
     "      </div>\n" +
     "    </section>\n" +
     "  </div>\n" +
@@ -10521,7 +10607,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "\n" +
     "          <tr ng-repeat=\"(i, openingHour) in eventFormData.openingHours\">\n" +
     "            <td>\n" +
-    "              <select class=\"selectpicker\" multiple udb-multiselect start-label=\"Kies dag(en)\" ng-model=\"openingHour.daysOfWeek\" ng-change=\"saveOpeninghHourDaySelection(i, openingHour.daysOfWeek)\">\n" +
+    "              <select class=\"selectpicker\" multiple udb-multiselect start-label=\"Kies dag(en)\" ng-model=\"openingHour.dayOfWeek\" ng-change=\"saveOpeninghHourDaySelection(i, openingHour.dayOfWeek)\">\n" +
     "                <option value=\"monday\">maandag</option>\n" +
     "                <option value=\"tuesday\">dinsdag</option>\n" +
     "                <option value=\"wednesday\">woensdag</option>\n" +
@@ -10986,7 +11072,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "    <div class=\"row\">\n" +
     "      <div class=\"col-xs-12 col-md-4\">\n" +
     "        <div class=\"form-group-lg\">\n" +
-    "          <input type=\"text\" class=\"form-control\" ng-model=\"activeTitle\" ng-change=\"setTitle()\">\n" +
+    "          <input type=\"text\" class=\"form-control\" ng-model=\"eventFormData.name.nl\">\n" +
     "        </div>\n" +
     "      </div>\n" +
     "      <div class=\"col-xs-12 col-md-8\">\n" +
@@ -10995,7 +11081,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "        </p>\n" +
     "      </div>\n" +
     "    </div>\n" +
-    "    <p><a class=\"btn btn-primary titel-doorgaan\" ng-show=\"activeTitle !== ''\" ng-click=\"validateEvent()\">Doorgaan <i class=\"fa fa-circle-o-notch fa-spin\" ng-show=\"saving\"></i></a></p>\n" +
+    "    <p><a class=\"btn btn-primary titel-doorgaan\" ng-show=\"EventFormData.name.nl !== ''\" ng-click=\"validateEvent()\">Doorgaan <i class=\"fa fa-circle-o-notch fa-spin\" ng-show=\"saving\"></i></a></p>\n" +
     "\n" +
     "  </section>\n" +
     "\n" +
@@ -11004,7 +11090,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "  </div>\n" +
     "\n" +
     "  <a name=\"dubbeldetectie\"></a>\n" +
-    "  <section class=\"dubbeldetectie\" ng-show=\"activeTitle !== ''\">\n" +
+    "  <section class=\"dubbeldetectie\" ng-show=\"EventFormData.name.nl !== ''\">\n" +
     "\n" +
     "    <div class=\"alert alert-info\" ng-show=\"resultViewer.totalItems > 0\">\n" +
     "      <p class=\"h2\" style=\"margin-top: 0;\">Vermijd dubbel werk</p>\n" +
@@ -11016,7 +11102,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "             udb-event=\"event\"\n" +
     "             ng-hide=\"fetching\">\n" +
     "          <a class=\"btn btn-tile\" ng-click=\"setActiveDuplicate(event.id)\" data-toggle=\"modal\" data-target=\"#dubbeldetectie-voorbeeld\">\n" +
-    "            <small class=\"label label-default\" ng-bind=\"event.type\"></small><br>\n" +
+    "            <small class=\"label label-default\" ng-bind=\"event.type.label\"></small><br>\n" +
     "            <strong class=\"title\" ng-bind=\"event.name\"></strong><br>\n" +
     "             {{ event.location.name }} -\n" +
     "             <ng-switch on=\"event.calendarType\">\n" +
@@ -11042,7 +11128,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "      </div>\n" +
     "    </div>\n" +
     "\n" +
-    "    <h3 ng-show=\"duplicatesSearched && resultViewer.totalItems > 0\">Ben je zeker dat je \"{{ activeTitle }}\" wil toevoegen?</h3>\n" +
+    "    <h3 ng-show=\"duplicatesSearched && resultViewer.totalItems > 0\">Ben je zeker dat je \"{{ EventFormData.name.nl }}\" wil toevoegen?</h3>\n" +
     "    <ul class=\"list-inline\" ng-show=\"duplicatesSearched && resultViewer.totalItems > 0\">\n" +
     "      <li>\n" +
     "        <a class=\"btn btn-default\" href=\"{{ udb3DashboardUrl }}\">Nee, keer terug naar dashboard</a>\n" +
@@ -11086,7 +11172,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "\n" +
     "                <div class=\"panel-heading\" style=\"background-image: url({{ event.image }});\">\n" +
     "                  <ul class=\"list-inline\">\n" +
-    "                    <li><small class=\"label label-default\">{{ event.type }}</small></li>\n" +
+    "                    <li><small class=\"label label-default\">{{ event.type.label }}</small></li>\n" +
     "                  </ul>\n" +
     "                  <p class=\"title\">{{ event.getName('nl') }}</p>\n" +
     "                </div>\n" +
@@ -11303,35 +11389,35 @@ $templateCache.put('templates/time-autocomplete.html',
     "        </div>\n" +
     "\n" +
     "        <form name=\"step5TicketsForm\" class=\"css-form\">\n" +
-    "          <div class=\"row extra-tickets-website\">\n" +
+    "          <div class=\"row extra-tickets-website\" ng-class=\"bookingInfoCssClass\">\n" +
     "            <div class=\"extra-task state-incomplete\">\n" +
     "              <div class=\"col-sm-3\">\n" +
-    "                <em class=\"extra-task-label\">Reservatie &amp; tickets</em>\n" +
+    "                <em class=\"extra-task-label\">Reservatie &amp; tickets</em> <i class=\"fa fa-circle-o-notch fa-spin\" ng-show=\"savingBookingInfo\"></i>\n" +
     "              </div>\n" +
     "              <div class=\"col-sm-8\">\n" +
     "                <section class=\"state incomplete\">\n" +
     "\n" +
     "                  <div class=\"checkbox\">\n" +
     "                    <label>\n" +
-    "                      <input type=\"checkbox\" class=\"reservatie-website-check reservatie-check\" ng-click=\"enableBookingType('website')\">Via website</label>\n" +
+    "                      <input type=\"checkbox\" class=\"reservatie-website-check reservatie-check\" ng-model=\"viaWebsite\" ng-click=\"toggleBookingType('website')\">Via website</label>\n" +
     "                  </div>\n" +
     "                  <div class=\"reservatie-website-info reservatie-info\" ng-show=\"viaWebsite\">\n" +
-    "                    <div class=\"reservatie-info-stap1\" ng-show=\"bookingInfo.url === ''\">\n" +
+    "                    <div class=\"reservatie-info-stap1\" ng-show=\"editBookingUrl\">\n" +
     "                      <div class=\"form-inline\">\n" +
     "                        <label>URL voor tickets en reservaties</label><br>\n" +
     "                        <div class=\"form-group\">\n" +
-    "                          <input type=\"url\" class=\"form-control\" name=\"url\" ng-model=\"bookingModel.url\" ng-required=\"viaWebsite\">\n" +
+    "                          <input type=\"url\" class=\"form-control\" name=\"url\" ng-model=\"eventFormData.bookingInfo.url\" ng-required=\"viaWebsite\">\n" +
     "                          <span class=\"help-block\" ng-show=\"bookingModel.urlRequired && !step5TicketsForm.url.$valid\">Gelieve een geldig formaat te gebruiken</span>\n" +
     "                        </div>\n" +
     "                        <a class=\"btn btn-primary reservatie-info-stap1-controleren\" ng-click=\"validateBookingType('website')\">Opslaan</a>\n" +
     "                      </div>\n" +
     "                    </div>\n" +
-    "                    <div class=\"reservatie-info-stap2\" ng-show=\"bookingInfo.url !== ''\">\n" +
-    "                      <p>{{ bookingInfo.url}} <a href=\"\" class=\"btn btn-link\" ng-click=\"resetBookingType('website')\">Wijzigen</a></p>\n" +
+    "                    <div class=\"reservatie-info-stap2\" ng-hide=\"editBookingUrl\">\n" +
+    "                      <p>{{ eventFormData.bookingInfo.url}} <a href=\"\" class=\"btn btn-link\" ng-click=\"editBookingUrl = true\">Wijzigen</a></p>\n" +
     "                      <div class=\"weergave\">\n" +
     "                        <p><small class=\"text-muted\">VOORBEELDWEERGAVE</small></p>\n" +
     "                        <p>\n" +
-    "                          <a class=\"btn btn-info\" target=\"_blank\" href=\"{{ bookingInfo.url}}\">{{ bookingInfo.urlLabel}}</a>\n" +
+    "                          <a class=\"btn btn-info\" target=\"_blank\" href=\"{{ eventFormData.bookingInfo.url}}\">{{ eventFormData.bookingInfo.urlLabel}}</a>\n" +
     "                          <a class=\"btn btn-link\" href=\"#\" ng-click=\"enableWebsitePreview()\" data-toggle=\"modal\" data-target=\"#extra-tickets-website-weergave\">Wijzigen</a>\n" +
     "                        </p>\n" +
     "                      </div>\n" +
@@ -11381,20 +11467,20 @@ $templateCache.put('templates/time-autocomplete.html',
     "              </div>\n" +
     "              <div class=\"col-sm-8\">\n" +
     "                <div class=\"checkbox\">\n" +
-    "                  <label><input type=\"checkbox\" class=\"reservatie-telefoon-check reservatie-check\" ng-click=\"enableBookingType('phone')\">Via telefoon</label>\n" +
+    "                  <label><input type=\"checkbox\" class=\"reservatie-telefoon-check reservatie-check\" ng-model=\"viaPhone\">Via telefoon</label>\n" +
     "                </div>\n" +
     "                <div class=\"reservatie-telefoon-info reservatie-info\" ng-show=\"viaPhone\">\n" +
-    "                  <div class=\"reservatie-telefoon-filling\" ng-show=\"bookingInfo.phone === ''\">\n" +
+    "                  <div class=\"reservatie-telefoon-filling\" ng-show=\"editBookingPhone\">\n" +
     "\n" +
     "                    <label>Telefoonnummer voor tickets of reservaties</label><br>\n" +
     "                    <div class=\"form-inline\">\n" +
-    "                      <input type=\"text\" class=\"form-control\" name=\"phone\" ng-model=\"bookingModel.phone\" ng-required=\"viaPhone\">\n" +
+    "                      <input type=\"text\" class=\"form-control\" name=\"phone\" ng-model=\"eventFormData.bookingInfo.phone\" ng-required=\"viaPhone\">\n" +
     "                      <span class=\"help-block\" ng-show=\"bookingModel.phoneRequired && step5TicketsForm.phone.$error.required\">Gelieve een geldig formaat te gebruiken</span>\n" +
     "                      <a class=\"btn btn-primary reservatie-telefoon-opslaan\" ng-click=\"validateBookingType('phone')\">Opslaan</a>\n" +
     "                    </div>\n" +
     "                  </div>\n" +
-    "                  <div class=\"reservatie-telefoon-complete\" ng-show=\"bookingInfo.phone !== ''\">\n" +
-    "                    <p>{{ bookingInfo.phone}}  <a class=\"btn btn-link\" ng-click=\"resetBookingType('phone')\">Wijzigen</a></p>\n" +
+    "                  <div class=\"reservatie-telefoon-complete\" ng-hide=\"editBookingPhone\">\n" +
+    "                    <p>{{ eventFormData.bookingInfo.phone}}  <a class=\"btn btn-link\" ng-click=\"editBookingPhone = true\">Wijzigen</a></p>\n" +
     "                  </div>\n" +
     "                </div>\n" +
     "              </div>\n" +
@@ -11408,34 +11494,34 @@ $templateCache.put('templates/time-autocomplete.html',
     "              <div class=\"col-sm-8\">\n" +
     "                <div class=\"checkbox\">\n" +
     "                  <label>\n" +
-    "                    <input type=\"checkbox\" class=\"reservatie-email-check reservatie-check\" ng-click=\"enableBookingType('email')\">Via e-mail</label>\n" +
+    "                    <input type=\"checkbox\" class=\"reservatie-email-check reservatie-check\" ng-model=\"viaEmail\">Via e-mail</label>\n" +
     "                </div>\n" +
     "                <div class=\"reservatie-email-info reservatie-info\" ng-show=\"viaEmail\">\n" +
-    "                  <div class=\"reservatie-email-filling\" ng-show=\"bookingInfo.email === ''\">\n" +
+    "                  <div class=\"reservatie-email-filling\" ng-show=\"editBookingEmail\">\n" +
     "                    <label>E-mailadres voor tickets of reservaties</label><br>\n" +
     "                    <div class=\"form-inline\">\n" +
-    "                      <input type=\"email\" class=\"form-control\" name=\"email\" ng-model=\"bookingModel.email\" ng-required=\"viaEmail\">\n" +
+    "                      <input type=\"email\" class=\"form-control\" name=\"email\" ng-model=\"eventFormData.bookingInfo.email\" ng-required=\"viaEmail\">\n" +
     "                      <span class=\"help-block\" ng-show=\"bookingModel.emailRequired && !step5TicketsForm.email.$valid\">Gelieve een geldig formaat te gebruiken</span>\n" +
     "                      <a class=\"btn btn-primary reservatie-email-opslaan\" ng-click=\"validateBookingType('email')\">Opslaan</a>\n" +
     "                    </div>\n" +
     "                  </div>\n" +
-    "                  <div class=\"reservatie-email-complete\" ng-show=\"bookingInfo.email !== ''\">\n" +
-    "                    <p>{{ bookingInfo.email}}  <a class=\"btn btn-link\" ng-click=\"resetBookingType('email')\">Wijzigen</a></p>\n" +
+    "                  <div class=\"reservatie-email-complete\" ng-hide=\"editBookingEmail\">\n" +
+    "                    <p>{{ eventFormData.bookingInfo.email}}  <a class=\"btn btn-link\" ng-click=\"editBookingEmail = true\">Wijzigen</a></p>\n" +
     "                  </div>\n" +
     "                </div>\n" +
     "              </div>\n" +
     "            </div>\n" +
     "          </div>\n" +
-    "          <div class=\"row extra-tickets-periode\" style=\"display: block;\">\n" +
+    "          <div class=\"row extra-tickets-periode\">\n" +
     "            <div class=\"extra-task\">\n" +
     "              <div class=\"col-sm-3\">\n" +
     "                <!--<em class=\"extra-task-label\">Reservatie &amp; tickets</em>-->\n" +
     "              </div>\n" +
-    "              <div class=\"col-sm-8\" ng-show=\"bookingInfo.availabilityStarts === ''\">\n" +
+    "              <div class=\"col-sm-8\" ng-hide=\"eventFormData.bookingInfo.availabilityStarts\">\n" +
     "                <p><a class=\"reservatie-periode-toevoegen\" href=\"#\" ng-click=\"enableBookingPeriodPreview()\" data-toggle=\"modal\" data-target=\"#extra-tickets-periode-toevoegen\">Reservatie-periode toevoegen</a></p>\n" +
     "              </div>\n" +
-    "              <div class=\"col-sm-8\" ng-hide=\"bookingInfo.availabilityStarts === ''\">\n" +
-    "                <p>Van {{ bookingInfo.availabilityStarts | date:'dd-MM-yyyy' }} tot {{ bookingInfo.availabilityEnds | date:'dd-MM-yyyy'  }} <a class=\"reservatie-periode-toevoegen\" href=\"#\" ng-click=\"enableBookingPeriodPreview()\" data-toggle=\"modal\" data-target=\"#extra-tickets-periode-toevoegen\">Reservatie-periode wijzigen</a></p>\n" +
+    "              <div class=\"col-sm-8\" ng-show=\"eventFormData.bookingInfo.availabilityStarts\">\n" +
+    "                <p>Van {{ eventFormData.bookingInfo.availabilityStarts | date:'dd-MM-yyyy' }} tot {{ eventFormData.bookingInfo.availabilityEnds | date:'dd-MM-yyyy'  }} <a class=\"reservatie-periode-toevoegen\" href=\"#\" ng-click=\"enableBookingPeriodPreview()\" data-toggle=\"modal\" data-target=\"#extra-tickets-periode-toevoegen\">Reservatie-periode wijzigen</a></p>\n" +
     "              </div>\n" +
     "            </div>\n" +
     "          </div>\n" +
@@ -11474,6 +11560,11 @@ $templateCache.put('templates/time-autocomplete.html',
     "            </div>\n" +
     "            <!-- /.modal-dialog -->\n" +
     "          </div>\n" +
+    "\n" +
+    "          <div class=\"alert alert-danger\" ng-show=\"bookingInfoError\">\n" +
+    "            Er ging iets fout bij het bewaren van de info.\n" +
+    "          </div>\n" +
+    "\n" +
     "        </form>\n" +
     "\n" +
     "        <div class=\"row extra-contact\">\n" +
@@ -11506,7 +11597,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "                        <button type=\"button\" class=\"close\" aria-label=\"Close\" ng-click=\"deleteContactInfo(key)\"><span aria-hidden=\"true\">&times;</span></button>\n" +
     "                      </td>\n" +
     "                    </tr>\n" +
-    "                    <tr><td colspan=\"3\"><a ng-click=\"addContactInfo()\">Meer contactgegevens toevoegen</a></td></tr>\n" +
+    "                    <tr><td colspan=\"3\"><a ng-click=\"addContactInfo('', '')\">Meer contactgegevens toevoegen</a></td></tr>\n" +
     "                  </table>\n" +
     "                </form>\n" +
     "              </section>\n" +
@@ -11999,9 +12090,9 @@ $templateCache.put('templates/time-autocomplete.html',
     "                  </div>\n" +
     "\n" +
     "                  <div class=\"udb-short-info\">\n" +
-    "                      <span class=\"udb-category\" ng-bind=\"event.type\"></span>\n" +
+    "                      <span class=\"udb-category\" ng-bind=\"event.type.label\"></span>\n" +
     "                      <span class=\"udb-short-info-seperator\" ng-show=\"event.type && event.theme\"> • </span>\n" +
-    "                      <span class=\"udb-theme\" ng-bind=\"event.theme\"></span>\n" +
+    "                      <span class=\"udb-theme\" ng-bind=\"event.theme.label\"></span>\n" +
     "                  </div>\n" +
     "                  <div class=\"udb-title\">\n" +
     "                      <a ng-href=\"{{ event.url }}\" ng-bind=\"event.name\"></a>\n" +

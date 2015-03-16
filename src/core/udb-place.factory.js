@@ -14,6 +14,18 @@ angular
 /* @ngInject */
 function UdbPlaceFactory() {
 
+  function getCategoryByType(jsonEvent, domain) {
+    var category = _.find(jsonEvent.terms, function (category) {
+      return category.domain === domain;
+    });
+
+    if (category) {
+      return category;
+    }
+
+    return;
+  }
+
   /**
    * @class UdbPlace
    * @constructor
@@ -38,7 +50,16 @@ function UdbPlaceFactory() {
 
       this.id = jsonPlace['@id'].split('/').pop();
       this.name = jsonPlace.name || {};
+      this.type = getCategoryByType(jsonPlace, 'eventtype') || {};
+      this.theme = getCategoryByType(jsonPlace, 'theme') || {};
       this.description = jsonPlace.description || {};
+      this.calendarType = jsonPlace.calendarType || '';
+      this.startDate = jsonPlace.startDate;
+      this.endDate = jsonPlace.endDate;
+      this.openingHours = jsonPlace.openingHours || [];
+      this.typicalAgeRange = jsonPlace.typicalAgeRange || '';
+      this.bookingInfo = jsonPlace.bookingInfo || {};
+      this.contactPoint = jsonPlace.contactPoint || {};
       this.mediaObject = jsonPlace.mediaObject || [];
 
     },

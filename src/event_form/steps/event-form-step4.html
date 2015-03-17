@@ -8,7 +8,7 @@
     <div class="row">
       <div class="col-xs-12 col-md-4">
         <div class="form-group-lg">
-          <input type="text" class="form-control" ng-model="activeTitle" ng-change="setTitle()">
+          <input type="text" class="form-control" ng-model="eventFormData.name.nl">
         </div>
       </div>
       <div class="col-xs-12 col-md-8">
@@ -17,7 +17,7 @@
         </p>
       </div>
     </div>
-    <p><a class="btn btn-primary titel-doorgaan" ng-show="activeTitle !== ''" ng-click="validateEvent()">Doorgaan <i class="fa fa-circle-o-notch fa-spin" ng-show="saving"></i></a></p>
+    <p><a class="btn btn-primary titel-doorgaan" ng-show="EventFormData.name.nl !== ''" ng-click="validateEvent()">Doorgaan <i class="fa fa-circle-o-notch fa-spin" ng-show="saving"></i></a></p>
 
   </section>
 
@@ -26,7 +26,7 @@
   </div>
 
   <a name="dubbeldetectie"></a>
-  <section class="dubbeldetectie" ng-show="activeTitle !== ''">
+  <section class="dubbeldetectie" ng-show="EventFormData.name.nl !== ''">
 
     <div class="alert alert-info" ng-show="resultViewer.totalItems > 0">
       <p class="h2" style="margin-top: 0;">Vermijd dubbel werk</p>
@@ -38,7 +38,7 @@
              udb-event="event"
              ng-hide="fetching">
           <a class="btn btn-tile" ng-click="setActiveDuplicate(event.id)" data-toggle="modal" data-target="#dubbeldetectie-voorbeeld">
-            <small class="label label-default" ng-bind="event.type"></small><br>
+            <small class="label label-default" ng-bind="event.type.label"></small><br>
             <strong class="title" ng-bind="event.name"></strong><br>
              {{ event.location.name }} -
              <ng-switch on="event.calendarType">
@@ -64,7 +64,7 @@
       </div>
     </div>
 
-    <h3 ng-show="duplicatesSearched && resultViewer.totalItems > 0">Ben je zeker dat je "{{ activeTitle }}" wil toevoegen?</h3>
+    <h3 ng-show="duplicatesSearched && resultViewer.totalItems > 0">Ben je zeker dat je "{{ EventFormData.name.nl }}" wil toevoegen?</h3>
     <ul class="list-inline" ng-show="duplicatesSearched && resultViewer.totalItems > 0">
       <li>
         <a class="btn btn-default" href="{{ udb3DashboardUrl }}">Nee, keer terug naar dashboard</a>
@@ -108,7 +108,7 @@
 
                 <div class="panel-heading" style="background-image: url({{ event.image }});">
                   <ul class="list-inline">
-                    <li><small class="label label-default">{{ event.type }}</small></li>
+                    <li><small class="label label-default">{{ event.type.label }}</small></li>
                   </ul>
                   <p class="title">{{ event.getName('nl') }}</p>
                 </div>

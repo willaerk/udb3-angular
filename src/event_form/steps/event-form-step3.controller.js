@@ -33,19 +33,7 @@ function EventFormStep3Controller($scope, EventFormData, cityAutocomplete, event
 
   $scope.selectedCity = '';
   $scope.selectedLocation = '';
-  $scope.placeStreetAddress = '';
-  $scope.placeLocationNumber = '';
   $scope.openPlaceModal = openPlaceModal;
-  $scope.place = {
-    'name': '',
-    'eventType' : '',
-    'address': {
-      'addressCountry': '',
-      'addressLocality': '',
-      'postalCode': '',
-      'streetAddress': ''
-    }
-  };
 
   // Validation.
   $scope.showValidation = false;
@@ -64,6 +52,12 @@ function EventFormStep3Controller($scope, EventFormData, cityAutocomplete, event
   $scope.validatePlace = validatePlace;
   $scope.changeStreetAddress = changeStreetAddress;
   $scope.getLocations = getLocations;
+
+  // Default values
+  if (EventFormData.location && EventFormData.location.name) {
+    $scope.selectedCity = EventFormData.location.address.postalCode + ' ' + EventFormData.location.address.addressLocality;
+    $scope.selectedLocation = EventFormData.location.name;
+  }
 
   /**
    * Automplete function for cities.

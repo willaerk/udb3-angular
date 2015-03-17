@@ -3,7 +3,8 @@
     <section class="add-date">
       <div class="form-group">
         <p class="module-title">Vanaf</p>
-        <div udb-datepicker highlight-date="2015-8-12" ng-model="eventFormData.startDate"></div>
+        <div data-ng-if="eventFormData.startDate" udb-datepicker highlight-date="2015-8-12" ng-model="eventFormData.startDate" data-default-date="{{ eventFormData.startDate|date:'dd/MM/yyyy' }}" data-date="20/03/2015"></div>
+        <div data-ng-if="!eventFormData.startDate" udb-datepicker highlight-date="2015-8-12" ng-model="eventFormData.startDate"></div>
       </div>
     </section>
   </div>
@@ -12,7 +13,8 @@
     <section class="add-date">
       <div class="form-group">
         <p class="module-title">Tot en met</p>
-        <div udb-datepicker highlight-date="2015-8-12" ng-model="eventFormData.endDate"></div>
+        <div data-ng-if="eventFormData.endDate" udb-datepicker highlight-date="2015-8-12" ng-model="eventFormData.endDate" data-default-date="{{ eventFormData.endDate|date:'dd/MM/yyyy' }}"></div>
+        <div data-ng-if="!eventFormData.endDate" udb-datepicker highlight-date="2015-8-12" ng-model="eventFormData.endDate"></div>
       </div>
     </section>
   </div>

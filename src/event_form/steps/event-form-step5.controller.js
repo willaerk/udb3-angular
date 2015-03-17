@@ -31,7 +31,7 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
   $scope.minAge = '';
 
   // Organizer vars.
-  $scope.organizerCssClass = EventFormData.organizer.id ? 'state-complete' : 'state-incomplete';
+  $scope.organizerCssClass = EventFormData.organizer.name ? 'state-complete' : 'state-incomplete';
   $scope.organizer = '';
   $scope.emptyOrganizerAutocomplete = false;
   $scope.loadingOrganizers = false;
@@ -39,49 +39,32 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
   $scope.savingOrganizer = false;
 
   // Booking & tickets vars.
-  $scope.bookingInfo = {
-    price : '',
-    currency : 'EUR',
-    availabilityStarts : '',
-    availabilityEnds : '',
-    name : '',
-    description : '',
-    url : '',
-    urlLabel : 'Koop tickets',
-    email : '',
-    phone : '',
-    validFrom : '',
-    validThrough : ''
-  };
+  $scope.editBookingPhone = EventFormData.bookingInfo.phone ? false : true;
+  $scope.editBookingEmail = EventFormData.bookingInfo.email ? false : true;
+  $scope.editBookingUrl = EventFormData.bookingInfo.url ? false : true;
   $scope.bookingModel = {
-    url : '',
     urlRequired : false,
-    urlLabel : '',
-    urlLabelCustom : '',
-    email : '',
     emailRequired : false,
-    phone : '',
     phoneRequired : false,
-    availabilityStarts : '',
-    availabilityEnds : ''
   };
-  $scope.viaWebsite = false;
-  $scope.viaEmail = false;
-  $scope.viaPhone = false;
+
+  $scope.viaWebsite =  EventFormData.bookingInfo.url ? true : false;
+  $scope.viaEmail = EventFormData.bookingInfo.email ? true : false;
+  $scope.viaPhone = EventFormData.bookingInfo.phone ? true : false;
   $scope.websitePreviewEnabled = false;
   $scope.bookingPeriodPreviewEnabled = false;
   $scope.bookingPeriodShowValidation = false;
-  $scope.enableBookingType = enableBookingType;
+  $scope.bookingInfoCssClass = EventFormData.bookingInfo.length > 0 ? 'state-complete' : 'state-incomplete';
+
   $scope.saveBookingType = saveBookingType;
   $scope.validateBookingType = validateBookingType;
-  $scope.resetBookingType = resetBookingType;
   $scope.saveWebsitePreview = saveWebsitePreview;
   $scope.enableWebsitePreview = enableWebsitePreview;
   $scope.saveBookingPeriod = saveBookingPeriod;
   $scope.enableBookingPeriodPreview = enableBookingPeriodPreview;
 
   // Contactinfo vars.
-  $scope.contactInfoCssClass = EventFormData.contactPoint.length ? 'state-complete' : 'state-incomplete';
+  $scope.contactInfoCssClass = 'state-incomplete';
   $scope.savingContactInfo = false;
   $scope.contactInfoError = false;
   $scope.contactInfo = [];
@@ -123,13 +106,11 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
   $scope.openUploadImageModal = openUploadImageModal;
   $scope.openDeleteImageModal = openDeleteImageModal;
 
-  // Check if we have a minAge set on load.
-  if (EventFormData.minAge) {
-    $scope.ageCssClass = 'state-complete';
-  }
+  // Init the controller for editing.
+  initEditForm();
 
   // Add empty contact.
-  addContactInfo();
+  addContactInfo('', '');
 
   /**
    * Save the description.
@@ -347,10 +328,10 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
   /**
    * Add contact info.
    */
-  function addContactInfo() {
+  function addContactInfo(type, value) {
     $scope.contactInfo.push({
-      type : '',
-      value : ''
+      type : type,
+      value : value
     });
 
   }
@@ -377,14 +358,14 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
 
       // Copy all data to the correct contactpoint property.
       for (var i = 0; i < $scope.contactInfo.length; i++) {
-        if ($scope.contactInfo.type === 'url') {
-          EventFormData.contactPoint.url.push($scope.contactInfo.value);
+        if ($scope.contactInfo[i].type === 'url') {
+          EventFormData.contactPoint.url.push($scope.contactInfo[i].value);
         }
-        else if ($scope.contactInfo.type === 'phone') {
-          EventFormData.contactPoint.phone.push($scope.contactInfo.value);
+        else if ($scope.contactInfo[i].type === 'phone') {
+          EventFormData.contactPoint.phone.push($scope.contactInfo[i].value);
         }
-        else if ($scope.contactInfo.type === 'email') {
-          EventFormData.contactPoint.email.push($scope.contactInfo.value);
+        else if ($scope.contactInfo[i].type === 'email') {
+          EventFormData.contactPoint.email.push($scope.contactInfo[i].value);
         }
       }
 
@@ -463,21 +444,6 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
   }
 
   /**
-   * Enables a booking type.
-   */
-  function enableBookingType(type) {
-    if (type === 'website') {
-      $scope.viaWebsite = !$scope.viaWebsite;
-    }
-    else if (type === 'email') {
-      $scope.viaEmail = !$scope.viaEmail;
-    }
-    else if (type === 'phone') {
-      $scope.viaPhone = !$scope.viaPhone;
-    }
-  }
-
-  /**
    * Validates a booking type.
    */
   function validateBookingType(type) {
@@ -511,34 +477,10 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
    * Temporarily save a booking type.
    */
   function saveBookingType(type) {
-    if (type === 'website') {
-      $scope.viaWebsite = true;
-      $scope.bookingInfo.url = $scope.bookingModel.url;
-    }
-    else if (type === 'email') {
-      $scope.viaEmail = true;
-      $scope.bookingInfo.email = $scope.bookingModel.email;
-    }
-    else if (type === 'phone') {
-      $scope.viaPhone = true;
-      $scope.bookingInfo.phone = $scope.bookingModel.phone;
-    }
+    $scope.editBookingPhone = false;
+    $scope.editBookingEmail = false;
+    $scope.editBookingUrl = false;
     saveBookingInfo();
-  }
-
-  /**
-   * @param {type} type
-   */
-  function resetBookingType(type) {
-    if (type === 'website') {
-      $scope.bookingInfo.url = $scope.bookingModel.url = '';
-    }
-    else if (type === 'email') {
-      $scope.bookingInfo.email = $scope.bookingModel.email = '';
-    }
-    else if (type === 'phone') {
-      $scope.bookingInfo.phone = $scope.bookingModel.phone = '';
-    }
   }
 
   /**
@@ -546,9 +488,9 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
    */
   function saveWebsitePreview() {
     $scope.websitePreviewEnabled = false;
-    $scope.bookingInfo.urlLabel = $scope.bookingModel.urlLabel;
+    EventFormData.bookingInfo.urlLabel = $scope.bookingModel.urlLabel;
     if ($scope.bookingModel.urlLabelCustom !== '') {
-      $scope.bookingInfo.urlLabel = $scope.bookingModel.urlLabelCustom;
+      EventFormData.bookingInfo.urlLabel = $scope.bookingModel.urlLabelCustom;
     }
     saveBookingInfo();
   }
@@ -574,8 +516,8 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
 
     $scope.bookingPeriodPreviewEnabled = false;
 
-    $scope.bookingInfo.availabilityStarts = $scope.bookingModel.availabilityStarts;
-    $scope.bookingInfo.availabilityEnds = $scope.bookingModel.availabilityEnds;
+    EventFormData.bookingInfo.availabilityStarts = $scope.bookingModel.availabilityStarts;
+    EventFormData.bookingInfo.availabilityEnds = $scope.bookingModel.availabilityEnds;
 
     saveBookingInfo();
 
@@ -593,12 +535,18 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
    */
   function saveBookingInfo() {
 
-    EventFormData.setBookingInfo($scope.bookingInfo);
+    $scope.savingBookingInfo = true;
+    $scope.bookingInfoError = false;
 
     var promise = eventCrud.updateBookingInfo(EventFormData);
     promise.then(function() {
       updateLastUpdated();
+      $scope.bookingInfoCssClass = 'state-complete';
+      $scope.savingBookingInfo = false;
+      $scope.bookingInfoError = false;
     }, function() {
+      $scope.savingBookingInfo = false;
+      $scope.bookingInfoError = true;
     });
   }
 
@@ -662,6 +610,50 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
         $scope.imageCssClass = 'state-incomplete';
       }
     });
+
+  }
+
+  /**
+   * Init this step for editing.
+   */
+  function initEditForm() {
+
+    // On edit set state default to complete.
+    if (EventFormData.id) {
+      $scope.ageCssClass = 'state-complete';
+      $scope.ageRange = -1;
+      if (EventFormData.typicalAgeRange) {
+        var range = EventFormData.typicalAgeRange.split('-');
+        $scope.ageRange = range[1] ? range[1] : -1;
+        $scope.minAge = parseInt(range[0]);
+      }
+    }
+
+    // Add websites.
+    var i = 0;
+    if (EventFormData.contactPoint.url) {
+      for (i = 0; i < EventFormData.contactPoint.url.length; i++) {
+        addContactInfo('url', EventFormData.contactPoint.url[i]);
+      }
+    }
+
+    // Add mails
+    if (EventFormData.contactPoint.email) {
+      for (i = 0; i < EventFormData.contactPoint.email.length; i++) {
+        addContactInfo('email', EventFormData.contactPoint.email[i]);
+      }
+    }
+
+    // Add phones
+    if (EventFormData.contactPoint.phone) {
+      for (i = 0; i < EventFormData.contactPoint.phone.length; i++) {
+        addContactInfo('phone', EventFormData.contactPoint.phone[i]);
+      }
+    }
+
+    if ($scope.contactInfo.length > 0) {
+      $scope.contactInfoCssClass = 'state-complete';
+    }
 
   }
 

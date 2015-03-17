@@ -26,7 +26,7 @@ function UdbEventFactory() {
     });
 
     if (category) {
-      return category.label;
+      return category;
     }
 
     return;
@@ -91,10 +91,14 @@ function UdbEventFactory() {
       this.calendarType = jsonEvent.calendarType || '';
       this.startDate = jsonEvent.startDate;
       this.endDate = jsonEvent.endDate;
+      this.subEvent = jsonEvent.subEvent || [];
+      this.openingHours = jsonEvent.openingHours || [];
       this.mediaObject = jsonEvent.mediaObject || [];
+      this.typicalAgeRange = jsonEvent.typicalAgeRange || '';
+      this.bookingInfo = jsonEvent.bookingInfo || {};
+      this.contactPoint = jsonEvent.contactPoint || {};
       this.url = '/event/' + this.id;
       this.sameAs = jsonEvent.sameAs;
-      this.typicalAgeRange = jsonEvent.typicalAgeRange || '';
 
       if (jsonEvent.available) {
         this.available = jsonEvent.available;

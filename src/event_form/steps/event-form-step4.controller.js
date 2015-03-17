@@ -23,25 +23,15 @@ function EventFormStep4Controller($scope, EventFormData, udbApi, appConfig, Sear
   $scope.saving = false;
   $scope.error = false;
   $scope.udb3DashboardUrl = appConfig.udb3BaseUrl;
-  $scope.activeTitle = '';
   $scope.currentDuplicateId = '';
   $scope.currentDuplicateDelta = 0;
 
-  $scope.setTitle = setTitle;
   $scope.validateEvent = validateEvent;
   $scope.saveEvent = saveEvent;
   $scope.setActiveDuplicate = setActiveDuplicate;
   $scope.previousDuplicate = previousDuplicate;
   $scope.nextDuplicate = nextDuplicate;
   $scope.resultViewer = new SearchResultViewer();
-
-  /**
-   * Set the title
-   */
-  function setTitle() {
-    // Set the name.
-    EventFormData.setName($scope.activeTitle, 'nl');
-  }
 
   /**
    * Validate date after step 4 to enter step 5.
@@ -77,7 +67,6 @@ function EventFormStep4Controller($scope, EventFormData, udbApi, appConfig, Sear
     $scope.saving = true;
     $scope.error = false;
 
-    //$scope.eventFormData.selectedLocation
     //// is Event
     // http://search-prod.lodgon.com/search/rest/search?q=*&fq=type:event&fq=location_cdbid:81E9C76C-BA61-0F30-45F5CD2279ACEBFC
     // http://search-prod.lodgon.com/search/rest/detail/event/86E40542-B934-58DD-69AF85AC7FCEC934
@@ -100,7 +89,7 @@ function EventFormStep4Controller($scope, EventFormData, udbApi, appConfig, Sear
     // Duplicates are found on existing identical properties:
     // - title is the same
     // - on the same location.
-    var promise = udbApi.findEvents($scope.activeTitle, 0, params);
+    var promise = udbApi.findEvents(EventFormData.name.nl, 0, params);
 
     $scope.resultViewer.loading = true;
     $scope.duplicatesSearched = true;
@@ -133,7 +122,7 @@ function EventFormStep4Controller($scope, EventFormData, udbApi, appConfig, Sear
     $scope.error = false;
     $scope.saving = true;
 
-    var eventCrudPromise = eventCrud.createEvent($scope.eventFormData);
+    var eventCrudPromise = eventCrud.createEvent(EventFormData);
     eventCrudPromise.then(function(jsonResponse) {
       if (EventFormData.isEvent) {
         EventFormData.id = jsonResponse.data.eventId;

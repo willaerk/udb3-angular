@@ -233,10 +233,10 @@ function EventFormDataFactory(UdbEvent, UdbPlace) {
     /**
      * Add a timestamp to the timestamps array.
      */
-    addOpeningHour: function(daysOfWeek, opens, closes) {
+    addOpeningHour: function(dayOfWeek, opens, closes) {
 
       this.openingHours.push({
-        'daysOfWeek' : daysOfWeek,
+        'daysOfWeek' : dayOfWeek,
         'opens' : opens,
         'closes' : closes,
         'label' : ''

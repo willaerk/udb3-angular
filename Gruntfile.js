@@ -279,6 +279,7 @@ module.exports = function (grunt) {
           'src/dashboard/udb.dashboard.module.js',
           'src/entry/udb.entry.module.js',
           'src/event-detail/udb.event-detail.module.js',
+          'src/place-detail/udb.place-detail.module.js',
           'src/export/udb.export.module.js',
           'src/search/parsers/udb-query-parser.service.js'
         ],

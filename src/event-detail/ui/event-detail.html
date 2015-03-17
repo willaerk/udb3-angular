@@ -82,7 +82,7 @@
 
       <div role="tabpanel" class="tab-pane" ng-show="isTabActive('history')">
         <div class="timeline">
-          <dl ng-repeat="eventAction in eventHistory">
+          <dl ng-repeat="eventAction in eventHistory track by $index">
             <dt ng-bind="eventAction.date | date:'dd/MM/yyyy H:mm'"></dt>
             <dd>
                 <span class="author" ng-if="eventAction.author">{{eventAction.author}}</span><br ng-if="eventAction.author"/>
@@ -126,6 +126,32 @@
           </table>
         </div>
       </div>
+
+      <div class="tab-pane" role="tabpanel" ng-show="isTabActive('omd')">
+        <div class="panel panel-default">
+          <table class="table">
+            <tbody><tr>
+                <td><strong>Deelname</strong></td>
+                <td>
+                  {{ event.omdParticipation }}
+                </td>
+              </tr>
+              <tr>
+                <td><strong>Categorieën</strong></td>
+                <td>
+                  {{ event.categories }}
+                </td>
+              </tr>
+              <tr>
+                <td><strong>Gratis brochure</strong></td>
+                <td>
+                  {{ event.freeBrochure }}
+                </td>
+              </tr>
+            </tbody></table>
+        </div>
+      </div>
+
     </div>
   </div>
 </div>

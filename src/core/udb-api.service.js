@@ -135,6 +135,11 @@ function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth,
     return deferredEvent.promise;
   };
 
+  this.getPlaceByLDId = function (placeLDId) {
+    var placeId = placeLDId.split('/').pop();
+    return this.getPlaceById(placeId);
+  };
+
   this.getOrganizerByLDId = function(organizerLDId) {
     var organizerId = organizerLDId.split('/').pop();
     return this.getOrganizerById(organizerId);

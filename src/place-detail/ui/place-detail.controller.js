@@ -12,22 +12,23 @@ angular
     .controller('PlaceDetailController', PlaceDetail);
 
 /* @ngInject */
-function PlaceDetail($scope, itemId, $location, udbApi, jsonLDLangFilter, locationTypes) {
-  $scope.placeId = itemId;
+function PlaceDetail($scope, $location, placeId, udbApi, jsonLDLangFilter, locationTypes) {
+
+  $scope.placeId = placeId;
   $scope.placeIdIsInvalid = false;
   $scope.placeHistory = [];
+
 
   var placeLoaded = udbApi.getPlaceById($scope.placeId);
 
   placeLoaded.then(
       function (place) {
-        var placeHistoryLoaded = udbApi.getPlaceHistoryById($scope.placeId);
+        var placeHistoryLoaded = udbApi.getEventHistoryById($scope.placeId);
 
         placeHistoryLoaded.then(function(placeHistory) {
           $scope.placeHistory = placeHistory;
         });
-        $scope.place = jsonLDLangFilter(place, 'nl');
-
+        $scope.place = place;
         $scope.placeIdIsInvalid = false;
       },
       function (reason) {
@@ -42,7 +43,7 @@ function PlaceDetail($scope, itemId, $location, udbApi, jsonLDLangFilter, locati
       return hash;
     }
     else {
-      return 'data';
+      return 'omd';
     }
   };
 
@@ -60,6 +61,10 @@ function PlaceDetail($scope, itemId, $location, udbApi, jsonLDLangFilter, locati
     {
       id: 'publication',
       header: 'Publicatie'
+    },
+    {
+      id: 'omd',
+      header: 'Open Monumenten Dag'
     }
   ];
 

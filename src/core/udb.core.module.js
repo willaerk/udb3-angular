@@ -20,6 +20,7 @@ angular
     'udb.event-form',
     'udb.export',
     'udb.event-detail',
+    'udb.place-detail',
     'udb.dashboard',
     'btford.socket-io',
     'pascalprecht.translate'

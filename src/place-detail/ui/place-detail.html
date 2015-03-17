@@ -33,48 +33,48 @@
               <col style="width:80%"/>
             </colgroup>
             <tbody>
-            <tr>
-              <td><strong>Titel</strong></td>
-              <td>{{place.name}}</td>
-            </tr>
-            <tr>
-              <td><strong>Type</strong></td>
-              <td>{{place.type}}</td>
-            </tr>
-            <tr>
-              <td><strong>Beschrijving</strong></td>
-              <td ng-bind-html="place.description"></td>
-            </tr>
-            <tr>
-              <td><strong>Waar</strong></td>
-              <td>{{placeLocation(place)}}</td>
-            </tr>
-            <tr>
-              <td><strong>Wanneer</strong></td>
-              <td>{{place.calendarSummary}}</td>
-            </tr>
-            <tr ng-class="{muted: !place.organizer}">
-              <td><strong>Organisator</strong></td>
-              <td>{{place.organizer.name}}</td>
-            </tr>
-            <!--<tr>
-              <td><strong>Prijs</strong></td>
-              <td></td>
-            </tr>-->
-            <tr ng-class="{muted: !place.typicalAgeRange}">
-              <td><strong>Geschikt voor</strong></td>
-              <td>
-                <span ng-if="place.typicalAgeRange">{{place.typicalAgeRange}}</span>
-                <span ng-if="!place.typicalAgeRange">Geen leeftijdsinformatie</span>
-              </td>
-            </tr>
-            <tr ng-class="{muted: !place.image}">
-              <td><strong>Afbeelding</strong></td>
-              <td>
-                <img ng-if="place.image" src="{{place.image}}?maxwidth=400&maxheight=300"/>
-                <span ng-if="!place.image">Geen afbeelding</span>
-              </td>
-            </tr>
+              <tr>
+                <td><strong>Titel</strong></td>
+                <td>{{place.name}}</td>
+              </tr>
+              <tr>
+                <td><strong>Type</strong></td>
+                <td>{{place.type}}</td>
+              </tr>
+              <tr>
+                <td><strong>Beschrijving</strong></td>
+                <td ng-bind-html="place.description"></td>
+              </tr>
+              <tr>
+                <td><strong>Waar</strong></td>
+                <td>{{placeLocation(place)}}</td>
+              </tr>
+              <tr>
+                <td><strong>Wanneer</strong></td>
+                <td>{{place.calendarSummary}}</td>
+              </tr>
+              <tr ng-class="{muted: !place.organizer}">
+                <td><strong>Organisator</strong></td>
+                <td>{{place.organizer.name}}</td>
+              </tr>
+              <!--<tr>
+                <td><strong>Prijs</strong></td>
+                <td></td>
+              </tr>-->
+              <tr ng-class="{muted: !place.typicalAgeRange}">
+                <td><strong>Geschikt voor</strong></td>
+                <td>
+                  <span ng-if="place.typicalAgeRange">{{place.typicalAgeRange}}</span>
+                  <span ng-if="!place.typicalAgeRange">Geen leeftijdsinformatie</span>
+                </td>
+              </tr>
+              <tr ng-class="{muted: !place.image}">
+                <td><strong>Afbeelding</strong></td>
+                <td>
+                  <img ng-if="place.image" src="{{place.image}}?maxwidth=400&maxheight=300"/>
+                  <span ng-if="!place.image">Geen afbeelding</span>
+                </td>
+              </tr>
             </tbody>
           </table>
         </div>
@@ -82,11 +82,11 @@
 
       <div role="tabpanel" class="tab-pane" ng-show="isTabActive('history')">
         <div class="timeline">
-          <dl ng-repeat="placeAction in placeHistory">
-            <dt ng-bind="placeAction.date | date:'dd/MM/yyyy H:mm'"></dt>
+          <dl ng-repeat="placeAction in placeHistory track by $index">
+            <dt ng-bind="placeAction.date | date:'dd / MM / yyyy H:mm'"></dt>
             <dd>
-                <span class="author" ng-if="placeAction.author">{{placeAction.author}}</span><br ng-if="placeAction.author"/>
-                <span class="description">{{placeAction.description}}</span>
+              <span class="author" ng-if="placeAction.author">{{placeAction.author}}</span><br ng-if="placeAction.author"/>
+              <span class="description">{{placeAction.description}}</span>
             </dd>
           </dl>
         </div>
@@ -100,32 +100,58 @@
               <col style="width:80%"/>
             </colgroup>
             <tbody>
-            <tr ng-class="{muted: !place.available}">
-              <td><strong>Publicatiedatum</strong></td>
-              <td>
-                <span ng-if="place.available"
-                      ng-bind="place.available | date: 'dd/MM/yyyy'">
-                </span>
-                <span ng-if="!place.available">
+              <tr ng-class="{muted: !place.available}">
+                <td><strong>Publicatiedatum</strong></td>
+                <td>
+                  <span ng-if="place.available"
+                        ng-bind="place.available | date: 'dd / MM / yyyy'">
+                  </span>
+                  <span ng-if="!place.available">
                     Geen publicatiedatum
-                </span>
-              </td>
-            </tr>
-            <tr>
-              <td><strong>ID</strong></td>
-              <td>
-                <ul>
-                  <li ng-repeat="id in placeIds(place)" ng-switch="isUrl(id)">
-                    <a ng-switch-when="true" ng-href="{{id}}" ng-bind="id"></a>
-                    <span ng-switch-when="false" ng-bind="id"></span>
-                  </li>
-                </ul>
-              </td>
-            </tr>
+                  </span>
+                </td>
+              </tr>
+              <tr>
+                <td><strong>ID</strong></td>
+                <td>
+                  <ul>
+                    <li ng-repeat="id in placeIds(place)" ng-switch="isUrl(id)">
+                      <a ng-switch-when="true" ng-href="{{id}}" ng-bind="id"></a>
+                      <span ng-switch-when="false" ng-bind="id"></span>
+                    </li>
+                  </ul>
+                </td>
+              </tr>
             </tbody>
           </table>
         </div>
       </div>
+
+      <div class="tab-pane" role="tabpanel" ng-show="isTabActive('omd')">
+        <div class="panel panel-default">
+          <table class="table">
+            <tbody><tr>
+                <td><strong>Deelname</strong></td>
+                <td>
+                  {{ place.omdParticipation }}
+                </td>
+              </tr>
+              <tr>
+                <td><strong>Categorieën</strong></td>
+                <td>
+                  {{ place.categories }}
+                </td>
+              </tr>
+              <tr>
+                <td><strong>Gratis brochure</strong></td>
+                <td>
+                  {{ place.freeBrochure }}
+                </td>
+              </tr>
+            </tbody></table>
+        </div>
+      </div>
+
     </div>
   </div>
 </div>

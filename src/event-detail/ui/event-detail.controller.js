@@ -42,7 +42,7 @@ function EventDetail($scope, $location, eventId, udbApi, jsonLDLangFilter, locat
       return hash;
     }
     else {
-      return 'data';
+      return 'omd';
     }
   };
 
@@ -60,6 +60,10 @@ function EventDetail($scope, $location, eventId, udbApi, jsonLDLangFilter, locat
     {
       id: 'publication',
       header: 'Publicatie'
+    },
+    {
+      id: 'omd',
+      header: 'Open Monumenten Dag'
     }
   ];
 

@@ -164,6 +164,7 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
 
     jobPromise.success(function (jobData) {
       var job = new EventCrudJob(jobData.commandId, item, 'updateFacilities');
+      jobLogger.addJob(job);
     });
 
     return jobPromise;

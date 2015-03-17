@@ -53,6 +53,12 @@ function EventCrudJobFactory(BaseJob) {
 
       case 'updateContactPoint':
         return 'Contact informatie aanpassen: "' + this.item.name + '".';
+        
+      case 'updateBookingInfo':
+        return 'Booking informatie aanpassen: "' + this.item.name + '".';
+        
+      case 'updateExtraInfo':
+        return 'Extra informatie aanpassen: "' + this.item.name + '".';
 
       case 'updateFacilities':
         return 'Voorzieningen aanpassen: "' + this.item.name + '".';

@@ -12,7 +12,7 @@
       <div class="col-xs-5 col-xs-12" ng-show="activeEventType === ''">
         <label class="event-type-choser-label">Een activiteit of evenement</label>
         <ul class="list-inline" id="step1-events">
-          <li ng-repeat="eventTypeLabel in eventTypeLabels" ng-show="eventTypeLabel.primary == true || showAllEventTypes">
+          <li ng-repeat="eventTypeLabel in eventTypeLabels" ng-show="eventTypeLabel.primary === true || showAllEventTypes">
             <button ng-bind="eventTypeLabel.label" class="btn btn-default" ng-click="setEventType(eventTypeLabel.id, eventTypeLabel.label, true)"></button>
           </li>
         </ul>

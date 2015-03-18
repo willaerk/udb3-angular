@@ -223,7 +223,7 @@
               </div>
               <div class="col-sm-8">
                 <div class="checkbox">
-                  <label><input type="checkbox" class="reservatie-telefoon-check reservatie-check" ng-model="viaPhone">Via telefoon</label>
+                  <label><input type="checkbox" class="reservatie-telefoon-check reservatie-check" ng-model="viaPhone" ng-change="toggleBookingType('phone')">Via telefoon</label>
                 </div>
                 <div class="reservatie-telefoon-info reservatie-info" ng-show="viaPhone">
                   <div class="reservatie-telefoon-filling" ng-show="editBookingPhone">
@@ -250,7 +250,7 @@
               <div class="col-sm-8">
                 <div class="checkbox">
                   <label>
-                    <input type="checkbox" class="reservatie-email-check reservatie-check" ng-model="viaEmail">Via e-mail</label>
+                    <input type="checkbox" class="reservatie-email-check reservatie-check" ng-model="viaEmail" ng-change="toggleBookingType('email')">Via e-mail</label>
                 </div>
                 <div class="reservatie-email-info reservatie-info" ng-show="viaEmail">
                   <div class="reservatie-email-filling" ng-show="editBookingEmail">
@@ -294,14 +294,16 @@
                     <div class="form-group col-md-6 col-sm-12">
                       <div class="add-date">
                         <label>Reserveren van</label>
-                        <div udb-datepicker highlight-date="2015-8-12" ng-model="bookingModel.availabilityStarts"></div>
+                        <div ng-if="bookingModel.availabilityStarts" udb-datepicker highlight-date="2015-8-12" ng-model="bookingModel.availabilityStarts" data-date="{{ bookingModel.availabilityStarts|date:'dd/MM/yyyy' }}"></div>
+                        <div ng-if="!bookingModel.availabilityStarts" udb-datepicker highlight-date="2015-8-12" ng-model="bookingModel.availabilityStarts"></div>
                         <span class="help-block" ng-show="bookingPeriodShowValidation && step5TicketsForm.startdate.$error.required">Gelieve een start datum te kiezen</span>
                       </div>
                     </div>
                     <div class="form-group col-md-6 col-sm-12">
                       <div class="add-date">
                         <label>Tot</label>
-                        <div udb-datepicker highlight-date="2015-8-12" ng-model="bookingModel.availabilityEnds"></div>
+                        <div ng-if="bookingModel.availabilityEnds" udb-datepicker highlight-date="2015-8-12" ng-model="bookingModel.availabilityEnds" data-date="{{ bookingModel.availabilityEnds|date:'dd/MM/yyyy' }}"></div>
+                        <div ng-if="!bookingModel.availabilityEnds" udb-datepicker highlight-date="2015-8-12" ng-model="bookingModel.availabilityEnds"></div>
                         <span class="help-block" ng-show="bookingPeriodShowValidation && step5TicketsForm.enddate.$error.required">Gelieve een eind datum te kiezen</span>
                       </div>
                     </div>

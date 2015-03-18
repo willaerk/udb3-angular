@@ -8,7 +8,7 @@
     <div class="row">
       <div class="col-xs-12 col-md-4">
         <div class="form-group-lg">
-          <input type="text" class="form-control" ng-model="eventFormData.name.nl">
+          <input type="text" class="form-control" ng-model="eventFormData.name.nl" ng-change="setMajorInfoChanged()">
         </div>
       </div>
       <div class="col-xs-12 col-md-8">
@@ -17,7 +17,10 @@
         </p>
       </div>
     </div>
-    <p><a class="btn btn-primary titel-doorgaan" ng-show="EventFormData.name.nl !== ''" ng-click="validateEvent()">Doorgaan <i class="fa fa-circle-o-notch fa-spin" ng-show="saving"></i></a></p>
+    <p>
+      <a class="btn btn-primary titel-doorgaan" ng-show="EventFormData.id !== ''" ng-click="validateEvent(false)">Opslaan <i class="fa fa-circle-o-notch fa-spin" ng-show="saving"></i></a>
+      <a class="btn btn-primary titel-doorgaan" ng-show="EventFormData.id === '' && EventFormData.name.nl !== ''" ng-click="validateEvent(true)">Doorgaan <i class="fa fa-circle-o-notch fa-spin" ng-show="saving"></i></a>
+    </p>
 
   </section>
 

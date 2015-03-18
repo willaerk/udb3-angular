@@ -32,11 +32,19 @@ function EventFormStep4Controller($scope, EventFormData, udbApi, appConfig, Sear
   $scope.previousDuplicate = previousDuplicate;
   $scope.nextDuplicate = nextDuplicate;
   $scope.resultViewer = new SearchResultViewer();
+  $scope.setMajorInfoChanged = setMajorInfoChanged;
+
+  // Check if we need to show the leave warning
+  window.onbeforeunload = function (event) {
+    if (EventFormData.majorInfoChanged) {
+      return 'Bent u zeker dat je de pagina wil verlaten? Gegevens die u hebt ingevoerd worden niet opgeslagen.';
+    }
+  };
 
   /**
    * Validate date after step 4 to enter step 5.
    */
-  function validateEvent() {
+  function validateEvent(checkDuplicates) {
 
     // First check if all data is correct.
     $scope.infoMissing = false;
@@ -64,53 +72,58 @@ function EventFormStep4Controller($scope, EventFormData, udbApi, appConfig, Sear
       return;
     }
 
-    $scope.saving = true;
-    $scope.error = false;
+    if (checkDuplicates) {
+      $scope.saving = true;
+      $scope.error = false;
 
-    //// is Event
-    // http://search-prod.lodgon.com/search/rest/search?q=*&fq=type:event&fq=location_cdbid:81E9C76C-BA61-0F30-45F5CD2279ACEBFC
-    // http://search-prod.lodgon.com/search/rest/detail/event/86E40542-B934-58DD-69AF85AC7FCEC934
-    // http://search-prod.lodgon.com/search/rest/search?q=*&fq=type:event&fq=street:Dr.%20Mathijsenstraat
-    //
-    // IsPlace
-    // location_contactinfo_zipcode
-    //http://search-prod.lodgon.com/search/rest/search?q=*&fq=type:event&fq=zipcode:9000
-    var params = {};
-    var location = EventFormData.getLocation();
+      //// is Event
+      // http://search-prod.lodgon.com/search/rest/search?q=*&fq=type:event&fq=location_cdbid:81E9C76C-BA61-0F30-45F5CD2279ACEBFC
+      // http://search-prod.lodgon.com/search/rest/detail/event/86E40542-B934-58DD-69AF85AC7FCEC934
+      // http://search-prod.lodgon.com/search/rest/search?q=*&fq=type:event&fq=street:Dr.%20Mathijsenstraat
+      //
+      // IsPlace
+      // location_contactinfo_zipcode
+      //http://search-prod.lodgon.com/search/rest/search?q=*&fq=type:event&fq=zipcode:9000
+      var params = {};
+      var location = EventFormData.getLocation();
 
-    if (EventFormData.isEvent) {
-      params = {locationCdbId : location.id};
+      if (EventFormData.isEvent) {
+        params = {locationCdbId : location.id};
+      }
+      else {
+        params = {locationZip : location.address.postalCode};
+      }
+
+      // Load the candidate duplicates asynchronously.
+      // Duplicates are found on existing identical properties:
+      // - title is the same
+      // - on the same location.
+      var promise = udbApi.findEvents(EventFormData.name.nl, 0, params);
+
+      $scope.resultViewer.loading = true;
+      $scope.duplicatesSearched = true;
+
+      promise.then(function (data) {
+
+        // Set the results for the duplicates modal,
+        if (data.totalItems > 0) {
+          $scope.saving = false;
+          $scope.resultViewer.setResults(data);
+        }
+        // or save the event immediataly if no duplicates were found.
+        else {
+          saveEvent();
+        }
+
+      }, function() {
+        // Error while saving.
+        $scope.error = true;
+        $scope.saving = false;
+      });
     }
     else {
-      params = {locationZip : location.address.postalCode};
+      saveEvent();
     }
-
-    // Load the candidate duplicates asynchronously.
-    // Duplicates are found on existing identical properties:
-    // - title is the same
-    // - on the same location.
-    var promise = udbApi.findEvents(EventFormData.name.nl, 0, params);
-
-    $scope.resultViewer.loading = true;
-    $scope.duplicatesSearched = true;
-
-    promise.then(function (data) {
-
-      // Set the results for the duplicates modal,
-      if (data.totalItems > 0) {
-        $scope.saving = false;
-        $scope.resultViewer.setResults(data);
-      }
-      // or save the event immediataly if no duplicates were found.
-      else {
-        saveEvent();
-      }
-
-    }, function() {
-      // Error while saving.
-      $scope.error = true;
-      $scope.saving = false;
-    });
 
   }
 
@@ -122,12 +135,22 @@ function EventFormStep4Controller($scope, EventFormData, udbApi, appConfig, Sear
     $scope.error = false;
     $scope.saving = true;
 
-    var eventCrudPromise = eventCrud.createEvent(EventFormData);
+    var eventCrudPromise;
+    if (EventFormData.id) {
+      eventCrudPromise = eventCrud.updateMajorInfo(EventFormData);
+    }
+    else {
+      eventCrudPromise = eventCrud.createEvent(EventFormData);
+    }
+
     eventCrudPromise.then(function(jsonResponse) {
-      if (EventFormData.isEvent) {
+
+      EventFormData.majorInfoChanged = false;
+
+      if (EventFormData.isEvent && jsonResponse.data.eventId) {
         EventFormData.id = jsonResponse.data.eventId;
       }
-      else {
+      else if (jsonResponse.data.placeId) {
         EventFormData.id = jsonResponse.data.placeId;
       }
 
@@ -195,6 +218,15 @@ function EventFormStep4Controller($scope, EventFormData, udbApi, appConfig, Sear
       $scope.currentDuplicateDelta = parseInt(nextDelta) + 1;
     }
 
+  }
+
+  /**
+   * Mark the major info as changed.
+   */
+  function setMajorInfoChanged() {
+    if (EventFormData.id) {
+      EventFormData.majorInfoChanged = true;
+    }
   }
 
 }

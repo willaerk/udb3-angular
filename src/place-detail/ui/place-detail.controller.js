@@ -18,7 +18,6 @@ function PlaceDetail($scope, $location, placeId, udbApi, jsonLDLangFilter, locat
   $scope.placeIdIsInvalid = false;
   $scope.placeHistory = [];
 
-
   var placeLoaded = udbApi.getPlaceById($scope.placeId);
 
   placeLoaded.then(

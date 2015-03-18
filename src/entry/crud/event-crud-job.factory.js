@@ -46,34 +46,37 @@ function EventCrudJobFactory(BaseJob) {
         return 'Organisator aanpassen: "' + this.item.name.nl + '".';
 
       case 'createOrganizer':
-        return 'Organisatie toevoegen: "' + this.item.name + '".';
+        return 'Organisatie toevoegen: "' + this.item.name.nl + '".';
 
       case 'deleteOrganizer':
-        return 'Organisatie verwijderen: "' + this.item.name + '".';
+        return 'Organisatie verwijderen: "' + this.item.name.nl + '".';
 
       case 'updateContactPoint':
         return 'Contact informatie aanpassen: "' + this.item.name + '".';
-        
+
       case 'updateBookingInfo':
         return 'Booking informatie aanpassen: "' + this.item.name + '".';
-        
+
       case 'updateExtraInfo':
         return 'Extra informatie aanpassen: "' + this.item.name + '".';
 
       case 'updateFacilities':
-        return 'Voorzieningen aanpassen: "' + this.item.name + '".';
+        return 'Voorzieningen aanpassen: "' + this.item.name.nl + '".';
 
       case 'updateBookingInfo':
-        return 'Boeking info aanpassen: "' + this.item.name + '".';
+        return 'Boeking info aanpassen: "' + this.item.name.nl + '".';
 
       case 'addImage':
-        return 'Afbeelding toevoegen: "' + this.item.name + '".';
+        return 'Afbeelding toevoegen: "' + this.item.name.nl + '".';
 
       case 'updateImage':
-        return 'Afbeelding aanpassen: "' + this.item.name + '".';
+        return 'Afbeelding aanpassen: "' + this.item.name.nl + '".';
 
       case 'deleteImage':
-        return 'Afbeelding verwijderen: "' + this.item.name + '".';
+        return 'Afbeelding verwijderen: "' + this.item.name.nl + '".';
+
+      case 'updateMajorInfo':
+        return 'Hoofdinformatie aanpassen: "' +  this.item.name.nl + '".';
 
     }
 

@@ -25,13 +25,31 @@ function EventFormController($scope, eventId, offerType, EventFormData, udbApi) 
         EventFormData.isEvent = true;
         EventFormData.isPlace = false;
         copyItemDataToFormData(event);
+
+        // Copy location.
+        if (event.location && event.location['@id']) {
+          EventFormData.location = {
+            id : event.location['@id'].split('/').pop(),
+            name : event.location.name,
+            address : event.location.address
+          };
+        }
       });
     }
     else if (offerType === 'place') {
       udbApi.getPlaceById(eventId).then(function(place) {
+
         EventFormData.isEvent = false;
         EventFormData.isPlace = true;
         copyItemDataToFormData(place);
+
+        // Places only have an address, form uses location property.
+        if (place.address) {
+          EventFormData.location = {
+            address : place.address
+          };
+        }
+
       });
     }
 
@@ -46,11 +64,9 @@ function EventFormController($scope, eventId, offerType, EventFormData, udbApi) 
    */
   function copyItemDataToFormData(item) {
 
-    console.log(item);
     // Properties that exactly match.
     var sameProperties = [
       'id',
-      'name',
       'type',
       'theme',
       'openingHours',
@@ -59,11 +75,22 @@ function EventFormController($scope, eventId, offerType, EventFormData, udbApi) 
       'organizer',
       'bookingInfo',
       'contactPoint',
-      'mediaObject'
+      'facilities',
+      'mediaObject',
     ];
     for (var i = 0; i < sameProperties.length; i++) {
       if (item[sameProperties[i]]) {
         EventFormData[sameProperties[i]] = item[sameProperties[i]];
+      }
+    }
+
+    // Places don't have nl.
+    if (item.name) {
+      if (typeof item.name === 'object') {
+        EventFormData.name = item.name;
+      }
+      else {
+        EventFormData.setName(item.name, 'nl');
       }
     }
 
@@ -84,19 +111,29 @@ function EventFormController($scope, eventId, offerType, EventFormData, udbApi) 
         var subEvent = item.subEvent[j];
         var startDate = new Date(subEvent.startDate);
         var endDate = new Date(subEvent.endDate);
-        var startHour = startDate.getHours() + ':' + startDate.getMinutes();
-        var endHour = endDate.getHours() + ':' + endDate.getMinutes();
-        EventFormData.addTimestamp(startDate, startHour === '00:00' ? '' : endHour === '00:00' ? '' : endHour);
-      }
-    }
 
-    // Copy location.
-    if (item.location && item.location['@id']) {
-      EventFormData.location = {
-        id : item.location['@id'].split('/').pop(),
-        name : item.location.name,
-        address : item.location.address
-      };
+        var startHour = '';
+        startHour = startDate.getHours() < 9 ? '0' + startDate.getHours() : startDate.getHours();
+        if (startDate.getMinutes() < 9) {
+          startHour += ':0' + startDate.getMinutes();
+        }
+        else {
+          startHour += ':' + startDate.getMinutes();
+        }
+
+        var endHour = '';
+        endHour = endDate.getHours() < 9 ? '0' + endDate.getHours() : endDate.getHours();
+        if (endDate.getMinutes() < 9) {
+          endHour += ':0' + endDate.getMinutes();
+        }
+        else {
+          endHour += ':' + endDate.getMinutes();
+        }
+
+        startHour = startHour === '00:00' ? '' : startHour;
+        endHour = startHour === '00:00' ? '' : endHour;
+        EventFormData.addTimestamp(startDate, startHour, endHour);
+      }
     }
 
     $scope.loaded = true;
@@ -105,8 +142,6 @@ function EventFormController($scope, eventId, offerType, EventFormData, udbApi) 
     EventFormData.showStep(3);
     EventFormData.showStep(4);
     EventFormData.showStep(5);
-
-    console.log(EventFormData);
 
   }
 

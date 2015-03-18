@@ -9,7 +9,7 @@
 
     <div class="row">
 
-      <div class="col-xs-5 col-xs-12" ng-show="activeEventType === ''">
+      <div class="col-xs-12" ng-class="eventSelectionClass" ng-show="showEventSelection">
         <label class="event-type-choser-label">Een activiteit of evenement</label>
         <ul class="list-inline" id="step1-events">
           <li ng-repeat="eventTypeLabel in eventTypeLabels" ng-show="eventTypeLabel.primary === true || showAllEventTypes">
@@ -21,11 +21,11 @@
         </p>
       </div>
 
-      <div class="col-xs-1 col-xs-12" ng-show="activeEventType === ''">
+      <div class="col-xs-1 col-xs-12" ng-show="showEventSelection">
         <p class="text-center">of</p>
       </div>
 
-      <div class="col-xs-6 col-xs-12" ng-show="activeEventType === ''">
+      <div ng-class="placeSelectionClass" ng-show="showPlaceSelection">
         <label class="event-type-choser-label">Een locatie of plaats</label>
         <ul class="list-inline" id="step1-places">
           <li ng-repeat="placeLabel in placeLabels" ng-show="placeLabel.primary == true || showAllPlaces">

@@ -21,6 +21,7 @@ function EventFormDataFactory(UdbEvent, UdbPlace) {
     showStep3 : false,
     showStep4 : false,
     showStep5 : false,
+    majorInfoChanged : false,
     // Properties that will be copied to UdbEvent / UdbPlace.
     name : {},
     description : {},
@@ -220,6 +221,7 @@ function EventFormDataFactory(UdbEvent, UdbPlace) {
      * Add a timestamp to the timestamps array.
      */
     addTimestamp: function(date, startHour, endHour) {
+
       this.timestamps.push({
         'date' : date,
         'startHour' : startHour,

@@ -14,8 +14,8 @@ angular
 /* @ngInject */
 function UdbPlaceFactory() {
 
-  function getCategoryByType(jsonEvent, domain) {
-    var category = _.find(jsonEvent.terms, function (category) {
+  function getCategoryByType(jsonPlace, domain) {
+    var category = _.find(jsonPlace.terms, function (category) {
       return category.domain === domain;
     });
 
@@ -24,6 +24,21 @@ function UdbPlaceFactory() {
     }
 
     return;
+  }
+
+  /**
+   * Return all categories for a given type.
+   */
+  function getCategoriesByType(jsonPlace, domain) {
+
+    var categories = [];
+    for (var i = 0; i < jsonPlace.terms.length; i++) {
+      if (jsonPlace.terms[i].domain === domain) {
+        categories.push(jsonPlace.terms[i]);
+      }
+    }
+
+    return categories;
   }
 
   /**
@@ -36,7 +51,6 @@ function UdbPlaceFactory() {
     this.theme = {};
     this.calendarType = '';
     this.openinghours = [];
-    this.timestamps = [];
     this.address = {
       'addressCountry' : '',
       'addressLocality' : '',
@@ -49,7 +63,8 @@ function UdbPlaceFactory() {
     parseJson: function (jsonPlace) {
 
       this.id = jsonPlace['@id'].split('/').pop();
-      this.name = jsonPlace.name || {};
+      this.name = jsonPlace.name || '';
+      this.address = jsonPlace.address || this.address;
       this.type = getCategoryByType(jsonPlace, 'eventtype') || {};
       this.theme = getCategoryByType(jsonPlace, 'theme') || {};
       this.description = jsonPlace.description || {};
@@ -60,22 +75,10 @@ function UdbPlaceFactory() {
       this.typicalAgeRange = jsonPlace.typicalAgeRange || '';
       this.bookingInfo = jsonPlace.bookingInfo || {};
       this.contactPoint = jsonPlace.contactPoint || {};
+      this.organizer = jsonPlace.organizer || {};
       this.mediaObject = jsonPlace.mediaObject || [];
+      this.facilities = getCategoriesByType(jsonPlace, 'facility') || [];
 
-    },
-
-    /**
-     * Set the name of the event for a given langcode.
-     */
-    setName: function(name, langcode) {
-      this.name[langcode] = name;
-    },
-
-    /**
-     * Get the name of the event for a given langcode.
-     */
-    getName: function(langcode) {
-      return this.name[langcode];
     },
 
     /**

@@ -37,8 +37,28 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
    * Creates a new place.
    */
   this.createPlace = function(place) {
-
     return udbApi.createPlace(place);
+  };
+
+  /**
+   * Update the major info of an event / place.
+   */
+  this.updateMajorInfo = function(item) {
+
+    var jobPromise;
+    if (item.isEvent) {
+      jobPromise = udbApi.updateMajorInfo(item.id, item.getType(), item);
+    }
+    else {
+      jobPromise = udbApi.updateMajorInfo(item.id, item.getType(), item);
+    }
+
+    jobPromise.success(function (jobData) {
+      var job = new EventCrudJob(jobData.commandId, item, 'updateItem');
+      jobLogger.addJob(job);
+    });
+
+    return jobPromise;
 
   };
 

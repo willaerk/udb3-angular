@@ -45,7 +45,7 @@
 
           <tr ng-repeat="(i, openingHour) in eventFormData.openingHours">
             <td>
-              <select class="selectpicker" multiple udb-multiselect start-label="Kies dag(en)" ng-model="openingHour.dayOfWeek" ng-change="saveOpeninghHourDaySelection(i, openingHour.dayOfWeek)">
+              <select class="selectpicker" multiple udb-multiselect start-label="Kies dag(en)" ng-model="openingHour.dayOfWeek" ng-change="saveOpeningHourDaySelection(i, openingHour.dayOfWeek)">
                 <option value="monday">maandag</option>
                 <option value="tuesday">dinsdag</option>
                 <option value="wednesday">woensdag</option>
@@ -74,7 +74,7 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal">Annuleren</button>
-        <button type="button" class="btn btn-primary openingsuren-toevoegen" data-dismiss="modal" ng-click="hasOpeningHours = true">Toevoegen</button>
+        <button type="button" class="btn btn-primary openingsuren-toevoegen" data-dismiss="modal" ng-click="saveOpeningHours()">Toevoegen</button>
       </div>
     </div>
     <!-- /.modal-content -->

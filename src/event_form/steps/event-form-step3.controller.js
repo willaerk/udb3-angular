@@ -52,11 +52,25 @@ function EventFormStep3Controller($scope, EventFormData, cityAutocomplete, event
   $scope.validatePlace = validatePlace;
   $scope.changeStreetAddress = changeStreetAddress;
   $scope.getLocations = getLocations;
+  $scope.setMajorInfoChanged = setMajorInfoChanged;
 
   // Default values
-  if (EventFormData.location && EventFormData.location.name) {
-    $scope.selectedCity = EventFormData.location.address.postalCode + ' ' + EventFormData.location.address.addressLocality;
-    $scope.selectedLocation = EventFormData.location.name;
+  if (EventFormData.location && EventFormData.location.address) {
+
+    $scope.selectedCity = EventFormData.location.address.postalCode +
+      ' ' + EventFormData.location.address.addressLocality;
+
+    // Location has a name => an event.
+    if (EventFormData.location.name) {
+      $scope.selectedLocation = EventFormData.location.name;
+    }
+    else {
+      var streetParts = EventFormData.location.address.streetAddress.split(' ');
+      EventFormData.placeNumber = streetParts.pop();
+      EventFormData.placeStreet = streetParts.join(' ');
+      $scope.selectedLocation = EventFormData.location.address.streetAddress;
+    }
+
   }
 
   /**
@@ -80,7 +94,6 @@ function EventFormStep3Controller($scope, EventFormData, cityAutocomplete, event
 
   /**
    * Select City.
-   * @returns {undefined}
    */
   function selectCity($item, $model, $label) {
 
@@ -98,7 +111,6 @@ function EventFormStep3Controller($scope, EventFormData, cityAutocomplete, event
 
   /**
    * Change a city selection.
-   * @returns {undefined}
    */
   function changeCitySelection() {
 
@@ -128,6 +140,7 @@ function EventFormStep3Controller($scope, EventFormData, cityAutocomplete, event
     EventFormData.setLocation(location);
 
     EventFormData.showStep4 = true;
+    setMajorInfoChanged();
 
   }
 
@@ -259,7 +272,6 @@ function EventFormStep3Controller($scope, EventFormData, cityAutocomplete, event
 
   /**
    * Change StreetAddress
-   * @returns {undefined}
    */
   function changeStreetAddress() {
 
@@ -273,6 +285,15 @@ function EventFormStep3Controller($scope, EventFormData, cityAutocomplete, event
 
     EventFormData.showStep4 = false;
 
+  }
+
+  /**
+   * Mark the major info as changed.
+   */
+  function setMajorInfoChanged() {
+    if (EventFormData.id) {
+      EventFormData.majorInfoChanged = true;
+    }
   }
 
 }

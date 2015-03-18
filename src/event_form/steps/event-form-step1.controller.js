@@ -27,6 +27,11 @@ function EventFormStep1Controller($scope, EventFormData, eventTypes) {
     $scope.placeLabels = categories.place;
   });
 
+  $scope.showEventSelection = EventFormData.id ? false : true;
+  $scope.showPlaceSelection = EventFormData.id ? false : true;
+  $scope.eventSelectionClass = $scope.showPlaceSelection ? 'col-xs-5' : 'col-xs-12';
+  $scope.placeSelectionClass = $scope.showEventSelection ? 'col-xs-6' : 'col-xs-12';
+
   $scope.mustRefine = false;
   $scope.showAllEventTypes = false;
   $scope.showAllPlaces = false;
@@ -54,6 +59,7 @@ function EventFormStep1Controller($scope, EventFormData, eventTypes) {
 
     // User selected an event.
     if (isEvent) {
+
       EventFormData.isEvent = true;
       EventFormData.isPlace = false;
 
@@ -124,6 +130,14 @@ function EventFormStep1Controller($scope, EventFormData, eventTypes) {
     EventFormData.setEventType(type, label);
     EventFormData.theme = {};
 
+    // Keep track of changes.
+    if (EventFormData.id) {
+      EventFormData.majorInfoChanged = true;
+    }
+
+    $scope.showEventSelection = false;
+    $scope.showPlaceSelection = false;
+
     if (!$scope.mustRefine) {
       EventFormData.showStep(2);
     }
@@ -138,6 +152,18 @@ function EventFormStep1Controller($scope, EventFormData, eventTypes) {
     $scope.activeEventTypeLabel = '';
     $scope.activeTheme = '';
     $scope.activeThemeLabel = '';
+
+    if (EventFormData.id) {
+      $scope.showEventSelection = EventFormData.id && EventFormData.isEvent ? true : false;
+      $scope.showPlaceSelection = EventFormData.id && EventFormData.isPlace ? true : false;
+      $scope.eventSelectionClass = 'col-xs-12';
+      $scope.placeSelectionClass = 'col-xs-12';
+    }
+    else {
+      $scope.showEventSelection = true;
+      $scope.showPlaceSelection = true;
+    }
+
   }
 
   /**
@@ -166,6 +192,10 @@ function EventFormStep1Controller($scope, EventFormData, eventTypes) {
 
     EventFormData.showStep(2);
     $scope.mustRefine = false;
+
+    if (EventFormData.id) {
+      EventFormData.majorInfoChanged = true;
+    }
 
   }
 

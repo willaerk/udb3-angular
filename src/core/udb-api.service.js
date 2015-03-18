@@ -364,6 +364,17 @@ function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth,
   };
 
   /**
+   * Update the major info of an item.
+   */
+  this.updateMajorInfo = function(id, type, item) {
+    return $http.post(
+      appConfig.baseApiUrl + type + '/' + id + '/major-info',
+      item,
+      defaultApiConfig
+    );
+  };
+
+  /**
    * Delete the organizer for an offer.
    */
   this.deleteOfferOrganizer = function(id, type, organizerId) {

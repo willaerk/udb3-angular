@@ -31,7 +31,9 @@ function EventFormStep2Controller($scope, EventFormData, UdbOpeningHours) {
   $scope.addTimestamp = addTimestamp;
   $scope.toggleStartHour = toggleStartHour;
   $scope.toggleEndHour = toggleEndHour;
-  $scope.saveOpeninghHourDaySelection = saveOpeninghHourDaySelection;
+  $scope.saveOpeningHourDaySelection = saveOpeningHourDaySelection;
+  $scope.saveOpeningHour = saveOpeningHour;
+  $scope.setMajorInfoChanged = setMajorInfoChanged;
 
   // Mapping between machine name of days and real output.
   var dayNames = {
@@ -82,6 +84,10 @@ function EventFormStep2Controller($scope, EventFormData, UdbOpeningHours) {
 
     initCalendar();
 
+    if (EventFormData.id) {
+      EventFormData.majorInfoChanged = true;
+    }
+
   }
 
   /**
@@ -106,7 +112,7 @@ function EventFormStep2Controller($scope, EventFormData, UdbOpeningHours) {
    */
   function initOpeningHours() {
     for (var i = 0; i < EventFormData.openingHours.length; i++) {
-      saveOpeninghHourDaySelection(i, EventFormData.openingHours[i].dayOfWeek);
+      saveOpeningHourDaySelection(i, EventFormData.openingHours[i].dayOfWeek);
     }
   }
 
@@ -131,8 +137,6 @@ function EventFormStep2Controller($scope, EventFormData, UdbOpeningHours) {
    */
   function toggleStartHour(timestamp) {
 
-    timestamp.showStartHour = !timestamp.showStartHour;
-
     // If we hide the textfield, empty all other time fields.
     if (!timestamp.showStartHour) {
       timestamp.startHour = '';
@@ -149,8 +153,6 @@ function EventFormStep2Controller($scope, EventFormData, UdbOpeningHours) {
    */
   function toggleEndHour(timestamp) {
 
-    timestamp.showEndHour = !timestamp.showEndHour;
-
     // If we hide the textfield, empty also the input.
     if (!timestamp.showEndHour) {
       timestamp.endHour = '';
@@ -162,7 +164,7 @@ function EventFormStep2Controller($scope, EventFormData, UdbOpeningHours) {
    * Change listener on the day selection of opening hours.
    * Create human labels for the day selection.
    */
-  function saveOpeninghHourDaySelection(index, dayOfWeek) {
+  function saveOpeningHourDaySelection(index, dayOfWeek) {
 
     var humanValues = [];
     if (dayOfWeek instanceof Array) {
@@ -173,6 +175,23 @@ function EventFormStep2Controller($scope, EventFormData, UdbOpeningHours) {
 
     EventFormData.openingHours[index].label = humanValues.join(', ');
 
+  }
+
+  /**
+   * Save the opening hour.
+   */
+  function saveOpeningHour() {
+    $scope.hasOpeningHours = true;
+    setMajorInfoChanged();
+  }
+
+  /**
+   * Mark the major info as changed.
+   */
+  function setMajorInfoChanged() {
+    if (EventFormData.id) {
+      EventFormData.majorInfoChanged = true;
+    }
   }
 
 }

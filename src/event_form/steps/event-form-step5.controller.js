@@ -46,6 +46,10 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
     urlRequired : false,
     emailRequired : false,
     phoneRequired : false,
+    availabilityStarts : EventFormData.bookingInfo.availabilityStarts ?
+      EventFormData.bookingInfo.availabilityStarts : '',
+    availabilityEnds : EventFormData.bookingInfo.availabilityEnds ?
+      EventFormData.bookingInfo.availabilityEnds : '',
   };
 
   $scope.viaWebsite =  EventFormData.bookingInfo.url ? true : false;
@@ -54,8 +58,9 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
   $scope.websitePreviewEnabled = false;
   $scope.bookingPeriodPreviewEnabled = false;
   $scope.bookingPeriodShowValidation = false;
-  $scope.bookingInfoCssClass = EventFormData.bookingInfo.length > 0 ? 'state-complete' : 'state-incomplete';
+  $scope.bookingInfoCssClass = 'state-incomplete';
 
+  $scope.toggleBookingType = toggleBookingType;
   $scope.saveBookingType = saveBookingType;
   $scope.validateBookingType = validateBookingType;
   $scope.saveWebsitePreview = saveWebsitePreview;
@@ -72,7 +77,7 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
   // Facilities vars.
   $scope.facilitiesCssClass = 'state-incomplete';
   $scope.facilitiesInapplicable = false;
-  $scope.selectedFacilities = EventFormData.facilities;
+  $scope.selectedFacilities = [];
 
   // Image upload vars.
   $scope.imageCssClass = EventFormData.mediaObject.length > 0 ? 'state-complete' : 'state-incomplete';
@@ -444,6 +449,33 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
   }
 
   /**
+   * Toggle the booking type and check if info should be deleted.
+   */
+  function toggleBookingType(type) {
+
+    var saveNeeded = false;
+    if (EventFormData.bookingInfo.url && !$scope.viaWebsite) {
+      EventFormData.bookingInfo.url = '';
+      saveNeeded = true;
+    }
+
+    if (EventFormData.bookingInfo.phone && !$scope.viaPhone) {
+      EventFormData.bookingInfo.phone = '';
+      saveNeeded = true;
+    }
+
+    if (EventFormData.bookingInfo.email && !$scope.viaEmail) {
+      EventFormData.bookingInfo.email = '';
+      saveNeeded = true;
+    }
+
+    if (saveNeeded) {
+      saveBookingType();
+    }
+
+  }
+
+  /**
    * Validates a booking type.
    */
   function validateBookingType(type) {
@@ -477,9 +509,16 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
    * Temporarily save a booking type.
    */
   function saveBookingType(type) {
-    $scope.editBookingPhone = false;
-    $scope.editBookingEmail = false;
-    $scope.editBookingUrl = false;
+    if (type === 'phone') {
+      $scope.editBookingPhone = false;
+    }
+    else if (type === 'email') {
+      $scope.editBookingEmail = false;
+    }
+    else if (type === 'website') {
+      $scope.editBookingUrl = false;
+    }
+
     saveBookingInfo();
   }
 
@@ -534,6 +573,16 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
    * Saves the booking info
    */
   function saveBookingInfo() {
+
+    // Make sure all default values are set.
+    EventFormData.bookingInfo = angular.extend({}, {
+      url : '',
+      urlLabel : 'Koop tickets',
+      email : '',
+      phone : '',
+      availabilityStarts : '',
+      availabilityEnds : ''
+    }, EventFormData.bookingInfo);
 
     $scope.savingBookingInfo = true;
     $scope.bookingInfoError = false;
@@ -651,8 +700,32 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
       }
     }
 
+    // Set correct css class for contact info.
     if ($scope.contactInfo.length > 0) {
       $scope.contactInfoCssClass = 'state-complete';
+    }
+
+    // Set class to complete if we have booking info.
+    if (EventFormData.bookingInfo.url ||
+      EventFormData.bookingInfo.phone ||
+      EventFormData.bookingInfo.email ||
+      EventFormData.bookingInfo.availabilityStarts ||
+      EventFormData.bookingInfo.availabilityEnds
+    ) {
+      $scope.bookingInfoCssClass = 'state-complete';
+    }
+
+    // Set default facilities.
+    if (EventFormData.id) {
+      $scope.facilitiesCssClass = 'state-complete';
+      if (!EventFormData.facilities || EventFormData.facilities.length === 0) {
+        $scope.facilitiesInapplicable = true;
+      }
+      else {
+        $scope.selectedFacilities = EventFormData.facilities;
+        $scope.facilitiesInapplicable = false;
+      }
+
     }
 
   }

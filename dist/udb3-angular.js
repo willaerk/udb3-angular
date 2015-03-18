@@ -7411,6 +7411,8 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
     urlRequired : false,
     emailRequired : false,
     phoneRequired : false,
+    urlLabel : EventFormData.bookingInfo.urlLabel ? EventFormData.bookingInfo.urlLabel : 'Bestel tickets',
+    urlLabelCustom : '',
     availabilityStarts : EventFormData.bookingInfo.availabilityStarts ?
       EventFormData.bookingInfo.availabilityStarts : '',
     availabilityEnds : EventFormData.bookingInfo.availabilityEnds ?

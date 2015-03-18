@@ -78,6 +78,7 @@ function UdbPlaceFactory() {
       this.organizer = jsonPlace.organizer || {};
       this.mediaObject = jsonPlace.mediaObject || [];
       this.facilities = getCategoriesByType(jsonPlace, 'facility') || [];
+      this.additionalData = jsonPlace.additionalData || {};
 
     },
 

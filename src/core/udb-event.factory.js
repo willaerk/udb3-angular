@@ -114,6 +114,7 @@ function UdbEventFactory() {
       this.contactPoint = jsonEvent.contactPoint || {};
       this.url = '/event/' + this.id;
       this.sameAs = jsonEvent.sameAs;
+      this.additionalData = jsonEvent.additionalData || {};
 
       if (jsonEvent.available) {
         this.available = jsonEvent.available;

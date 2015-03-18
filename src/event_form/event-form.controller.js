@@ -77,6 +77,7 @@ function EventFormController($scope, eventId, offerType, EventFormData, udbApi) 
       'contactPoint',
       'facilities',
       'mediaObject',
+      'additionalData'
     ];
     for (var i = 0; i < sameProperties.length; i++) {
       if (item[sameProperties[i]]) {

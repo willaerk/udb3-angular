@@ -3008,6 +3008,7 @@ function UdbEventFactory() {
       this.contactPoint = jsonEvent.contactPoint || {};
       this.url = '/event/' + this.id;
       this.sameAs = jsonEvent.sameAs;
+      this.additionalData = jsonEvent.additionalData || {};
 
       if (jsonEvent.available) {
         this.available = jsonEvent.available;
@@ -3426,6 +3427,7 @@ function UdbPlaceFactory() {
       this.organizer = jsonPlace.organizer || {};
       this.mediaObject = jsonPlace.mediaObject || [];
       this.facilities = getCategoriesByType(jsonPlace, 'facility') || [];
+      this.additionalData = jsonPlace.additionalData || {};
 
     },
 
@@ -5835,6 +5837,7 @@ function EventFormController($scope, eventId, offerType, EventFormData, udbApi) 
       'contactPoint',
       'facilities',
       'mediaObject',
+      'additionalData'
     ];
     for (var i = 0; i < sameProperties.length; i++) {
       if (item[sameProperties[i]]) {
@@ -5962,6 +5965,7 @@ function EventFormDataFactory(UdbEvent, UdbPlace) {
     facilities : [],
     bookingInfo : {},
     mediaObject : [],
+    additionalData : {},
 
     /**
      * Show the given step.
@@ -10962,7 +10966,6 @@ $templateCache.put('templates/time-autocomplete.html',
     "<div class=\"modal-body\">\n" +
     "\n" +
     "  <label>Voorzieningen voor personen met een motorische beperking</label>\n" +
-    "\n" +
     "  <div class=\"checkbox\" ng-repeat=\"facility in facilities.motor\">\n" +
     "    <label>\n" +
     "      <input type=\"checkbox\" ng-model=\"facility.selected\">{{facility.label}}</label>\n" +

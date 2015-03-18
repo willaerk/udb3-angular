@@ -55,6 +55,7 @@ function EventFormDataFactory(UdbEvent, UdbPlace) {
     facilities : [],
     bookingInfo : {},
     mediaObject : [],
+    additionalData : {},
 
     /**
      * Show the given step.

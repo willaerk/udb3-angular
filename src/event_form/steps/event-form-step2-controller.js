@@ -32,7 +32,7 @@ function EventFormStep2Controller($scope, EventFormData, UdbOpeningHours) {
   $scope.toggleStartHour = toggleStartHour;
   $scope.toggleEndHour = toggleEndHour;
   $scope.saveOpeningHourDaySelection = saveOpeningHourDaySelection;
-  $scope.saveOpeningHour = saveOpeningHour;
+  $scope.saveOpeningHours = saveOpeningHours;
   $scope.setMajorInfoChanged = setMajorInfoChanged;
 
   // Mapping between machine name of days and real output.
@@ -178,9 +178,9 @@ function EventFormStep2Controller($scope, EventFormData, UdbOpeningHours) {
   }
 
   /**
-   * Save the opening hour.
+   * Save the opening hours.
    */
-  function saveOpeningHour() {
+  function saveOpeningHours() {
     $scope.hasOpeningHours = true;
     setMajorInfoChanged();
   }

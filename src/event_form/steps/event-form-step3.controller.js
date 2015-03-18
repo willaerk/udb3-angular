@@ -55,7 +55,7 @@ function EventFormStep3Controller($scope, EventFormData, cityAutocomplete, event
   $scope.setMajorInfoChanged = setMajorInfoChanged;
 
   // Default values
-  if (EventFormData.location && EventFormData.location.address) {
+  if (EventFormData.location && EventFormData.location.address && EventFormData.location.address.postalCode) {
 
     $scope.selectedCity = EventFormData.location.address.postalCode +
       ' ' + EventFormData.location.address.addressLocality;

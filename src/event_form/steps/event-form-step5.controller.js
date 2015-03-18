@@ -346,6 +346,7 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
    */
   function deleteContactInfo(index) {
     $scope.contactInfo.splice(index, 1);
+    saveContactInfo();
   }
 
   /**

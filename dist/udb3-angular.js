@@ -3330,11 +3330,11 @@ function UdbOrganizers($q, $http, appConfig) {
   /**
    * Search for duplicate organizers.
    */
-  this.searchDuplicates = function(title, zip) {
+  this.searchDuplicates = function(title, postalCode) {
 
     var duplicates = $q.defer();
 
-    var request = $http.get(appConfig.baseApiUrl + 'organizer/search-duplicates/' + title + '/' + zip);
+    var request = $http.get(appConfig.baseApiUrl + 'organizer/search-duplicates/' + title + '/' + postalCode);
 
     request.success(function(jsonData) {
       duplicates.resolve(jsonData);
@@ -6666,7 +6666,7 @@ function EventFormStep2Controller($scope, EventFormData, UdbOpeningHours) {
   $scope.toggleStartHour = toggleStartHour;
   $scope.toggleEndHour = toggleEndHour;
   $scope.saveOpeningHourDaySelection = saveOpeningHourDaySelection;
-  $scope.saveOpeningHour = saveOpeningHour;
+  $scope.saveOpeningHours = saveOpeningHours;
   $scope.setMajorInfoChanged = setMajorInfoChanged;
 
   // Mapping between machine name of days and real output.
@@ -6812,9 +6812,9 @@ function EventFormStep2Controller($scope, EventFormData, UdbOpeningHours) {
   }
 
   /**
-   * Save the opening hour.
+   * Save the opening hours.
    */
-  function saveOpeningHour() {
+  function saveOpeningHours() {
     $scope.hasOpeningHours = true;
     setMajorInfoChanged();
   }
@@ -6887,7 +6887,7 @@ function EventFormStep3Controller($scope, EventFormData, cityAutocomplete, event
   $scope.setMajorInfoChanged = setMajorInfoChanged;
 
   // Default values
-  if (EventFormData.location && EventFormData.location.address) {
+  if (EventFormData.location && EventFormData.location.address && EventFormData.location.address.postalCode) {
 
     $scope.selectedCity = EventFormData.location.address.postalCode +
       ' ' + EventFormData.location.address.addressLocality;
@@ -7711,6 +7711,7 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
    */
   function deleteContactInfo(index) {
     $scope.contactInfo.splice(index, 1);
+    saveContactInfo();
   }
 
   /**

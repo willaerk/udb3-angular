@@ -33,11 +33,11 @@ function UdbOrganizers($q, $http, appConfig) {
   /**
    * Search for duplicate organizers.
    */
-  this.searchDuplicates = function(title, zip) {
+  this.searchDuplicates = function(title, postalCode) {
 
     var duplicates = $q.defer();
 
-    var request = $http.get(appConfig.baseApiUrl + 'organizer/search-duplicates/' + title + '/' + zip);
+    var request = $http.get(appConfig.baseApiUrl + 'organizer/search-duplicates/' + title + '/' + postalCode);
 
     request.success(function(jsonData) {
       duplicates.resolve(jsonData);

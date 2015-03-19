@@ -79,11 +79,32 @@ function EventExportController($modalInstance, udbApi, eventExporter, queryField
     publisher: ''
   };
 
+  /**
+   * A map of all the possible export steps.
+   * You can add a callback to its incomplete property which will be used to check if a step is completed.
+   */
   exporter.exportSteps = {
     format: {
       name: 'format',
       incomplete: function () {
-        return !exporter.format;
+        var format = exporter.format,
+            isCustomizable = !!_.find(exporter.exportFormats, {type: format, customizable: true});
+
+        if (isCustomizable) {
+          exporter.steps = [
+            exporter.exportSteps.format,
+            exporter.exportSteps.customize,
+            exporter.exportSteps.confirm
+          ];
+        } else {
+          exporter.steps = [
+            exporter.exportSteps.format,
+            exporter.exportSteps.filter,
+            exporter.exportSteps.confirm
+          ];
+        }
+
+        return !format;
       }
     },
     customize: {
@@ -107,12 +128,9 @@ function EventExportController($modalInstance, udbApi, eventExporter, queryField
 
   /**
    * This is a list of steps that the user has to navigate through.
-   * You can add a callback to its incomplete property which will be used to check if a step is completed.
    */
   exporter.steps = [
     exporter.exportSteps.format,
-    exporter.exportSteps.filter,
-    exporter.exportSteps.customize,
     exporter.exportSteps.confirm
   ];
 
@@ -165,10 +183,18 @@ function EventExportController($modalInstance, udbApi, eventExporter, queryField
   };
 
   exporter.export = function () {
-    var includedProperties = _.pluck(_.filter(exporter.eventProperties, 'include'), 'name'),
-        exportFormat = _.find(exporter.exportFormats, {name: exporter.format}),
+    var exportFormat = _.find(exporter.exportFormats, {type: exporter.format}),
         isCustomized = exportFormat && exportFormat.customizable === true,
-        customizations = isCustomized ? exporter.customizations : false;
+        includedProperties,
+        customizations;
+
+    if (isCustomized) {
+      customizations = isCustomized ? exporter.customizations : false;
+      includedProperties = [];
+    } else {
+      customizations = {};
+      includedProperties = _.pluck(_.filter(exporter.eventProperties, 'include'), 'name');
+    }
 
     console.log(customizations);
 

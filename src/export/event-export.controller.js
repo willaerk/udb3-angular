@@ -21,7 +21,7 @@ function EventExportController($modalInstance, udbApi, eventExporter, queryField
   exporter.eventProperties = [
     {name: 'name', include: true, sortable: false, excludable: false},
     {name: 'description', include: false, sortable: false, excludable: true},
-    {name: 'labels', include: false, sortable: false, excludable: true},
+    {name: 'keywords', include: false, sortable: false, excludable: true},
     {name: 'calendarSummary', include: true, sortable: false, excludable: false},
     {name: 'image', include: true, sortable: false, excludable: true},
     {name: 'location', include: true, sortable: false, excludable: false},
@@ -42,23 +42,54 @@ function EventExportController($modalInstance, udbApi, eventExporter, queryField
 
   exporter.exportFormats = [
     {
-      type: 'json',
-      label: 'Als json',
-      description: 'Exporteren naar event-ld om de informatie voor ontwikkelaars beschikbaar te maken.'
-    },
-    {
       type: 'ooxml',
       label: 'Office Open XML (Excel)',
       description: 'Het standaard formaat van Excel vanaf Microsoft Office 2007.'
+    },
+    {
+      type: 'html',
+      label: 'Als HTML',
+      description: 'Exporteren naar HTML is een gemakkelijke manier om de inhoud geschikt voor het web te maken.',
+      customizable: true
+    },
+    {
+      type: 'pdf',
+      label: 'Als PDF',
+      description: 'Druk snel en eenvoudig items uit de UiTdatabank af. Kies een Vlieg, UiT-, of UiTPAS-sjabloon.',
+      customizable: true
+    },
+    {
+      type: 'json',
+      label: 'Als json',
+      description: 'Exporteren naar event-ld om de informatie voor ontwikkelaars beschikbaar te maken.'
     }
   ];
+
+  exporter.customizations = {
+    brand: 'vlieg',
+    title: '',
+    subTitle: '',
+    footer: '',
+    publisher: ''
+  };
 
   /**
    * This is a list of steps that the user has to navigate through.
    * You can add a callback to its incomplete property which will be used to check if a step is completed.
    */
   exporter.steps = [
-    {name: 'format'},
+    {
+      name: 'format',
+      incomplete: function () {
+        return !exporter.format;
+      }
+    },
+    {
+      name: 'customize',
+      incomplete: function () {
+        return !exporter.customizations.brand || !exporter.customizations.title;
+      }
+    },
     {
       name: 'filter',
       incomplete: function () {
@@ -67,7 +98,6 @@ function EventExportController($modalInstance, udbApi, eventExporter, queryField
         });
       }
     },
-    //{name: 'sort' },
     {name: 'confirm'}
   ];
 
@@ -120,7 +150,11 @@ function EventExportController($modalInstance, udbApi, eventExporter, queryField
   };
 
   exporter.export = function () {
-    var includedProperties = _.pluck(_.filter(exporter.eventProperties, 'include'), 'name');
+    var includedProperties = _.pluck(_.filter(exporter.eventProperties, 'include'), 'name'),
+        isCustomized = _.find(exporter.exportFormats, { name: exporter.format}).customizable,
+        customizations = isCustomized ? exporter.customizations : false;
+
+    console.log(customizations);
 
     eventExporter.export(exporter.format, exporter.email, includedProperties, exporter.dayByDay);
     activeStep = -1;

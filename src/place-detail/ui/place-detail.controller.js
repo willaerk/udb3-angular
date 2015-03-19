@@ -29,6 +29,24 @@ function PlaceDetail($scope, $location, placeId, udbApi, jsonLDLangFilter, locat
         });
         $scope.place = place;
         $scope.placeIdIsInvalid = false;
+
+        if (typeof $scope.place.additionalData.omdInfo !== 'undefined') {
+          $scope.place.omdParticipation = true;
+
+          // Get category list.
+          $scope.place.categoryList = $scope.place.additionalData.omdInfo.categories.join(', ');
+
+          // Get free brochure info.
+          if ($scope.place.additionalData.omdInfo.freeBrochure === true) {
+            $scope.place.freeBrochure = 'Ja';
+          }
+          else {
+            $scope.place.freeBrochure = 'Nee';
+          }
+        }
+        else {
+          $scope.place.omdParticipation = false;
+        }
       },
       function (reason) {
         $scope.placeIdIsInvalid = true;

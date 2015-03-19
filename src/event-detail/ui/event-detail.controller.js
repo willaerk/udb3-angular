@@ -27,8 +27,26 @@ function EventDetail($scope, $location, eventId, udbApi, jsonLDLangFilter, locat
           $scope.eventHistory = eventHistory;
         });
         $scope.event = jsonLDLangFilter(event, 'nl');
-
         $scope.eventIdIsInvalid = false;
+
+        if (typeof $scope.event.additionalData.omdInfo !== 'undefined') {
+          $scope.event.omdParticipation = true;
+
+          // Get category list.
+          $scope.event.categoryList = $scope.event.additionalData.omdInfo.categories.join(', ');
+
+          // Get free brochure info.
+          if ($scope.event.additionalData.omdInfo.freeBrochure === true) {
+            $scope.event.freeBrochure = 'Ja';
+          }
+          else {
+            $scope.event.freeBrochure = 'Nee';
+          }
+        }
+        else {
+          $scope.event.omdParticipation = false;
+        }
+
       },
       function (reason) {
         $scope.eventIdIsInvalid = true;

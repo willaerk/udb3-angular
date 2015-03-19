@@ -49,9 +49,9 @@
             var item = $scope.userContent[key];
 
             // set urls
-            $scope.userContent[key].editUrl = '/udb3/' + item.type + '/edit/' + item.id;
+            $scope.userContent[key].editUrl = '/udb3/' + item.type + '/' + item.id + '/edit';
             $scope.userContent[key].exampleUrl = '/udb3/' + item.type + '/' + item.id;
-            $scope.userContent[key].deleteUrl = '/udb3/' + item.type + '/delete/' + item.id;
+            $scope.userContent[key].deleteUrl = '/udb3/' + item.type + '/' + item.id + '/delete';
 
             // User has omd events if events have been added with startdate 2015-09-13.
             var startDate = item.details.payload.calendar.startDate.substring(0, 10);

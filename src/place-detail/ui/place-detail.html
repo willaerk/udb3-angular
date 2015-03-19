@@ -130,25 +130,30 @@
       <div class="tab-pane" role="tabpanel" ng-show="isTabActive('omd')">
         <div class="panel panel-default">
           <table class="table">
-            <tbody><tr>
+            <tbody>
+              <tr>
                 <td><strong>Deelname</strong></td>
-                <td>
-                  {{ place.omdParticipation }}
+                <td ng-show="place.omdParticipation">
+                  Ja
+                </td>
+                <td ng-hide="place.omdParticipation">
+                  Nee
                 </td>
               </tr>
-              <tr>
+              <tr ng-show="place.omdParticipation">
                 <td><strong>Categorieën</strong></td>
                 <td>
-                  {{ place.categories }}
+                  {{ place.categoryList }}
                 </td>
               </tr>
-              <tr>
+              <tr ng-show="place.omdParticipation">
                 <td><strong>Gratis brochure</strong></td>
                 <td>
                   {{ place.freeBrochure }}
                 </td>
               </tr>
-            </tbody></table>
+            </tbody>
+          </table>
         </div>
       </div>
 

@@ -14,7 +14,7 @@ angular
 /* @ngInject */
 function PlaceDetail($scope, $location, placeId, udbApi, jsonLDLangFilter, locationTypes) {
 
-  $scope.placeId = placeId;
+  $scope.placeId = placeId; 
   $scope.placeIdIsInvalid = false;
   $scope.placeHistory = [];
 

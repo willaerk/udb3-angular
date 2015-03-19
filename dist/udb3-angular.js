@@ -3637,24 +3637,22 @@ UitidAuth.$inject = ["$window", "$location", "$http", "appConfig", "$cookieStore
   /* @ngInject */
   function DashboardController($scope, udb3Content) {
 
+console.log('DashboardController');
     // Scope variables.
     $scope.userContent = null;
     $scope.noContent = true;
-    $scope.noOmdEvents = true;
 
     // Scope functions.
     $scope.getUdb3ContentForCurrentUser = getUdb3ContentForCurrentUser;
-    $scope.getNoOmdEventsMessage = getNoOmdEventsMessage;
 
     // Load the udb3 content for the current user.
     getUdb3ContentForCurrentUser();
-    getNoOmdEventsMessage();
 
     /**
      * function to get udb3 content for the current user.
      */
     function getUdb3ContentForCurrentUser() {
-
+console.log('getUdb3ContentForCurrentUser wordt nog altijd uitgevoerd');
       var promise = udb3Content.getUdb3ContentForCurrentUser();
       return promise.then(function (content) {
 
@@ -3687,18 +3685,6 @@ UitidAuth.$inject = ["$window", "$location", "$http", "appConfig", "$cookieStore
           $scope.noContent = true;
         }
       });
-    }
-
-    /**
-     * function to get the message when no omd events have been added by the user.
-     */
-    function getNoOmdEventsMessage() {
-
-      var promise = udb3Content.getNoOmdEventsMessage();
-      return promise.then(function (message) {
-        $scope.noEventsMessage = message.data;
-      });
-
     }
   }
   DashboardController.$inject = ["$scope", "udb3Content"];
@@ -3778,6 +3764,12 @@ function EventCrudJobFactory(BaseJob) {
 
       case 'updateContactPoint':
         return 'Contact informatie aanpassen: "' + this.item.name + '".';
+        
+      case 'updateBookingInfo':
+        return 'Booking informatie aanpassen: "' + this.item.name + '".';
+        
+      case 'updateExtraInfo':
+        return 'Extra informatie aanpassen: "' + this.item.name + '".';
 
       case 'updateBookingInfo':
         return 'Booking informatie aanpassen: "' + this.item.name + '".';

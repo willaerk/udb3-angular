@@ -15,7 +15,6 @@
   /* @ngInject */
   function DashboardController($scope, udb3Content) {
 
-console.log('DashboardController');
     // Scope variables.
     $scope.userContent = null;
     $scope.noContent = true;
@@ -30,7 +29,7 @@ console.log('DashboardController');
      * function to get udb3 content for the current user.
      */
     function getUdb3ContentForCurrentUser() {
-console.log('getUdb3ContentForCurrentUser wordt nog altijd uitgevoerd');
+
       var promise = udb3Content.getUdb3ContentForCurrentUser();
       return promise.then(function (content) {
 
@@ -50,12 +49,6 @@ console.log('getUdb3ContentForCurrentUser wordt nog altijd uitgevoerd');
             $scope.userContent[key].editUrl = '/udb3/' + item.type + '/' + item.id + '/edit';
             $scope.userContent[key].exampleUrl = '/udb3/' + item.type + '/' + item.id;
             $scope.userContent[key].deleteUrl = '/udb3/' + item.type + '/' + item.id + '/delete';
-
-            // User has omd events if events have been added with startdate 2015-09-13.
-            var startDate = item.details.payload.calendar.startDate.substring(0, 10);
-            if (item.type === 'event' && startDate === '2015-09-13') {
-              $scope.noOmdEvents = false;
-            }
           }
         }
         else {

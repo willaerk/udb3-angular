@@ -23,14 +23,4 @@ function Udb3Content($q, $http, appConfig) {
 
   };
 
-  /**
-   * Get the message when no omd events have been added by the user.
-   */
-
-  this.getNoOmdEventsMessage = function() {
-
-    return $http.get(appConfig.udb3BaseUrl + '/omd/no_omd_events_message');
-
-  };
-
 }

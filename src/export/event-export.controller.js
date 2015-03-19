@@ -46,12 +46,12 @@ function EventExportController($modalInstance, udbApi, eventExporter, queryField
       label: 'Office Open XML (Excel)',
       description: 'Het standaard formaat van Excel vanaf Microsoft Office 2007.'
     },
-    {
-      type: 'html',
-      label: 'Als HTML',
-      description: 'Exporteren naar HTML is een gemakkelijke manier om de inhoud geschikt voor het web te maken.',
-      customizable: true
-    },
+    //{
+    //  type: 'html',
+    //  label: 'Als HTML',
+    //  description: 'Exporteren naar HTML is een gemakkelijke manier om de inhoud geschikt voor het web te maken.',
+    //  customizable: true
+    //},
     {
       type: 'pdf',
       label: 'Als PDF',

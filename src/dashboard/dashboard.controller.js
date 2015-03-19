@@ -16,6 +16,7 @@
   function DashboardController($scope, udb3Content) {
 
     // Scope variables.
+    $scope.loaded = false;
     $scope.userContent = null;
     $scope.noContent = true;
 
@@ -35,6 +36,7 @@
 
         // Add data to scope and convert to array to allow ordering in ng-repeat.
         $scope.userContent = Object.keys(content.data.content).map(function(key) { return content.data.content[key]; });
+        $scope.loaded = true;
 
         if ($scope.userContent.length) {
 

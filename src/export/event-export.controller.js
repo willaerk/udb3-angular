@@ -189,14 +189,12 @@ function EventExportController($modalInstance, udbApi, eventExporter, queryField
         customizations;
 
     if (isCustomized) {
-      customizations = isCustomized ? exporter.customizations : false;
+      customizations = exporter.customizations;
       includedProperties = [];
     } else {
       customizations = {};
       includedProperties = _.pluck(_.filter(exporter.eventProperties, 'include'), 'name');
     }
-
-    console.log(customizations);
 
     eventExporter.export(exporter.format, exporter.email, includedProperties, exporter.dayByDay, customizations);
     activeStep = -1;

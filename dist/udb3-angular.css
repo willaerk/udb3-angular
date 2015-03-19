@@ -388,6 +388,14 @@ body {
   max-height: 500px;
   overflow-y: auto;
 }
+.export-customization-brand {
+  display: inline-block;
+  margin-right: 1em;
+}
+.export-customization-brand img {
+  border: 1px solid silver;
+  padding: 5px;
+}
 .muted td {
   background-color: #EDEDED;
   color: #777;

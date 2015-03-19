@@ -3425,8 +3425,8 @@ angular
     .controller('EventDetailController', EventDetail);
 
 /* @ngInject */
-function EventDetail($scope, $routeParams, $location, udbApi, jsonLDLangFilter, locationTypes) {
-  $scope.eventId = $routeParams.eventId;
+function EventDetail($scope, $location, eventId, udbApi, jsonLDLangFilter, locationTypes) {
+  $scope.eventId = eventId;
   $scope.eventIdIsInvalid = false;
   $scope.eventHistory = [];
 
@@ -3519,7 +3519,7 @@ function EventDetail($scope, $routeParams, $location, udbApi, jsonLDLangFilter, 
     return tabId === activeTabId;
   };
 }
-EventDetail.$inject = ["$scope", "$routeParams", "$location", "udbApi", "jsonLDLangFilter", "locationTypes"];
+EventDetail.$inject = ["$scope", "$location", "eventId", "udbApi", "jsonLDLangFilter", "locationTypes"];
 
 // Source: src/export/event-export-job.factory.js
 /**
@@ -3619,7 +3619,7 @@ function EventExportController($modalInstance, udbApi, eventExporter, queryField
   exporter.eventProperties = [
     {name: 'name', include: true, sortable: false, excludable: false},
     {name: 'description', include: false, sortable: false, excludable: true},
-    {name: 'labels', include: false, sortable: false, excludable: true},
+    {name: 'keywords', include: false, sortable: false, excludable: true},
     {name: 'calendarSummary', include: true, sortable: false, excludable: false},
     {name: 'image', include: true, sortable: false, excludable: true},
     {name: 'location', include: true, sortable: false, excludable: false},
@@ -3640,24 +3640,57 @@ function EventExportController($modalInstance, udbApi, eventExporter, queryField
 
   exporter.exportFormats = [
     {
-      type: 'json',
-      label: 'Als json',
-      description: 'Exporteren naar event-ld om de informatie voor ontwikkelaars beschikbaar te maken.'
-    },
-    {
       type: 'ooxml',
       label: 'Office Open XML (Excel)',
       description: 'Het standaard formaat van Excel vanaf Microsoft Office 2007.'
+    },
+    {
+      type: 'html',
+      label: 'Als HTML',
+      description: 'Exporteren naar HTML is een gemakkelijke manier om de inhoud geschikt voor het web te maken.',
+      customizable: true
+    },
+    {
+      type: 'pdf',
+      label: 'Als PDF',
+      description: 'Druk snel en eenvoudig items uit de UiTdatabank af. Kies een Vlieg, UiT-, of UiTPAS-sjabloon.',
+      customizable: true
+    },
+    {
+      type: 'json',
+      label: 'Als json',
+      description: 'Exporteren naar event-ld om de informatie voor ontwikkelaars beschikbaar te maken.'
     }
   ];
 
-  /**
-   * This is a list of steps that the user has to navigate through.
-   * You can add a callback to its incomplete property which will be used to check if a step is completed.
-   */
-  exporter.steps = [
-    {name: 'format'},
-    {
+  exporter.brands = [
+    {name: 'vlieg', label: 'Vlieg'},
+    {name: 'uit', label: 'UiT'},
+    {name: 'uitpas', label: 'UiTPAS'}
+  ];
+
+  exporter.customizations = {
+    brand: exporter.brands[0].name,
+    title: '',
+    subtitle: '',
+    footer: '',
+    publisher: ''
+  };
+
+  exporter.exportSteps = {
+    format: {
+      name: 'format',
+      incomplete: function () {
+        return !exporter.format;
+      }
+    },
+    customize: {
+      name: 'customize',
+      incomplete: function () {
+        return !exporter.customizations.brand || !exporter.customizations.title;
+      }
+    },
+    filter: {
       name: 'filter',
       incomplete: function () {
         return !_.find(exporter.eventProperties, function (property) {
@@ -3665,8 +3698,20 @@ function EventExportController($modalInstance, udbApi, eventExporter, queryField
         });
       }
     },
-    //{name: 'sort' },
-    {name: 'confirm'}
+    confirm: {
+      name: 'confirm'
+    }
+  };
+
+  /**
+   * This is a list of steps that the user has to navigate through.
+   * You can add a callback to its incomplete property which will be used to check if a step is completed.
+   */
+  exporter.steps = [
+    exporter.exportSteps.format,
+    exporter.exportSteps.filter,
+    exporter.exportSteps.customize,
+    exporter.exportSteps.confirm
   ];
 
   var activeStep = 0;
@@ -3718,7 +3763,12 @@ function EventExportController($modalInstance, udbApi, eventExporter, queryField
   };
 
   exporter.export = function () {
-    var includedProperties = _.pluck(_.filter(exporter.eventProperties, 'include'), 'name');
+    var includedProperties = _.pluck(_.filter(exporter.eventProperties, 'include'), 'name'),
+        exportFormat = _.find(exporter.exportFormats, {name: exporter.format}),
+        isCustomized = exportFormat && exportFormat.customizable === true,
+        customizations = isCustomized ? exporter.customizations : false;
+
+    console.log(customizations);
 
     eventExporter.export(exporter.format, exporter.email, includedProperties, exporter.dayByDay);
     activeStep = -1;
@@ -6106,34 +6156,52 @@ $templateCache.put('templates/event-label-modal.html',
     "\n" +
     "  </div>\n" +
     "\n" +
-    "  <div class=\"modal-body\" ng-switch-when=\"sort\">\n" +
-    "    <h5>Herschik en verfijn</h5>\n" +
+    "  <div class=\"modal-body\" ng-switch-when=\"customize\">\n" +
+    "    <h5>Verfraai je rapport</h5>\n" +
     "\n" +
-    "    <strong>Sorteer op</strong>\n" +
-    "    <div class=\"row\" ng-repeat=\"sorter in exporter.fieldSorters\">\n" +
-    "      <div class=\"col-sm-3\">\n" +
-    "        Niveau <span ng-bind=\"($index + 1)\"></span>\n" +
-    "      </div>\n" +
-    "      <div class=\"col-sm-3\">\n" +
-    "        <select ng-options=\"field.name as field.name.toUpperCase() | translate for field in exporter.getUnsortedFields(sorter.fieldName)\"\n" +
-    "                ng-model=\"sorter.fieldName\" class=\"form-control\">\n" +
-    "        </select>\n" +
-    "      </div>\n" +
-    "      <div class=\"col-sm-3\">\n" +
-    "        <select ng-options=\"'choice.' + order | translate for order in ['asc', 'desc']\" ng-model=\"sorter.order\"\n" +
-    "                class=\"form-control\"></select>\n" +
-    "      </div>\n" +
-    "      <div class=\"col-sm-3\" ng-show=\"$last\">\n" +
-    "        <a href ng-click=\"exporter.addSorter()\">Niveau toevoegen</a>\n" +
+    "    <form>\n" +
+    "    <div class=\"form-group\">\n" +
+    "      <label>Logo</label>\n" +
+    "\n" +
+    "      <div class=\"export-customization-brands\">\n" +
+    "        <div class=\"export-customization-brand\" ng-repeat=\"brand in ::exporter.brands\">\n" +
+    "          <label>\n" +
+    "            <img ng-src=\"images/{{brand.name}}-logo.svg\" alt=\"{{brand.name}} logo\" width=\"100px\" height=\"100px\"/>\n" +
+    "\n" +
+    "            <div>\n" +
+    "              <input type=\"radio\" name=\"event-export-format\" ng-model=\"exporter.customizations.brand\"\n" +
+    "                     ng-value=\"brand.name\" class=\"export-customization-brand-radio\">\n" +
+    "              <span ng-bind=\"brand.label\" class=\"export-customization-brand-label\"></span>\n" +
+    "            </div>\n" +
+    "          </label>\n" +
+    "        </div>\n" +
     "      </div>\n" +
     "    </div>\n" +
     "\n" +
+    "    <div class=\"form-group\">\n" +
+    "      <label for=\"export-customization-title\">Titel</label> <small class=\"text-muted\">verplicht in te vullen</small>\n" +
+    "      <input placeholder=\"Bv. Uit met Vlieg of UiT in Gent\" class=\"form-control\" id=\"export-customization-title\"\n" +
+    "             ng-model=\"exporter.customizations.title\">\n" +
+    "    </div>\n" +
     "\n" +
-    "    <strong>Dag per dag</strong>\n" +
-    "    <label>\n" +
-    "      <input type=\"checkbox\" ng-model=\"exporter.dayByDay\" name=\"event-export-day-by-day\">\n" +
-    "      <span>Toon evenementen met meerdere datums dag per dag</span>\n" +
-    "    </label>\n" +
+    "    <div class=\"form-group\">\n" +
+    "      <label for=\"export-customization-subtitle\">Ondertitel</label>\n" +
+    "      <input placeholder=\"Bv. 5 meeneemtips voor families\" class=\"form-control\" id=\"export-customization-subtitle\"\n" +
+    "             ng-model=\"exporter.customizations.subtitle\">\n" +
+    "    </div>\n" +
+    "\n" +
+    "    <div class=\"form-group\">\n" +
+    "      <label for=\"export.customization-footer\">Afsluiter</label>\n" +
+    "      <input placeholder=\"Bv. Meer tips op www.uitinvlaanderen.be\" class=\"form-control\"\n" +
+    "             id=\"export.customization-footer\" ng-model=\"exporter.customizations.footer\">\n" +
+    "    </div>\n" +
+    "\n" +
+    "    <div class=\"form-group\">\n" +
+    "      <label for=\"export.customization-publisher\">Verantwoordelijke uitgever</label>\n" +
+    "      <input placeholder=\"Bv. V.U. Cultuurnet Vlaanderen\" class=\"form-control\" id=\"export.customization-publisher\"\n" +
+    "             ng-model=\"exporter.customizations.publisher\">\n" +
+    "    </div>\n" +
+    "    </form>\n" +
     "  </div>\n" +
     "\n" +
     "  <div class=\"modal-body\" ng-switch-when=\"confirm\">\n" +

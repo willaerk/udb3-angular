@@ -65,32 +65,34 @@ function EventExportController($modalInstance, udbApi, eventExporter, queryField
     }
   ];
 
+  exporter.brands = [
+    {name: 'vlieg', label: 'Vlieg'},
+    {name: 'uit', label: 'UiT'},
+    {name: 'uitpas', label: 'UiTPAS'}
+  ];
+
   exporter.customizations = {
-    brand: 'vlieg',
+    brand: exporter.brands[0].name,
     title: '',
-    subTitle: '',
+    subtitle: '',
     footer: '',
     publisher: ''
   };
 
-  /**
-   * This is a list of steps that the user has to navigate through.
-   * You can add a callback to its incomplete property which will be used to check if a step is completed.
-   */
-  exporter.steps = [
-    {
+  exporter.exportSteps = {
+    format: {
       name: 'format',
       incomplete: function () {
         return !exporter.format;
       }
     },
-    {
+    customize: {
       name: 'customize',
       incomplete: function () {
         return !exporter.customizations.brand || !exporter.customizations.title;
       }
     },
-    {
+    filter: {
       name: 'filter',
       incomplete: function () {
         return !_.find(exporter.eventProperties, function (property) {
@@ -98,7 +100,20 @@ function EventExportController($modalInstance, udbApi, eventExporter, queryField
         });
       }
     },
-    {name: 'confirm'}
+    confirm: {
+      name: 'confirm'
+    }
+  };
+
+  /**
+   * This is a list of steps that the user has to navigate through.
+   * You can add a callback to its incomplete property which will be used to check if a step is completed.
+   */
+  exporter.steps = [
+    exporter.exportSteps.format,
+    exporter.exportSteps.filter,
+    exporter.exportSteps.customize,
+    exporter.exportSteps.confirm
   ];
 
   var activeStep = 0;
@@ -151,7 +166,8 @@ function EventExportController($modalInstance, udbApi, eventExporter, queryField
 
   exporter.export = function () {
     var includedProperties = _.pluck(_.filter(exporter.eventProperties, 'include'), 'name'),
-        isCustomized = _.find(exporter.exportFormats, { name: exporter.format}).customizable,
+        exportFormat = _.find(exporter.exportFormats, {name: exporter.format}),
+        isCustomized = exportFormat && exportFormat.customizable === true,
         customizations = isCustomized ? exporter.customizations : false;
 
     console.log(customizations);

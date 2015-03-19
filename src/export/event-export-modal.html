@@ -35,34 +35,52 @@
 
   </div>
 
-  <div class="modal-body" ng-switch-when="sort">
-    <h5>Herschik en verfijn</h5>
+  <div class="modal-body" ng-switch-when="customize">
+    <h5>Verfraai je rapport</h5>
 
-    <strong>Sorteer op</strong>
-    <div class="row" ng-repeat="sorter in exporter.fieldSorters">
-      <div class="col-sm-3">
-        Niveau <span ng-bind="($index + 1)"></span>
-      </div>
-      <div class="col-sm-3">
-        <select ng-options="field.name as field.name.toUpperCase() | translate for field in exporter.getUnsortedFields(sorter.fieldName)"
-                ng-model="sorter.fieldName" class="form-control">
-        </select>
-      </div>
-      <div class="col-sm-3">
-        <select ng-options="'choice.' + order | translate for order in ['asc', 'desc']" ng-model="sorter.order"
-                class="form-control"></select>
-      </div>
-      <div class="col-sm-3" ng-show="$last">
-        <a href ng-click="exporter.addSorter()">Niveau toevoegen</a>
+    <form>
+    <div class="form-group">
+      <label>Logo</label>
+
+      <div class="export-customization-brands">
+        <div class="export-customization-brand" ng-repeat="brand in ::exporter.brands">
+          <label>
+            <img ng-src="images/{{brand.name}}-logo.svg" alt="{{brand.name}} logo" width="100px" height="100px"/>
+
+            <div>
+              <input type="radio" name="event-export-format" ng-model="exporter.customizations.brand"
+                     ng-value="brand.name" class="export-customization-brand-radio">
+              <span ng-bind="brand.label" class="export-customization-brand-label"></span>
+            </div>
+          </label>
+        </div>
       </div>
     </div>
 
+    <div class="form-group">
+      <label for="export-customization-title">Titel</label> <small class="text-muted">verplicht in te vullen</small>
+      <input placeholder="Bv. Uit met Vlieg of UiT in Gent" class="form-control" id="export-customization-title"
+             ng-model="exporter.customizations.title">
+    </div>
 
-    <strong>Dag per dag</strong>
-    <label>
-      <input type="checkbox" ng-model="exporter.dayByDay" name="event-export-day-by-day">
-      <span>Toon evenementen met meerdere datums dag per dag</span>
-    </label>
+    <div class="form-group">
+      <label for="export-customization-subtitle">Ondertitel</label>
+      <input placeholder="Bv. 5 meeneemtips voor families" class="form-control" id="export-customization-subtitle"
+             ng-model="exporter.customizations.subtitle">
+    </div>
+
+    <div class="form-group">
+      <label for="export.customization-footer">Afsluiter</label>
+      <input placeholder="Bv. Meer tips op www.uitinvlaanderen.be" class="form-control"
+             id="export.customization-footer" ng-model="exporter.customizations.footer">
+    </div>
+
+    <div class="form-group">
+      <label for="export.customization-publisher">Verantwoordelijke uitgever</label>
+      <input placeholder="Bv. V.U. Cultuurnet Vlaanderen" class="form-control" id="export.customization-publisher"
+             ng-model="exporter.customizations.publisher">
+    </div>
+    </form>
   </div>
 
   <div class="modal-body" ng-switch-when="confirm">

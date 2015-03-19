@@ -188,22 +188,22 @@ function UdbApi($q, $http, appConfig, $cookieStore, uitidAuth, $cacheFactory, Ud
     );
   };
 
-  this.exportEvents = function (query, email, format, properties, perDay, selection) {
+  this.exportEvents = function (query, email, format, properties, perDay, selection, customizations) {
 
     var exportData = {
       query: query,
       selection: selection || [],
       order: {},
       include: properties,
-      perDay: perDay
+      perDay: perDay,
+      customizations: customizations || {}
     };
 
     if (email) {
       exportData.email = email;
     }
 
-    return $http.post(appConfig.baseUrl + 'events/export/' + format, exportData, defaultApiConfig
-    );
+    return $http.post(appConfig.baseUrl + 'events/export/' + format, exportData, defaultApiConfig);
   };
 
   this.translateEventProperty = function (eventId, property, language, translation) {

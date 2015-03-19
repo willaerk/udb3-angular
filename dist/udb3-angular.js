@@ -2320,22 +2320,22 @@ function UdbApi($q, $http, appConfig, $cookieStore, uitidAuth, $cacheFactory, Ud
     );
   };
 
-  this.exportEvents = function (query, email, format, properties, perDay, selection) {
+  this.exportEvents = function (query, email, format, properties, perDay, selection, customizations) {
 
     var exportData = {
       query: query,
       selection: selection || [],
       order: {},
       include: properties,
-      perDay: perDay
+      perDay: perDay,
+      customizations: customizations || {}
     };
 
     if (email) {
       exportData.email = email;
     }
 
-    return $http.post(appConfig.baseUrl + 'events/export/' + format, exportData, defaultApiConfig
-    );
+    return $http.post(appConfig.baseUrl + 'events/export/' + format, exportData, defaultApiConfig);
   };
 
   this.translateEventProperty = function (eventId, property, language, translation) {
@@ -3796,7 +3796,7 @@ function EventExportController($modalInstance, udbApi, eventExporter, queryField
 
     console.log(customizations);
 
-    eventExporter.export(exporter.format, exporter.email, includedProperties, exporter.dayByDay);
+    eventExporter.export(exporter.format, exporter.email, includedProperties, exporter.dayByDay, customizations);
     activeStep = -1;
   };
 
@@ -3847,15 +3847,16 @@ function eventExporter(jobLogger, udbApi, EventExportJob) {
    * @param {string}        email
    * @param {string[]}      properties
    * @param {boolean}       perDay
+   * @param {object}        customizations
    *
    * @return {object}
    */
-  ex.export = function (format, email, properties, perDay) {
+  ex.export = function (format, email, properties, perDay, customizations) {
     var queryString = ex.activeExport.query.queryString,
         selection = ex.activeExport.selection || [],
         eventCount = ex.activeExport.eventCount;
 
-    var jobPromise = udbApi.exportEvents(queryString, email, format, properties, perDay, selection);
+    var jobPromise = udbApi.exportEvents(queryString, email, format, properties, perDay, selection, customizations);
 
     jobPromise.success(function (jobData) {
       var job = new EventExportJob(jobData.commandId, eventCount, format);

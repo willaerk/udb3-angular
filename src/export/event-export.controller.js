@@ -198,7 +198,7 @@ function EventExportController($modalInstance, udbApi, eventExporter, queryField
 
     console.log(customizations);
 
-    eventExporter.export(exporter.format, exporter.email, includedProperties, exporter.dayByDay);
+    eventExporter.export(exporter.format, exporter.email, includedProperties, exporter.dayByDay, customizations);
     activeStep = -1;
   };
 

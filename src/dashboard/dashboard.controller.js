@@ -13,7 +13,7 @@
     .controller('DashboardCtrl', DashboardController);
 
   /* @ngInject */
-  function DashboardController($scope, udb3Content) {
+  function DashboardController($scope, udb3Content, UdbEvent, UdbPlace, jsonLDLangFilter) {
 
     // Scope variables.
     $scope.loaded = false;
@@ -31,32 +31,46 @@
      */
     function getUdb3ContentForCurrentUser() {
 
+      $scope.userContent = [];
+
       var promise = udb3Content.getUdb3ContentForCurrentUser();
       return promise.then(function (content) {
 
-        // Add data to scope and convert to array to allow ordering in ng-repeat.
-        $scope.userContent = Object.keys(content.data.content).map(function(key) { return content.data.content[key]; });
-        $scope.loaded = true;
-
-        if ($scope.userContent.length) {
-
-          // Set boolean if user has content
-          $scope.noContent = false;
+        if (content.data.content && content.data.content.length > 0) {
 
           // Loop through content to prepare data for html.
-          for (var key in $scope.userContent) {
-            var item = $scope.userContent[key];
+          for (var key in content.data.content) {
+
+            var type = content.data.content[key].type;
+            var item = {
+              type : type
+            };
+            if (type === 'event') {
+              item.details = new UdbEvent();
+              item.details.parseJson(content.data.content[key]);
+              item.details = jsonLDLangFilter(item.details, 'nl');
+            }
+            else if (content.data.content[key].type === 'place') {
+              item.details = new UdbPlace();
+              item.details.parseJson(content.data.content[key]);
+            }
+
+            if (!item.details) {
+              continue;
+            }
 
             // set urls
-            $scope.userContent[key].editUrl = '/udb3/' + item.type + '/' + item.id + '/edit';
-            $scope.userContent[key].exampleUrl = '/udb3/' + item.type + '/' + item.id;
-            $scope.userContent[key].deleteUrl = '/udb3/' + item.type + '/' + item.id + '/delete';
+            item.editUrl = '/udb3/' + type + '/' + item.details.id + '/edit';
+            item.exampleUrl = '/udb3/' + type + '/' + item.details.id;
+            item.deleteUrl = '/udb3/' + type + '/' + item.details.id + '/delete';
+
+            $scope.userContent[key] = item;
           }
+
+          $scope.loaded = true;
+
         }
-        else {
-          // set boolean is user has no content.
-          $scope.noContent = true;
-        }
+
       });
     }
   }

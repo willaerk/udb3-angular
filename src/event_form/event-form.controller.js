@@ -12,7 +12,7 @@ angular
   .controller('EventFormCtrl', EventFormController);
 
 /* @ngInject */
-function EventFormController($scope, eventId, offerType, EventFormData, udbApi) {
+function EventFormController($scope, eventId, placeId, offerType, EventFormData, udbApi) {
 
   // Other controllers won't load untill this boolean is set to true.
   $scope.loaded = false;
@@ -36,22 +36,23 @@ function EventFormController($scope, eventId, offerType, EventFormData, udbApi) 
         }
       });
     }
-    else if (offerType === 'place') {
-      udbApi.getPlaceById(eventId).then(function(place) {
+  }
+  else if (placeId) {
 
-        EventFormData.isEvent = false;
-        EventFormData.isPlace = true;
-        copyItemDataToFormData(place);
+    udbApi.getPlaceById(placeId).then(function(place) {
 
-        // Places only have an address, form uses location property.
-        if (place.address) {
-          EventFormData.location = {
-            address : place.address
-          };
-        }
+      EventFormData.isEvent = false;
+      EventFormData.isPlace = true;
+      copyItemDataToFormData(place);
 
-      });
-    }
+      // Places only have an address, form uses location property.
+      if (place.address) {
+        EventFormData.location = {
+          address : place.address
+        };
+      }
+
+    });
 
   }
   else {
@@ -107,34 +108,14 @@ function EventFormController($scope, eventId, offerType, EventFormData, udbApi) 
     }
 
     // SubEvents are timestamps.
-    if (EventFormData.calendarType === 'single' && item.subEvent) {
+    if (item.calendarType === 'multiple' && item.subEvent) {
       for (var j = 0; j < item.subEvent.length; j++) {
         var subEvent = item.subEvent[j];
-        var startDate = new Date(subEvent.startDate);
-        var endDate = new Date(subEvent.endDate);
-
-        var startHour = '';
-        startHour = startDate.getHours() < 9 ? '0' + startDate.getHours() : startDate.getHours();
-        if (startDate.getMinutes() < 9) {
-          startHour += ':0' + startDate.getMinutes();
-        }
-        else {
-          startHour += ':' + startDate.getMinutes();
-        }
-
-        var endHour = '';
-        endHour = endDate.getHours() < 9 ? '0' + endDate.getHours() : endDate.getHours();
-        if (endDate.getMinutes() < 9) {
-          endHour += ':0' + endDate.getMinutes();
-        }
-        else {
-          endHour += ':' + endDate.getMinutes();
-        }
-
-        startHour = startHour === '00:00' ? '' : startHour;
-        endHour = startHour === '00:00' ? '' : endHour;
-        EventFormData.addTimestamp(startDate, startHour, endHour);
+        addTimestamp(subEvent.startDate, subEvent.endDate);
       }
+    }
+    else if (item.calendarType === 'single') {
+      addTimestamp(item.startDate, item.endDate);
     }
 
     $scope.loaded = true;
@@ -143,6 +124,38 @@ function EventFormController($scope, eventId, offerType, EventFormData, udbApi) 
     EventFormData.showStep(3);
     EventFormData.showStep(4);
     EventFormData.showStep(5);
+
+  }
+
+  /**
+   * Add a timestamp based on a given start and enddate.
+   */
+  function addTimestamp(startDateString, endDateString) {
+
+    var startDate = new Date(startDateString);
+    var endDate = new Date(endDateString);
+
+    var startHour = '';
+    startHour = startDate.getHours() < 9 ? '0' + startDate.getHours() : startDate.getHours();
+    if (startDate.getMinutes() < 9) {
+      startHour += ':0' + startDate.getMinutes();
+    }
+    else {
+      startHour += ':' + startDate.getMinutes();
+    }
+
+    var endHour = '';
+    endHour = endDate.getHours() < 9 ? '0' + endDate.getHours() : endDate.getHours();
+    if (endDate.getMinutes() < 9) {
+      endHour += ':0' + endDate.getMinutes();
+    }
+    else {
+      endHour += ':' + endDate.getMinutes();
+    }
+
+    startHour = startHour === '00:00' ? '' : startHour;
+    endHour = startHour === '00:00' ? '' : endHour;
+    EventFormData.addTimestamp(startDate, startHour, endHour);
 
   }
 

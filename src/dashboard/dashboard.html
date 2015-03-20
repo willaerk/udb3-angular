@@ -1,12 +1,12 @@
 <div>
 
-  <div class="alert alert-default no-new no-data" ng-show="noContent">
+  <div class="alert alert-default no-new no-data" ng-show="userContent.length === 0">
     <p class="text-center">Je hebt nog geen items toegevoegd.
       <br/><a href="/udb3/event/add">Een activiteit of monument toevoegen?</a>
     </p>
   </div>
 
-  <div ng-hide="noContent">
+  <div ng-show="userContent.length > 0">
 
     <div class="clearfix">
       <p class="invoer-title"><span class="block-header">Laatst toegevoegd</span>
@@ -18,21 +18,21 @@
 
       <table class="table ">
 
-        <tr ng-repeat="userContentItem in userContent | orderBy:'recorded_on':true">
+        <tr ng-repeat="userContentItem in userContent">
           <td>
-            <strong><a href="http://www.google.be">{{userContentItem.title}}</a></strong><br/>
-            <small><ng-switch on="userContentItem.details.payload.calendar.type">
+            <strong><a href="{{usercontent.exampleUrl}}">{{userContentItem.name}}</a></strong><br/>
+            <small><ng-switch on="userContentItem.details.calendarType">
                  <span ng-switch-when="single">
-                    {{ userContentItem.details.payload.event_type.label }} - {{ userContentItem.details.payload.calendar.startDate | date: 'dd/MM/yyyy' }}
+                    {{ userContentItem.details.type.label }} - {{ userContentItem.details.startDate | date: 'dd/MM/yyyy' }}
                  </span>
                  <span ng-switch-when="multiple">
-                    {{ userContentItem.details.payload.event_type.label }} - Van {{ userContentItem.details.payload.calendar.startDate | date: 'dd/MM/yyyy' }} tot {{ userContentItem.details.payload.calendar.endDate | date: 'dd/MM/yyyy' }}
+                    {{ userContentItem.details.type.label }} - Van {{ userContentItem.details.startDate | date: 'dd/MM/yyyy' }} tot {{ userContentItem.details.endDate | date: 'dd/MM/yyyy' }}
                  </span>
-                 <span ng-switch-when="period">
-                    {{ userContentItem.details.payload.event_type.label }} - Van {{ userContentItem.details.payload.calendar.startDate | date: 'dd/MM/yyyy' }} tot {{ userContentItem.details.payload.calendar.endDate | date: 'dd/MM/yyyy' }}
+                 <span ng-switch-when="periodic">
+                    {{ userContentItem.details.type.label }} - Van {{ userContentItem.details.startDate | date: 'dd/MM/yyyy' }} tot {{ userContentItem.details.endDate | date: 'dd/MM/yyyy' }}
                  </span>
                  <span ng-switch-when="permanent">
-                    {{ userContentItem.details.payload.event_type.label }} - Permanent
+                    {{ userContentItem.details.type.label }} - Permanent
                  </span>
                </ng-switch>
             </small>

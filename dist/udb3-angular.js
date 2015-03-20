@@ -3625,7 +3625,7 @@ UitidAuth.$inject = ["$window", "$location", "$http", "appConfig", "$cookieStore
     .controller('DashboardCtrl', DashboardController);
 
   /* @ngInject */
-  function DashboardController($scope, udb3Content) {
+  function DashboardController($scope, udb3Content, UdbEvent, UdbPlace, jsonLDLangFilter) {
 
     // Scope variables.
     $scope.loaded = false;
@@ -3643,36 +3643,50 @@ UitidAuth.$inject = ["$window", "$location", "$http", "appConfig", "$cookieStore
      */
     function getUdb3ContentForCurrentUser() {
 
+      $scope.userContent = [];
+
       var promise = udb3Content.getUdb3ContentForCurrentUser();
       return promise.then(function (content) {
 
-        // Add data to scope and convert to array to allow ordering in ng-repeat.
-        $scope.userContent = Object.keys(content.data.content).map(function(key) { return content.data.content[key]; });
-        $scope.loaded = true;
-
-        if ($scope.userContent.length) {
-
-          // Set boolean if user has content
-          $scope.noContent = false;
+        if (content.data.content && content.data.content.length > 0) {
 
           // Loop through content to prepare data for html.
-          for (var key in $scope.userContent) {
-            var item = $scope.userContent[key];
+          for (var key in content.data.content) {
+
+            var type = content.data.content[key].type;
+            var item = {
+              type : type
+            };
+            if (type === 'event') {
+              item.details = new UdbEvent();
+              item.details.parseJson(content.data.content[key]);
+              item.details = jsonLDLangFilter(item.details, 'nl');
+            }
+            else if (content.data.content[key].type === 'place') {
+              item.details = new UdbPlace();
+              item.details.parseJson(content.data.content[key]);
+            }
+
+            if (!item.details) {
+              continue;
+            }
 
             // set urls
-            $scope.userContent[key].editUrl = '/udb3/' + item.type + '/' + item.id + '/edit';
-            $scope.userContent[key].exampleUrl = '/udb3/' + item.type + '/' + item.id;
-            $scope.userContent[key].deleteUrl = '/udb3/' + item.type + '/' + item.id + '/delete';
+            item.editUrl = '/udb3/' + type + '/' + item.details.id + '/edit';
+            item.exampleUrl = '/udb3/' + type + '/' + item.details.id;
+            item.deleteUrl = '/udb3/' + type + '/' + item.details.id + '/delete';
+
+            $scope.userContent[key] = item;
           }
+
+          $scope.loaded = true;
+
         }
-        else {
-          // set boolean is user has no content.
-          $scope.noContent = true;
-        }
+
       });
     }
   }
-  DashboardController.$inject = ["$scope", "udb3Content"];
+  DashboardController.$inject = ["$scope", "udb3Content", "UdbEvent", "UdbPlace", "jsonLDLangFilter"];
 
 })();
 
@@ -5761,7 +5775,7 @@ angular
   .controller('EventFormCtrl', EventFormController);
 
 /* @ngInject */
-function EventFormController($scope, eventId, offerType, EventFormData, udbApi) {
+function EventFormController($scope, eventId, placeId, offerType, EventFormData, udbApi) {
 
   // Other controllers won't load untill this boolean is set to true.
   $scope.loaded = false;
@@ -5785,22 +5799,23 @@ function EventFormController($scope, eventId, offerType, EventFormData, udbApi) 
         }
       });
     }
-    else if (offerType === 'place') {
-      udbApi.getPlaceById(eventId).then(function(place) {
+  }
+  else if (placeId) {
 
-        EventFormData.isEvent = false;
-        EventFormData.isPlace = true;
-        copyItemDataToFormData(place);
+    udbApi.getPlaceById(placeId).then(function(place) {
 
-        // Places only have an address, form uses location property.
-        if (place.address) {
-          EventFormData.location = {
-            address : place.address
-          };
-        }
+      EventFormData.isEvent = false;
+      EventFormData.isPlace = true;
+      copyItemDataToFormData(place);
 
-      });
-    }
+      // Places only have an address, form uses location property.
+      if (place.address) {
+        EventFormData.location = {
+          address : place.address
+        };
+      }
+
+    });
 
   }
   else {
@@ -5856,34 +5871,14 @@ function EventFormController($scope, eventId, offerType, EventFormData, udbApi) 
     }
 
     // SubEvents are timestamps.
-    if (EventFormData.calendarType === 'single' && item.subEvent) {
+    if (item.calendarType === 'multiple' && item.subEvent) {
       for (var j = 0; j < item.subEvent.length; j++) {
         var subEvent = item.subEvent[j];
-        var startDate = new Date(subEvent.startDate);
-        var endDate = new Date(subEvent.endDate);
-
-        var startHour = '';
-        startHour = startDate.getHours() < 9 ? '0' + startDate.getHours() : startDate.getHours();
-        if (startDate.getMinutes() < 9) {
-          startHour += ':0' + startDate.getMinutes();
-        }
-        else {
-          startHour += ':' + startDate.getMinutes();
-        }
-
-        var endHour = '';
-        endHour = endDate.getHours() < 9 ? '0' + endDate.getHours() : endDate.getHours();
-        if (endDate.getMinutes() < 9) {
-          endHour += ':0' + endDate.getMinutes();
-        }
-        else {
-          endHour += ':' + endDate.getMinutes();
-        }
-
-        startHour = startHour === '00:00' ? '' : startHour;
-        endHour = startHour === '00:00' ? '' : endHour;
-        EventFormData.addTimestamp(startDate, startHour, endHour);
+        addTimestamp(subEvent.startDate, subEvent.endDate);
       }
+    }
+    else if (item.calendarType === 'single') {
+      addTimestamp(item.startDate, item.endDate);
     }
 
     $scope.loaded = true;
@@ -5895,8 +5890,40 @@ function EventFormController($scope, eventId, offerType, EventFormData, udbApi) 
 
   }
 
+  /**
+   * Add a timestamp based on a given start and enddate.
+   */
+  function addTimestamp(startDateString, endDateString) {
+
+    var startDate = new Date(startDateString);
+    var endDate = new Date(endDateString);
+
+    var startHour = '';
+    startHour = startDate.getHours() < 9 ? '0' + startDate.getHours() : startDate.getHours();
+    if (startDate.getMinutes() < 9) {
+      startHour += ':0' + startDate.getMinutes();
+    }
+    else {
+      startHour += ':' + startDate.getMinutes();
+    }
+
+    var endHour = '';
+    endHour = endDate.getHours() < 9 ? '0' + endDate.getHours() : endDate.getHours();
+    if (endDate.getMinutes() < 9) {
+      endHour += ':0' + endDate.getMinutes();
+    }
+    else {
+      endHour += ':' + endDate.getMinutes();
+    }
+
+    startHour = startHour === '00:00' ? '' : startHour;
+    endHour = startHour === '00:00' ? '' : endHour;
+    EventFormData.addTimestamp(startDate, startHour, endHour);
+
+  }
+
 }
-EventFormController.$inject = ["$scope", "eventId", "offerType", "EventFormData", "udbApi"];
+EventFormController.$inject = ["$scope", "eventId", "placeId", "offerType", "EventFormData", "udbApi"];
 
 // Source: src/event_form/event-form.data.js
 /**
@@ -10577,13 +10604,13 @@ $templateCache.put('templates/time-autocomplete.html',
   $templateCache.put('templates/dashboard.html',
     "<div>\n" +
     "\n" +
-    "  <div class=\"alert alert-default no-new no-data\" ng-show=\"noContent\">\n" +
+    "  <div class=\"alert alert-default no-new no-data\" ng-show=\"userContent.length === 0\">\n" +
     "    <p class=\"text-center\">Je hebt nog geen items toegevoegd.\n" +
     "      <br/><a href=\"/udb3/event/add\">Een activiteit of monument toevoegen?</a>\n" +
     "    </p>\n" +
     "  </div>\n" +
     "\n" +
-    "  <div ng-hide=\"noContent\">\n" +
+    "  <div ng-show=\"userContent.length > 0\">\n" +
     "\n" +
     "    <div class=\"clearfix\">\n" +
     "      <p class=\"invoer-title\"><span class=\"block-header\">Laatst toegevoegd</span>\n" +
@@ -10595,21 +10622,21 @@ $templateCache.put('templates/time-autocomplete.html',
     "\n" +
     "      <table class=\"table \">\n" +
     "\n" +
-    "        <tr ng-repeat=\"userContentItem in userContent | orderBy:'recorded_on':true\">\n" +
+    "        <tr ng-repeat=\"userContentItem in userContent\">\n" +
     "          <td>\n" +
-    "            <strong><a href=\"http://www.google.be\">{{userContentItem.title}}</a></strong><br/>\n" +
-    "            <small><ng-switch on=\"userContentItem.details.payload.calendar.type\">\n" +
+    "            <strong><a href=\"{{usercontent.exampleUrl}}\">{{userContentItem.name}}</a></strong><br/>\n" +
+    "            <small><ng-switch on=\"userContentItem.details.calendarType\">\n" +
     "                 <span ng-switch-when=\"single\">\n" +
-    "                    {{ userContentItem.details.payload.event_type.label }} - {{ userContentItem.details.payload.calendar.startDate | date: 'dd/MM/yyyy' }}\n" +
+    "                    {{ userContentItem.details.type.label }} - {{ userContentItem.details.startDate | date: 'dd/MM/yyyy' }}\n" +
     "                 </span>\n" +
     "                 <span ng-switch-when=\"multiple\">\n" +
-    "                    {{ userContentItem.details.payload.event_type.label }} - Van {{ userContentItem.details.payload.calendar.startDate | date: 'dd/MM/yyyy' }} tot {{ userContentItem.details.payload.calendar.endDate | date: 'dd/MM/yyyy' }}\n" +
+    "                    {{ userContentItem.details.type.label }} - Van {{ userContentItem.details.startDate | date: 'dd/MM/yyyy' }} tot {{ userContentItem.details.endDate | date: 'dd/MM/yyyy' }}\n" +
     "                 </span>\n" +
-    "                 <span ng-switch-when=\"period\">\n" +
-    "                    {{ userContentItem.details.payload.event_type.label }} - Van {{ userContentItem.details.payload.calendar.startDate | date: 'dd/MM/yyyy' }} tot {{ userContentItem.details.payload.calendar.endDate | date: 'dd/MM/yyyy' }}\n" +
+    "                 <span ng-switch-when=\"periodic\">\n" +
+    "                    {{ userContentItem.details.type.label }} - Van {{ userContentItem.details.startDate | date: 'dd/MM/yyyy' }} tot {{ userContentItem.details.endDate | date: 'dd/MM/yyyy' }}\n" +
     "                 </span>\n" +
     "                 <span ng-switch-when=\"permanent\">\n" +
-    "                    {{ userContentItem.details.payload.event_type.label }} - Permanent\n" +
+    "                    {{ userContentItem.details.type.label }} - Permanent\n" +
     "                 </span>\n" +
     "               </ng-switch>\n" +
     "            </small>\n" +

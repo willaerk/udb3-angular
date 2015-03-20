@@ -6485,6 +6485,8 @@ function EventFormStep1Controller($scope, EventFormData, eventTypes) {
   function setEventType(type, label, isEvent) {
 
     $scope.activeEventType = type;
+    $scope.showEventSelection = false;
+    $scope.showPlaceSelection = false;
 
     // User selected an event.
     if (isEvent) {
@@ -6577,6 +6579,8 @@ function EventFormStep1Controller($scope, EventFormData, eventTypes) {
    * Click listener to reset the event type. User can select a new event type.
    */
   function resetEventType() {
+
+    $scope.mustRefine = false;
     $scope.activeEventType = '';
     $scope.activeEventTypeLabel = '';
     $scope.activeTheme = '';
@@ -11411,7 +11415,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "        </p>\n" +
     "      </div>\n" +
     "\n" +
-    "      <div class=\"col-xs-1 col-xs-12\" ng-show=\"showEventSelection\">\n" +
+    "      <div class=\"col-xs-1 col-xs-12\" ng-show=\"showEventSelection && showPlaceSelection\">\n" +
     "        <p class=\"text-center\">of</p>\n" +
     "      </div>\n" +
     "\n" +

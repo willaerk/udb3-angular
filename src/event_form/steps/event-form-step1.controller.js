@@ -56,6 +56,8 @@ function EventFormStep1Controller($scope, EventFormData, eventTypes) {
   function setEventType(type, label, isEvent) {
 
     $scope.activeEventType = type;
+    $scope.showEventSelection = false;
+    $scope.showPlaceSelection = false;
 
     // User selected an event.
     if (isEvent) {
@@ -148,6 +150,8 @@ function EventFormStep1Controller($scope, EventFormData, eventTypes) {
    * Click listener to reset the event type. User can select a new event type.
    */
   function resetEventType() {
+
+    $scope.mustRefine = false;
     $scope.activeEventType = '';
     $scope.activeEventTypeLabel = '';
     $scope.activeTheme = '';

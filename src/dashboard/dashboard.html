@@ -20,7 +20,7 @@
 
         <tr ng-repeat="userContentItem in userContent">
           <td>
-            <strong><a href="{{usercontent.exampleUrl}}">{{userContentItem.name}}</a></strong><br/>
+            <strong><a href="{{usercontent.exampleUrl}}">{{userContentItem.details.name}}</a></strong><br/>
             <small><ng-switch on="userContentItem.details.calendarType">
                  <span ng-switch-when="single">
                     {{ userContentItem.details.type.label }} - {{ userContentItem.details.startDate | date: 'dd/MM/yyyy' }}

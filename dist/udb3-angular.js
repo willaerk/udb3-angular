@@ -10631,7 +10631,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "\n" +
     "        <tr ng-repeat=\"userContentItem in userContent\">\n" +
     "          <td>\n" +
-    "            <strong><a href=\"{{usercontent.exampleUrl}}\">{{userContentItem.name}}</a></strong><br/>\n" +
+    "            <strong><a href=\"{{usercontent.exampleUrl}}\">{{userContentItem.details.name}}</a></strong><br/>\n" +
     "            <small><ng-switch on=\"userContentItem.details.calendarType\">\n" +
     "                 <span ng-switch-when=\"single\">\n" +
     "                    {{ userContentItem.details.type.label }} - {{ userContentItem.details.startDate | date: 'dd/MM/yyyy' }}\n" +

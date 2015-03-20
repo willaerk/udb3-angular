@@ -148,7 +148,7 @@
           <div class="row extra-tickets-website" ng-class="bookingInfoCssClass">
             <div class="extra-task state-incomplete">
               <div class="col-sm-3">
-                <em class="extra-task-label">Reservatie &amp; tickets</em> <i class="fa fa-circle-o-notch fa-spin" ng-show="savingBookingInfo"></i>
+                <em class="extra-task-label">Reservatie</em> <i class="fa fa-circle-o-notch fa-spin" ng-show="savingBookingInfo"></i>
               </div>
               <div class="col-sm-8">
                 <section class="state incomplete">
@@ -160,7 +160,7 @@
                   <div class="reservatie-website-info reservatie-info" ng-show="viaWebsite">
                     <div class="reservatie-info-stap1" ng-show="editBookingUrl">
                       <div class="form-inline">
-                        <label>URL voor tickets en reservaties</label><br>
+                        <label>URL voor reservaties</label><br>
                         <div class="form-group">
                           <input type="url" class="form-control" name="url" ng-model="eventFormData.bookingInfo.url" ng-required="viaWebsite">
                           <span class="help-block" ng-show="bookingModel.urlRequired && !step5TicketsForm.url.$valid">Gelieve een geldig formaat te gebruiken</span>

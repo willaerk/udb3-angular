@@ -11944,7 +11944,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "          <div class=\"row extra-tickets-website\" ng-class=\"bookingInfoCssClass\">\n" +
     "            <div class=\"extra-task state-incomplete\">\n" +
     "              <div class=\"col-sm-3\">\n" +
-    "                <em class=\"extra-task-label\">Reservatie &amp; tickets</em> <i class=\"fa fa-circle-o-notch fa-spin\" ng-show=\"savingBookingInfo\"></i>\n" +
+    "                <em class=\"extra-task-label\">Reservatie</em> <i class=\"fa fa-circle-o-notch fa-spin\" ng-show=\"savingBookingInfo\"></i>\n" +
     "              </div>\n" +
     "              <div class=\"col-sm-8\">\n" +
     "                <section class=\"state incomplete\">\n" +
@@ -11956,7 +11956,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "                  <div class=\"reservatie-website-info reservatie-info\" ng-show=\"viaWebsite\">\n" +
     "                    <div class=\"reservatie-info-stap1\" ng-show=\"editBookingUrl\">\n" +
     "                      <div class=\"form-inline\">\n" +
-    "                        <label>URL voor tickets en reservaties</label><br>\n" +
+    "                        <label>URL voor reservaties</label><br>\n" +
     "                        <div class=\"form-group\">\n" +
     "                          <input type=\"url\" class=\"form-control\" name=\"url\" ng-model=\"eventFormData.bookingInfo.url\" ng-required=\"viaWebsite\">\n" +
     "                          <span class=\"help-block\" ng-show=\"bookingModel.urlRequired && !step5TicketsForm.url.$valid\">Gelieve een geldig formaat te gebruiken</span>\n" +

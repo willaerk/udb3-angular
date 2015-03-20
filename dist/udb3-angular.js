@@ -3619,7 +3619,7 @@ function EventExportController($modalInstance, udbApi, eventExporter, queryField
   exporter.eventProperties = [
     {name: 'name', include: true, sortable: false, excludable: false},
     {name: 'description', include: false, sortable: false, excludable: true},
-    {name: 'keywords', include: false, sortable: false, excludable: true},
+    {name: 'labels', include: false, sortable: false, excludable: true},
     {name: 'calendarSummary', include: true, sortable: false, excludable: false},
     {name: 'image', include: true, sortable: false, excludable: true},
     {name: 'location', include: true, sortable: false, excludable: false},
@@ -3787,14 +3787,12 @@ function EventExportController($modalInstance, udbApi, eventExporter, queryField
         customizations;
 
     if (isCustomized) {
-      customizations = isCustomized ? exporter.customizations : false;
+      customizations = exporter.customizations;
       includedProperties = [];
     } else {
       customizations = {};
       includedProperties = _.pluck(_.filter(exporter.eventProperties, 'include'), 'name');
     }
-
-    console.log(customizations);
 
     eventExporter.export(exporter.format, exporter.email, includedProperties, exporter.dayByDay, customizations);
     activeStep = -1;

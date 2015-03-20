@@ -5354,9 +5354,12 @@ angular
   .controller('EventFormImageUploadCtrl', EventFormImageUploadController);
 
 /* @ngInject */
-function EventFormImageUploadController($scope, $modalInstance, EventFormData, eventCrud, indexToEdit) {
+function EventFormImageUploadController($scope, $modalInstance, EventFormData, eventCrud, indexToEdit,
+  appConfig) {
 
   // Scope vars.
+  $scope.uploadTermsConditionsUrl = appConfig.uploadTermsConditionsUrl;
+  $scope.uploadCopyRightInfoUrl = appConfig.uploadCopyRightInfoUrl;
   $scope.saving = false;
   $scope.error = false;
   $scope.showAgreements = true;
@@ -5474,7 +5477,7 @@ function EventFormImageUploadController($scope, $modalInstance, EventFormData, e
   }
 
 }
-EventFormImageUploadController.$inject = ["$scope", "$modalInstance", "EventFormData", "eventCrud", "indexToEdit"];
+EventFormImageUploadController.$inject = ["$scope", "$modalInstance", "EventFormData", "eventCrud", "indexToEdit", "appConfig"];
 
 // Source: src/event_form/components/openinghours/openinghours.directive.js
 /**
@@ -11069,7 +11072,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "  </div>\n" +
     "  <div class=\"modal-body\">\n" +
     "\n" +
-    "    <p ng-show=\"showAgreements\">Je staat op het punt (een) afbeelding(en) toe te voegen en openbaar te verspreiden. Je dient daartoe alle geldende auteurs- en portretrechten te respecteren, alsook alle andere toepasselijke wetgeving. Je kan daarvoor aansprakelijk worden gehouden, zoals vastgelegd in de <a href=\"#\">algemene voorwaarden</a>. <a href=\"#\">Meer informatie over copyright</a></p>\n" +
+    "    <p ng-show=\"showAgreements\">Je staat op het punt (een) afbeelding(en) toe te voegen en openbaar te verspreiden. Je dient daartoe alle geldende auteurs- en portretrechten te respecteren, alsook alle andere toepasselijke wetgeving. Je kan daarvoor aansprakelijk worden gehouden, zoals vastgelegd in de <a href=\"{{uploadTermsConditionsUrl}}\" target=\"_blank\">algemene voorwaarden</a>. <a href=\"{{uploadCopyRightInfoUrl}}\" target=\"_blank\">Meer informatie over copyright</a></p>\n" +
     "    <div ng-hide=\"showAgreements\">\n" +
     "      <div class=\"form-group\">\n" +
     "        <label for=\"inputFile\">Selecteer je foto('s)</label>\n" +

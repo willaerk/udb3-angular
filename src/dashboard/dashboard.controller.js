@@ -70,6 +70,9 @@
           $scope.loaded = true;
 
         }
+        else {
+          $scope.loaded = true;
+        }
 
       });
     }

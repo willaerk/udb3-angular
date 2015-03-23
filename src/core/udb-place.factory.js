@@ -83,6 +83,13 @@ function UdbPlaceFactory() {
     },
 
     /**
+     * Get the name of the event for a given langcode.
+     */
+    getName: function(langcode) {
+      return this.name[langcode];
+    },
+
+    /**
      * Set the event type for this event.
      */
     setEventType: function(id, label) {

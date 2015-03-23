@@ -3682,6 +3682,9 @@ UitidAuth.$inject = ["$window", "$location", "$http", "appConfig", "$cookieStore
           $scope.loaded = true;
 
         }
+        else {
+          $scope.loaded = true;
+        }
 
       });
     }

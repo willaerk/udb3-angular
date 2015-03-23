@@ -3432,6 +3432,13 @@ function UdbPlaceFactory() {
     },
 
     /**
+     * Get the name of the event for a given langcode.
+     */
+    getName: function(langcode) {
+      return this.name[langcode];
+    },
+
+    /**
      * Set the event type for this event.
      */
     setEventType: function(id, label) {
@@ -7089,11 +7096,11 @@ function EventFormStep3Controller($scope, EventFormData, cityAutocomplete, event
 
       // Assign selection, hide the location field and show the selection.
       $scope.selectedCity = place.address.postalCode + ' ' + place.address.addressLocality;
-      $scope.selectedLocation = place.getName('nl');
+      $scope.selectedLocation = place.name.nl;
 
       var location = {
         'id' : place.id,
-        'name': place.getName('nl'),
+        'name': place.name.nl,
         'address': {
             'addressCountry': 'BE',
             'addressLocality': place.address.addressLocality,

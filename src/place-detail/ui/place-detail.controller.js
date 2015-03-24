@@ -60,7 +60,7 @@ function PlaceDetail($scope, $location, placeId, udbApi, jsonLDLangFilter, locat
       return hash;
     }
     else {
-      return 'omd';
+      return 'data';
     }
   };
 

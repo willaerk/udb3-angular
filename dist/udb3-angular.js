@@ -7586,7 +7586,7 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
         EventFormData.typicalAgeRange = $scope.minAge + '-' + $scope.ageRange;
       }
       else {
-        EventFormData.typicalAgeRange = $scope.ageRange + '-';
+        EventFormData.typicalAgeRange = $scope.minAge + '-';
       }
 
     }
@@ -8079,8 +8079,14 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
       $scope.ageRange = -1;
       if (EventFormData.typicalAgeRange) {
         var range = EventFormData.typicalAgeRange.split('-');
-        $scope.ageRange = range[1] ? range[1] : -1;
-        $scope.minAge = parseInt(range[0]);
+        if (range[1]) {
+          $scope.ageRange = range[1];
+          $scope.minAge = parseInt(range[0]);
+        }
+        else {
+          $scope.ageRange = 99;
+          $scope.minAge = parseInt(range[0]);
+        }
       }
     }
 

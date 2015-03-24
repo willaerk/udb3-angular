@@ -81,7 +81,7 @@ function EventDetail($scope, $location, eventId, udbApi, jsonLDLangFilter, locat
     },
     {
       id: 'omd',
-      header: 'Open Monumenten Dag'
+      header: 'Open Monumentendag'
     }
   ];
 

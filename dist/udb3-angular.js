@@ -5053,7 +5053,7 @@ function EventDetail($scope, $location, eventId, udbApi, jsonLDLangFilter, locat
     },
     {
       id: 'omd',
-      header: 'Open Monumenten Dag'
+      header: 'Open Monumentendag'
     }
   ];
 
@@ -8495,7 +8495,7 @@ function PlaceDetail($scope, $location, placeId, udbApi, jsonLDLangFilter, locat
     },
     {
       id: 'omd',
-      header: 'Open Monumenten Dag'
+      header: 'Open Monumentendag'
     }
   ];
 

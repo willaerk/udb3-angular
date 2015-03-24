@@ -5909,28 +5909,12 @@ function EventFormController($scope, eventId, placeId, offerType, EventFormData,
   function addTimestamp(startDateString, endDateString) {
 
     var startDate = new Date(startDateString);
-    var endDate = new Date(endDateString);
-
-    var startHour = '';
-    startHour = startDate.getHours() < 9 ? '0' + startDate.getHours() : startDate.getHours();
-    if (startDate.getMinutes() < 9) {
-      startHour += ':0' + startDate.getMinutes();
-    }
-    else {
-      startHour += ':' + startDate.getMinutes();
-    }
-
-    var endHour = '';
-    endHour = endDate.getHours() < 9 ? '0' + endDate.getHours() : endDate.getHours();
-    if (endDate.getMinutes() < 9) {
-      endHour += ':0' + endDate.getMinutes();
-    }
-    else {
-      endHour += ':' + endDate.getMinutes();
-    }
+    var startHour = startDateString.substring(11, 16);
+    var endHour = endDateString.substring(11, 16);
 
     startHour = startHour === '00:00' ? '' : startHour;
-    endHour = startHour === '00:00' ? '' : endHour;
+    endHour = endHour === '00:00' ? '' : endHour;
+
     EventFormData.addTimestamp(startDate, startHour, endHour);
 
   }

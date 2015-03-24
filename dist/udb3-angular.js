@@ -6541,8 +6541,8 @@ function EventFormStep1Controller($scope, EventFormData, eventTypes) {
           $scope.activeEventType = $scope.placeLabels[j].id;
           $scope.activeEventTypeLabel = $scope.placeLabels[j].label;
 
-          if ($scope.eventTypeLabels[j].themes && $scope.eventTypeLabels[j].themes.length > 0) {
-            $scope.eventThemeLabels = $scope.eventTypeLabels[j].themes;
+          if ($scope.placeLabels[j].themes && $scope.placeLabels[j].themes.length > 0) {
+            $scope.eventThemeLabels = $scope.placeLabels[j].themes;
             $scope.mustRefine = true;
           }
           else {

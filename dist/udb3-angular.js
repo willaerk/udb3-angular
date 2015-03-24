@@ -5788,7 +5788,7 @@ angular
   .controller('EventFormCtrl', EventFormController);
 
 /* @ngInject */
-function EventFormController($scope, eventId, placeId, offerType, EventFormData, udbApi) {
+function EventFormController($scope, eventId, placeId, offerType, EventFormData, udbApi, moment) {
 
   // Other controllers won't load untill this boolean is set to true.
   $scope.loaded = false;
@@ -5876,11 +5876,11 @@ function EventFormController($scope, eventId, placeId, offerType, EventFormData,
 
     // Set correct date object for start and end.
     if (item.startDate) {
-      EventFormData.startDate = new Date(item.startDate);
+      EventFormData.startDate = moment(item.startDate, 'YYYY-MM-DDTHH:MM:SS').toDate();
     }
 
     if (item.endDate) {
-      EventFormData.endDate = new Date(item.endDate);
+      EventFormData.endDate = moment(item.endDate, 'YYYY-MM-DDTHH:MM:SS').toDate();
     }
 
     // SubEvents are timestamps.
@@ -5908,19 +5908,36 @@ function EventFormController($scope, eventId, placeId, offerType, EventFormData,
    */
   function addTimestamp(startDateString, endDateString) {
 
-    var startDate = new Date(startDateString);
-    var startHour = startDateString.substring(11, 16);
-    var endHour = endDateString.substring(11, 16);
+    var startDate = moment(startDateString, 'YYYY-MM-DDTHH:MM:SS');
+    var endDate = moment(endDateString, 'YYYY-MM-DDTHH:MM:SS');
+
+    var startHour = '';
+    startHour = startDate.hours() < 9 ? '0' + startDate.hours() : startDate.hours();
+    if (startDate.minutes() < 9) {
+      startHour += ':0' + startDate.minutes();
+    }
+    else {
+      startHour += ':' + startDate.minutes();
+    }
+
+    var endHour = '';
+    endHour = endDate.hours() < 9 ? '0' + endDate.hours() : endDate.hours();
+    if (endDate.minutes() < 9) {
+      endHour += ':0' + endDate.minutes();
+    }
+    else {
+      endHour += ':' + endDate.minutes();
+    }
 
     startHour = startHour === '00:00' ? '' : startHour;
     endHour = endHour === '00:00' ? '' : endHour;
 
-    EventFormData.addTimestamp(startDate, startHour, endHour);
+    EventFormData.addTimestamp(startDate.toDate(), startHour, endHour);
 
   }
 
 }
-EventFormController.$inject = ["$scope", "eventId", "placeId", "offerType", "EventFormData", "udbApi"];
+EventFormController.$inject = ["$scope", "eventId", "placeId", "offerType", "EventFormData", "udbApi", "moment"];
 
 // Source: src/event_form/event-form.data.js
 /**

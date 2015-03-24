@@ -10641,7 +10641,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "\n" +
     "        <tr ng-repeat=\"userContentItem in userContent\">\n" +
     "          <td>\n" +
-    "            <strong><a href=\"{{usercontent.exampleUrl}}\">{{userContentItem.details.name}}</a></strong><br/>\n" +
+    "            <strong><a href=\"{{ userContentItem.exampleUrl }}\">{{userContentItem.details.name}}</a></strong><br/>\n" +
     "            <small><ng-switch on=\"userContentItem.details.calendarType\">\n" +
     "                 <span ng-switch-when=\"single\">\n" +
     "                    {{ userContentItem.details.type.label }} - {{ userContentItem.details.startDate | date: 'dd/MM/yyyy' }}\n" +
@@ -10667,10 +10667,10 @@ $templateCache.put('templates/time-autocomplete.html',
     "                <li>\n" +
     "                  <a href=\"{{ userContentItem.exampleUrl }}\">Voorbeeld</a>\n" +
     "                </li>\n" +
-    "                <li class=\"divider\"></li>\n" +
+    "               <!-- <li class=\"divider\"></li>\n" +
     "                <li>\n" +
     "                  <a href=\"{{ userContentItem.deleteUrl }}\">Verwijderen</a>\n" +
-    "                </li>\n" +
+    "                </li> -->\n" +
     "              </ul>\n" +
     "            </div>\n" +
     "          </td>\n" +

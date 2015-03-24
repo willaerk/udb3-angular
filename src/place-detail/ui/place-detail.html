@@ -39,19 +39,15 @@
               </tr>
               <tr>
                 <td><strong>Type</strong></td>
-                <td>{{place.type}}</td>
+                <td>{{place.type.label}}</td>
               </tr>
               <tr>
                 <td><strong>Beschrijving</strong></td>
-                <td ng-bind-html="place.description"></td>
+                <td ng-bind-html="place.description.nl"></td>
               </tr>
               <tr>
                 <td><strong>Waar</strong></td>
                 <td>{{placeLocation(place)}}</td>
-              </tr>
-              <tr>
-                <td><strong>Wanneer</strong></td>
-                <td>{{place.calendarSummary}}</td>
               </tr>
               <tr ng-class="{muted: !place.organizer}">
                 <td><strong>Organisator</strong></td>

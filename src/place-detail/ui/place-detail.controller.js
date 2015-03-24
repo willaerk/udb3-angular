@@ -96,24 +96,12 @@ function PlaceDetail($scope, $location, placeId, udbApi, jsonLDLangFilter, locat
   });
 
   $scope.placeLocation = function (place) {
-    var placeLocation = [
-      place.location.name
-    ];
 
-    if (place.location.terms) {
-      angular.forEach(place.location.terms, function (term) {
-        // Only add terms related to locations.
-        if (locationTypes.indexOf(term.id) !== -1) {
-          placeLocation.push(term.label);
-        }
-      });
+    if (place.address.addressLocality) {
+      return place.address.addressLocality;
     }
 
-    if (place.location.address.addressLocality) {
-      placeLocation.push(place.location.address.addressLocality);
-    }
-
-    return placeLocation.join(', ');
+    return '';
   };
 
   $scope.placeIds = function (place) {

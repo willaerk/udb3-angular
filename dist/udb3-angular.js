@@ -8526,24 +8526,12 @@ function PlaceDetail($scope, $location, placeId, udbApi, jsonLDLangFilter, locat
   });
 
   $scope.placeLocation = function (place) {
-    var placeLocation = [
-      place.location.name
-    ];
 
-    if (place.location.terms) {
-      angular.forEach(place.location.terms, function (term) {
-        // Only add terms related to locations.
-        if (locationTypes.indexOf(term.id) !== -1) {
-          placeLocation.push(term.label);
-        }
-      });
+    if (place.address.addressLocality) {
+      return place.address.addressLocality;
     }
 
-    if (place.location.address.addressLocality) {
-      placeLocation.push(place.location.address.addressLocality);
-    }
-
-    return placeLocation.join(', ');
+    return '';
   };
 
   $scope.placeIds = function (place) {
@@ -12395,19 +12383,15 @@ $templateCache.put('templates/time-autocomplete.html',
     "              </tr>\n" +
     "              <tr>\n" +
     "                <td><strong>Type</strong></td>\n" +
-    "                <td>{{place.type}}</td>\n" +
+    "                <td>{{place.type.label}}</td>\n" +
     "              </tr>\n" +
     "              <tr>\n" +
     "                <td><strong>Beschrijving</strong></td>\n" +
-    "                <td ng-bind-html=\"place.description\"></td>\n" +
+    "                <td ng-bind-html=\"place.description.nl\"></td>\n" +
     "              </tr>\n" +
     "              <tr>\n" +
     "                <td><strong>Waar</strong></td>\n" +
     "                <td>{{placeLocation(place)}}</td>\n" +
-    "              </tr>\n" +
-    "              <tr>\n" +
-    "                <td><strong>Wanneer</strong></td>\n" +
-    "                <td>{{place.calendarSummary}}</td>\n" +
     "              </tr>\n" +
     "              <tr ng-class=\"{muted: !place.organizer}\">\n" +
     "                <td><strong>Organisator</strong></td>\n" +

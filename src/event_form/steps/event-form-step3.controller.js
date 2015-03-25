@@ -33,6 +33,7 @@ function EventFormStep3Controller($scope, EventFormData, cityAutocomplete, event
 
   $scope.selectedCity = '';
   $scope.selectedLocation = '';
+  $scope.placeStreetAddress = '';
   $scope.openPlaceModal = openPlaceModal;
 
   // Validation.
@@ -65,9 +66,7 @@ function EventFormStep3Controller($scope, EventFormData, cityAutocomplete, event
       $scope.selectedLocation = EventFormData.location.name;
     }
     else {
-      var streetParts = EventFormData.location.address.streetAddress.split(' ');
-      EventFormData.placeNumber = streetParts.pop();
-      EventFormData.placeStreet = streetParts.join(' ');
+      $scope.placeStreetAddress = EventFormData.location.address.streetAddress;
       $scope.selectedLocation = EventFormData.location.address.streetAddress;
     }
 
@@ -261,7 +260,7 @@ function EventFormStep3Controller($scope, EventFormData, cityAutocomplete, event
 
     var location = EventFormData.getLocation();
     location.address.addressCountry = 'BE';
-    location.address.streetAddress = EventFormData.placeStreet + ' ' + EventFormData.placeNumber;
+    location.address.streetAddress = $scope.placeStreetAddress;
     EventFormData.setLocation(location);
 
     $scope.selectedLocation = location.address.streetAddress;

@@ -24,9 +24,8 @@ function EventFormOrganizerModalController($scope, $modalInstance, udbOrganizers
   $scope.newOrganizer = {
     name : '',
     address : {
-      street : '',
-      number : '',
-      city : '',
+      streetAddress : '',
+      locality : '',
       postalCode: '',
       country : 'BE'
     },
@@ -76,7 +75,7 @@ function EventFormOrganizerModalController($scope, $modalInstance, udbOrganizers
       return;
     }
 
-    var promise = udbOrganizers.searchDuplicates($scope.newOrganizer.name, $scope.newOrganizer.postalCode);
+    var promise = udbOrganizers.searchDuplicates($scope.newOrganizer.name, $scope.newOrganizer.address.postalCode);
 
     $scope.error = false;
     $scope.saving = true;

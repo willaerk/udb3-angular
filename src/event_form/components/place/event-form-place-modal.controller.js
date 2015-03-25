@@ -105,7 +105,7 @@
         addressCountry : 'BE',
         addressLocality : $scope.newPlace.address.addressLocality,
         postalCode : $scope.newPlace.address.postalCode,
-        streetAddress : $scope.newPlace.address.streetAddress + ' ' + $scope.newPlace.address.locationNumber
+        streetAddress : $scope.newPlace.address.streetAddress
       };
 
       var promise = eventCrud.createPlace(udbPlace);

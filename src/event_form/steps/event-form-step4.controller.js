@@ -64,7 +64,7 @@ function EventFormStep4Controller($scope, EventFormData, udbApi, appConfig, Sear
     if (EventFormData.isEvent && !EventFormData.location.id) {
       $scope.infoMissing = true;
     }
-    else if (EventFormData.isPlace && !EventFormData.placeStreet) {
+    else if (EventFormData.isPlace && !EventFormData.location.address.streetAddress) {
       $scope.infoMissing = true;
     }
 

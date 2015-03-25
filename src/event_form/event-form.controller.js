@@ -100,11 +100,11 @@ function EventFormController($scope, eventId, placeId, offerType, EventFormData,
 
     // Set correct date object for start and end.
     if (item.startDate) {
-      EventFormData.startDate = moment(item.startDate, 'YYYY-MM-DDTHH:MM:SS').toDate();
+      EventFormData.startDate = moment(item.startDate).toDate();
     }
 
     if (item.endDate) {
-      EventFormData.endDate = moment(item.endDate, 'YYYY-MM-DDTHH:MM:SS').toDate();
+      EventFormData.endDate = moment(item.endDate).toDate();
     }
 
     // SubEvents are timestamps.
@@ -132,8 +132,8 @@ function EventFormController($scope, eventId, placeId, offerType, EventFormData,
    */
   function addTimestamp(startDateString, endDateString) {
 
-    var startDate = moment(startDateString, 'YYYY-MM-DDTHH:MM:SS');
-    var endDate = moment(endDateString, 'YYYY-MM-DDTHH:MM:SS');
+    var startDate = moment(startDateString);
+    var endDate = moment(endDateString);
 
     var startHour = '';
     startHour = startDate.hours() < 9 ? '0' + startDate.hours() : startDate.hours();

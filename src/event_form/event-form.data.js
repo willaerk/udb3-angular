@@ -23,7 +23,10 @@ function EventFormDataFactory(UdbEvent, UdbPlace) {
     showStep5 : false,
     majorInfoChanged : false,
     // Properties that will be copied to UdbEvent / UdbPlace.
-    name : {},
+    id : '',
+    name : {
+      nl : ''
+    },
     description : {},
     location : {
       'id' : null,

@@ -5875,11 +5875,11 @@ function EventFormController($scope, eventId, placeId, offerType, EventFormData,
 
     // Set correct date object for start and end.
     if (item.startDate) {
-      EventFormData.startDate = moment(item.startDate, 'YYYY-MM-DDTHH:MM:SS').toDate();
+      EventFormData.startDate = moment(item.startDate).toDate();
     }
 
     if (item.endDate) {
-      EventFormData.endDate = moment(item.endDate, 'YYYY-MM-DDTHH:MM:SS').toDate();
+      EventFormData.endDate = moment(item.endDate).toDate();
     }
 
     // SubEvents are timestamps.
@@ -5907,8 +5907,8 @@ function EventFormController($scope, eventId, placeId, offerType, EventFormData,
    */
   function addTimestamp(startDateString, endDateString) {
 
-    var startDate = moment(startDateString, 'YYYY-MM-DDTHH:MM:SS');
-    var endDate = moment(endDateString, 'YYYY-MM-DDTHH:MM:SS');
+    var startDate = moment(startDateString);
+    var endDate = moment(endDateString);
 
     var startHour = '';
     startHour = startDate.hours() < 9 ? '0' + startDate.hours() : startDate.hours();
@@ -5962,7 +5962,10 @@ function EventFormDataFactory(UdbEvent, UdbPlace) {
     showStep5 : false,
     majorInfoChanged : false,
     // Properties that will be copied to UdbEvent / UdbPlace.
-    name : {},
+    id : '',
+    name : {
+      nl : ''
+    },
     description : {},
     location : {
       'id' : null,
@@ -6474,7 +6477,7 @@ function EventFormStep1Controller($scope, EventFormData, eventTypes) {
   $scope.eventSelectionClass = $scope.showPlaceSelection ? 'col-xs-5' : 'col-xs-12';
   $scope.placeSelectionClass = $scope.showEventSelection ? 'col-xs-6' : 'col-xs-12';
 
-  $scope.mustRefine = false;
+  $scope.canRefine = false;
   $scope.showAllEventTypes = false;
   $scope.showAllPlaces = false;
   $scope.eventThemeLabels = [];
@@ -6514,10 +6517,10 @@ function EventFormStep1Controller($scope, EventFormData, eventTypes) {
 
           if ($scope.eventTypeLabels[i].themes && $scope.eventTypeLabels[i].themes.length > 0) {
             $scope.eventThemeLabels = $scope.eventTypeLabels[i].themes;
-            $scope.mustRefine = true;
+            $scope.canRefine = true;
           }
           else {
-            $scope.mustRefine = false;
+            $scope.canRefine = false;
           }
 
           break;
@@ -6543,10 +6546,10 @@ function EventFormStep1Controller($scope, EventFormData, eventTypes) {
 
           if ($scope.placeLabels[j].themes && $scope.placeLabels[j].themes.length > 0) {
             $scope.eventThemeLabels = $scope.placeLabels[j].themes;
-            $scope.mustRefine = true;
+            $scope.canRefine = true;
           }
           else {
-            $scope.mustRefine = false;
+            $scope.canRefine = false;
           }
 
           break;
@@ -6582,9 +6585,7 @@ function EventFormStep1Controller($scope, EventFormData, eventTypes) {
     $scope.showEventSelection = false;
     $scope.showPlaceSelection = false;
 
-    if (!$scope.mustRefine) {
-      EventFormData.showStep(2);
-    }
+    EventFormData.showStep(2);
 
   }
 
@@ -6593,7 +6594,7 @@ function EventFormStep1Controller($scope, EventFormData, eventTypes) {
    */
   function resetEventType() {
 
-    $scope.mustRefine = false;
+    $scope.canRefine = false;
     $scope.activeEventType = '';
     $scope.activeEventTypeLabel = '';
     $scope.activeTheme = '';
@@ -6637,7 +6638,7 @@ function EventFormStep1Controller($scope, EventFormData, eventTypes) {
     EventFormData.setTheme(id, label);
 
     EventFormData.showStep(2);
-    $scope.mustRefine = false;
+    $scope.canRefine = false;
 
     if (EventFormData.id) {
       EventFormData.majorInfoChanged = true;
@@ -6649,7 +6650,7 @@ function EventFormStep1Controller($scope, EventFormData, eventTypes) {
    * Click listener to reset the active theme.
    */
   function resetTheme() {
-    $scope.mustRefine = true;
+    $scope.canRefine = true;
     $scope.activeTheme = '';
   }
 
@@ -11429,7 +11430,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "        <a class=\"btn btn-link btn-default\" href=\"\" ng-click=\"resetEventType()\">Wijzigen</a>\n" +
     "      </p>\n" +
     "\n" +
-    "      <div class=\"col-xs-12\" ng-show=\"mustRefine\">\n" +
+    "      <div class=\"col-xs-12\" ng-show=\"canRefine\">\n" +
     "        <label class=\"event-theme-label\" ng-show=\"eventThemeLabels.length\">Verfijn</label>\n" +
     "        <ul class=\"list-inline\" id=\"step2-list\">\n" +
     "          <li ng-repeat=\"eventThemeLabel in eventThemeLabels\">\n" +
@@ -11616,7 +11617,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "        </p>\n" +
     "      </div>\n" +
     "    </div>\n" +
-    "    <p ng-show=\"EventFormData.id === '' && EventFormData.name.nl !== ''\">\n" +
+    "    <p ng-show=\"eventFormData.id === '' && eventFormData.name.nl !== ''\">\n" +
     "      <a class=\"btn btn-primary titel-doorgaan\" ng-click=\"validateEvent(true)\">Doorgaan <i class=\"fa fa-circle-o-notch fa-spin\" ng-show=\"saving\"></i></a>\n" +
     "    </p>\n" +
     "\n" +
@@ -11627,7 +11628,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "  </div>\n" +
     "\n" +
     "  <a name=\"dubbeldetectie\"></a>\n" +
-    "  <section class=\"dubbeldetectie\" ng-show=\"EventFormData.name.nl !== ''\">\n" +
+    "  <section class=\"dubbeldetectie\" ng-show=\"eventFormData.name.nl !== ''\">\n" +
     "\n" +
     "    <div class=\"alert alert-info\" ng-show=\"resultViewer.totalItems > 0\">\n" +
     "      <p class=\"h2\" style=\"margin-top: 0;\">Vermijd dubbel werk</p>\n" +
@@ -11665,7 +11666,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "      </div>\n" +
     "    </div>\n" +
     "\n" +
-    "    <h3 ng-show=\"duplicatesSearched && resultViewer.totalItems > 0\">Ben je zeker dat je \"{{ EventFormData.name.nl }}\" wil toevoegen?</h3>\n" +
+    "    <h3 ng-show=\"duplicatesSearched && resultViewer.totalItems > 0\">Ben je zeker dat je \"{{ eventFormData.name.nl }}\" wil toevoegen?</h3>\n" +
     "    <ul class=\"list-inline\" ng-show=\"duplicatesSearched && resultViewer.totalItems > 0\">\n" +
     "      <li>\n" +
     "        <a class=\"btn btn-default\" href=\"{{ udb3DashboardUrl }}\">Nee, keer terug naar dashboard</a>\n" +

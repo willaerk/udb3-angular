@@ -17,7 +17,7 @@
         </p>
       </div>
     </div>
-    <p ng-show="EventFormData.id === '' && EventFormData.name.nl !== ''">
+    <p ng-show="eventFormData.id === '' && eventFormData.name.nl !== ''">
       <a class="btn btn-primary titel-doorgaan" ng-click="validateEvent(true)">Doorgaan <i class="fa fa-circle-o-notch fa-spin" ng-show="saving"></i></a>
     </p>
 
@@ -28,7 +28,7 @@
   </div>
 
   <a name="dubbeldetectie"></a>
-  <section class="dubbeldetectie" ng-show="EventFormData.name.nl !== ''">
+  <section class="dubbeldetectie" ng-show="eventFormData.name.nl !== ''">
 
     <div class="alert alert-info" ng-show="resultViewer.totalItems > 0">
       <p class="h2" style="margin-top: 0;">Vermijd dubbel werk</p>
@@ -66,7 +66,7 @@
       </div>
     </div>
 
-    <h3 ng-show="duplicatesSearched && resultViewer.totalItems > 0">Ben je zeker dat je "{{ EventFormData.name.nl }}" wil toevoegen?</h3>
+    <h3 ng-show="duplicatesSearched && resultViewer.totalItems > 0">Ben je zeker dat je "{{ eventFormData.name.nl }}" wil toevoegen?</h3>
     <ul class="list-inline" ng-show="duplicatesSearched && resultViewer.totalItems > 0">
       <li>
         <a class="btn btn-default" href="{{ udb3DashboardUrl }}">Nee, keer terug naar dashboard</a>

@@ -32,7 +32,7 @@ function EventFormStep1Controller($scope, EventFormData, eventTypes) {
   $scope.eventSelectionClass = $scope.showPlaceSelection ? 'col-xs-5' : 'col-xs-12';
   $scope.placeSelectionClass = $scope.showEventSelection ? 'col-xs-6' : 'col-xs-12';
 
-  $scope.mustRefine = false;
+  $scope.canRefine = false;
   $scope.showAllEventTypes = false;
   $scope.showAllPlaces = false;
   $scope.eventThemeLabels = [];
@@ -72,10 +72,10 @@ function EventFormStep1Controller($scope, EventFormData, eventTypes) {
 
           if ($scope.eventTypeLabels[i].themes && $scope.eventTypeLabels[i].themes.length > 0) {
             $scope.eventThemeLabels = $scope.eventTypeLabels[i].themes;
-            $scope.mustRefine = true;
+            $scope.canRefine = true;
           }
           else {
-            $scope.mustRefine = false;
+            $scope.canRefine = false;
           }
 
           break;
@@ -101,10 +101,10 @@ function EventFormStep1Controller($scope, EventFormData, eventTypes) {
 
           if ($scope.placeLabels[j].themes && $scope.placeLabels[j].themes.length > 0) {
             $scope.eventThemeLabels = $scope.placeLabels[j].themes;
-            $scope.mustRefine = true;
+            $scope.canRefine = true;
           }
           else {
-            $scope.mustRefine = false;
+            $scope.canRefine = false;
           }
 
           break;
@@ -140,9 +140,7 @@ function EventFormStep1Controller($scope, EventFormData, eventTypes) {
     $scope.showEventSelection = false;
     $scope.showPlaceSelection = false;
 
-    if (!$scope.mustRefine) {
-      EventFormData.showStep(2);
-    }
+    EventFormData.showStep(2);
 
   }
 
@@ -151,7 +149,7 @@ function EventFormStep1Controller($scope, EventFormData, eventTypes) {
    */
   function resetEventType() {
 
-    $scope.mustRefine = false;
+    $scope.canRefine = false;
     $scope.activeEventType = '';
     $scope.activeEventTypeLabel = '';
     $scope.activeTheme = '';
@@ -195,7 +193,7 @@ function EventFormStep1Controller($scope, EventFormData, eventTypes) {
     EventFormData.setTheme(id, label);
 
     EventFormData.showStep(2);
-    $scope.mustRefine = false;
+    $scope.canRefine = false;
 
     if (EventFormData.id) {
       EventFormData.majorInfoChanged = true;
@@ -207,7 +205,7 @@ function EventFormStep1Controller($scope, EventFormData, eventTypes) {
    * Click listener to reset the active theme.
    */
   function resetTheme() {
-    $scope.mustRefine = true;
+    $scope.canRefine = true;
     $scope.activeTheme = '';
   }
 

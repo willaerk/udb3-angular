@@ -42,7 +42,7 @@
         <a class="btn btn-link btn-default" href="" ng-click="resetEventType()">Wijzigen</a>
       </p>
 
-      <div class="col-xs-12" ng-show="mustRefine">
+      <div class="col-xs-12" ng-show="canRefine">
         <label class="event-theme-label" ng-show="eventThemeLabels.length">Verfijn</label>
         <ul class="list-inline" id="step2-list">
           <li ng-repeat="eventThemeLabel in eventThemeLabels">

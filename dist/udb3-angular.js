@@ -1926,6 +1926,7 @@ CityAutocomplete.$inject = ["$q", "$http", "appConfig"];
           var options = {
             format: 'd MM yyyy',
             language: 'nl-BE',
+            startDate : new Date(),
             beforeShowDay: function(date) {
               var dateFormat = date.getUTCFullYear() + '-' + date.getUTCMonth() + '-' + date.getUTCDate();
               if (attrs.highlightDate && dateFormat === attrs.highlightDate) {

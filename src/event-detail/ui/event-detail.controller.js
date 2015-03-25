@@ -16,11 +16,33 @@ function EventDetail($scope, $location, eventId, udbApi, jsonLDLangFilter, locat
   $scope.eventId = eventId;
   $scope.eventIdIsInvalid = false;
   $scope.eventHistory = [];
+  $scope.tabs = [
+    {
+      id: 'data',
+      header: 'Gegevens'
+    },
+    {
+      id: 'history',
+      header: 'Historiek'
+    },
+    {
+      id: 'publication',
+      header: 'Publicatie'
+    },
+  ];
 
   var eventLoaded = udbApi.getEventById($scope.eventId);
 
   eventLoaded.then(
       function (event) {
+
+        if (event.omdParticipation) {
+          $scope.tabs.push({
+            id: 'omd',
+            header: 'Open Monumentendag'
+          });
+        }
+
         var eventHistoryLoaded = udbApi.getEventHistoryById($scope.eventId);
 
         eventHistoryLoaded.then(function(eventHistory) {
@@ -28,23 +50,39 @@ function EventDetail($scope, $location, eventId, udbApi, jsonLDLangFilter, locat
         });
         $scope.event = jsonLDLangFilter(event, 'nl');
         $scope.eventIdIsInvalid = false;
+        $scope.event.omdEvent = false;
 
         if (typeof $scope.event.additionalData.omdInfo !== 'undefined') {
-          $scope.event.omdParticipation = true;
+          $scope.event.omdEvent = true;
 
           // Get category list.
-          $scope.event.categoryList = $scope.event.additionalData.omdInfo.categories.join(', ');
+          $scope.event.additionalData.omdInfo.categoryList = $scope.event.additionalData.omdInfo.categories.join(', ');
 
           // Get free brochure info.
-          if ($scope.event.additionalData.omdInfo.freeBrochure === true) {
-            $scope.event.freeBrochure = 'Ja';
+          if ($scope.event.additionalData.omdInfo.brochure) {
+            if ($scope.event.additionalData.omdInfo.freeBrochure) {
+              $scope.event.additionalData.omdInfo.brochure = 'Ja, gratis';
+            }
+            else if ($scope.event.additionalData.omdInfo.priceBrochure) {
+              $scope.event.additionalData.omdInfo.brochure = 'Ja, ' +
+                $scope.event.additionalData.omdInfo.priceBrochure + ' €';
+            }
+            else {
+              $scope.event.additionalData.omdInfo.brochure = 'Ja';
+            }
           }
           else {
-            $scope.event.freeBrochure = 'Nee';
+            $scope.event.additionalData.omdInfo.brochure = 'Nee';
           }
-        }
-        else {
-          $scope.event.omdParticipation = false;
+
+          // First time?
+          if ($scope.event.additionalData.omdInfo.firstParticipation) {
+            $scope.event.additionalData.omdInfo.firstParticipation = 'Ja';
+          }
+          else {
+            $scope.event.additionalData.omdInfo.firstParticipation = 'Nee';
+          }
+
         }
 
       },
@@ -65,25 +103,6 @@ function EventDetail($scope, $location, eventId, udbApi, jsonLDLangFilter, locat
   };
 
   var activeTabId = getActiveTabId();
-
-  $scope.tabs = [
-    {
-      id: 'data',
-      header: 'Gegevens'
-    },
-    {
-      id: 'history',
-      header: 'Historiek'
-    },
-    {
-      id: 'publication',
-      header: 'Publicatie'
-    },
-    {
-      id: 'omd',
-      header: 'Open Monumentendag'
-    }
-  ];
 
   $scope.classForTab = function (tab) {
     if (tab.id === activeTabId) {

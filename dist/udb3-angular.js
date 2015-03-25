@@ -4988,11 +4988,33 @@ function EventDetail($scope, $location, eventId, udbApi, jsonLDLangFilter, locat
   $scope.eventId = eventId;
   $scope.eventIdIsInvalid = false;
   $scope.eventHistory = [];
+  $scope.tabs = [
+    {
+      id: 'data',
+      header: 'Gegevens'
+    },
+    {
+      id: 'history',
+      header: 'Historiek'
+    },
+    {
+      id: 'publication',
+      header: 'Publicatie'
+    },
+  ];
 
   var eventLoaded = udbApi.getEventById($scope.eventId);
 
   eventLoaded.then(
       function (event) {
+
+        if (event.omdParticipation) {
+          $scope.tabs.push({
+            id: 'omd',
+            header: 'Open Monumentendag'
+          });
+        }
+
         var eventHistoryLoaded = udbApi.getEventHistoryById($scope.eventId);
 
         eventHistoryLoaded.then(function(eventHistory) {
@@ -5000,23 +5022,39 @@ function EventDetail($scope, $location, eventId, udbApi, jsonLDLangFilter, locat
         });
         $scope.event = jsonLDLangFilter(event, 'nl');
         $scope.eventIdIsInvalid = false;
+        $scope.event.omdEvent = false;
 
         if (typeof $scope.event.additionalData.omdInfo !== 'undefined') {
-          $scope.event.omdParticipation = true;
+          $scope.event.omdEvent = true;
 
           // Get category list.
-          $scope.event.categoryList = $scope.event.additionalData.omdInfo.categories.join(', ');
+          $scope.event.additionalData.omdInfo.categoryList = $scope.event.additionalData.omdInfo.categories.join(', ');
 
           // Get free brochure info.
-          if ($scope.event.additionalData.omdInfo.freeBrochure === true) {
-            $scope.event.freeBrochure = 'Ja';
+          if ($scope.event.additionalData.omdInfo.brochure) {
+            if ($scope.event.additionalData.omdInfo.freeBrochure) {
+              $scope.event.additionalData.omdInfo.brochure = 'Ja, gratis';
+            }
+            else if ($scope.event.additionalData.omdInfo.priceBrochure) {
+              $scope.event.additionalData.omdInfo.brochure = 'Ja, ' +
+                $scope.event.additionalData.omdInfo.priceBrochure + ' €';
+            }
+            else {
+              $scope.event.additionalData.omdInfo.brochure = 'Ja';
+            }
           }
           else {
-            $scope.event.freeBrochure = 'Nee';
+            $scope.event.additionalData.omdInfo.brochure = 'Nee';
           }
-        }
-        else {
-          $scope.event.omdParticipation = false;
+
+          // First time?
+          if ($scope.event.additionalData.omdInfo.firstParticipation) {
+            $scope.event.additionalData.omdInfo.firstParticipation = 'Ja';
+          }
+          else {
+            $scope.event.additionalData.omdInfo.firstParticipation = 'Nee';
+          }
+
         }
 
       },
@@ -5037,25 +5075,6 @@ function EventDetail($scope, $location, eventId, udbApi, jsonLDLangFilter, locat
   };
 
   var activeTabId = getActiveTabId();
-
-  $scope.tabs = [
-    {
-      id: 'data',
-      header: 'Gegevens'
-    },
-    {
-      id: 'history',
-      header: 'Historiek'
-    },
-    {
-      id: 'publication',
-      header: 'Publicatie'
-    },
-    {
-      id: 'omd',
-      header: 'Open Monumentendag'
-    }
-  ];
 
   $scope.classForTab = function (tab) {
     if (tab.id === activeTabId) {
@@ -8465,24 +8484,49 @@ function PlaceDetail($scope, $location, placeId, udbApi, jsonLDLangFilter, locat
         });
         $scope.place = place;
         $scope.placeIdIsInvalid = false;
+        $scope.place.omdEvent = false;
 
         if (typeof $scope.place.additionalData.omdInfo !== 'undefined') {
-          $scope.place.omdParticipation = true;
+          $scope.place.omdEvent = true;
 
           // Get category list.
-          $scope.place.categoryList = $scope.place.additionalData.omdInfo.categories.join(', ');
+          $scope.place.additionalData.omdInfo.categoryList = $scope.place.additionalData.omdInfo.categories.join(', ');
 
           // Get free brochure info.
-          if ($scope.place.additionalData.omdInfo.freeBrochure === true) {
-            $scope.place.freeBrochure = 'Ja';
+          if ($scope.place.additionalData.omdInfo.brochure) {
+            if ($scope.place.additionalData.omdInfo.freeBrochure) {
+              $scope.place.additionalData.omdInfo.brochure = 'Ja, gratis';
+            }
+            else if ($scope.place.additionalData.omdInfo.priceBrochure) {
+              $scope.place.additionalData.omdInfo.brochure = 'Ja, ' +
+                $scope.place.additionalData.omdInfo.priceBrochure + ' €';
+            }
+            else {
+              $scope.place.additionalData.omdInfo.brochure = 'Ja';
+            }
           }
           else {
-            $scope.place.freeBrochure = 'Nee';
+            $scope.place.additionalData.omdInfo.brochure = 'Nee';
           }
+
+          // First time?
+          if ($scope.place.additionalData.omdInfo.firstParticipation) {
+            $scope.place.additionalData.omdInfo.firstParticipation = 'Ja';
+          }
+          else {
+            $scope.place.additionalData.omdInfo.firstParticipation = 'Nee';
+          }
+
+          // Infopunt
+          if ($scope.place.additionalData.omdInfo.hasInfoOffice) {
+            $scope.place.additionalData.omdInfo.infoOffice = 'Ja';
+          }
+          else {
+            $scope.place.additionalData.omdInfo.infoOffice = 'Nee';
+          }
+
         }
-        else {
-          $scope.place.omdParticipation = false;
-        }
+
       },
       function (reason) {
         $scope.placeIdIsInvalid = true;
@@ -10897,29 +10941,38 @@ $templateCache.put('templates/time-autocomplete.html',
     "        </div>\n" +
     "      </div>\n" +
     "\n" +
-    "      <div class=\"tab-pane\" role=\"tabpanel\" ng-show=\"isTabActive('omd')\">\n" +
+    "      <div class=\"tab-pane\" role=\"tabpanel\" ng-show=\"isTabActive('omd')\" ng-if=\"event.omdEvent\">\n" +
     "        <div class=\"panel panel-default\">\n" +
     "          <table class=\"table\">\n" +
     "            <tbody>\n" +
     "              <tr>\n" +
     "                <td><strong>Deelname</strong></td>\n" +
-    "                <td ng-show=\"event.omdParticipation\">\n" +
+    "                <td>\n" +
     "                  Ja\n" +
     "                </td>\n" +
-    "                <td ng-hide=\"event.omdParticipation\">\n" +
-    "                  Nee\n" +
-    "                </td>\n" +
     "              </tr>\n" +
-    "              <tr ng-show=\"event.omdParticipation\">\n" +
+    "              <tr>\n" +
     "                <td><strong>Categorieën</strong></td>\n" +
     "                <td>\n" +
-    "                  {{ event.categoryList }}\n" +
+    "                  {{ event.additionalData.omdInfo.categoryList }}\n" +
     "                </td>\n" +
     "              </tr>\n" +
-    "              <tr ng-show=\"event.omdParticipation\">\n" +
-    "                <td><strong>Gratis brochure</strong></td>\n" +
+    "              <tr>\n" +
+    "                <td><strong>Motivatie</strong></td>\n" +
     "                <td>\n" +
-    "                  {{ event.freeBrochure }}\n" +
+    "                  {{ event.additionalData.omdInfo.reasonOfParticipation }}\n" +
+    "                </td>\n" +
+    "              </tr>\n" +
+    "              <tr>\n" +
+    "                <td><strong>Eerste deelname</strong></td>\n" +
+    "                <td>\n" +
+    "                  {{ event.additionalData.omdInfo.firstParticipation }}\n" +
+    "                </td>\n" +
+    "              </tr>\n" +
+    "              <tr>\n" +
+    "                <td><strong>Brochure beschikbaar</strong></td>\n" +
+    "                <td>\n" +
+    "                  {{ event.additionalData.omdInfo.brochure }}\n" +
     "                </td>\n" +
     "              </tr>\n" +
     "            </tbody>\n" +
@@ -12452,29 +12505,44 @@ $templateCache.put('templates/time-autocomplete.html',
     "        </div>\n" +
     "      </div>\n" +
     "\n" +
-    "      <div class=\"tab-pane\" role=\"tabpanel\" ng-show=\"isTabActive('omd')\">\n" +
+    "      <div class=\"tab-pane\" role=\"tabpanel\" ng-show=\"isTabActive('omd')\" ng-if=\"place.omdEvent\">\n" +
     "        <div class=\"panel panel-default\">\n" +
     "          <table class=\"table\">\n" +
     "            <tbody>\n" +
     "              <tr>\n" +
     "                <td><strong>Deelname</strong></td>\n" +
-    "                <td ng-show=\"place.omdParticipation\">\n" +
+    "                <td>\n" +
     "                  Ja\n" +
     "                </td>\n" +
-    "                <td ng-hide=\"place.omdParticipation\">\n" +
-    "                  Nee\n" +
-    "                </td>\n" +
     "              </tr>\n" +
-    "              <tr ng-show=\"place.omdParticipation\">\n" +
+    "              <tr>\n" +
     "                <td><strong>Categorieën</strong></td>\n" +
     "                <td>\n" +
-    "                  {{ place.categoryList }}\n" +
+    "                  {{ place.additionalData.omdInfo.categoryList }}\n" +
     "                </td>\n" +
     "              </tr>\n" +
-    "              <tr ng-show=\"place.omdParticipation\">\n" +
-    "                <td><strong>Gratis brochure</strong></td>\n" +
+    "              <tr>\n" +
+    "                <td><strong>Motivatie</strong></td>\n" +
     "                <td>\n" +
-    "                  {{ place.freeBrochure }}\n" +
+    "                  {{ place.additionalData.omdInfo.reasonOfParticipation }}\n" +
+    "                </td>\n" +
+    "              </tr>\n" +
+    "              <tr>\n" +
+    "                <td><strong>Eerste deelname</strong></td>\n" +
+    "                <td>\n" +
+    "                  {{ place.additionalData.omdInfo.firstParticipation }}\n" +
+    "                </td>\n" +
+    "              </tr>\n" +
+    "              <tr>\n" +
+    "                <td><strong>Brochure beschikbaar</strong></td>\n" +
+    "                <td>\n" +
+    "                  {{ place.additionalData.omdInfo.brochure }}\n" +
+    "                </td>\n" +
+    "              </tr>\n" +
+    "              <tr>\n" +
+    "                <td><strong>Infopunt</strong></td>\n" +
+    "                <td>\n" +
+    "                  {{ place.additionalData.omdInfo.infoOffice }}\n" +
     "                </td>\n" +
     "              </tr>\n" +
     "            </tbody>\n" +

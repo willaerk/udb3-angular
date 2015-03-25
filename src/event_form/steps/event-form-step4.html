@@ -17,9 +17,8 @@
         </p>
       </div>
     </div>
-    <p>
-      <a class="btn btn-primary titel-doorgaan" ng-show="EventFormData.id !== ''" ng-click="validateEvent(false)">Opslaan <i class="fa fa-circle-o-notch fa-spin" ng-show="saving"></i></a>
-      <a class="btn btn-primary titel-doorgaan" ng-show="EventFormData.id === '' && EventFormData.name.nl !== ''" ng-click="validateEvent(true)">Doorgaan <i class="fa fa-circle-o-notch fa-spin" ng-show="saving"></i></a>
+    <p ng-show="EventFormData.id === '' && EventFormData.name.nl !== ''">
+      <a class="btn btn-primary titel-doorgaan" ng-click="validateEvent(true)">Doorgaan <i class="fa fa-circle-o-notch fa-spin" ng-show="saving"></i></a>
     </p>
 
   </section>

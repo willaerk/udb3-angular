@@ -11616,9 +11616,8 @@ $templateCache.put('templates/time-autocomplete.html',
     "        </p>\n" +
     "      </div>\n" +
     "    </div>\n" +
-    "    <p>\n" +
-    "      <a class=\"btn btn-primary titel-doorgaan\" ng-show=\"EventFormData.id !== ''\" ng-click=\"validateEvent(false)\">Opslaan <i class=\"fa fa-circle-o-notch fa-spin\" ng-show=\"saving\"></i></a>\n" +
-    "      <a class=\"btn btn-primary titel-doorgaan\" ng-show=\"EventFormData.id === '' && EventFormData.name.nl !== ''\" ng-click=\"validateEvent(true)\">Doorgaan <i class=\"fa fa-circle-o-notch fa-spin\" ng-show=\"saving\"></i></a>\n" +
+    "    <p ng-show=\"EventFormData.id === '' && EventFormData.name.nl !== ''\">\n" +
+    "      <a class=\"btn btn-primary titel-doorgaan\" ng-click=\"validateEvent(true)\">Doorgaan <i class=\"fa fa-circle-o-notch fa-spin\" ng-show=\"saving\"></i></a>\n" +
     "    </p>\n" +
     "\n" +
     "  </section>\n" +
@@ -12190,7 +12189,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "                  <img src=\"{{ mediaObject.thumbnailUrl }}\">\n" +
     "                </a>\n" +
     "                <div class=\"media-body\">\n" +
-    "                  <p>{{ mediaObject.description }} <small ng-bind=\"mediaObject.copyrightHolder\">Copyright</small></p>\n" +
+    "                  <p>{{ mediaObject.description }}<br/><small ng-bind=\"mediaObject.copyrightHolder\">Copyright</small></p>\n" +
     "                  <p><a href=\"#\" class=\"btn btn-link\" ng-click=\"openUploadImageModal(key)\">Wijzigen</a><a href=\"#\" class=\"btn btn-link\" ng-click=\"openDeleteImageModal(key)\">Verwijderen</a></p>\n" +
     "                </div>\n" +
     "              </div>\n" +

@@ -136,8 +136,8 @@ function EventFormController($scope, eventId, placeId, offerType, EventFormData,
     var endDate = moment(endDateString);
 
     var startHour = '';
-    startHour = startDate.hours() < 9 ? '0' + startDate.hours() : startDate.hours();
-    if (startDate.minutes() < 9) {
+    startHour = startDate.hours() <= 9 ? '0' + startDate.hours() : startDate.hours();
+    if (startDate.minutes() <= 9) {
       startHour += ':0' + startDate.minutes();
     }
     else {
@@ -145,8 +145,8 @@ function EventFormController($scope, eventId, placeId, offerType, EventFormData,
     }
 
     var endHour = '';
-    endHour = endDate.hours() < 9 ? '0' + endDate.hours() : endDate.hours();
-    if (endDate.minutes() < 9) {
+    endHour = endDate.hours() <= 9 ? '0' + endDate.hours() : endDate.hours();
+    if (endDate.minutes() <= 9) {
       endHour += ':0' + endDate.minutes();
     }
     else {

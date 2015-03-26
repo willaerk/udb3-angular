@@ -10864,7 +10864,22 @@ $templateCache.put('templates/time-autocomplete.html',
     "            </tr>\n" +
     "            <tr>\n" +
     "              <td><strong>Wanneer</strong></td>\n" +
-    "              <td>{{event.calendarSummary}}</td>\n" +
+    "              <td>\n" +
+    "                <ng-switch on=\"event.calendarType\">\n" +
+    "                  <span ng-switch-when=\"single\">\n" +
+    "                     {{ event.startDate | date: 'dd/MM' }}\n" +
+    "                  </span>\n" +
+    "                  <span ng-switch-when=\"multiple\">\n" +
+    "                     Van {{ event.startDate | date: 'dd/MM' }} tot {{ event.endDate | date: 'dd/MM' }}\n" +
+    "                  </span>\n" +
+    "                  <span ng-switch-when=\"period\">\n" +
+    "                     Van {{ event.startDate | date: 'dd/MM' }} tot {{ event.endDate | date: 'dd/MM' }}\n" +
+    "                  </span>\n" +
+    "                  <span ng-switch-when=\"permanent\">\n" +
+    "                     Permanent\n" +
+    "                  </span>\n" +
+    "                </ng-switch>\n" +
+    "              </td>\n" +
     "            </tr>\n" +
     "            <tr ng-class=\"{muted: !event.organizer}\">\n" +
     "              <td><strong>Organisator</strong></td>\n" +

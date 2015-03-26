@@ -51,7 +51,22 @@
             </tr>
             <tr>
               <td><strong>Wanneer</strong></td>
-              <td>{{event.calendarSummary}}</td>
+              <td>
+                <ng-switch on="event.calendarType">
+                  <span ng-switch-when="single">
+                     {{ event.startDate | date: 'dd/MM' }}
+                  </span>
+                  <span ng-switch-when="multiple">
+                     Van {{ event.startDate | date: 'dd/MM' }} tot {{ event.endDate | date: 'dd/MM' }}
+                  </span>
+                  <span ng-switch-when="period">
+                     Van {{ event.startDate | date: 'dd/MM' }} tot {{ event.endDate | date: 'dd/MM' }}
+                  </span>
+                  <span ng-switch-when="permanent">
+                     Permanent
+                  </span>
+                </ng-switch>
+              </td>
             </tr>
             <tr ng-class="{muted: !event.organizer}">
               <td><strong>Organisator</strong></td>

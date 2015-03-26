@@ -36,13 +36,6 @@ function EventDetail($scope, $location, eventId, udbApi, jsonLDLangFilter, locat
   eventLoaded.then(
       function (event) {
 
-        if (event.omdParticipation) {
-          $scope.tabs.push({
-            id: 'omd',
-            header: 'Open Monumentendag'
-          });
-        }
-
         var eventHistoryLoaded = udbApi.getEventHistoryById($scope.eventId);
 
         eventHistoryLoaded.then(function(eventHistory) {
@@ -54,6 +47,11 @@ function EventDetail($scope, $location, eventId, udbApi, jsonLDLangFilter, locat
 
         if (typeof $scope.event.additionalData.omdInfo !== 'undefined') {
           $scope.event.omdEvent = true;
+
+          $scope.tabs.push({
+            id: 'omd',
+            header: 'Open Monumentendag'
+          });
 
           // Get category list.
           $scope.event.additionalData.omdInfo.categoryList = $scope.event.additionalData.omdInfo.categories.join(', ');

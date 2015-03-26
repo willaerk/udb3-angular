@@ -5009,13 +5009,6 @@ function EventDetail($scope, $location, eventId, udbApi, jsonLDLangFilter, locat
   eventLoaded.then(
       function (event) {
 
-        if (event.omdParticipation) {
-          $scope.tabs.push({
-            id: 'omd',
-            header: 'Open Monumentendag'
-          });
-        }
-
         var eventHistoryLoaded = udbApi.getEventHistoryById($scope.eventId);
 
         eventHistoryLoaded.then(function(eventHistory) {
@@ -5027,6 +5020,11 @@ function EventDetail($scope, $location, eventId, udbApi, jsonLDLangFilter, locat
 
         if (typeof $scope.event.additionalData.omdInfo !== 'undefined') {
           $scope.event.omdEvent = true;
+
+          $scope.tabs.push({
+            id: 'omd',
+            header: 'Open Monumentendag'
+          });
 
           // Get category list.
           $scope.event.additionalData.omdInfo.categoryList = $scope.event.additionalData.omdInfo.categories.join(', ');
@@ -5931,8 +5929,8 @@ function EventFormController($scope, eventId, placeId, offerType, EventFormData,
     var endDate = moment(endDateString);
 
     var startHour = '';
-    startHour = startDate.hours() < 9 ? '0' + startDate.hours() : startDate.hours();
-    if (startDate.minutes() < 9) {
+    startHour = startDate.hours() <= 9 ? '0' + startDate.hours() : startDate.hours();
+    if (startDate.minutes() <= 9) {
       startHour += ':0' + startDate.minutes();
     }
     else {
@@ -5940,8 +5938,8 @@ function EventFormController($scope, eventId, placeId, offerType, EventFormData,
     }
 
     var endHour = '';
-    endHour = endDate.hours() < 9 ? '0' + endDate.hours() : endDate.hours();
-    if (endDate.minutes() < 9) {
+    endHour = endDate.hours() <= 9 ? '0' + endDate.hours() : endDate.hours();
+    if (endDate.minutes() <= 9) {
       endHour += ':0' + endDate.minutes();
     }
     else {
@@ -8473,6 +8471,20 @@ function PlaceDetail($scope, $location, placeId, udbApi, jsonLDLangFilter, locat
   $scope.placeId = placeId;
   $scope.placeIdIsInvalid = false;
   $scope.placeHistory = [];
+  $scope.tabs = [
+    {
+      id: 'data',
+      header: 'Gegevens'
+    },
+    {
+      id: 'history',
+      header: 'Historiek'
+    },
+    {
+      id: 'publication',
+      header: 'Publicatie'
+    },
+  ];
 
   var placeLoaded = udbApi.getPlaceById($scope.placeId);
 
@@ -8489,6 +8501,11 @@ function PlaceDetail($scope, $location, placeId, udbApi, jsonLDLangFilter, locat
 
         if (typeof $scope.place.additionalData.omdInfo !== 'undefined') {
           $scope.place.omdEvent = true;
+
+          $scope.tabs.push({
+            id: 'omd',
+            header: 'Open Monumentendag'
+          });
 
           // Get category list.
           $scope.place.additionalData.omdInfo.categoryList = $scope.place.additionalData.omdInfo.categories.join(', ');
@@ -8546,25 +8563,6 @@ function PlaceDetail($scope, $location, placeId, udbApi, jsonLDLangFilter, locat
   };
 
   var activeTabId = getActiveTabId();
-
-  $scope.tabs = [
-    {
-      id: 'data',
-      header: 'Gegevens'
-    },
-    {
-      id: 'history',
-      header: 'Historiek'
-    },
-    {
-      id: 'publication',
-      header: 'Publicatie'
-    },
-    {
-      id: 'omd',
-      header: 'Open Monumentendag'
-    }
-  ];
 
   $scope.classForTab = function (tab) {
     if (tab.id === activeTabId) {

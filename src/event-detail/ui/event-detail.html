@@ -54,13 +54,13 @@
               <td>
                 <ng-switch on="event.calendarType">
                   <span ng-switch-when="single">
-                     {{ event.startDate | date: 'dd/MM' }}
+                     {{ event.startDate | date: 'dd/MM/yyyy' }}
                   </span>
                   <span ng-switch-when="multiple">
-                     Van {{ event.startDate | date: 'dd/MM' }} tot {{ event.endDate | date: 'dd/MM' }}
+                     Van {{ event.startDate | date: 'dd/MM/yyyy' }} tot {{ event.endDate | date: 'dd/MM/yyyy' }}
                   </span>
                   <span ng-switch-when="period">
-                     Van {{ event.startDate | date: 'dd/MM' }} tot {{ event.endDate | date: 'dd/MM' }}
+                     Van {{ event.startDate | date: 'dd/MM/yyyy' }} tot {{ event.endDate | date: 'dd/MM/yyyy' }}
                   </span>
                   <span ng-switch-when="permanent">
                      Permanent

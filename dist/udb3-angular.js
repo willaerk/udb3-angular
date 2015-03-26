@@ -10867,13 +10867,13 @@ $templateCache.put('templates/time-autocomplete.html',
     "              <td>\n" +
     "                <ng-switch on=\"event.calendarType\">\n" +
     "                  <span ng-switch-when=\"single\">\n" +
-    "                     {{ event.startDate | date: 'dd/MM' }}\n" +
+    "                     {{ event.startDate | date: 'dd/MM/yyyy' }}\n" +
     "                  </span>\n" +
     "                  <span ng-switch-when=\"multiple\">\n" +
-    "                     Van {{ event.startDate | date: 'dd/MM' }} tot {{ event.endDate | date: 'dd/MM' }}\n" +
+    "                     Van {{ event.startDate | date: 'dd/MM/yyyy' }} tot {{ event.endDate | date: 'dd/MM/yyyy' }}\n" +
     "                  </span>\n" +
     "                  <span ng-switch-when=\"period\">\n" +
-    "                     Van {{ event.startDate | date: 'dd/MM' }} tot {{ event.endDate | date: 'dd/MM' }}\n" +
+    "                     Van {{ event.startDate | date: 'dd/MM/yyyy' }} tot {{ event.endDate | date: 'dd/MM/yyyy' }}\n" +
     "                  </span>\n" +
     "                  <span ng-switch-when=\"permanent\">\n" +
     "                     Permanent\n" +

@@ -6071,12 +6071,12 @@ $templateCache.put('templates/event-label-modal.html',
     "            <tr class=\"rv-event-info-price\" ng-class=\"{muted: event.pricing === 'unknown'}\">\n" +
     "              <td><strong>Prijs</strong></td>\n" +
     "              <td ng-switch=\"event.pricing\">\n" +
-    "                <span ng-switch-when=\"free\">gratis</span>\n" +
+    "                <span ng-switch-when=\"free\">Gratis</span>\n" +
     "                <span ng-switch-when=\"payed\">\n" +
     "                  <i class=\"fa fa-eur meta icon\"></i>\n" +
     "                  <span ng-if=\"event.price\" ng-bind=\"event.price | currency\"></span>\n" +
     "                </span>\n" +
-    "                <span ng-switch-when=\"unknown\">geen prijsinformatie</span>\n" +
+    "                <span ng-switch-when=\"unknown\">Geen prijsinformatie</span>\n" +
     "              </td>\n" +
     "            </tr>\n" +
     "            <tr ng-class=\"{muted: !event.typicalAgeRange}\">\n" +

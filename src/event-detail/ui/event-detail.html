@@ -57,10 +57,17 @@
               <td><strong>Organisator</strong></td>
               <td>{{event.organizer.name}}</td>
             </tr>
-            <!--<tr>
+            <tr class="rv-event-info-price" ng-class="{muted: event.pricing === 'unknown'}">
               <td><strong>Prijs</strong></td>
-              <td></td>
-            </tr>-->
+              <td ng-switch="event.pricing">
+                <span ng-switch-when="free">gratis</span>
+                <span ng-switch-when="payed">
+                  <i class="fa fa-eur meta icon"></i>
+                  <span ng-if="event.price" ng-bind="event.price | currency"></span>
+                </span>
+                <span ng-switch-when="unknown">geen prijsinformatie</span>
+              </td>
+            </tr>
             <tr ng-class="{muted: !event.typicalAgeRange}">
               <td><strong>Geschikt voor</strong></td>
               <td>

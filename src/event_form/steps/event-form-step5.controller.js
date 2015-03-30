@@ -113,6 +113,8 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
   $scope.openUploadImageModal = openUploadImageModal;
   $scope.openDeleteImageModal = openDeleteImageModal;
 
+  var URL_REGEXP = /^(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?$/;
+
   // Init the controller for editing.
   initEditForm();
 
@@ -484,6 +486,18 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
   function validateBookingType(type) {
 
     if (type === 'website') {
+
+      // Autoset http://.
+      if (EventFormData.bookingInfo.url.substring(0, 7) !== 'http://') {
+        EventFormData.bookingInfo.url = 'http://' + EventFormData.bookingInfo.url;
+      }
+
+      // Valid url?
+      $scope.step5TicketsForm.url.$setValidity('url', true);
+      if (!URL_REGEXP.test(EventFormData.bookingInfo.url)) {
+        $scope.step5TicketsForm.url.$setValidity('url', false);
+      }
+
       $scope.bookingModel.urlRequired = true;
       $scope.bookingModel.emailRequired = false;
       $scope.bookingModel.phoneRequired = false;

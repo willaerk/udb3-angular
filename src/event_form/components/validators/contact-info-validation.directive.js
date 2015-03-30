@@ -2,12 +2,12 @@
 
 /**
 * @ngdoc directive
-* @name udb.core.directive:udbContactInfoValidation
+* @name udb.event-form.directive:udbContactInfoValidation
 * @description
 * # directive for contact info validation
 */
 angular
-  .module('udb.core')
+  .module('udb.event-form')
   .directive('udbContactInfoValidation', UdbContactInfoValidationDirective);
 
 function UdbContactInfoValidationDirective() {

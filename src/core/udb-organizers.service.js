@@ -37,7 +37,9 @@ function UdbOrganizers($q, $http, appConfig) {
 
     var duplicates = $q.defer();
 
-    var request = $http.get(appConfig.baseApiUrl + 'organizer/search-duplicates/' + title + '/' + postalCode);
+    var request = $http.get(
+      appConfig.baseApiUrl + 'organizer/search-duplicates/' + title + '?postalcode=' + postalCode
+    );
 
     request.success(function(jsonData) {
       duplicates.resolve(jsonData);

@@ -3336,7 +3336,9 @@ function UdbOrganizers($q, $http, appConfig) {
 
     var duplicates = $q.defer();
 
-    var request = $http.get(appConfig.baseApiUrl + 'organizer/search-duplicates/' + title + '/' + postalCode);
+    var request = $http.get(
+      appConfig.baseApiUrl + 'organizer/search-duplicates/' + title + '?postalcode=' + postalCode
+    );
 
     request.success(function(jsonData) {
       duplicates.resolve(jsonData);
@@ -5158,77 +5160,6 @@ function EventFormTimestampDirective() {
   };
 }
 
-// Source: src/event_form/components/contact-info/contact-info-validation.directive.js
-/**
-* @ngdoc directive
-* @name udb.core.directive:udbContactInfoValidation
-* @description
-* # directive for contact info validation
-*/
-angular
-  .module('udb.core')
-  .directive('udbContactInfoValidation', UdbContactInfoValidationDirective);
-
-function UdbContactInfoValidationDirective() {
-
-  var URL_REGEXP = /^(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?$/;
-  var EMAIL_REGEXP = /^[a-z0-9!#$%&'*+\/=?^_`{|}~.-]+@[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)*$/i;
-
-  return {
-    restrict: 'A',
-    require: 'ngModel',
-    link: function(scope, elem, attrs, ngModel) {
-
-      // Scope methods.
-      scope.validateInfo = validateInfo;
-      scope.clearInfo = clearInfo;
-      scope.infoErrorMessage = '';
-
-      /**
-       * Validate the entered info.
-       */
-      function validateInfo() {
-
-        ngModel.$setValidity('contactinfo', true);
-        scope.infoErrorMessage = '';
-
-        if (ngModel.$modelValue.type === 'email' && !EMAIL_REGEXP.test(ngModel.$modelValue.value)) {
-          EMAIL_REGEXP.test(ngModel.$modelValue.value);
-          scope.infoErrorMessage = 'Gelieve een geldig email adres in te vullen';
-          ngModel.$setValidity('contactinfo', false);
-
-        }
-        else if (ngModel.$modelValue.type === 'url') {
-
-          var viewValue = ngModel.$viewValue;
-          // Autoset http://.
-          if (ngModel.$modelValue.value.substring(0, 7) !== 'http://') {
-            viewValue.value = 'http://' + viewValue.value;
-            ngModel.$setViewValue(viewValue);
-          }
-
-          if (!URL_REGEXP.test(viewValue.value)) {
-            scope.infoErrorMessage = 'Gelieve een geldige url in te vullen';
-            ngModel.$setValidity('contactinfo', false);
-          }
-        }
-      }
-
-      /**
-       * Clear the entered info when switching type.
-       */
-      function clearInfo() {
-        ngModel.$modelValue.value = '';
-        scope.infoErrorMessage = '';
-        ngModel.$setValidity('contactinfo', true);
-      }
-
-    },
-
-  };
-
-}
-
 // Source: src/event_form/components/facilities-modal/event-form-facilities-modal.controller.js
 /**
  * @ngdoc function
@@ -5791,6 +5722,77 @@ EventFormOrganizerModalController.$inject = ["$scope", "$modalInstance", "udbOrg
   EventFormPlaceModalController.$inject = ["$scope", "$modalInstance", "eventCrud", "UdbPlace", "location", "categories"];
 
 })();
+
+// Source: src/event_form/components/validators/contact-info-validation.directive.js
+/**
+* @ngdoc directive
+* @name udb.event-form.directive:udbContactInfoValidation
+* @description
+* # directive for contact info validation
+*/
+angular
+  .module('udb.event-form')
+  .directive('udbContactInfoValidation', UdbContactInfoValidationDirective);
+
+function UdbContactInfoValidationDirective() {
+
+  var URL_REGEXP = /^(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?$/;
+  var EMAIL_REGEXP = /^[a-z0-9!#$%&'*+\/=?^_`{|}~.-]+@[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)*$/i;
+
+  return {
+    restrict: 'A',
+    require: 'ngModel',
+    link: function(scope, elem, attrs, ngModel) {
+
+      // Scope methods.
+      scope.validateInfo = validateInfo;
+      scope.clearInfo = clearInfo;
+      scope.infoErrorMessage = '';
+
+      /**
+       * Validate the entered info.
+       */
+      function validateInfo() {
+
+        ngModel.$setValidity('contactinfo', true);
+        scope.infoErrorMessage = '';
+
+        if (ngModel.$modelValue.type === 'email' && !EMAIL_REGEXP.test(ngModel.$modelValue.value)) {
+          EMAIL_REGEXP.test(ngModel.$modelValue.value);
+          scope.infoErrorMessage = 'Gelieve een geldig email adres in te vullen';
+          ngModel.$setValidity('contactinfo', false);
+
+        }
+        else if (ngModel.$modelValue.type === 'url') {
+
+          var viewValue = ngModel.$viewValue;
+          // Autoset http://.
+          if (ngModel.$modelValue.value.substring(0, 7) !== 'http://') {
+            viewValue.value = 'http://' + viewValue.value;
+            ngModel.$setViewValue(viewValue);
+          }
+
+          if (!URL_REGEXP.test(viewValue.value)) {
+            scope.infoErrorMessage = 'Gelieve een geldige url in te vullen';
+            ngModel.$setValidity('contactinfo', false);
+          }
+        }
+      }
+
+      /**
+       * Clear the entered info when switching type.
+       */
+      function clearInfo() {
+        ngModel.$modelValue.value = '';
+        scope.infoErrorMessage = '';
+        ngModel.$setValidity('contactinfo', true);
+      }
+
+    },
+
+  };
+
+}
 
 // Source: src/event_form/event-form.controller.js
 /**
@@ -7533,6 +7535,8 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
   $scope.openUploadImageModal = openUploadImageModal;
   $scope.openDeleteImageModal = openDeleteImageModal;
 
+  var URL_REGEXP = /^(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?$/;
+
   // Init the controller for editing.
   initEditForm();
 
@@ -7904,6 +7908,18 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
   function validateBookingType(type) {
 
     if (type === 'website') {
+
+      // Autoset http://.
+      if (EventFormData.bookingInfo.url.substring(0, 7) !== 'http://') {
+        EventFormData.bookingInfo.url = 'http://' + EventFormData.bookingInfo.url;
+      }
+
+      // Valid url?
+      $scope.step5TicketsForm.url.$setValidity('url', true);
+      if (!URL_REGEXP.test(EventFormData.bookingInfo.url)) {
+        $scope.step5TicketsForm.url.$setValidity('url', false);
+      }
+
       $scope.bookingModel.urlRequired = true;
       $scope.bookingModel.emailRequired = false;
       $scope.bookingModel.phoneRequired = false;
@@ -12011,7 +12027,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "                      <div class=\"form-inline\">\n" +
     "                        <label>URL voor reservaties</label><br>\n" +
     "                        <div class=\"form-group\">\n" +
-    "                          <input type=\"url\" class=\"form-control\" name=\"url\" ng-model=\"eventFormData.bookingInfo.url\" ng-required=\"viaWebsite\">\n" +
+    "                          <input type=\"text\" class=\"form-control\" ng-model-options=\"{ updateOn: 'blur' }\" ng-change=\"validateUrl()\" name=\"url\" ng-model=\"eventFormData.bookingInfo.url\" ng-required=\"viaWebsite\">\n" +
     "                          <span class=\"help-block\" ng-show=\"bookingModel.urlRequired && !step5TicketsForm.url.$valid\">Gelieve een geldig formaat te gebruiken</span>\n" +
     "                        </div>\n" +
     "                        <a class=\"btn btn-primary reservatie-info-stap1-controleren\" ng-click=\"validateBookingType('website')\">Opslaan</a>\n" +
@@ -12077,7 +12093,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "                <div class=\"reservatie-telefoon-info reservatie-info\" ng-show=\"viaPhone\">\n" +
     "                  <div class=\"reservatie-telefoon-filling\" ng-show=\"editBookingPhone\">\n" +
     "\n" +
-    "                    <label>Telefoonnummer voor tickets of reservaties</label><br>\n" +
+    "                    <label>Telefoonnummer voor reservaties</label><br>\n" +
     "                    <div class=\"form-inline\">\n" +
     "                      <input type=\"text\" class=\"form-control\" name=\"phone\" ng-model=\"eventFormData.bookingInfo.phone\" ng-required=\"viaPhone\">\n" +
     "                      <span class=\"help-block\" ng-show=\"bookingModel.phoneRequired && step5TicketsForm.phone.$error.required\">Gelieve een geldig formaat te gebruiken</span>\n" +
@@ -12103,7 +12119,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "                </div>\n" +
     "                <div class=\"reservatie-email-info reservatie-info\" ng-show=\"viaEmail\">\n" +
     "                  <div class=\"reservatie-email-filling\" ng-show=\"editBookingEmail\">\n" +
-    "                    <label>E-mailadres voor tickets of reservaties</label><br>\n" +
+    "                    <label>E-mailadres voor reservaties</label><br>\n" +
     "                    <div class=\"form-inline\">\n" +
     "                      <input type=\"email\" class=\"form-control\" name=\"email\" ng-model=\"eventFormData.bookingInfo.email\" ng-required=\"viaEmail\">\n" +
     "                      <span class=\"help-block\" ng-show=\"bookingModel.emailRequired && !step5TicketsForm.email.$valid\">Gelieve een geldig formaat te gebruiken</span>\n" +

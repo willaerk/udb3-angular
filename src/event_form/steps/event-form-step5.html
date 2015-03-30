@@ -162,7 +162,7 @@
                       <div class="form-inline">
                         <label>URL voor reservaties</label><br>
                         <div class="form-group">
-                          <input type="url" class="form-control" name="url" ng-model="eventFormData.bookingInfo.url" ng-required="viaWebsite">
+                          <input type="text" class="form-control" ng-model-options="{ updateOn: 'blur' }" ng-change="validateUrl()" name="url" ng-model="eventFormData.bookingInfo.url" ng-required="viaWebsite">
                           <span class="help-block" ng-show="bookingModel.urlRequired && !step5TicketsForm.url.$valid">Gelieve een geldig formaat te gebruiken</span>
                         </div>
                         <a class="btn btn-primary reservatie-info-stap1-controleren" ng-click="validateBookingType('website')">Opslaan</a>
@@ -228,7 +228,7 @@
                 <div class="reservatie-telefoon-info reservatie-info" ng-show="viaPhone">
                   <div class="reservatie-telefoon-filling" ng-show="editBookingPhone">
 
-                    <label>Telefoonnummer voor tickets of reservaties</label><br>
+                    <label>Telefoonnummer voor reservaties</label><br>
                     <div class="form-inline">
                       <input type="text" class="form-control" name="phone" ng-model="eventFormData.bookingInfo.phone" ng-required="viaPhone">
                       <span class="help-block" ng-show="bookingModel.phoneRequired && step5TicketsForm.phone.$error.required">Gelieve een geldig formaat te gebruiken</span>
@@ -254,7 +254,7 @@
                 </div>
                 <div class="reservatie-email-info reservatie-info" ng-show="viaEmail">
                   <div class="reservatie-email-filling" ng-show="editBookingEmail">
-                    <label>E-mailadres voor tickets of reservaties</label><br>
+                    <label>E-mailadres voor reservaties</label><br>
                     <div class="form-inline">
                       <input type="email" class="form-control" name="email" ng-model="eventFormData.bookingInfo.email" ng-required="viaEmail">
                       <span class="help-block" ng-show="bookingModel.emailRequired && !step5TicketsForm.email.$valid">Gelieve een geldig formaat te gebruiken</span>

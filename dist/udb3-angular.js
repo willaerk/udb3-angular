@@ -7468,7 +7468,7 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
     urlRequired : false,
     emailRequired : false,
     phoneRequired : false,
-    urlLabel : EventFormData.bookingInfo.urlLabel ? EventFormData.bookingInfo.urlLabel : 'Bestel tickets',
+    urlLabel : EventFormData.bookingInfo.urlLabel ? EventFormData.bookingInfo.urlLabel : 'Reserveer plaatsen',
     urlLabelCustom : '',
     availabilityStarts : EventFormData.bookingInfo.availabilityStarts ?
       EventFormData.bookingInfo.availabilityStarts : '',
@@ -8016,7 +8016,7 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
     // Make sure all default values are set.
     EventFormData.bookingInfo = angular.extend({}, {
       url : '',
-      urlLabel : 'Koop tickets',
+      urlLabel : 'Reserveer plaatsen',
       email : '',
       phone : '',
       availabilityStarts : '',

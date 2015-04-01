@@ -78,6 +78,7 @@ function EventFormController($scope, eventId, placeId, offerType, EventFormData,
       'contactPoint',
       'facilities',
       'mediaObject',
+      'image',
       'additionalData'
     ];
     for (var i = 0; i < sameProperties.length; i++) {

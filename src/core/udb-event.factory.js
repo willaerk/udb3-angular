@@ -63,6 +63,24 @@ function UdbEventFactory() {
   }
 
   /**
+   * Get the images that exist for this event.
+   */
+  function getImages(jsonEvent) {
+
+    var images = [];
+    if (jsonEvent.mediaObject) {
+      for (var i = 0; i < jsonEvent.mediaObject.length; i++) {
+        if (jsonEvent.mediaObject[i]['@type'] === 'ImageObject') {
+          images.push(jsonEvent.mediaObject[i]);
+        }
+      }
+    }
+
+    return images;
+
+  }
+
+  /**
    * @class UdbEvent
    * @constructor
    * @param {object}  jsonEvent
@@ -83,7 +101,7 @@ function UdbEventFactory() {
       this.description = jsonEvent.description || {};
       this.calendarSummary = jsonEvent.calendarSummary;
       this.location = jsonEvent.location;
-      this.image = jsonEvent.image;
+      this.image = getImages(jsonEvent);
       this.labels = _.map(jsonEvent.labels, function (label) {
         return label;
       });

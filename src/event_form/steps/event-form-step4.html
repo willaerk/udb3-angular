@@ -50,7 +50,7 @@
                <span ng-switch-when="multiple">
                   Van {{ event.startDate | date: 'dd/MM' }} tot {{ event.endDate | date: 'dd/MM' }}
                </span>
-               <span ng-switch-when="period">
+               <span ng-switch-when="periodic">
                   Van {{ event.startDate | date: 'dd/MM' }} tot {{ event.endDate | date: 'dd/MM' }}
                </span>
                <span ng-switch-when="permanent">
@@ -135,7 +135,7 @@
                             <span ng-switch-when="multiple">
                                Van {{ event.startDate | date: 'dd/MM/yyyy' }} tot {{ event.endDate | date: 'dd/MM/yyyy' }}
                             </span>
-                            <span ng-switch-when="period">
+                            <span ng-switch-when="periodic">
                                Van {{ event.startDate | date: 'dd/MM/yyyy' }} tot {{ event.endDate | date: 'dd/MM/yyyy' }}
                             </span>
                             <span ng-switch-when="permanent">

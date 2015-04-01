@@ -2958,6 +2958,24 @@ function UdbEventFactory() {
   }
 
   /**
+   * Get the images that exist for this event.
+   */
+  function getImages(jsonEvent) {
+
+    var images = [];
+    if (jsonEvent.mediaObject) {
+      for (var i = 0; i < jsonEvent.mediaObject.length; i++) {
+        if (jsonEvent.mediaObject[i]['@type'] === 'ImageObject') {
+          images.push(jsonEvent.mediaObject[i]);
+        }
+      }
+    }
+
+    return images;
+
+  }
+
+  /**
    * @class UdbEvent
    * @constructor
    * @param {object}  jsonEvent
@@ -2978,7 +2996,7 @@ function UdbEventFactory() {
       this.description = jsonEvent.description || {};
       this.calendarSummary = jsonEvent.calendarSummary;
       this.location = jsonEvent.location;
-      this.image = jsonEvent.image;
+      this.image = getImages(jsonEvent);
       this.labels = _.map(jsonEvent.labels, function (label) {
         return label;
       });
@@ -3394,6 +3412,24 @@ function UdbPlaceFactory() {
   }
 
   /**
+   * Get the images that exist for this event.
+   */
+  function getImages(jsonPlace) {
+
+    var images = [];
+    if (jsonPlace.mediaObject) {
+      for (var i = 0; i < jsonPlace.mediaObject.length; i++) {
+        if (jsonPlace.mediaObject[i]['@type'] === 'ImageObject') {
+          images.push(jsonPlace.mediaObject[i]);
+        }
+      }
+    }
+
+    return images;
+
+  }
+
+  /**
    * @class UdbPlace
    * @constructor
    */
@@ -3428,6 +3464,7 @@ function UdbPlaceFactory() {
       this.bookingInfo = jsonPlace.bookingInfo || {};
       this.contactPoint = jsonPlace.contactPoint || {};
       this.organizer = jsonPlace.organizer || {};
+      this.image = getImages(jsonPlace);
       this.mediaObject = jsonPlace.mediaObject || [];
       this.facilities = getCategoriesByType(jsonPlace, 'facility') || [];
       this.additionalData = jsonPlace.additionalData || {};
@@ -5873,6 +5910,7 @@ function EventFormController($scope, eventId, placeId, offerType, EventFormData,
       'contactPoint',
       'facilities',
       'mediaObject',
+      'image',
       'additionalData'
     ];
     for (var i = 0; i < sameProperties.length; i++) {
@@ -6017,6 +6055,7 @@ function EventFormDataFactory(UdbEvent, UdbPlace) {
     facilities : [],
     bookingInfo : {},
     mediaObject : [],
+    image : [],
     additionalData : {},
 
     /**
@@ -10888,7 +10927,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "                  <span ng-switch-when=\"multiple\">\n" +
     "                     Van {{ event.startDate | date: 'dd/MM/yyyy' }} tot {{ event.endDate | date: 'dd/MM/yyyy' }}\n" +
     "                  </span>\n" +
-    "                  <span ng-switch-when=\"period\">\n" +
+    "                  <span ng-switch-when=\"periodic\">\n" +
     "                     Van {{ event.startDate | date: 'dd/MM/yyyy' }} tot {{ event.endDate | date: 'dd/MM/yyyy' }}\n" +
     "                  </span>\n" +
     "                  <span ng-switch-when=\"permanent\">\n" +
@@ -10912,11 +10951,13 @@ $templateCache.put('templates/time-autocomplete.html',
     "                <span ng-if=\"!event.typicalAgeRange\">Geen leeftijdsinformatie</span>\n" +
     "              </td>\n" +
     "            </tr>\n" +
-    "            <tr ng-class=\"{muted: !event.image}\">\n" +
+    "            <tr ng-class=\"{muted: event.image.length === 0}\">\n" +
     "              <td><strong>Afbeelding</strong></td>\n" +
     "              <td>\n" +
-    "                <img ng-if=\"event.image\" src=\"{{event.image}}?maxwidth=400&maxheight=300\"/>\n" +
-    "                <span ng-if=\"!event.image\">Geen afbeelding</span>\n" +
+    "                <div ng-if=\"event.image.length > 0\" class=\"image-list\">\n" +
+    "                  <img ng-repeat=\"image in event.image\" src=\"{{image.thumbnailUrl}}\" class=\"img-thumbnail\"/>\n" +
+    "                </div>\n" +
+    "                <span ng-if=\"event.image.length === 0\">Geen afbeelding</span>\n" +
     "              </td>\n" +
     "            </tr>\n" +
     "            </tbody>\n" +
@@ -11733,7 +11774,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "               <span ng-switch-when=\"multiple\">\n" +
     "                  Van {{ event.startDate | date: 'dd/MM' }} tot {{ event.endDate | date: 'dd/MM' }}\n" +
     "               </span>\n" +
-    "               <span ng-switch-when=\"period\">\n" +
+    "               <span ng-switch-when=\"periodic\">\n" +
     "                  Van {{ event.startDate | date: 'dd/MM' }} tot {{ event.endDate | date: 'dd/MM' }}\n" +
     "               </span>\n" +
     "               <span ng-switch-when=\"permanent\">\n" +
@@ -11818,7 +11859,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "                            <span ng-switch-when=\"multiple\">\n" +
     "                               Van {{ event.startDate | date: 'dd/MM/yyyy' }} tot {{ event.endDate | date: 'dd/MM/yyyy' }}\n" +
     "                            </span>\n" +
-    "                            <span ng-switch-when=\"period\">\n" +
+    "                            <span ng-switch-when=\"periodic\">\n" +
     "                               Van {{ event.startDate | date: 'dd/MM/yyyy' }} tot {{ event.endDate | date: 'dd/MM/yyyy' }}\n" +
     "                            </span>\n" +
     "                            <span ng-switch-when=\"permanent\">\n" +
@@ -12265,16 +12306,18 @@ $templateCache.put('templates/time-autocomplete.html',
     "            <p class=\"muted\">Voeg een afbeelding toe zodat je bezoekers je activiteit beter herkennen.</p>\n" +
     "          </div>\n" +
     "\n" +
-    "          <div class=\"image-upload-list state complete\" ng-if=\"eventFormData.mediaObject.length > 0\">\n" +
+    "          <div class=\"image-upload-list state complete\" ng-if=\"eventFormData.image.length > 0\">\n" +
     "            <h4>Afbeeldingen</h4>\n" +
-    "            <div ng-repeat=\"(key, mediaObject) in eventFormData.mediaObject\" class=\"uploaded-image\">\n" +
-    "              <div class=\"media\">\n" +
-    "                <a class=\"media-left\" href=\"#\">\n" +
-    "                  <img src=\"{{ mediaObject.thumbnailUrl }}\">\n" +
-    "                </a>\n" +
-    "                <div class=\"media-body\">\n" +
-    "                  <p>{{ mediaObject.description }}<br/><small ng-bind=\"mediaObject.copyrightHolder\">Copyright</small></p>\n" +
-    "                  <p><a href=\"#\" class=\"btn btn-link\" ng-click=\"openUploadImageModal(key)\">Wijzigen</a><a href=\"#\" class=\"btn btn-link\" ng-click=\"openDeleteImageModal(key)\">Verwijderen</a></p>\n" +
+    "            <div ng-repeat=\"(key, mediaObject) in eventFormData.mediaObject\">\n" +
+    "              <div ng-if=\"mediaObject['@type'] === 'ImageObject'\" class=\"uploaded-image\">\n" +
+    "                <div class=\"media\">\n" +
+    "                  <a class=\"media-left\" href=\"#\">\n" +
+    "                    <img src=\"{{ mediaObject.thumbnailUrl }}\">\n" +
+    "                  </a>\n" +
+    "                  <div class=\"media-body\">\n" +
+    "                    <p>{{ mediaObject.description }}<br/><small ng-bind=\"mediaObject.copyrightHolder\">Copyright</small></p>\n" +
+    "                    <p><a href=\"#\" class=\"btn btn-link\" ng-click=\"openUploadImageModal(key)\">Wijzigen</a><a href=\"#\" class=\"btn btn-link\" ng-click=\"openDeleteImageModal(key)\">Verwijderen</a></p>\n" +
+    "                  </div>\n" +
     "                </div>\n" +
     "              </div>\n" +
     "            </div>\n" +
@@ -12476,11 +12519,13 @@ $templateCache.put('templates/time-autocomplete.html',
     "                  <span ng-if=\"!place.typicalAgeRange\">Geen leeftijdsinformatie</span>\n" +
     "                </td>\n" +
     "              </tr>\n" +
-    "              <tr ng-class=\"{muted: !place.image}\">\n" +
+    "              <tr ng-class=\"{muted: place.image.length === 0}\">\n" +
     "                <td><strong>Afbeelding</strong></td>\n" +
     "                <td>\n" +
-    "                  <img ng-if=\"place.image\" src=\"{{place.image}}?maxwidth=400&maxheight=300\"/>\n" +
-    "                  <span ng-if=\"!place.image\">Geen afbeelding</span>\n" +
+    "                  <div ng-if=\"place.image.length > 0\" class=\"image-list\">\n" +
+    "                    <img ng-repeat=\"image in place.image\" src=\"{{image.thumbnailUrl}}\" class=\"img-thumbnail\"/>\n" +
+    "                  </div>\n" +
+    "                  <span ng-if=\"place.image.length === 0\">Geen afbeelding</span>\n" +
     "                </td>\n" +
     "              </tr>\n" +
     "            </tbody>\n" +

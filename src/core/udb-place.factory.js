@@ -42,6 +42,24 @@ function UdbPlaceFactory() {
   }
 
   /**
+   * Get the images that exist for this event.
+   */
+  function getImages(jsonPlace) {
+
+    var images = [];
+    if (jsonPlace.mediaObject) {
+      for (var i = 0; i < jsonPlace.mediaObject.length; i++) {
+        if (jsonPlace.mediaObject[i]['@type'] === 'ImageObject') {
+          images.push(jsonPlace.mediaObject[i]);
+        }
+      }
+    }
+
+    return images;
+
+  }
+
+  /**
    * @class UdbPlace
    * @constructor
    */
@@ -76,6 +94,7 @@ function UdbPlaceFactory() {
       this.bookingInfo = jsonPlace.bookingInfo || {};
       this.contactPoint = jsonPlace.contactPoint || {};
       this.organizer = jsonPlace.organizer || {};
+      this.image = getImages(jsonPlace);
       this.mediaObject = jsonPlace.mediaObject || [];
       this.facilities = getCategoriesByType(jsonPlace, 'facility') || [];
       this.additionalData = jsonPlace.additionalData || {};

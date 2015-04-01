@@ -59,7 +59,7 @@
                   <span ng-switch-when="multiple">
                      Van {{ event.startDate | date: 'dd/MM/yyyy' }} tot {{ event.endDate | date: 'dd/MM/yyyy' }}
                   </span>
-                  <span ng-switch-when="period">
+                  <span ng-switch-when="periodic">
                      Van {{ event.startDate | date: 'dd/MM/yyyy' }} tot {{ event.endDate | date: 'dd/MM/yyyy' }}
                   </span>
                   <span ng-switch-when="permanent">
@@ -83,11 +83,13 @@
                 <span ng-if="!event.typicalAgeRange">Geen leeftijdsinformatie</span>
               </td>
             </tr>
-            <tr ng-class="{muted: !event.image}">
+            <tr ng-class="{muted: event.image.length === 0}">
               <td><strong>Afbeelding</strong></td>
               <td>
-                <img ng-if="event.image" src="{{event.image}}?maxwidth=400&maxheight=300"/>
-                <span ng-if="!event.image">Geen afbeelding</span>
+                <div ng-if="event.image.length > 0" class="image-list">
+                  <img ng-repeat="image in event.image" src="{{image.thumbnailUrl}}" class="img-thumbnail"/>
+                </div>
+                <span ng-if="event.image.length === 0">Geen afbeelding</span>
               </td>
             </tr>
             </tbody>

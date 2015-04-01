@@ -58,6 +58,7 @@ function EventFormDataFactory(UdbEvent, UdbPlace) {
     facilities : [],
     bookingInfo : {},
     mediaObject : [],
+    image : [],
     additionalData : {},
 
     /**

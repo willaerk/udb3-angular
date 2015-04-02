@@ -7319,7 +7319,10 @@ function EventFormStep4Controller($scope, EventFormData, udbApi, appConfig, Sear
         params = {locationCdbId : location.id};
       }
       else {
-        params = {locationZip : location.address.postalCode};
+        params = {
+          locationZip : location.address.postalCode,
+          place : true
+        };
       }
 
       // Load the candidate duplicates asynchronously.

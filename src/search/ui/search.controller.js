@@ -13,7 +13,7 @@ angular
 
 /* @ngInject */
 function Search($scope, udbApi, LuceneQueryBuilder, $window, $location, $modal, SearchResultViewer, eventLabeller,
-                searchHelper, $rootScope, eventExporter) {
+                searchHelper, $rootScope, eventExporter, $q) {
 
   var queryBuilder = LuceneQueryBuilder;
 
@@ -124,7 +124,7 @@ function Search($scope, udbApi, LuceneQueryBuilder, $window, $location, $modal, 
         var eventPromise = udbApi.getEventById(eventId);
 
         eventPromise.then(function (event) {
-          event.labels = _.union((event.labels || []), labels);
+          event.label(labels);
         });
       });
 
@@ -149,6 +149,16 @@ function Search($scope, udbApi, LuceneQueryBuilder, $window, $location, $modal, 
       });
 
       modal.result.then(function (labels) {
+        // eagerly label all cached events on the first page
+        var selectedIds = $scope.resultViewer.selectedIds;
+        _.each(selectedIds, function (eventId) {
+          var eventPromise = udbApi.getEventById(eventId);
+
+          eventPromise.then(function (event) {
+            event.label(labels);
+          });
+        });
+
         _.each(labels, function (label) {
           eventLabeller.labelQuery(query.queryString, label, eventCount);
         });

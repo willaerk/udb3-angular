@@ -101,17 +101,17 @@ function UdbEventFactory() {
      * @param {string|string[]} label
      */
     label: function (label) {
-      var labels = [];
+      var newLabels = [];
 
       if (_.isArray(label)) {
-        labels = label;
+        newLabels = label;
       }
 
       if (_.isString(label)) {
-        labels = [label];
+        newLabels = [label];
       }
 
-      this.labels = _.union(this.labels, labels);
+      this.labels = _.union(this.labels, newLabels);
     },
     /**
      * Unlabel a label from an event

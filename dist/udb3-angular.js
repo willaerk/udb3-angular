@@ -2469,17 +2469,17 @@ function UdbEventFactory() {
      * @param {string|string[]} label
      */
     label: function (label) {
-      var labels = [];
+      var newLabels = [];
 
       if (_.isArray(label)) {
-        labels = label;
+        newLabels = label;
       }
 
       if (_.isString(label)) {
-        labels = [label];
+        newLabels = [label];
       }
 
-      this.labels = _.union(this.labels, labels);
+      this.labels = _.union(this.labels, newLabels);
     },
     /**
      * Unlabel a label from an event
@@ -5052,8 +5052,8 @@ angular
       'AVAILABLEFROM' : 'available'
     },
     fr: {
-        LOCATION_LABEL: 'location',
-        TITLE: 'titre'
+      'LOCATION_LABEL': 'location',
+      'TITLE': 'titre'
     },
     nl: {
       'TYPE' : 'type',
@@ -5577,9 +5577,18 @@ function udbEvent(udbApi, jsonLDLangFilter, eventTranslator, eventLabeller) {
           scope.availableLabels = _.union(event.labels, eventLabeller.recentLabels);
           scope.event = jsonLDLangFilter(event, 'nl');
           scope.fetching = false;
+          watchLabels();
         });
       } else {
         scope.fetching = false;
+      }
+
+      function watchLabels() {
+        scope.$watch(function () {
+          return event.labels;
+        }, function (labels) {
+          scope.event.labels = labels;
+        });
       }
 
       scope.eventTranslation = false;
@@ -5675,7 +5684,7 @@ angular
 
 /* @ngInject */
 function Search($scope, udbApi, LuceneQueryBuilder, $window, $location, $modal, SearchResultViewer, eventLabeller,
-                searchHelper, $rootScope, eventExporter) {
+                searchHelper, $rootScope, eventExporter, $q) {
 
   var queryBuilder = LuceneQueryBuilder;
 
@@ -5786,7 +5795,7 @@ function Search($scope, udbApi, LuceneQueryBuilder, $window, $location, $modal, 
         var eventPromise = udbApi.getEventById(eventId);
 
         eventPromise.then(function (event) {
-          event.labels = _.union((event.labels || []), labels);
+          event.label(labels);
         });
       });
 
@@ -5811,6 +5820,16 @@ function Search($scope, udbApi, LuceneQueryBuilder, $window, $location, $modal, 
       });
 
       modal.result.then(function (labels) {
+        // eagerly label all cached events on the first page
+        var selectedIds = $scope.resultViewer.selectedIds;
+        _.each(selectedIds, function (eventId) {
+          var eventPromise = udbApi.getEventById(eventId);
+
+          eventPromise.then(function (event) {
+            event.label(labels);
+          });
+        });
+
         _.each(labels, function (label) {
           eventLabeller.labelQuery(query.queryString, label, eventCount);
         });
@@ -5894,7 +5913,7 @@ function Search($scope, udbApi, LuceneQueryBuilder, $window, $location, $modal, 
   });
 
 }
-Search.$inject = ["$scope", "udbApi", "LuceneQueryBuilder", "$window", "$location", "$modal", "SearchResultViewer", "eventLabeller", "searchHelper", "$rootScope", "eventExporter"];
+Search.$inject = ["$scope", "udbApi", "LuceneQueryBuilder", "$window", "$location", "$modal", "SearchResultViewer", "eventLabeller", "searchHelper", "$rootScope", "eventExporter", "$q"];
 
 // Source: src/search/ui/search.directive.js
 /**
@@ -6730,8 +6749,8 @@ $templateCache.put('templates/event-label-modal.html',
     "\n" +
     "                          <div ng-show=\"resultViewer.eventProperties.labels.visible\" class=\"udb-labels\">\n" +
     "                              <span ng-hide=\"event.labels.length\">Dit evenement is nog niet gelabeld.</span>\n" +
-    "                              <ui-select multiple ng-model=\"event.labels\" tagging tagging-label=\"(label toevoegen)\"\n" +
-    "                                         ng-disabled=\"disabled\" reset-search-input=\"true\" tagging-tokens=\"ENTER|;\"\n" +
+    "                              <ui-select multiple tagging tagging-label=\"(label toevoegen)\" ng-model=\"event.labels\"\n" +
+    "                                         reset-search-input=\"true\" tagging-tokens=\"ENTER|;\"\n" +
     "                                         on-select=\"labelAdded($item)\" on-remove=\"labelRemoved($item)\">\n" +
     "                                  <ui-select-match placeholder=\"Voeg een label toe...\">{{$item}}</ui-select-match>\n" +
     "                                  <ui-select-choices repeat=\"label in availableLabels\">\n" +

@@ -92,9 +92,18 @@ function udbEvent(udbApi, jsonLDLangFilter, eventTranslator, eventLabeller) {
           scope.availableLabels = _.union(event.labels, eventLabeller.recentLabels);
           scope.event = jsonLDLangFilter(event, 'nl');
           scope.fetching = false;
+          watchLabels();
         });
       } else {
         scope.fetching = false;
+      }
+
+      function watchLabels() {
+        scope.$watch(function () {
+          return event.labels;
+        }, function (labels) {
+          scope.event.labels = labels;
+        });
       }
 
       scope.eventTranslation = false;

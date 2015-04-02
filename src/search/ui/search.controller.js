@@ -13,7 +13,7 @@ angular
 
 /* @ngInject */
 function Search($scope, udbApi, LuceneQueryBuilder, $window, $location, $modal, SearchResultViewer, eventLabeller,
-                searchHelper, $rootScope, eventExporter, $q) {
+                searchHelper, $rootScope, eventExporter) {
 
   var queryBuilder = LuceneQueryBuilder;
 

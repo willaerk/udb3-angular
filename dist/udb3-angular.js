@@ -5428,7 +5428,7 @@ function EventFormImageUploadController($scope, $modalInstance, EventFormData, e
       $scope.description,
       $scope.copyright
     ).then(function (jsonResponse) {
-      EventFormData.addMediaObject(
+      EventFormData.addImage(
         jsonResponse.data.url,
         jsonResponse.data.thumbnailUrl,
         $scope.description,
@@ -6300,27 +6300,31 @@ function EventFormDataFactory(UdbEvent, UdbPlace) {
     },
 
     /**
-     * Add a new media object.
+     * Add a new image.
      */
-    addMediaObject : function(url, thumbnailUrl, description, copyrightHolder) {
-      this.mediaObject.push({
+    addImage : function(url, thumbnailUrl, description, copyrightHolder) {
+      var image = {
         url : url,
         thumbnailUrl : thumbnailUrl,
         description : description,
         copyrightHolder : copyrightHolder
-      });
+      };
+      image['@type'] = 'ImageObject';
+      this.mediaObject.push(image);
+      this.image.push(image);
     },
 
     /**
      * Edit a media object.
      */
     editMediaObject : function(indexToEdit, url, thumbnailUrl, description, copyrightHolder) {
-      this.mediaObject[indexToEdit] = {
+      this.image[indexToEdit] = {
         url : url,
         thumbnailUrl : thumbnailUrl,
         description : description,
         copyrightHolder : copyrightHolder,
       };
+      this.image[indexToEdit]['@type'] = 'ImageObject';
     },
 
     /**

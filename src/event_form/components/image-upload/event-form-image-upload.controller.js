@@ -90,7 +90,7 @@ function EventFormImageUploadController($scope, $modalInstance, EventFormData, e
       $scope.description,
       $scope.copyright
     ).then(function (jsonResponse) {
-      EventFormData.addMediaObject(
+      EventFormData.addImage(
         jsonResponse.data.url,
         jsonResponse.data.thumbnailUrl,
         $scope.description,

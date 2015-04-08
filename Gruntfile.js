@@ -380,6 +380,13 @@ module.exports = function (grunt) {
       options: {
         config: '.jscs.json'
       }
+    },
+
+    coveralls: {
+      options: {
+        coverageDir: 'coverage/',
+        recursive: true
+      }
     }
   });
 
@@ -389,6 +396,7 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-curl');
   grunt.loadNpmTasks('grunt-angular-templates');
   grunt.loadNpmTasks('grunt-jscs');
+  grunt.loadNpmTasks('grunt-karma-coveralls');
 
   grunt.registerTask('test', [
     'clean:server',

@@ -6,6 +6,7 @@ npm-debug.log
 config*.json
 taxonomy-terms.xml
 actor-types.xml
+coverage/
 
 #generated files
 src/search/parsers/udb-query-parser.service.js

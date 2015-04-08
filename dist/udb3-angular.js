@@ -8,7 +8,6 @@
  */
 angular
   .module('udb.core', [
-    'ngAnimate',
     'ngCookies',
     'ngSanitize',
     'ui.bootstrap',
@@ -39,7 +38,6 @@ angular.module('udb.config', [])
  */
 angular
   .module('udb.search', [
-    'ngAnimate',
     'ngCookies',
     'ngSanitize',
     'ui.bootstrap',
@@ -49,6 +47,7 @@ angular
     'btford.socket-io',
     'pascalprecht.translate'
   ]);
+
 /**
  * @ngdoc module
  * @name udb.entry
@@ -57,7 +56,6 @@ angular
  */
 angular
   .module('udb.entry', [
-    'ngAnimate',
     'ngCookies',
     'ngSanitize',
     'ui.bootstrap',
@@ -66,6 +64,7 @@ angular
     'btford.socket-io',
     'pascalprecht.translate'
   ]);
+
 /**
  * @ngdoc module
  * @name udb.event-detail
@@ -83,12 +82,12 @@ angular
  */
 angular
   .module('udb.export', [
-    'ngAnimate',
     'ngSanitize',
     'ui.bootstrap',
     'udb.config',
     'udb.search'
   ]);
+
 angular.module('peg', []).factory('LuceneQueryParser', function () {
  return (function() {
   /*

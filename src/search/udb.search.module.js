@@ -8,7 +8,6 @@
  */
 angular
   .module('udb.search', [
-    'ngAnimate',
     'ngCookies',
     'ngSanitize',
     'ui.bootstrap',

@@ -10,6 +10,7 @@
   background: #ffffff;
   border-right: silver;
   padding: 10px;
+  z-index: 75;
 
   .repeat-animation.ng-enter {
     -webkit-transition: all linear 1s;
@@ -65,11 +66,24 @@
   display: block;
 }
 
-body {
-  transition: margin-left 0.3s ease;
-  margin-left: 0;
+body.overlay-static-elements {
+  /*overflow: hidden;*/
 }
 
-body.push-left {
-  margin-left: @job-log-width;
+body.overlay-static-elements > .container:before {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  background: #000;
+  opacity: 0.5;
+  z-index: 50;
+  pointer-events: none;
+}
+
+body.overlay-static-elements .navbar-fixed-top {
+  z-index: 100;
 }

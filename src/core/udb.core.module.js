@@ -8,7 +8,6 @@
  */
 angular
   .module('udb.core', [
-    'ngAnimate',
     'ngCookies',
     'ngSanitize',
     'ui.bootstrap',

@@ -297,8 +297,8 @@ describe('Service: LuceneQueryBuilder', function () {
                   "fieldType": "date-range",
                   "transformer": ">",
                   "$$hashKey": "object:486",
-                  "lowerBound": "2015-03-03T23:00:00.000Z",
-                  "upperBound": "2015-03-04T22:59:59.999Z",
+                  "lowerBound": "2015-03-03T23:00:00+00:00",
+                  "upperBound": "2015-03-04T22:59:59+00:00",
                   "inclusive": true
                 }
               ]
@@ -326,8 +326,8 @@ describe('Service: LuceneQueryBuilder', function () {
                   "fieldType": "date-range",
                   "transformer": ">",
                   "$$hashKey": "object:1154",
-                  "lowerBound": "2015-03-13T23:00:00.000Z",
-                  "upperBound": "2015-03-04T22:59:59.999Z",
+                  "lowerBound": "2015-03-13T23:00:00+00:00",
+                  "upperBound": "2015-03-04T22:59:59+00:00",
                   "inclusive": true
                 }
               ]

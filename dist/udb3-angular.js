@@ -6022,7 +6022,8 @@ $templateCache.put('templates/event-label-modal.html',
     "      </div>\n" +
     "    </div>\n" +
     "  </div>\n" +
-    "</div>"
+    "</div>\n" +
+    "<div class=\"udb-job-log-overlay\" ng-class=\"{'shown': showJobLog}\" ng-click=\"toggleJobLog()\"></div>\n"
   );
 
 

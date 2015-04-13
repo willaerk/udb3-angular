@@ -118,7 +118,7 @@ function UdbEventFactory() {
      * @param {string} labelName
      */
     unlabel: function (labelName) {
-      _.remove(event.labels, function (label) {
+      _.remove(this.labels, function (label) {
         return label === labelName;
       });
     }

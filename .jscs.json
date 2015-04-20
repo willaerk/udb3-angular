@@ -68,5 +68,9 @@
   "requireCommaBeforeLineBreak": null,
   "requireDotNotation": null,
   "requireMultipleVarDecl": null,
-  "requireParenthesesAroundIIFE": true
+  "requireParenthesesAroundIIFE": true,
+  "requireAlignedFunctionParameters": {
+    "lineBreakAfterOpeningBrace": true,
+    "lineBreakBeforeClosingBrace": true
+  }
 }

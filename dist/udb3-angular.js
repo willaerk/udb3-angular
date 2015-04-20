@@ -5682,9 +5682,19 @@ angular
   .controller('Search', Search);
 
 /* @ngInject */
-function Search($scope, udbApi, LuceneQueryBuilder, $window, $location, $modal, SearchResultViewer, eventLabeller,
-                searchHelper, $rootScope, eventExporter) {
-
+function Search(
+  $scope,
+  udbApi,
+  LuceneQueryBuilder,
+  $window,
+  $location,
+  $modal,
+  SearchResultViewer,
+  eventLabeller,
+  searchHelper,
+  $rootScope,
+  eventExporter
+) {
   var queryBuilder = LuceneQueryBuilder;
 
   function getSearchQuery() {

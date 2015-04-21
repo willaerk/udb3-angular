@@ -13,7 +13,7 @@ angular
 
 /* @ngInject */
 function Search($scope, udbApi, LuceneQueryBuilder, $window, $location, $modal, SearchResultViewer, eventLabeller,
-                searchHelper, $rootScope, eventExporter) {
+                searchHelper, $rootScope, eventExporter, $translate) {
 
   var queryBuilder = LuceneQueryBuilder;
 
@@ -199,7 +199,9 @@ function Search($scope, udbApi, LuceneQueryBuilder, $window, $location, $modal, 
         size: 'lg'
       });
     } else {
-      $window.alert('provide a valid query to export');
+      $translate('EVENT-EXPORT.QUERY-IS-MISSING').then(function(message) {
+        $window.alert(message);
+      });
     }
   }
 

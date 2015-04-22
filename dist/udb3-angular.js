@@ -6259,7 +6259,7 @@ $templateCache.put('templates/event-label-modal.html',
     "\n" +
     "    <div class=\"form-group\">\n" +
     "      <label for=\"export.customization-publisher\">Verantwoordelijke uitgever</label>\n" +
-    "      <input placeholder=\"Bv. V.U. Cultuurnet Vlaanderen\" class=\"form-control\" id=\"export.customization-publisher\"\n" +
+    "      <input placeholder=\"Bv. Cultuurnet Vlaanderen\" class=\"form-control\" id=\"export.customization-publisher\"\n" +
     "             ng-model=\"exporter.customizations.publisher\">\n" +
     "    </div>\n" +
     "    </form>\n" +
@@ -6292,7 +6292,7 @@ $templateCache.put('templates/event-label-modal.html',
     "\n" +
     "<div class=\"modal-footer\" ng-show=\"exporter.getActiveStepName() === 'finished'\">\n" +
     "  <button class=\"btn btn-default\" ng-click=\"exporter.close()\">sluiten</button>\n" +
-    "</div>"
+    "</div>\n"
   );
 
 

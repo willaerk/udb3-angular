@@ -2125,7 +2125,9 @@ angular.module('udb.core')
       'input-information': 'Invoerders-informatie',
       'translations': 'Vertalingen',
       'other': 'Andere'
-
+    },
+    'EVENT-EXPORT': {
+      'QUERY-IS-MISSING': 'Een export is pas mogelijk nadat je een zoekopdracht hebt uitgevoerd'
     }
   }
 );
@@ -5693,7 +5695,8 @@ function Search(
   eventLabeller,
   searchHelper,
   $rootScope,
-  eventExporter
+  eventExporter,
+  $translate
 ) {
   var queryBuilder = LuceneQueryBuilder;
 
@@ -5879,7 +5882,9 @@ function Search(
         size: 'lg'
       });
     } else {
-      $window.alert('provide a valid query to export');
+      $translate('EVENT-EXPORT.QUERY-IS-MISSING').then(function(message) {
+        $window.alert(message);
+      });
     }
   }
 
@@ -5922,7 +5927,7 @@ function Search(
   });
 
 }
-Search.$inject = ["$scope", "udbApi", "LuceneQueryBuilder", "$window", "$location", "$modal", "SearchResultViewer", "eventLabeller", "searchHelper", "$rootScope", "eventExporter"];
+Search.$inject = ["$scope", "udbApi", "LuceneQueryBuilder", "$window", "$location", "$modal", "SearchResultViewer", "eventLabeller", "searchHelper", "$rootScope", "eventExporter", "$translate"];
 
 // Source: src/search/ui/search.directive.js
 /**

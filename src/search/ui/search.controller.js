@@ -23,7 +23,8 @@ function Search(
   eventLabeller,
   searchHelper,
   $rootScope,
-  eventExporter
+  eventExporter,
+  $translate
 ) {
   var queryBuilder = LuceneQueryBuilder;
 
@@ -209,7 +210,9 @@ function Search(
         size: 'lg'
       });
     } else {
-      $window.alert('provide a valid query to export');
+      $translate('EVENT-EXPORT.QUERY-IS-MISSING').then(function(message) {
+        $window.alert(message);
+      });
     }
   }
 

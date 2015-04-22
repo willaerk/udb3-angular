@@ -11,6 +11,7 @@ angular
   .module('udb.search')
   .service('searchHelper', SearchHelper);
 
+/* @ngInject */
 function SearchHelper(LuceneQueryBuilder) {
   var query = {
     queryString: ''

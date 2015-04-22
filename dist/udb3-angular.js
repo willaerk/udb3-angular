@@ -2125,7 +2125,9 @@ angular.module('udb.core')
       'input-information': 'Invoerders-informatie',
       'translations': 'Vertalingen',
       'other': 'Andere'
-
+    },
+    'EVENT-EXPORT': {
+      'QUERY-IS-MISSING': 'Een export is pas mogelijk nadat je een zoekopdracht hebt uitgevoerd'
     }
   }
 );
@@ -5697,7 +5699,8 @@ function Search(
   eventLabeller,
   searchHelper,
   $rootScope,
-  eventExporter
+  eventExporter,
+  $translate
 ) {
   var queryBuilder = LuceneQueryBuilder;
 
@@ -5883,7 +5886,9 @@ function Search(
         size: 'lg'
       });
     } else {
-      $window.alert('provide a valid query to export');
+      $translate('EVENT-EXPORT.QUERY-IS-MISSING').then(function(message) {
+        $window.alert(message);
+      });
     }
   }
 
@@ -5926,7 +5931,7 @@ function Search(
   });
 
 }
-Search.$inject = ["$scope", "udbApi", "LuceneQueryBuilder", "$window", "$location", "$modal", "SearchResultViewer", "eventLabeller", "searchHelper", "$rootScope", "eventExporter"];
+Search.$inject = ["$scope", "udbApi", "LuceneQueryBuilder", "$window", "$location", "$modal", "SearchResultViewer", "eventLabeller", "searchHelper", "$rootScope", "eventExporter", "$translate"];
 
 // Source: src/search/ui/search.directive.js
 /**
@@ -6263,7 +6268,7 @@ $templateCache.put('templates/event-label-modal.html',
     "\n" +
     "    <div class=\"form-group\">\n" +
     "      <label for=\"export.customization-publisher\">Verantwoordelijke uitgever</label>\n" +
-    "      <input placeholder=\"Bv. V.U. Cultuurnet Vlaanderen\" class=\"form-control\" id=\"export.customization-publisher\"\n" +
+    "      <input placeholder=\"Bv. Cultuurnet Vlaanderen\" class=\"form-control\" id=\"export.customization-publisher\"\n" +
     "             ng-model=\"exporter.customizations.publisher\">\n" +
     "    </div>\n" +
     "    </form>\n" +
@@ -6296,7 +6301,7 @@ $templateCache.put('templates/event-label-modal.html',
     "\n" +
     "<div class=\"modal-footer\" ng-show=\"exporter.getActiveStepName() === 'finished'\">\n" +
     "  <button class=\"btn btn-default\" ng-click=\"exporter.close()\">sluiten</button>\n" +
-    "</div>"
+    "</div>\n"
   );
 
 

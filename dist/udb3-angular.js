@@ -5275,7 +5275,7 @@ function QueryTreeValidator(queryFields) {
 }
 QueryTreeValidator.$inject = ["queryFields"];
 
-// Source: src/search/services/search-hepler.service.js
+// Source: src/search/services/search-helper.service.js
 /**
  * @ngdoc service
  * @name udb.search.searchHelper
@@ -5287,6 +5287,7 @@ angular
   .module('udb.search')
   .service('searchHelper', SearchHelper);
 
+/* @ngInject */
 function SearchHelper(LuceneQueryBuilder) {
   var query = {
     queryString: ''

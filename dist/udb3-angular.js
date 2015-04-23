@@ -6758,15 +6758,15 @@ $templateCache.put('templates/event-label-modal.html',
     "\n" +
     "              <div class=\"col-sm-12\" ng-show=\"resultViewer.isShowingProperties()\">\n" +
     "                  <div class=\"udb-details row\">\n" +
-    "                      <div class=\"col-sm-2\" ng-show=\"resultViewer.eventProperties.image.visible\">\n" +
+    "                      <div class=\"col-sm-2\" ng-if=\"resultViewer.eventProperties.image.visible\">\n" +
     "                          <img ng-src=\"{{event.image}}\" alt=\"{{event.name}}\" class=\"img-responsive\">\n" +
     "                      </div>\n" +
     "                      <div ng-class=\"resultViewer.eventProperties.image.visible ? 'col-sm-10' : 'col-sm-12'\">\n" +
-    "                          <div ng-show=\"resultViewer.eventProperties.description.visible\">\n" +
+    "                          <div ng-if=\"resultViewer.eventProperties.description.visible\">\n" +
     "                              <div ng-bind-html=\"event.description\" class=\"udb-description\"></div>\n" +
     "                          </div>\n" +
     "\n" +
-    "                          <div ng-show=\"resultViewer.eventProperties.labels.visible\" class=\"udb-labels\">\n" +
+    "                          <div ng-if=\"resultViewer.eventProperties.labels.visible\" class=\"udb-labels\">\n" +
     "                              <span ng-hide=\"event.labels.length\">Dit evenement is nog niet gelabeld.</span>\n" +
     "                              <ui-select multiple tagging tagging-label=\"(label toevoegen)\" ng-model=\"event.labels\"\n" +
     "                                         reset-search-input=\"true\" tagging-tokens=\"ENTER|;\"\n" +

@@ -2548,6 +2548,111 @@ function UitidAuth($window, $location, $http, appConfig, $cookieStore) {
 }
 UitidAuth.$inject = ["$window", "$location", "$http", "appConfig", "$cookieStore"];
 
+// Source: src/entry/components/job-logo-states.constant.js
+/* jshint sub: true */
+
+/**
+ * @ngdoc service
+ * @name udb.entry.JobLogoStates
+ * @description
+ * # JobLogoStates
+ * All the possible job logo states defined as a constant
+ */
+angular
+  .module('udb.entry')
+  .constant('JobLogoStates',
+  /**
+   * Enum for job logo states
+   * @readonly
+   * @enum {string}
+   */
+  {
+    WARNING: 'warning',
+    COMPLETED: 'completed',
+    BUSY: 'busy',
+    IDLE: 'idle'
+  });
+
+// Source: src/entry/components/job-logo.controller.js
+/**
+ * @ngdoc function
+ * @name udb.entry.controller:JobLogoController
+ * @description
+ * # Job logo controller
+ * Controller of the udb.entry
+ */
+angular
+  .module('udb.entry')
+  .controller('JobLogoController', JobLogoController);
+
+/* @ngInject */
+function JobLogoController(JobLogoStates, jobLogger) {
+  var jl = this;
+
+  /**
+   * Calculate the current state the logo should be in
+   * @return {boolean} current state
+   */
+  jl.getCurrentState = function () {
+    var stateChecks = [
+      {
+        state: JobLogoStates.WARNING,
+        check: !_.isEmpty(jobLogger.getFailedJobs())
+      },
+      {
+        state: JobLogoStates.COMPLETED,
+        check: !_.isEmpty(jobLogger.getFinishedExportJobs())
+      },
+      {
+        state: JobLogoStates.BUSY,
+        check: jobLogger.hasActiveJobs()
+      },
+      {
+        state: JobLogoStates.IDLE,
+        // if you get this far there are no visible jobs
+        check: true
+      }
+    ];
+
+    var currentState = _.find(stateChecks, function (stateCheck) {
+      return stateCheck.check;
+    }).state;
+
+    return currentState;
+  };
+
+  // set the initial state
+  jl.state = jl.getCurrentState();
+}
+JobLogoController.$inject = ["JobLogoStates", "jobLogger"];
+
+// Source: src/entry/components/job-logo.directive.js
+/**
+ * @ngdoc directive
+ * @name udb.entry.directive:jobLogo
+ * @description
+ * # udbJobLogo
+ */
+angular
+  .module('udb.entry')
+  .directive('udbJobLogo', udbJobLogo);
+
+/* @ngInject */
+function udbJobLogo() {
+  var directive = {
+    templateUrl: 'templates/job-logo.directive.html',
+    restrict: 'EA',
+    link: link,
+    controllerAs: 'jl',
+    controller: 'JobLogoController'
+  };
+  return directive;
+
+  function link(scope, element, attrs) {
+
+  }
+}
+
 // Source: src/entry/labelling/event-label-batch-job.factory.js
 /**
  * @ngdoc service
@@ -5957,7 +6062,12 @@ function searchDirective() {
 
 // Source: .tmp/udb3-angular.templates.js
 angular.module('udb.core').run(['$templateCache', function($templateCache) {
-$templateCache.put('templates/event-label-modal.html',
+$templateCache.put('templates/job-logo.directive.html',
+    "<p>I'm a logo</p>\n"
+  );
+
+
+  $templateCache.put('templates/event-label-modal.html',
     "<div class=\"modal-body\">\n" +
     "\n" +
     "  <label>Labels</label>\n" +

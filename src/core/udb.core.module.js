@@ -17,6 +17,7 @@ angular
     'udb.entry',
     'udb.export',
     'udb.event-detail',
+    'udb.saved-searches',
     'btford.socket-io',
     'pascalprecht.translate'
   ]);

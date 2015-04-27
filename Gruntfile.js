@@ -257,6 +257,7 @@ module.exports = function (grunt) {
           'src/search/udb.search.module.js',
           'src/entry/udb.entry.module.js',
           'src/event-detail/udb.event-detail.module.js',
+          'src/saved-searches/udb.saved-searches.module.js',
           'src/export/udb.export.module.js',
           'src/search/parsers/udb-query-parser.service.js'
         ],

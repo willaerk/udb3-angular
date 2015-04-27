@@ -17,6 +17,7 @@ angular
     'udb.entry',
     'udb.export',
     'udb.event-detail',
+    'udb.saved-searches',
     'btford.socket-io',
     'pascalprecht.translate'
   ]);
@@ -73,6 +74,15 @@ angular
  */
 angular
   .module('udb.event-detail', []);
+
+/**
+ * @ngdoc module
+ * @name udb.saved-searches
+ * @description
+ * The udb saved-searches module
+ */
+angular
+  .module('udb.saved-searches', []);
 
 /**
  * @ngdoc module
@@ -3868,6 +3878,37 @@ function eventExporter(jobLogger, udbApi, EventExportJob) {
 }
 eventExporter.$inject = ["jobLogger", "udbApi", "EventExportJob"];
 
+// Source: src/saved-searches/ui/saved-searches-list.controller.js
+/**
+ * @ngdoc function
+ * @name udb.saved-searches-list.controller:SavedSearchesListController
+ * @description
+ * # SavedSearchesListController
+ * Saved searches list controller
+ */
+angular
+  .module('udb.saved-searches')
+  .controller('SavedSearchesListController', SavedSearchesList);
+
+/* @ngInject */
+function SavedSearchesList($scope) {
+
+  $scope.savedSearches =
+    [
+      {
+        id: 118,
+        name: 'In Leuven',
+        query: 'city:\u0022leuven\u0022'
+      },
+      {
+        id: 119,
+        name: 'In Leuven',
+        query: 'city:\u0022leuven\u0022'
+      }
+    ];
+}
+SavedSearchesList.$inject = ["$scope"];
+
 // Source: src/search/components/query-editor-daterangepicker.directive.js
 /**
  * @ngdoc directive
@@ -6318,6 +6359,41 @@ $templateCache.put('templates/event-label-modal.html',
     "    Downloaden\n" +
     "  </a>\n" +
     "</p>"
+  );
+
+
+  $templateCache.put('templates/saved-searches-list.html',
+    "<div class=\"container-fluid\">\n" +
+    "    <h1>Mijn zoekopdrachten</h1>\n" +
+    "\n" +
+    "    <table class=\"table\">\n" +
+    "        <tr>\n" +
+    "            <th>\n" +
+    "                <strong>Titel</strong>\n" +
+    "            </th>\n" +
+    "            <th>\n" +
+    "                Query\n" +
+    "            </th>\n" +
+    "            <td>\n" +
+    "            </td>\n" +
+    "        </tr>\n" +
+    "\n" +
+    "\n" +
+    "        <tr ng-repeat=\"savedSearch in savedSearches\">\n" +
+    "            <td>\n" +
+    "                <p><i class=\"fa fa-bookmark\"></i> {{savedSearch.name}}</p>\n" +
+    "                <p><a href=\"#\" class=\"small\">Resultaten bekijken</a></p>\n" +
+    "            </td>\n" +
+    "            <td>\n" +
+    "                <textarea class=\"query form-control\" rows=\"3\">{{savedSearch.query}}</textarea>\n" +
+    "            </td>\n" +
+    "            <td>\n" +
+    "                <a class=\"btn btn-default\">Verwijderen</a>\n" +
+    "            </td>\n" +
+    "        </tr>\n" +
+    "\n" +
+    "    </table>\n" +
+    "</div>\n"
   );
 
 

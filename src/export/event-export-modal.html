@@ -22,7 +22,7 @@
     <udb-export-modal-buttons></udb-export-modal-buttons>
   </form>
 
-  <form  ng-switch-when="filter" name="filterForm">
+  <form ng-switch-when="filter" name="filterForm">
     <div class="modal-body">
       <h5>Kies de gewenste velden</h5>
 
@@ -39,7 +39,7 @@
     <udb-export-modal-buttons></udb-export-modal-buttons>
   </form>
 
-  <form ng-switch-when="customize" name="customizeForm">
+  <form ng-switch-when="customize" name="customizeForm" novalidate>
     <div class="modal-body">
       <h5>Verfraai je rapport</h5>
 
@@ -99,7 +99,7 @@
     <udb-export-modal-buttons></udb-export-modal-buttons>
   </form>
 
-  <form ng-show="exporter.getActiveStepName() === 'finished'">
+  <form ng-switch-when="finished">
     <div class="modal-body">
       <h5>Bedankt</h5>
 

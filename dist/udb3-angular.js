@@ -6235,7 +6235,7 @@ $templateCache.put('templates/event-label-modal.html',
     "    <udb-export-modal-buttons></udb-export-modal-buttons>\n" +
     "  </form>\n" +
     "\n" +
-    "  <form  ng-switch-when=\"filter\" name=\"filterForm\">\n" +
+    "  <form ng-switch-when=\"filter\" name=\"filterForm\">\n" +
     "    <div class=\"modal-body\">\n" +
     "      <h5>Kies de gewenste velden</h5>\n" +
     "\n" +
@@ -6252,7 +6252,7 @@ $templateCache.put('templates/event-label-modal.html',
     "    <udb-export-modal-buttons></udb-export-modal-buttons>\n" +
     "  </form>\n" +
     "\n" +
-    "  <form ng-switch-when=\"customize\" name=\"customizeForm\">\n" +
+    "  <form ng-switch-when=\"customize\" name=\"customizeForm\" novalidate>\n" +
     "    <div class=\"modal-body\">\n" +
     "      <h5>Verfraai je rapport</h5>\n" +
     "\n" +
@@ -6312,7 +6312,7 @@ $templateCache.put('templates/event-label-modal.html',
     "    <udb-export-modal-buttons></udb-export-modal-buttons>\n" +
     "  </form>\n" +
     "\n" +
-    "  <form ng-show=\"exporter.getActiveStepName() === 'finished'\">\n" +
+    "  <form ng-switch-when=\"finished\">\n" +
     "    <div class=\"modal-body\">\n" +
     "      <h5>Bedankt</h5>\n" +
     "\n" +

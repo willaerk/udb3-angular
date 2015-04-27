@@ -4,8 +4,13 @@ describe('Directive: Job Logo', function() {
   var $compile,
       $rootScope;
 
+  var mockState = 'idle';
+
   beforeEach(module('udb.entry', function($controllerProvider) {
-    $controllerProvider.register('JobLogoController', function ($scope){
+    $controllerProvider.register('JobLogoController', function (){
+      this.getState = function () {
+        return mockState;
+      };
     });
   }));
 
@@ -16,9 +21,10 @@ describe('Directive: Job Logo', function() {
     $rootScope = _$rootScope_;
   }));
 
-  it('renders a logo', function() {
+  it('renders the logo with the current job state', function () {
     var element = $compile("<udb-job-logo></udb-job-logo>")($rootScope);
+    mockState = 'some-logo-state';
     $rootScope.$digest();
-    expect(element.html()).toContain("<p>I'm a logo</p>");
+    expect(element.children(':first-child').attr('class')).toEqual('some-logo-state');
   });
 });

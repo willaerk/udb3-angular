@@ -24,14 +24,16 @@ describe('Controller: Job Logo', function () {
   });
 
   it('sets the logo state to IDLE when there are no jobs to show', function () {
-    expect(jobLogoController.getCurrentState()).toBe(JobLogoStates.IDLE);
+    jobLogoController.updateCurrentState();
+    expect(jobLogoController.getState()).toBe(JobLogoStates.IDLE);
   });
 
   it('sets the logo state to WARNING when there are failed jobs', function () {
     jobLogger.getFailedJobs = jasmine.createSpy('getFailedJobs').andCallFake(function() {
       return ['some', 'failed', 'jobs'];
     });
-    expect(jobLogoController.getCurrentState()).toBe(JobLogoStates.WARNING);
+    jobLogoController.updateCurrentState();
+    expect(jobLogoController.getState()).toBe(JobLogoStates.WARNING);
   });
 
   it('sets the logo state to COMPLETED when there are finished export jobs', function () {
@@ -39,7 +41,8 @@ describe('Controller: Job Logo', function () {
       .andCallFake(function() {
         return ['some', 'finished', 'exports'];
       });
-    expect(jobLogoController.getCurrentState()).toBe(JobLogoStates.COMPLETED);
+    jobLogoController.updateCurrentState();
+    expect(jobLogoController.getState()).toBe(JobLogoStates.COMPLETED);
   });
 
   it('sets the logo state to BUSY when there are active jobs', function () {
@@ -47,6 +50,7 @@ describe('Controller: Job Logo', function () {
       .andCallFake(function() {
          return true
        });
-    expect(jobLogoController.getCurrentState()).toBe(JobLogoStates.BUSY);
+    jobLogoController.updateCurrentState();
+    expect(jobLogoController.getState()).toBe(JobLogoStates.BUSY);
   });
 });

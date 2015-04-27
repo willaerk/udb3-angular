@@ -22,6 +22,5 @@ function udbJobLogo() {
   return directive;
 
   function link(scope, element, attrs) {
-
   }
 }

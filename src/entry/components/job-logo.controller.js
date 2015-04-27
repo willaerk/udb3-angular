@@ -19,7 +19,7 @@ function JobLogoController(JobLogoStates, jobLogger) {
    * Calculate the current state the logo should be in
    * @return {boolean} current state
    */
-  jl.getCurrentState = function () {
+  jl.updateCurrentState = function () {
     var stateChecks = [
       {
         state: JobLogoStates.WARNING,
@@ -44,9 +44,13 @@ function JobLogoController(JobLogoStates, jobLogger) {
       return stateCheck.check;
     }).state;
 
-    return currentState;
+    jl.state = currentState;
+  };
+
+  jl.getState = function () {
+    return jl.state;
   };
 
   // set the initial state
-  jl.state = jl.getCurrentState();
+  jl.updateCurrentState();
 }

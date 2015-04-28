@@ -12,7 +12,7 @@ angular
   .controller('JobLogoController', JobLogoController);
 
 /* @ngInject */
-function JobLogoController(JobLogoStates, jobLogger) {
+function JobLogoController(JobLogoStates, jobLogger, $rootScope) {
   var jl = this;
 
   /**
@@ -26,7 +26,7 @@ function JobLogoController(JobLogoStates, jobLogger) {
         check: !_.isEmpty(jobLogger.getFailedJobs())
       },
       {
-        state: JobLogoStates.COMPLETED,
+        state: JobLogoStates.COMPLETE,
         check: !_.isEmpty(jobLogger.getFinishedExportJobs())
       },
       {
@@ -53,4 +53,6 @@ function JobLogoController(JobLogoStates, jobLogger) {
 
   // set the initial state
   jl.updateCurrentState();
+
+  $rootScope.$on('jobListsUpdated', jl.updateCurrentState);
 }

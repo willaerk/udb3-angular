@@ -36,13 +36,13 @@ describe('Controller: Job Logo', function () {
     expect(jobLogoController.getState()).toBe(JobLogoStates.WARNING);
   });
 
-  it('sets the logo state to COMPLETED when there are finished export jobs', function () {
+  it('sets the logo state to COMPLETE when there are finished export jobs', function () {
     jobLogger.getFinishedExportJobs = jasmine.createSpy('getFinishedExportJobs')
       .andCallFake(function() {
         return ['some', 'finished', 'exports'];
       });
     jobLogoController.updateCurrentState();
-    expect(jobLogoController.getState()).toBe(JobLogoStates.COMPLETED);
+    expect(jobLogoController.getState()).toBe(JobLogoStates.COMPLETE);
   });
 
   it('sets the logo state to BUSY when there are active jobs', function () {

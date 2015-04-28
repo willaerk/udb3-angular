@@ -19,7 +19,7 @@ angular
    */
   {
     WARNING: 'warning',
-    COMPLETED: 'completed',
+    COMPLETE: 'complete',
     BUSY: 'busy',
     IDLE: 'idle'
   });

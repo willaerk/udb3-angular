@@ -333,6 +333,15 @@ textarea.resize-vertical {
   line-height: 100%;
   width: 100% !important;
 }
+udb-search-bar {
+  position: relative;
+}
+udb-search-bar .advanced-search {
+  position: absolute;
+  color: white;
+  top: 30px;
+  left: 20px;
+}
 .udb-header-search .editor-icon,
 .udb-search-button,
 .udb-header-search .warning-icon {

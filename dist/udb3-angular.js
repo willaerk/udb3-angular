@@ -3900,6 +3900,36 @@ function udbExportModalButtons() {
   };
 }
 
+// Source: src/saved-searches/components/save-search-modal.controller.js
+/**
+ * @ngdoc function
+ * @name udb.entry.controller:SaveSearchModalController
+ * @description
+ * # SaveSearchModalController
+ * Controller of the udb.entry
+ */
+angular
+  .module('udb.saved-searches')
+  .controller('SaveSearchModalController', SaveSearchModalController);
+
+/* @ngInject */
+function SaveSearchModalController($scope, $modalInstance) {
+
+  var ok = function () {
+    var name = $scope.queryName;
+    $modalInstance.close(name);
+  };
+
+  var cancel = function () {
+    $modalInstance.dismiss('cancel');
+  };
+
+  $scope.cancel = cancel;
+  $scope.ok = ok;
+  $scope.queryName = '';
+}
+SaveSearchModalController.$inject = ["$scope", "$modalInstance"];
+
 // Source: src/saved-searches/components/save-search.directive.js
 /**
  * @ngdoc directive
@@ -3908,11 +3938,11 @@ function udbExportModalButtons() {
  * # udbSaveSearch
  */
 angular
-  .module('udb.saved-searches', ['udb.search'])
+  .module('udb.saved-searches')
   .directive('udbSaveSearch', udbSaveSearch);
 
 /* @ngInject */
-function udbSaveSearch(savedSearchesService) {
+function udbSaveSearch(savedSearchesService, $modal) {
   var directive = {
     link: link,
     templateUrl: 'templates/save-search.directive.html',
@@ -3925,11 +3955,18 @@ function udbSaveSearch(savedSearchesService) {
 
   function link(scope, element, attrs, controllers) {
     scope.saveSearch = function () {
-      console.log('saving your search: ' + scope.queryString);
+      var modal = $modal.open({
+        templateUrl: 'templates/save-search-modal.html',
+        controller: 'SaveSearchModalController'
+      });
+
+      modal.result.then(function (name) {
+        savedSearchesService.createSavedSearch(name, scope.queryString);
+      });
     };
   }
 }
-udbSaveSearch.$inject = ["savedSearchesService"];
+udbSaveSearch.$inject = ["savedSearchesService", "$modal"];
 
 // Source: src/saved-searches/udb.saved-searches.service.js
 /**
@@ -3945,7 +3982,7 @@ angular
 
 /* @ngInject */
 function SavedSearchesService($q, $http, appConfig) {
-  var apiUrl = appConfig.baseApiUrl;
+  var apiUrl = appConfig.baseUrl;
   var defaultApiConfig = {
     withCredentials: true,
     headers: {
@@ -3958,7 +3995,7 @@ function SavedSearchesService($q, $http, appConfig) {
       name: name,
       query: query
     };
-    return $http.post(apiUrl + 'saved-searches', post, defaultApiConfig);
+    return $http.post(apiUrl + 'saved-searches/', post, defaultApiConfig);
   };
 }
 SavedSearchesService.$inject = ["$q", "$http", "appConfig"];
@@ -6458,6 +6495,25 @@ $templateCache.put('templates/event-label-modal.html',
     "  <button ng-hide=\"exporter.onLastStep()\" class=\"btn btn-primary\"\n" +
     "          ng-click=\"exporter.nextStep()\">volgende</button>\n" +
     "  <button ng-show=\"exporter.onLastStep()\" class=\"btn btn-primary\" ng-click=\"exporter.export()\">exporteren</button>\n" +
+    "</div>\n"
+  );
+
+
+  $templateCache.put('templates/save-search-modal.html',
+    "<div class=\"modal-body\">\n" +
+    "\n" +
+    "    <label>naam</label>\n" +
+    "\n" +
+    "    <div class=\"row\">\n" +
+    "        <div class=\"col-lg-12\">\n" +
+    "            <input type=\"text\" ng-model=\"queryName\" class=\"form-control\"/>\n" +
+    "        </div>\n" +
+    "    </div>\n" +
+    "</div>\n" +
+    "\n" +
+    "<div class=\"modal-footer\">\n" +
+    "    <button class=\"btn btn-primary\" ng-click=\"ok()\">bewaren</button>\n" +
+    "    <button class=\"btn btn-warning\" ng-click=\"cancel()\">annuleren</button>\n" +
     "</div>\n"
   );
 

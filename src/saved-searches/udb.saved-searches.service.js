@@ -13,7 +13,7 @@ angular
 
 /* @ngInject */
 function SavedSearchesService($q, $http, appConfig) {
-  var apiUrl = appConfig.baseApiUrl;
+  var apiUrl = appConfig.baseUrl;
   var defaultApiConfig = {
     withCredentials: true,
     headers: {
@@ -26,6 +26,6 @@ function SavedSearchesService($q, $http, appConfig) {
       name: name,
       query: query
     };
-    return $http.post(apiUrl + 'saved-searches', post, defaultApiConfig);
+    return $http.post(apiUrl + 'saved-searches/', post, defaultApiConfig);
   };
 }

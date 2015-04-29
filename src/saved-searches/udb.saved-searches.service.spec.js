@@ -4,11 +4,11 @@ describe('Service: savedSearchesService', function() {
   var $httpBackend;
   var savedSearchesService;
 
-  var baseApiUrl = 'http://example.com/';
+  var baseUrl = 'http://example.com/';
 
   beforeEach(module('udb.core', function ($provide) {
     var appConfig = {
-      baseApiUrl: baseApiUrl
+      baseUrl: baseUrl
     };
 
     $provide.constant('appConfig', appConfig);
@@ -30,7 +30,7 @@ describe('Service: savedSearchesService', function() {
   it('posts a JSON-encoded title & query to /saved-searches', function() {
     $httpBackend
       .expectPOST(
-        baseApiUrl + 'saved-searches',
+        baseUrl + 'saved-searches/',
         '{"name":"In Leuven","query":"city:\\\"Leuven\\\""}',
         function (headers) {
           return headers['Content-Type'] == 'application/json';

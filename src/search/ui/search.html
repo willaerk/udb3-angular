@@ -7,6 +7,9 @@
           <div class="row">
               <div class="col-xs-12">
                   <ul class="nav nav-pills" role="tablist">
+                      <li udb-save-search ng-show="activeQuery.queryString"
+                              udb-query-string="activeQuery.queryString">
+                      </li>
                       <li>
                           <p class="rv-item-counter">
                               <span ng-bind="resultViewer.totalItems"></span> resultaten

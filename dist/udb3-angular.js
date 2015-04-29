@@ -3900,6 +3900,37 @@ function udbExportModalButtons() {
   };
 }
 
+// Source: src/saved-searches/components/save-search.directive.js
+/**
+ * @ngdoc directive
+ * @name udb.savedSearches.directive:udbSaveSearch
+ * @description
+ * # udbSaveSearch
+ */
+angular
+  .module('udb.saved-searches', ['udb.search'])
+  .directive('udbSaveSearch', udbSaveSearch);
+
+/* @ngInject */
+function udbSaveSearch(savedSearchesService) {
+  var directive = {
+    link: link,
+    templateUrl: 'templates/save-search.directive.html',
+    restrict: 'AE',
+    scope: {
+      queryString: '=udbQueryString'
+    }
+  };
+  return directive;
+
+  function link(scope, element, attrs, controllers) {
+    scope.saveSearch = function () {
+      console.log('saving your search: ' + scope.queryString);
+    };
+  }
+}
+udbSaveSearch.$inject = ["savedSearchesService"];
+
 // Source: src/saved-searches/udb.saved-searches.service.js
 /**
  * @ngdoc service
@@ -6431,6 +6462,16 @@ $templateCache.put('templates/event-label-modal.html',
   );
 
 
+  $templateCache.put('templates/save-search.directive.html',
+    "<p>\n" +
+    "    <strong>Jouw zoekdracht</strong>\n" +
+    "    <a href=\"#\" ng-click=\"saveSearch()\" class=\"btn btn-sm btn-default\">\n" +
+    "        <i class=\"fa fa-bookmark-o\"></i> Bewaren\n" +
+    "    </a>\n" +
+    "</p>\n"
+  );
+
+
   $templateCache.put('templates/saved-searches-list.html',
     "<div class=\"container-fluid\">\n" +
     "    <h1>Mijn zoekopdrachten</h1>\n" +
@@ -6672,6 +6713,9 @@ $templateCache.put('templates/event-label-modal.html',
     "          <div class=\"row\">\n" +
     "              <div class=\"col-xs-12\">\n" +
     "                  <ul class=\"nav nav-pills\" role=\"tablist\">\n" +
+    "                      <li udb-save-search ng-show=\"activeQuery.queryString\"\n" +
+    "                              udb-query-string=\"activeQuery.queryString\">\n" +
+    "                      </li>\n" +
     "                      <li>\n" +
     "                          <p class=\"rv-item-counter\">\n" +
     "                              <span ng-bind=\"resultViewer.totalItems\"></span> resultaten\n" +

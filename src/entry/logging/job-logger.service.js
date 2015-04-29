@@ -14,7 +14,7 @@ angular
   .service('jobLogger', JobLogger);
 
 /* @ngInject */
-function JobLogger(udbSocket, JobStates, EventExportJob) {
+function JobLogger(udbSocket, JobStates, EventExportJob, $rootScope) {
   var jobs = [],
       queuedJobs = [],
       failedJobs = [],
@@ -97,6 +97,7 @@ function JobLogger(udbSocket, JobStates, EventExportJob) {
       return job instanceof EventExportJob && job.state === JobStates.FINISHED;
     });
     queuedJobs = activeJobs.concat(newJobs);
+    $rootScope.$emit('jobListsUpdated');
   }
 
   /**

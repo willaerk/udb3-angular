@@ -6633,10 +6633,10 @@ $templateCache.put('templates/event-label-modal.html',
     "                      <ul class=\"dropdown-menu\">\n" +
     "                          <li role=\"presentation\" class=\"dropdown-header\">Selecteer</li>\n" +
     "                          <li ng-click=\"resultViewer.toggleSelection()\">\n" +
-    "                              <a href>Alles op deze pagina ({{resultViewer.events.length}} items)</a>\n" +
+    "                              <a href>Alles op deze pagina <ng-pluralize count=\"resultViewer.events.length\" when=\"{'0': '(0 items)','one': '(1 item)','other': '({} items)'}\"></ng-pluralize></a>\n" +
     "                          </li>\n" +
     "                          <li ng-click=\"resultViewer.selectQuery()\">\n" +
-    "                              <a href>Alle resultaten (<span ng-bind=\"resultViewer.totalItems\"></span> items)</a>\n" +
+    "                              <a href>Alle resultaten <ng-pluralize count=\"resultViewer.totalItems\" when=\"{'0': '(0 items)','one': '(1 item)','other': '({} items)'}\"></ng-pluralize></a>\n" +
     "                          </li>\n" +
     "                      </ul>\n" +
     "                    </span>\n" +

@@ -1,10 +1,12 @@
+<form name="saveQueryForm" novalidate>
 <div class="modal-body">
 
     <label>naam</label>
 
     <div class="row">
         <div class="col-lg-12">
-            <input type="text" ng-model="queryName" class="form-control"/>
+            <input type="text" ng-required="'true'" name="queryName" ng-model="queryName" class="form-control"/>
+            <p class="alert alert-danger" role="alert" ng-show="wasSubmitted && saveQueryForm.queryName.$error.required">Een naam is verplicht.</p>
         </div>
     </div>
 </div>
@@ -13,3 +15,4 @@
     <button class="btn btn-primary" ng-click="ok()">bewaren</button>
     <button class="btn btn-warning" ng-click="cancel()">annuleren</button>
 </div>
+</form>

@@ -3917,7 +3917,11 @@ function SaveSearchModalController($scope, $modalInstance) {
 
   var ok = function () {
     var name = $scope.queryName;
-    $modalInstance.close(name);
+    $scope.wasSubmitted = true;
+
+    if (name) {
+      $modalInstance.close(name);
+    }
   };
 
   var cancel = function () {
@@ -3927,6 +3931,7 @@ function SaveSearchModalController($scope, $modalInstance) {
   $scope.cancel = cancel;
   $scope.ok = ok;
   $scope.queryName = '';
+  $scope.wasSubmitted = false;
 }
 SaveSearchModalController.$inject = ["$scope", "$modalInstance"];
 
@@ -6500,13 +6505,15 @@ $templateCache.put('templates/event-label-modal.html',
 
 
   $templateCache.put('templates/save-search-modal.html',
+    "<form name=\"saveQueryForm\" novalidate>\n" +
     "<div class=\"modal-body\">\n" +
     "\n" +
     "    <label>naam</label>\n" +
     "\n" +
     "    <div class=\"row\">\n" +
     "        <div class=\"col-lg-12\">\n" +
-    "            <input type=\"text\" ng-model=\"queryName\" class=\"form-control\"/>\n" +
+    "            <input type=\"text\" ng-required=\"'true'\" name=\"queryName\" ng-model=\"queryName\" class=\"form-control\"/>\n" +
+    "            <p class=\"alert alert-danger\" role=\"alert\" ng-show=\"wasSubmitted && saveQueryForm.queryName.$error.required\">Een naam is verplicht.</p>\n" +
     "        </div>\n" +
     "    </div>\n" +
     "</div>\n" +
@@ -6514,7 +6521,8 @@ $templateCache.put('templates/event-label-modal.html',
     "<div class=\"modal-footer\">\n" +
     "    <button class=\"btn btn-primary\" ng-click=\"ok()\">bewaren</button>\n" +
     "    <button class=\"btn btn-warning\" ng-click=\"cancel()\">annuleren</button>\n" +
-    "</div>\n"
+    "</div>\n" +
+    "</form>\n"
   );
 
 

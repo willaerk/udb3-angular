@@ -16,7 +16,11 @@ function SaveSearchModalController($scope, $modalInstance) {
 
   var ok = function () {
     var name = $scope.queryName;
-    $modalInstance.close(name);
+    $scope.wasSubmitted = true;
+
+    if (name) {
+      $modalInstance.close(name);
+    }
   };
 
   var cancel = function () {
@@ -26,4 +30,5 @@ function SaveSearchModalController($scope, $modalInstance) {
   $scope.cancel = cancel;
   $scope.ok = ok;
   $scope.queryName = '';
+  $scope.wasSubmitted = false;
 }

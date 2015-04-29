@@ -6946,7 +6946,7 @@ $templateCache.put('templates/job-logo.directive.html',
     "                              </div>\n" +
     "                              <div class=\"col-sm-6\">\n" +
     "                                  <strong>Basis-beschrijving</strong>\n" +
-    "                                  <div ng-bind=\"event.description\"></div>\n" +
+    "                                  <div ng-bind-html=\"event.description\"></div>\n" +
     "                              </div>\n" +
     "                          </div>\n" +
     "\n" +

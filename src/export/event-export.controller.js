@@ -139,6 +139,9 @@ function EventExportController($modalInstance, udbApi, eventExporter, queryField
     if (exporter.isStepCompleted()) {
       setActiveStep(activeStep + 1);
     }
+    else {
+      exporter.hasErrors = true;
+    }
   };
 
   exporter.previousStep = function () {

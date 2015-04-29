@@ -29,6 +29,12 @@ function udbSearchBar(searchHelper, $rootScope) {
         searchBar.isEditing = true;
       };
 
+      searchBar.searchClick = function() {
+        searchBar.search();
+        $rootScope.$emit('searchBarExecuted');
+        $rootScope.$emit('stopEditingQuery');
+      };
+
       searchBar.search = function () {
         searchHelper.setQueryString(searchBar.query);
       };

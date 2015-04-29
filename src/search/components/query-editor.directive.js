@@ -54,23 +54,47 @@ function QueryEditor(
     });
   });
 
-  qe.groupedQueryTree = {
-    type: 'root',
-    nodes: [
-      {
-        type: 'group',
-        operator: 'OR',
-        nodes: [
-          {
-            field: 'title',
-            term: '',
-            fieldType: 'tokenized-string',
-            transformer: '+'
-          }
-        ]
-      }
-    ]
+  $rootScope.$on('searchBarExecuted', function () {
+    qe.resetGroups();
+    qe.groupedQueryTree = {
+      type: 'root',
+      nodes: [
+        {
+          type: 'group',
+          operator: 'OR',
+          nodes: [
+            {
+              field: 'title',
+              term: '',
+              fieldType: 'tokenized-string',
+              transformer: '+'
+            }
+          ]
+        }
+      ]
+    };
+  });
+
+  qe.getDefaultQueryTree = function () {
+    return {
+      type: 'root',
+      nodes: [
+        {
+          type: 'group',
+          operator: 'OR',
+          nodes: [
+            {
+              field: 'title',
+              term: '',
+              fieldType: 'tokenized-string',
+              transformer: '+'
+            }
+          ]
+        }
+      ]
+    };
   };
+  qe.groupedQueryTree = qe.getDefaultQueryTree();
 
   // Holds options for both term and choice query-field types
   qe.transformers = {};
@@ -182,6 +206,10 @@ function QueryEditor(
         root.nodes.splice(groupIndex, 1);
       }
     }
+  };
+
+  qe.resetGroups = function () {
+    qe.groupedQueryTree = qe.getDefaultQueryTree();
   };
 
   /**

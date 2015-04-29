@@ -1,31 +1,38 @@
 'use strict'
 
 describe('Directive: udbSaveSearch', function () {
-  var $rootScope, $compile, modal;
+  var $rootScope, $compile, modal, modalInstance, $q;
+
+  var name = 'In Leuven';
+  var deferredModalResult;
+  var savedSearchesService;
 
   beforeEach(module('udb.core'))
 
   beforeEach(module('udb.templates'));
 
-  beforeEach(module('udb.saved-searches', function ($provide) {
-    //modal = jasmine.createSpyObj('$modal', ['open']);
-    //$provide.service('$modal', modal);
-  }));
-
-  beforeEach(inject(function(_$rootScope_, _$compile_, _$modal_) {
+  beforeEach(inject(function(_$rootScope_, _$compile_, _$modal_, _$q_) {
     modal = _$modal_;
     $rootScope = _$rootScope_;
     $compile = _$compile_;
-    spyOn(modal, 'open');
+    $q = _$q_;
+
+    var original = modal.open;
+
+    spyOn(modal, 'open').andCallFake(function () {
+       modalInstance = original.apply(null, arguments);
+       return modalInstance;
+    });
   }));
 
 
   it('shows a modal saving a search', function () {
-    expect(modal.open).toHaveBeenCalled();
     $rootScope.queryString = 'city:leuven';
     var element = $compile('<udb-save-search udb-query-string="queryString"></udb-save-search>')($rootScope);
     $rootScope.$digest();
-    element.find('.udb-save-query-ok-button').click();
-  });
+    element.find('a').triggerHandler('click');
+    expect(modal.open).toHaveBeenCalled();
 
+    modalInstance.close(name);
+  });
 });

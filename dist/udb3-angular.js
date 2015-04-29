@@ -6599,7 +6599,7 @@ $templateCache.put('templates/event-label-modal.html',
     "                              <a href>Alles op deze pagina ({{resultViewer.events.length}} items)</a>\n" +
     "                          </li>\n" +
     "                          <li ng-click=\"resultViewer.selectQuery()\">\n" +
-    "                              <a href>Alles resultaten (<span ng-bind=\"resultViewer.totalItems\"></span> items)</a>\n" +
+    "                              <a href>Alle resultaten (<span ng-bind=\"resultViewer.totalItems\"></span> items)</a>\n" +
     "                          </li>\n" +
     "                      </ul>\n" +
     "                    </span>\n" +

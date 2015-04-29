@@ -6596,7 +6596,7 @@ $templateCache.put('templates/event-label-modal.html',
     "                      <ul class=\"dropdown-menu\">\n" +
     "                          <li role=\"presentation\" class=\"dropdown-header\">Selecteer</li>\n" +
     "                          <li ng-click=\"resultViewer.toggleSelection()\">\n" +
-    "                              <a href>Alles op deze pagina (30 items)</a>\n" +
+    "                              <a href>Alles op deze pagina ({{(resultViewer.totalItems > resultViewer.pageSize) ? resultViewer.pageSize : resultViewer.totalItems}} items)</a>\n" +
     "                          </li>\n" +
     "                          <li ng-click=\"resultViewer.selectQuery()\">\n" +
     "                              <a href>Alles resultaten (<span ng-bind=\"resultViewer.totalItems\"></span> items)</a>\n" +

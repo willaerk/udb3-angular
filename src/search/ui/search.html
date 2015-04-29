@@ -76,7 +76,7 @@
                       <ul class="dropdown-menu">
                           <li role="presentation" class="dropdown-header">Selecteer</li>
                           <li ng-click="resultViewer.toggleSelection()">
-                              <a href>Alles op deze pagina (30 items)</a>
+                              <a href>Alles op deze pagina ({{(resultViewer.totalItems > resultViewer.pageSize) ? resultViewer.pageSize : resultViewer.totalItems}} items)</a>
                           </li>
                           <li ng-click="resultViewer.selectQuery()">
                               <a href>Alles resultaten (<span ng-bind="resultViewer.totalItems"></span> items)</a>

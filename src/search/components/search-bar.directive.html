@@ -1,7 +1,7 @@
 <form class="navbar-form navbar-left udb-header-search" role="search"
       ng-class="{'has-errors': sb.hasErrors, 'is-editing': sb.isEditing}">
   <div class="form-group has-warning has-feedback">
-    <input type="text" class="form-control" ng-model="sb.query">
+    <input type="text" class="form-control" ng-model="sb.query" ng-change="sb.searchChange()">
     <i class="fa fa-flask editor-icon" ng-click="sb.editQuery()"></i>
     <i ng-show="sb.hasErrors" class="fa fa-warning warning-icon" tooltip-append-to-body="true"
        tooltip-placement="bottom" tooltip="{{sb.errors}}"></i>

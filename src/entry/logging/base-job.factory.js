@@ -83,8 +83,8 @@ function BaseJobFactory(JobStates) {
 
   /**
    * Returns a date string to use for the job log based on job state.
-   * 
-   * @returns {string}
+   *
+   * @return {string}
    */
   BaseJob.prototype.getLogDateByState = function () {
     if (_.contains([JobStates.FAILED, JobStates.FINISHED], this.state) && this.finished !== null) {

@@ -4,7 +4,6 @@ describe('Directive: udbSaveSearch', function () {
   var $rootScope, $compile, modal, modalInstance, $q;
 
   var name = 'In Leuven';
-  var deferredModalResult;
   var savedSearchesService;
   var apiRequest;
 
@@ -31,9 +30,7 @@ describe('Directive: udbSaveSearch', function () {
     var element = $compile('<udb-save-search udb-query-string="queryString"></udb-save-search>')($rootScope);
     $rootScope.$digest();
     element.find('a').triggerHandler('click');
-    spyOn(savedSearchesService, 'createSavedSearch');
-
-    savedSearchesService.createSavedSearch = jasmine.createSpy('createSavedSearch').andCallFake(function() {
+    spyOn(savedSearchesService, 'createSavedSearch').andCallFake(function() {
       apiRequest = $q.defer();
       return apiRequest.promise;
     });

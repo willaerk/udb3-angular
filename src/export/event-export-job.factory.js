@@ -12,7 +12,7 @@ angular
   .factory('EventExportJob', EventExportJobFactory);
 
 /* @ngInject */
-function EventExportJobFactory(BaseJob, JobStates) {
+function EventExportJobFactory(BaseJob, JobStates, ExportFormats) {
 
   /**
    * @class EventExportJob
@@ -26,6 +26,7 @@ function EventExportJobFactory(BaseJob, JobStates) {
     this.exportUrl = '';
     this.eventCount = eventCount;
     this.format = format;
+    this.extension = _.find(ExportFormats, {type: format}).extension;
   };
 
   EventExportJob.prototype = Object.create(BaseJob.prototype);
@@ -54,7 +55,7 @@ function EventExportJobFactory(BaseJob, JobStates) {
     if (this.state === JobStates.FAILED) {
       description = 'Exporteren van evenementen mislukt';
     } else {
-      description = 'Document .' + this.format + ' met ' + this.eventCount + ' evenementen';
+      description = 'Document .' + this.extension + ' met ' + this.eventCount + ' evenementen';
     }
 
     return description;

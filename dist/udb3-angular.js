@@ -3661,7 +3661,7 @@ angular
   .factory('EventExportJob', EventExportJobFactory);
 
 /* @ngInject */
-function EventExportJobFactory(BaseJob, JobStates) {
+function EventExportJobFactory(BaseJob, JobStates, ExportFormats) {
 
   /**
    * @class EventExportJob
@@ -3675,6 +3675,7 @@ function EventExportJobFactory(BaseJob, JobStates) {
     this.exportUrl = '';
     this.eventCount = eventCount;
     this.format = format;
+    this.extension = _.find(ExportFormats, {type: format}).extension;
   };
 
   EventExportJob.prototype = Object.create(BaseJob.prototype);
@@ -3703,7 +3704,7 @@ function EventExportJobFactory(BaseJob, JobStates) {
     if (this.state === JobStates.FAILED) {
       description = 'Exporteren van evenementen mislukt';
     } else {
-      description = 'Document .' + this.format + ' met ' + this.eventCount + ' evenementen';
+      description = 'Document .' + this.extension + ' met ' + this.eventCount + ' evenementen';
     }
 
     return description;
@@ -3721,7 +3722,7 @@ function EventExportJobFactory(BaseJob, JobStates) {
 
   return (EventExportJob);
 }
-EventExportJobFactory.$inject = ["BaseJob", "JobStates"];
+EventExportJobFactory.$inject = ["BaseJob", "JobStates", "ExportFormats"];
 
 // Source: src/export/event-export.controller.js
 /**
@@ -3736,7 +3737,7 @@ angular
   .controller('EventExportController', EventExportController);
 
 /* @ngInject */
-function EventExportController($modalInstance, udbApi, eventExporter, queryFields, $window) {
+function EventExportController($modalInstance, udbApi, eventExporter, ExportFormats) {
 
   var exporter = this;
 
@@ -3764,30 +3765,7 @@ function EventExportController($modalInstance, udbApi, eventExporter, queryField
     {name: 'language', include: false, sortable: false, excludable: true}
   ];
 
-  exporter.exportFormats = [
-    {
-      type: 'ooxml',
-      label: 'Office Open XML (Excel)',
-      description: 'Het standaard formaat van Excel vanaf Microsoft Office 2007.'
-    },
-    //{
-    //  type: 'html',
-    //  label: 'Als HTML',
-    //  description: 'Exporteren naar HTML is een gemakkelijke manier om de inhoud geschikt voor het web te maken.',
-    //  customizable: true
-    //},
-    {
-      type: 'pdf',
-      label: 'Als PDF',
-      description: 'Druk snel en eenvoudig items uit de UiTdatabank af. Kies een Vlieg, UiT-, of UiTPAS-sjabloon.',
-      customizable: true
-    },
-    {
-      type: 'json',
-      label: 'Als json',
-      description: 'Exporteren naar event-ld om de informatie voor ontwikkelaars beschikbaar te maken.'
-    }
-  ];
+  exporter.exportFormats = _.map(ExportFormats);
 
   exporter.brands = [
     {name: 'vlieg', label: 'Vlieg'},
@@ -3942,7 +3920,7 @@ function EventExportController($modalInstance, udbApi, eventExporter, queryField
 
   exporter.eventCount = eventExporter.activeExport.eventCount;
 }
-EventExportController.$inject = ["$modalInstance", "udbApi", "eventExporter", "queryFields", "$window"];
+EventExportController.$inject = ["$modalInstance", "udbApi", "eventExporter", "ExportFormats"];
 
 // Source: src/export/event-exporter.service.js
 /**
@@ -3995,6 +3973,46 @@ function eventExporter(jobLogger, udbApi, EventExportJob) {
   };
 }
 eventExporter.$inject = ["jobLogger", "udbApi", "EventExportJob"];
+
+// Source: src/export/export-formats.constant.js
+/* jshint sub: true */
+
+/**
+ * @ngdoc constant
+ * @name udb.export.ExportFormats
+ * @description
+ * # ExportFormats
+ * Event export formats
+ */
+angular
+  .module('udb.export')
+  .constant('ExportFormats',
+  /**
+   * Enum for export formats
+   * @readonly
+   * @enum {string}
+   */
+  {
+    OOXML:{
+      type: 'ooxml',
+      extension: 'xlsx',
+      label: 'Office Open XML (Excel)',
+      description: 'Het standaard formaat van Excel vanaf Microsoft Office 2007.'
+    },
+    PDF: {
+      type: 'pdf',
+      label: 'Als PDF',
+      extension: 'pdf',
+      description: 'Druk snel en eenvoudig items uit de UiTdatabank af. Kies een Vlieg, UiT-, of UiTPAS-sjabloon.',
+      customizable: true
+    },
+    JSON: {
+      type: 'json',
+      label: 'Als json',
+      extension: 'json',
+      description: 'Exporteren naar event-ld om de informatie voor ontwikkelaars beschikbaar te maken.'
+    }
+  });
 
 // Source: src/export/export-modal-buttons.directive.js
 /**

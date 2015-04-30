@@ -4206,23 +4206,30 @@ function QueryEditor(
     });
   });
 
-  qe.groupedQueryTree = {
-    type: 'root',
-    nodes: [
-      {
-        type: 'group',
-        operator: 'OR',
-        nodes: [
-          {
-            field: 'title',
-            term: '',
-            fieldType: 'tokenized-string',
-            transformer: '+'
-          }
-        ]
-      }
-    ]
+  $rootScope.$on('searchBarChanged', function () {
+    qe.resetGroups();
+  });
+
+  qe.getDefaultQueryTree = function () {
+    return {
+      type: 'root',
+      nodes: [
+        {
+          type: 'group',
+          operator: 'OR',
+          nodes: [
+            {
+              field: 'title',
+              term: '',
+              fieldType: 'tokenized-string',
+              transformer: '+'
+            }
+          ]
+        }
+      ]
+    };
   };
+  qe.groupedQueryTree = qe.getDefaultQueryTree();
 
   // Holds options for both term and choice query-field types
   qe.transformers = {};
@@ -4336,6 +4343,10 @@ function QueryEditor(
     }
   };
 
+  qe.resetGroups = function () {
+    qe.groupedQueryTree = qe.getDefaultQueryTree();
+  };
+
   /**
    * Add a field group
    */
@@ -4443,6 +4454,11 @@ function udbSearchBar(searchHelper, $rootScope) {
       searchBar.editQuery = function () {
         $rootScope.$emit('startEditingQuery');
         searchBar.isEditing = true;
+      };
+
+      searchBar.searchChange = function() {
+        $rootScope.$emit('searchBarChanged');
+        $rootScope.$emit('stopEditingQuery');
       };
 
       searchBar.search = function () {
@@ -6746,7 +6762,7 @@ $templateCache.put('templates/job-logo.directive.html',
     "<form class=\"navbar-form navbar-left udb-header-search\" role=\"search\"\n" +
     "      ng-class=\"{'has-errors': sb.hasErrors, 'is-editing': sb.isEditing}\">\n" +
     "  <div class=\"form-group has-warning has-feedback\">\n" +
-    "    <input type=\"text\" class=\"form-control\" ng-model=\"sb.query\">\n" +
+    "    <input type=\"text\" class=\"form-control\" ng-model=\"sb.query\" ng-change=\"sb.searchChange()\">\n" +
     "    <i class=\"fa fa-flask editor-icon\" ng-click=\"sb.editQuery()\"></i>\n" +
     "    <i ng-show=\"sb.hasErrors\" class=\"fa fa-warning warning-icon\" tooltip-append-to-body=\"true\"\n" +
     "       tooltip-placement=\"bottom\" tooltip=\"{{sb.errors}}\"></i>\n" +
@@ -6754,7 +6770,7 @@ $templateCache.put('templates/job-logo.directive.html',
     "  <button type=\"submit\" class=\"btn udb-search-button\" ng-click=\"sb.search()\">\n" +
     "    <i class=\"fa fa-search\"></i>\n" +
     "  </button>\n" +
-    "</form>"
+    "</form>\n"
   );
 
 

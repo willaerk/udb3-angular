@@ -3004,6 +3004,7 @@ function BaseJobFactory(JobStates) {
     this.state = JobStates.CREATED;
     this.progress = 0;
     this.created = new Date();
+    this.finished = null;
     this.tasks = [];
     this.completedTaskCount = 0;
   };
@@ -3017,6 +3018,7 @@ function BaseJobFactory(JobStates) {
   // The following functions are used to update the job state based on feedback of the server.
 
   BaseJob.prototype.fail = function () {
+    this.finished = new Date();
     this.state = JobStates.FAILED;
     this.progress = 100;
   };
@@ -3028,6 +3030,7 @@ function BaseJobFactory(JobStates) {
   BaseJob.prototype.finish = function () {
     if (this.state !== JobStates.FAILED) {
       this.state = JobStates.FINISHED;
+      this.finished = new Date();
     }
     this.progress = 100;
   };
@@ -3049,6 +3052,13 @@ function BaseJobFactory(JobStates) {
    */
   BaseJob.prototype.getDescription = function () {
     return 'Job with id: ' + this.id;
+  };
+
+  BaseJob.prototype.getLogDateByState = function () {
+    if (_.contains([JobStates.FAILED, JobStates.FINISHED], this.state) && this.finished !== null) {
+      return this.finished;
+    }
+    return this.created;
   };
 
   /**
@@ -3688,8 +3698,7 @@ function EventExportJobFactory(BaseJob, JobStates) {
     if (this.state === JobStates.FAILED) {
       description = 'Exporteren van evenementen mislukt';
     } else {
-      var exportExtension = this.exportUrl.split('.').pop();
-      description = 'Document .' + exportExtension + ' met ' + this.eventCount + ' evenementen';
+      description = 'Document .' + this.format + ' met ' + this.eventCount + ' evenementen';
     }
 
     return description;
@@ -6214,11 +6223,11 @@ $templateCache.put('templates/job-logo.directive.html',
   $templateCache.put('templates/base-job.template.html',
     "<p>\n" +
     "  <ins>\n" +
-    "    <span ng-bind=\"::job.created | date:'HH:mm'\"></span> <i class=\"fa fa-circle-o-notch fa-spin udb-job-busy\"\n" +
+    "    <span ng-bind=\"job.getLogDateByState() | date:'HH:mm'\"></span> <i class=\"fa fa-circle-o-notch fa-spin udb-job-busy\"\n" +
     "       ng-show=\"job.state === 'started'\"></i>\n" +
     "  </ins>\n" +
     "  <span class=\"udb-job-description\" ng-bind=\"::job.getDescription()\"></span>\n" +
-    "</p>"
+    "</p>\n"
   );
 
 
@@ -6228,10 +6237,11 @@ $templateCache.put('templates/job-logo.directive.html',
     "    <span aria-hidden=\"true\">×</span>\n" +
     "  </button>\n" +
     "  <ins>\n" +
-    "    <span ng-bind=\"::job.created | date:'HH:mm'\"></span>\n" +
+    "    <span ng-bind=\"job.getLogDateByState() | date:'HH:mm'\"></span>\n" +
     "  </ins>\n" +
     "  <span ng-bind=\"job.getDescription()\"></span>\n" +
-    "</p>\n"
+    "</p>\n" +
+    "\n"
   );
 
 
@@ -6541,13 +6551,13 @@ $templateCache.put('templates/job-logo.directive.html',
     "    <span aria-hidden=\"true\">×</span>\n" +
     "  </button>\n" +
     "  <ins>\n" +
-    "    <span ng-bind=\"::job.created | date:'HH:mm'\"></span> <i class=\"fa fa-check-circle udb-job-success\"></i>\n" +
+    "    <span ng-bind=\"job.getLogDateByState() | date:'HH:mm'\"></span> <i class=\"fa fa-check-circle udb-job-success\"></i>\n" +
     "  </ins>\n" +
     "  <span class=\"udb-job-description\" ng-bind=\"::job.getDescription()\"></span>\n" +
     "  <a role=\"button\" target=\"_blank\" class=\"btn btn-default\" ng-href=\"{{job.exportUrl}}\">\n" +
     "    Downloaden\n" +
     "  </a>\n" +
-    "</p>"
+    "</p>\n"
   );
 
 

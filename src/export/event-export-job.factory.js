@@ -54,8 +54,7 @@ function EventExportJobFactory(BaseJob, JobStates) {
     if (this.state === JobStates.FAILED) {
       description = 'Exporteren van evenementen mislukt';
     } else {
-      var exportExtension = this.exportUrl.split('.').pop();
-      description = 'Document .' + exportExtension + ' met ' + this.eventCount + ' evenementen';
+      description = 'Document .' + this.format + ' met ' + this.eventCount + ' evenementen';
     }
 
     return description;

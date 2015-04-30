@@ -4206,25 +4206,8 @@ function QueryEditor(
     });
   });
 
-  $rootScope.$on('searchBarExecuted', function () {
+  $rootScope.$on('searchBarChanged', function () {
     qe.resetGroups();
-    qe.groupedQueryTree = {
-      type: 'root',
-      nodes: [
-        {
-          type: 'group',
-          operator: 'OR',
-          nodes: [
-            {
-              field: 'title',
-              term: '',
-              fieldType: 'tokenized-string',
-              transformer: '+'
-            }
-          ]
-        }
-      ]
-    };
   });
 
   qe.getDefaultQueryTree = function () {
@@ -4473,9 +4456,8 @@ function udbSearchBar(searchHelper, $rootScope) {
         searchBar.isEditing = true;
       };
 
-      searchBar.searchClick = function() {
-        searchBar.search();
-        $rootScope.$emit('searchBarExecuted');
+      searchBar.searchChange = function() {
+        $rootScope.$emit('searchBarChanged');
         $rootScope.$emit('stopEditingQuery');
       };
 
@@ -6780,12 +6762,12 @@ $templateCache.put('templates/job-logo.directive.html',
     "<form class=\"navbar-form navbar-left udb-header-search\" role=\"search\"\n" +
     "      ng-class=\"{'has-errors': sb.hasErrors, 'is-editing': sb.isEditing}\">\n" +
     "  <div class=\"form-group has-warning has-feedback\">\n" +
-    "    <input type=\"text\" class=\"form-control\" ng-model=\"sb.query\">\n" +
+    "    <input type=\"text\" class=\"form-control\" ng-model=\"sb.query\" ng-change=\"sb.searchChange()\">\n" +
     "    <i class=\"fa fa-flask editor-icon\" ng-click=\"sb.editQuery()\"></i>\n" +
     "    <i ng-show=\"sb.hasErrors\" class=\"fa fa-warning warning-icon\" tooltip-append-to-body=\"true\"\n" +
     "       tooltip-placement=\"bottom\" tooltip=\"{{sb.errors}}\"></i>\n" +
     "  </div>\n" +
-    "  <button type=\"submit\" class=\"btn udb-search-button\" ng-click=\"sb.searchClick()\">\n" +
+    "  <button type=\"submit\" class=\"btn udb-search-button\" ng-click=\"sb.search()\">\n" +
     "    <i class=\"fa fa-search\"></i>\n" +
     "  </button>\n" +
     "</form>\n"

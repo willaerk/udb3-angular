@@ -54,25 +54,8 @@ function QueryEditor(
     });
   });
 
-  $rootScope.$on('searchBarExecuted', function () {
+  $rootScope.$on('searchBarChanged', function () {
     qe.resetGroups();
-    qe.groupedQueryTree = {
-      type: 'root',
-      nodes: [
-        {
-          type: 'group',
-          operator: 'OR',
-          nodes: [
-            {
-              field: 'title',
-              term: '',
-              fieldType: 'tokenized-string',
-              transformer: '+'
-            }
-          ]
-        }
-      ]
-    };
   });
 
   qe.getDefaultQueryTree = function () {

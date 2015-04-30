@@ -136,12 +136,12 @@
                   </span>
               </div>
 
-              <div class="col-sm-3" class="rv-specific-event-info">
+              <div class="col-sm-3 rv-specific-event-info">
                   <div class="rv-event-info-input udb-organizer"
                        ng-show="resultViewer.activeSpecific.id === 'input'">
                       <div>
                           <span class="fa fa-clock-o"></span>&nbsp;
-                          <span ng-bind="event.created | date : 'dd/MM/yyyy • HH:mm'"></span>
+                          <span ng-bind="event.modified | date : 'dd/MM/yyyy • HH:mm'"></span>
                       </div>
                       <div class="udb-email">
                           <span class="fa fa-user"></span>&nbsp;

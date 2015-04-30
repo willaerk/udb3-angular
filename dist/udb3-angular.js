@@ -2450,6 +2450,7 @@ function UdbEventFactory() {
       this.pricing = getPricing(jsonEvent);
       this.publisher = jsonEvent.publisher || '';
       this.created = new Date(jsonEvent.created);
+      this.modified = new Date(jsonEvent.modified);
       this.creator = jsonEvent.creator || '';
       this.type = getCategoryLabel(jsonEvent, 'eventtype') || '';
       this.theme = getCategoryLabel(jsonEvent, 'theme') || '';
@@ -6913,12 +6914,12 @@ $templateCache.put('templates/job-logo.directive.html',
     "                  </span>\n" +
     "              </div>\n" +
     "\n" +
-    "              <div class=\"col-sm-3\" class=\"rv-specific-event-info\">\n" +
+    "              <div class=\"col-sm-3 rv-specific-event-info\">\n" +
     "                  <div class=\"rv-event-info-input udb-organizer\"\n" +
     "                       ng-show=\"resultViewer.activeSpecific.id === 'input'\">\n" +
     "                      <div>\n" +
     "                          <span class=\"fa fa-clock-o\"></span>&nbsp;\n" +
-    "                          <span ng-bind=\"event.created | date : 'dd/MM/yyyy • HH:mm'\"></span>\n" +
+    "                          <span ng-bind=\"event.modified | date : 'dd/MM/yyyy • HH:mm'\"></span>\n" +
     "                      </div>\n" +
     "                      <div class=\"udb-email\">\n" +
     "                          <span class=\"fa fa-user\"></span>&nbsp;\n" +

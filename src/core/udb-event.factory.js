@@ -81,6 +81,7 @@ function UdbEventFactory() {
       this.pricing = getPricing(jsonEvent);
       this.publisher = jsonEvent.publisher || '';
       this.created = new Date(jsonEvent.created);
+      this.modified = new Date(jsonEvent.modified);
       this.creator = jsonEvent.creator || '';
       this.type = getCategoryLabel(jsonEvent, 'eventtype') || '';
       this.theme = getCategoryLabel(jsonEvent, 'theme') || '';

@@ -6,6 +6,7 @@ describe('Directive: udbSaveSearch', function () {
   var name = 'In Leuven';
   var deferredModalResult;
   var savedSearchesService;
+  var apiRequest;
 
   beforeEach(module('udb.core'));
   beforeEach(module('udb.templates'));
@@ -31,21 +32,35 @@ describe('Directive: udbSaveSearch', function () {
     $rootScope.$digest();
     element.find('a').triggerHandler('click');
     spyOn(savedSearchesService, 'createSavedSearch');
+
+    savedSearchesService.createSavedSearch = jasmine.createSpy('createSavedSearch').andCallFake(function() {
+      apiRequest = $q.defer();
+      return apiRequest.promise;
+    });
   });
 
   it('shows a modal saving a search', function () {
     expect(modal.open).toHaveBeenCalled();
   });
 
-  it('saves the search when confirming the modal', function(){
+  it('saves the search when confirming the modal', function () {
     modalInstance.close(name);
     $rootScope.$digest();
+    apiRequest.resolve();
     expect(savedSearchesService.createSavedSearch).toHaveBeenCalledWith(name, 'city:leuven');
   });
 
-  it('does not save the search when the modal is dismissed', function (){
+  it('does not save the search when the modal is dismissed', function () {
     modalInstance.dismiss('cancel');
     $rootScope.$digest();
     expect(savedSearchesService.createSavedSearch).not.toHaveBeenCalled();
   });
+
+  it('shows an error modal when the search cannot be saved', function () {
+    modalInstance.close('some name');
+    $rootScope.$digest();
+    apiRequest.reject();
+    $rootScope.$digest();
+    expect(modal.open.calls.length).toEqual(2);
+  })
 });

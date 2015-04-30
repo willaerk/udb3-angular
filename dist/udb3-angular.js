@@ -2142,6 +2142,30 @@ angular.module('udb.core')
   }
 );
 
+// Source: src/core/error-handling/unexpected-error-modal.controller.js
+/**
+ * @ngdoc function
+ * @name udb.core.controller:UnexpectedErrorModalController
+ * @description
+ * # UnexpectedErrorModalController
+ * Controller of the udb.core
+ */
+angular
+  .module('udb.core')
+  .controller('UnexpectedErrorModalController', UnexpectedErrorModalController);
+
+/* @ngInject */
+function UnexpectedErrorModalController($scope, $modalInstance, errorMessage) {
+
+  var dismiss = function () {
+    $modalInstance.dismiss('closed');
+  };
+
+  $scope.dismiss = dismiss;
+  $scope.errorMessage = errorMessage;
+}
+UnexpectedErrorModalController.$inject = ["$scope", "$modalInstance", "errorMessage"];
+
 // Source: src/core/udb-api.service.js
 /**
  * @ngdoc service
@@ -4077,7 +4101,22 @@ function udbSaveSearch(savedSearchesService, $modal) {
       });
 
       modal.result.then(function (name) {
-        savedSearchesService.createSavedSearch(name, scope.queryString);
+        var savedSearchPromise = savedSearchesService.createSavedSearch(name, scope.queryString);
+
+        savedSearchPromise.catch(function() {
+          var modalInstance = $modal.open(
+            {
+              templateUrl: 'templates/unexpected-error-modal.html',
+              controller: 'UnexpectedErrorModalController',
+              size: 'lg',
+              resolve: {
+                errorMessage: function() {
+                  return 'Het opslaan van de zoekopdracht is mislukt. Controleer de verbinding en probeer opnieuw.';
+                }
+              }
+            }
+          );
+        });
       });
     };
   }
@@ -6236,7 +6275,18 @@ function searchDirective() {
 
 // Source: .tmp/udb3-angular.templates.js
 angular.module('udb.core').run(['$templateCache', function($templateCache) {
-$templateCache.put('templates/job-logo.directive.html',
+$templateCache.put('templates/unexpected-error-modal.html',
+    "<div class=\"modal-body\">\n" +
+    "  <p ng-bind=\"errorMessage\"></p>\n" +
+    "</div>\n" +
+    "\n" +
+    "<div class=\"modal-footer\">\n" +
+    "  <button class=\"btn btn-primary\" ng-click=\"dismiss()\">sluiten</button>\n" +
+    "</div>\n"
+  );
+
+
+  $templateCache.put('templates/job-logo.directive.html',
     "<div id=\"logo\" class=\"{{jl.getState()}}\">\n" +
     "  <svg version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" width=\"200\"\n" +
     "       height=\"56\">\n" +

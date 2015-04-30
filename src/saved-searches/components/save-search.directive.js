@@ -30,7 +30,22 @@ function udbSaveSearch(savedSearchesService, $modal) {
       });
 
       modal.result.then(function (name) {
-        savedSearchesService.createSavedSearch(name, scope.queryString);
+        var savedSearchPromise = savedSearchesService.createSavedSearch(name, scope.queryString);
+
+        savedSearchPromise.catch(function() {
+          var modalInstance = $modal.open(
+            {
+              templateUrl: 'templates/unexpected-error-modal.html',
+              controller: 'UnexpectedErrorModalController',
+              size: 'lg',
+              resolve: {
+                errorMessage: function() {
+                  return 'Het opslaan van de zoekopdracht is mislukt. Controleer de verbinding en probeer opnieuw.';
+                }
+              }
+            }
+          );
+        });
       });
     };
   }

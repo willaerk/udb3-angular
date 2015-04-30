@@ -79,10 +79,10 @@
                       <ul class="dropdown-menu">
                           <li role="presentation" class="dropdown-header">Selecteer</li>
                           <li ng-click="resultViewer.toggleSelection()">
-                              <a href>Alles op deze pagina (30 items)</a>
+                              <a href>Alles op deze pagina <ng-pluralize count="resultViewer.events.length" when="{'0': '(0 items)','one': '(1 item)','other': '({} items)'}"></ng-pluralize></a>
                           </li>
                           <li ng-click="resultViewer.selectQuery()">
-                              <a href>Alles resultaten (<span ng-bind="resultViewer.totalItems"></span> items)</a>
+                              <a href>Alle resultaten <ng-pluralize count="resultViewer.totalItems" when="{'0': '(0 items)','one': '(1 item)','other': '({} items)'}"></ng-pluralize></a>
                           </li>
                       </ul>
                     </span>

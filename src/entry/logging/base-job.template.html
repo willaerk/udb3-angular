@@ -1,6 +1,6 @@
 <p>
   <ins>
-    <span ng-bind="::job.created | date:'HH:mm'"></span> <i class="fa fa-circle-o-notch fa-spin udb-job-busy"
+    <span am-time-ago="::job.getLogDateByState()"></span> <i class="fa fa-circle-o-notch fa-spin udb-job-busy"
        ng-show="job.state === 'started'"></i>
   </ins>
   <span class="udb-job-description" ng-bind="::job.getDescription()"></span>

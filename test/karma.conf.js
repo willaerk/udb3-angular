@@ -55,6 +55,7 @@ module.exports = function(config) {
       'bower_components/moment/moment.js',
       'bower_components/accounting/accounting.js',
       'bower_components/angular-translate/angular-translate.js',
+      'bower_components/angular-moment/angular-moment.js',
       'src/**/*.module.js',
       'src/**/*.js',
       'src/**/*.html'

@@ -62,7 +62,8 @@ angular
     'udb.config',
     'udb.search',
     'btford.socket-io',
-    'pascalprecht.translate'
+    'pascalprecht.translate',
+    'angularMoment'
   ]);
 
 /**
@@ -3005,6 +3006,7 @@ function BaseJobFactory(JobStates) {
     this.state = JobStates.CREATED;
     this.progress = 0;
     this.created = new Date();
+    this.finished = null;
     this.tasks = [];
     this.completedTaskCount = 0;
   };
@@ -3018,6 +3020,7 @@ function BaseJobFactory(JobStates) {
   // The following functions are used to update the job state based on feedback of the server.
 
   BaseJob.prototype.fail = function () {
+    this.finished = new Date();
     this.state = JobStates.FAILED;
     this.progress = 100;
   };
@@ -3029,6 +3032,7 @@ function BaseJobFactory(JobStates) {
   BaseJob.prototype.finish = function () {
     if (this.state !== JobStates.FAILED) {
       this.state = JobStates.FINISHED;
+      this.finished = new Date();
     }
     this.progress = 100;
   };
@@ -3050,6 +3054,18 @@ function BaseJobFactory(JobStates) {
    */
   BaseJob.prototype.getDescription = function () {
     return 'Job with id: ' + this.id;
+  };
+
+  /**
+   * Returns a date string to use for the job log based on job state.
+   *
+   * @return {string}
+   */
+  BaseJob.prototype.getLogDateByState = function () {
+    if (_.contains([JobStates.FAILED, JobStates.FINISHED], this.state) && this.finished !== null) {
+      return this.finished;
+    }
+    return this.created;
   };
 
   /**
@@ -3647,7 +3663,7 @@ angular
   .factory('EventExportJob', EventExportJobFactory);
 
 /* @ngInject */
-function EventExportJobFactory(BaseJob, JobStates) {
+function EventExportJobFactory(BaseJob, JobStates, ExportFormats) {
 
   /**
    * @class EventExportJob
@@ -3661,6 +3677,7 @@ function EventExportJobFactory(BaseJob, JobStates) {
     this.exportUrl = '';
     this.eventCount = eventCount;
     this.format = format;
+    this.extension = _.find(ExportFormats, {type: format}).extension;
   };
 
   EventExportJob.prototype = Object.create(BaseJob.prototype);
@@ -3689,8 +3706,7 @@ function EventExportJobFactory(BaseJob, JobStates) {
     if (this.state === JobStates.FAILED) {
       description = 'Exporteren van evenementen mislukt';
     } else {
-      var exportExtension = this.exportUrl.split('.').pop();
-      description = 'Document .' + exportExtension + ' met ' + this.eventCount + ' evenementen';
+      description = 'Document .' + this.extension + ' met ' + this.eventCount + ' evenementen';
     }
 
     return description;
@@ -3708,7 +3724,7 @@ function EventExportJobFactory(BaseJob, JobStates) {
 
   return (EventExportJob);
 }
-EventExportJobFactory.$inject = ["BaseJob", "JobStates"];
+EventExportJobFactory.$inject = ["BaseJob", "JobStates", "ExportFormats"];
 
 // Source: src/export/event-export.controller.js
 /**
@@ -3723,7 +3739,7 @@ angular
   .controller('EventExportController', EventExportController);
 
 /* @ngInject */
-function EventExportController($modalInstance, udbApi, eventExporter, queryFields, $window) {
+function EventExportController($modalInstance, udbApi, eventExporter, ExportFormats) {
 
   var exporter = this;
 
@@ -3751,30 +3767,7 @@ function EventExportController($modalInstance, udbApi, eventExporter, queryField
     {name: 'language', include: false, sortable: false, excludable: true}
   ];
 
-  exporter.exportFormats = [
-    {
-      type: 'ooxml',
-      label: 'Office Open XML (Excel)',
-      description: 'Het standaard formaat van Excel vanaf Microsoft Office 2007.'
-    },
-    //{
-    //  type: 'html',
-    //  label: 'Als HTML',
-    //  description: 'Exporteren naar HTML is een gemakkelijke manier om de inhoud geschikt voor het web te maken.',
-    //  customizable: true
-    //},
-    {
-      type: 'pdf',
-      label: 'Als PDF',
-      description: 'Druk snel en eenvoudig items uit de UiTdatabank af. Kies een Vlieg, UiT-, of UiTPAS-sjabloon.',
-      customizable: true
-    },
-    {
-      type: 'json',
-      label: 'Als json',
-      description: 'Exporteren naar event-ld om de informatie voor ontwikkelaars beschikbaar te maken.'
-    }
-  ];
+  exporter.exportFormats = _.map(ExportFormats);
 
   exporter.brands = [
     {name: 'vlieg', label: 'Vlieg'},
@@ -3929,7 +3922,7 @@ function EventExportController($modalInstance, udbApi, eventExporter, queryField
 
   exporter.eventCount = eventExporter.activeExport.eventCount;
 }
-EventExportController.$inject = ["$modalInstance", "udbApi", "eventExporter", "queryFields", "$window"];
+EventExportController.$inject = ["$modalInstance", "udbApi", "eventExporter", "ExportFormats"];
 
 // Source: src/export/event-exporter.service.js
 /**
@@ -3982,6 +3975,46 @@ function eventExporter(jobLogger, udbApi, EventExportJob) {
   };
 }
 eventExporter.$inject = ["jobLogger", "udbApi", "EventExportJob"];
+
+// Source: src/export/export-formats.constant.js
+/* jshint sub: true */
+
+/**
+ * @ngdoc constant
+ * @name udb.export.ExportFormats
+ * @description
+ * # ExportFormats
+ * Event export formats
+ */
+angular
+  .module('udb.export')
+  .constant('ExportFormats',
+  /**
+   * Enum for export formats
+   * @readonly
+   * @enum {string}
+   */
+  {
+    OOXML:{
+      type: 'ooxml',
+      extension: 'xlsx',
+      label: 'Office Open XML (Excel)',
+      description: 'Het standaard formaat van Excel vanaf Microsoft Office 2007.'
+    },
+    PDF: {
+      type: 'pdf',
+      label: 'Als PDF',
+      extension: 'pdf',
+      description: 'Druk snel en eenvoudig items uit de UiTdatabank af. Kies een Vlieg, UiT-, of UiTPAS-sjabloon.',
+      customizable: true
+    },
+    JSON: {
+      type: 'json',
+      label: 'Als json',
+      extension: 'json',
+      description: 'Exporteren naar event-ld om de informatie voor ontwikkelaars beschikbaar te maken.'
+    }
+  });
 
 // Source: src/export/export-modal-buttons.directive.js
 /**
@@ -6231,11 +6264,11 @@ $templateCache.put('templates/job-logo.directive.html',
   $templateCache.put('templates/base-job.template.html',
     "<p>\n" +
     "  <ins>\n" +
-    "    <span ng-bind=\"::job.created | date:'HH:mm'\"></span> <i class=\"fa fa-circle-o-notch fa-spin udb-job-busy\"\n" +
+    "    <span am-time-ago=\"::job.getLogDateByState()\"></span> <i class=\"fa fa-circle-o-notch fa-spin udb-job-busy\"\n" +
     "       ng-show=\"job.state === 'started'\"></i>\n" +
     "  </ins>\n" +
     "  <span class=\"udb-job-description\" ng-bind=\"::job.getDescription()\"></span>\n" +
-    "</p>"
+    "</p>\n"
   );
 
 
@@ -6245,10 +6278,11 @@ $templateCache.put('templates/job-logo.directive.html',
     "    <span aria-hidden=\"true\">×</span>\n" +
     "  </button>\n" +
     "  <ins>\n" +
-    "    <span ng-bind=\"::job.created | date:'HH:mm'\"></span>\n" +
+    "    <span am-time-ago=\"::job.getLogDateByState()\"></span>\n" +
     "  </ins>\n" +
     "  <span ng-bind=\"job.getDescription()\"></span>\n" +
-    "</p>\n"
+    "</p>\n" +
+    "\n"
   );
 
 
@@ -6558,13 +6592,13 @@ $templateCache.put('templates/job-logo.directive.html',
     "    <span aria-hidden=\"true\">×</span>\n" +
     "  </button>\n" +
     "  <ins>\n" +
-    "    <span ng-bind=\"::job.created | date:'HH:mm'\"></span> <i class=\"fa fa-check-circle udb-job-success\"></i>\n" +
+    "    <span am-time-ago=\"::job.getLogDateByState()\"></span> <i class=\"fa fa-check-circle udb-job-success\"></i>\n" +
     "  </ins>\n" +
     "  <span class=\"udb-job-description\" ng-bind=\"::job.getDescription()\"></span>\n" +
     "  <a role=\"button\" target=\"_blank\" class=\"btn btn-default\" ng-href=\"{{job.exportUrl}}\">\n" +
     "    Downloaden\n" +
     "  </a>\n" +
-    "</p>"
+    "</p>\n"
   );
 
 

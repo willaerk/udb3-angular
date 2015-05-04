@@ -63,7 +63,8 @@ angular
     'udb.config',
     'udb.search',
     'btford.socket-io',
-    'pascalprecht.translate'
+    'pascalprecht.translate',
+    'angularMoment'
   ]);
 
 /**
@@ -6775,22 +6776,22 @@ $templateCache.put('templates/unexpected-error-modal.html',
 
 
   $templateCache.put('templates/save-search-modal.html',
-    "<form name=\"saveQueryForm\" novalidate>\n" +
+    "<form name=\"saveQueryForm\" novalidate class=\"save-search-modal\">\n" +
     "<div class=\"modal-body\">\n" +
     "\n" +
-    "    <label>naam</label>\n" +
+    "    <label>Geef je zoekopdracht een naam</label>\n" +
     "\n" +
     "    <div class=\"row\">\n" +
     "        <div class=\"col-lg-12\">\n" +
-    "            <input type=\"text\" ng-required=\"'true'\" name=\"queryName\" ng-model=\"queryName\" class=\"form-control\"/>\n" +
     "            <p class=\"alert alert-danger\" role=\"alert\" ng-show=\"wasSubmitted && saveQueryForm.queryName.$error.required\">Een naam is verplicht.</p>\n" +
+    "            <input type=\"text\" ng-required=\"'true'\" name=\"queryName\" ng-model=\"queryName\" class=\"form-control\"/>\n" +
     "        </div>\n" +
     "    </div>\n" +
     "</div>\n" +
     "\n" +
     "<div class=\"modal-footer\">\n" +
-    "    <button class=\"btn btn-primary udb-save-query-ok-button\" ng-click=\"ok()\">bewaren</button>\n" +
-    "    <button class=\"btn btn-warning udb-save-query-cancel-button\" ng-click=\"cancel()\">annuleren</button>\n" +
+    "    <button class=\"btn btn-primary udb-save-query-ok-button fa fa-check\" ng-click=\"ok()\">bewaren</button>\n" +
+    "    <button class=\"btn btn-warning udb-save-query-cancel-button fa fa-times\" ng-click=\"cancel()\">annuleren</button>\n" +
     "</div>\n" +
     "</form>\n"
   );

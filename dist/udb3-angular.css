@@ -494,3 +494,11 @@ body {
   fill: #DCF2D7;
   /* Succces background */
 }
+.saved-search-query .CodeMirror {
+  border: 1px solid #ccc;
+  height: auto;
+  padding: 11px;
+}
+.saved-search-title-column {
+  width: 15%;
+}

@@ -3,7 +3,7 @@
 
     <table class="table">
         <tr>
-            <th>
+            <th class="saved-search-title-column">
                 <strong>Titel</strong>
             </th>
             <th>
@@ -16,11 +16,14 @@
 
         <tr ng-repeat="savedSearch in savedSearches">
             <td>
-                <p><i class="fa fa-bookmark"></i> {{savedSearch.name}}</p>
-                <p><a href="#" class="small">Resultaten bekijken</a></p>
+                <p>
+                  <i class="fa fa-bookmark"></i>
+                  <span ng-bind="::savedSearch.name"></span></p>
+                <p><a ng-href="/search?query={{::savedSearch.query}}" class="small">Resultaten bekijken</a></p>
             </td>
-            <td>
-                <textarea class="query form-control" rows="3">{{savedSearch.query}}</textarea>
+            <td class="saved-search-query">
+                <textarea ui-codemirror="{ onLoad : codemirrorLoaded }" ng-model="::savedSearch.query" class="query form-control" rows="3"
+                          ui-codemirror-opts="editorOptions"></textarea>
             </td>
             <td>
                 <a class="btn btn-default">Verwijderen</a>

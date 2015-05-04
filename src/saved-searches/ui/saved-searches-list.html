@@ -1,0 +1,31 @@
+<div class="container-fluid">
+    <h1>Mijn zoekopdrachten</h1>
+
+    <table class="table">
+        <tr>
+            <th>
+                <strong>Titel</strong>
+            </th>
+            <th>
+                Query
+            </th>
+            <td>
+            </td>
+        </tr>
+
+
+        <tr ng-repeat="savedSearch in savedSearches">
+            <td>
+                <p><i class="fa fa-bookmark"></i> {{savedSearch.name}}</p>
+                <p><a href="#" class="small">Resultaten bekijken</a></p>
+            </td>
+            <td>
+                <textarea class="query form-control" rows="3">{{savedSearch.query}}</textarea>
+            </td>
+            <td>
+                <a class="btn btn-default">Verwijderen</a>
+            </td>
+        </tr>
+
+    </table>
+</div>

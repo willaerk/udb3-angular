@@ -17,6 +17,7 @@ angular
     'udb.entry',
     'udb.export',
     'udb.event-detail',
+    'udb.saved-searches',
     'btford.socket-io',
     'pascalprecht.translate'
   ]);
@@ -74,6 +75,15 @@ angular
  */
 angular
   .module('udb.event-detail', []);
+
+/**
+ * @ngdoc module
+ * @name udb.saved-searches
+ * @description
+ * The udb saved-searches module
+ */
+angular
+  .module('udb.saved-searches', []);
 
 /**
  * @ngdoc module
@@ -2133,6 +2143,30 @@ angular.module('udb.core')
   }
 );
 
+// Source: src/core/error-handling/unexpected-error-modal.controller.js
+/**
+ * @ngdoc function
+ * @name udb.core.controller:UnexpectedErrorModalController
+ * @description
+ * # UnexpectedErrorModalController
+ * Controller of the udb.core
+ */
+angular
+  .module('udb.core')
+  .controller('UnexpectedErrorModalController', UnexpectedErrorModalController);
+
+/* @ngInject */
+function UnexpectedErrorModalController($scope, $modalInstance, errorMessage) {
+
+  var dismiss = function () {
+    $modalInstance.dismiss('closed');
+  };
+
+  $scope.dismiss = dismiss;
+  $scope.errorMessage = errorMessage;
+}
+UnexpectedErrorModalController.$inject = ["$scope", "$modalInstance", "errorMessage"];
+
 // Source: src/core/udb-api.service.js
 /**
  * @ngdoc service
@@ -4034,6 +4068,157 @@ function udbExportModalButtons() {
     restrict: 'E'
   };
 }
+
+// Source: src/saved-searches/components/save-search-modal.controller.js
+/**
+ * @ngdoc function
+ * @name udb.entry.controller:SaveSearchModalController
+ * @description
+ * # SaveSearchModalController
+ * Controller of the udb.entry
+ */
+angular
+  .module('udb.saved-searches')
+  .controller('SaveSearchModalController', SaveSearchModalController);
+
+/* @ngInject */
+function SaveSearchModalController($scope, $modalInstance) {
+
+  var ok = function () {
+    var name = $scope.queryName;
+    $scope.wasSubmitted = true;
+
+    if (name) {
+      $modalInstance.close(name);
+    }
+  };
+
+  var cancel = function () {
+    $modalInstance.dismiss('cancel');
+  };
+
+  $scope.cancel = cancel;
+  $scope.ok = ok;
+  $scope.queryName = '';
+  $scope.wasSubmitted = false;
+}
+SaveSearchModalController.$inject = ["$scope", "$modalInstance"];
+
+// Source: src/saved-searches/components/save-search.directive.js
+/**
+ * @ngdoc directive
+ * @name udb.savedSearches.directive:udbSaveSearch
+ * @description
+ * # udbSaveSearch
+ */
+angular
+  .module('udb.saved-searches')
+  .directive('udbSaveSearch', udbSaveSearch);
+
+/* @ngInject */
+function udbSaveSearch(savedSearchesService, $modal) {
+  var directive = {
+    link: link,
+    templateUrl: 'templates/save-search.directive.html',
+    restrict: 'AE',
+    scope: {
+      queryString: '=udbQueryString'
+    }
+  };
+  return directive;
+
+  function link(scope, element, attrs, controllers) {
+    scope.saveSearch = function () {
+      var modal = $modal.open({
+        templateUrl: 'templates/save-search-modal.html',
+        controller: 'SaveSearchModalController'
+      });
+
+      modal.result.then(function (name) {
+        var savedSearchPromise = savedSearchesService.createSavedSearch(name, scope.queryString);
+
+        savedSearchPromise.catch(function() {
+          var modalInstance = $modal.open(
+            {
+              templateUrl: 'templates/unexpected-error-modal.html',
+              controller: 'UnexpectedErrorModalController',
+              size: 'lg',
+              resolve: {
+                errorMessage: function() {
+                  return 'Het opslaan van de zoekopdracht is mislukt. Controleer de verbinding en probeer opnieuw.';
+                }
+              }
+            }
+          );
+        });
+      });
+    };
+  }
+}
+udbSaveSearch.$inject = ["savedSearchesService", "$modal"];
+
+// Source: src/saved-searches/udb.saved-searches.service.js
+/**
+ * @ngdoc service
+ * @name udb.saved-searches.savedSearchesService
+ * @description
+ * # savedSearchesService
+ * Service in udb.saved-searches.
+ */
+angular
+  .module('udb.saved-searches')
+  .service('savedSearchesService', SavedSearchesService);
+
+/* @ngInject */
+function SavedSearchesService($q, $http, appConfig) {
+  var apiUrl = appConfig.baseUrl;
+  var defaultApiConfig = {
+    withCredentials: true,
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  };
+
+  this.createSavedSearch = function(name, query) {
+    var post = {
+      name: name,
+      query: query
+    };
+    return $http.post(apiUrl + 'saved-searches/', post, defaultApiConfig);
+  };
+}
+SavedSearchesService.$inject = ["$q", "$http", "appConfig"];
+
+// Source: src/saved-searches/ui/saved-searches-list.controller.js
+/**
+ * @ngdoc function
+ * @name udb.saved-searches-list.controller:SavedSearchesListController
+ * @description
+ * # SavedSearchesListController
+ * Saved searches list controller
+ */
+angular
+  .module('udb.saved-searches')
+  .controller('SavedSearchesListController', SavedSearchesList);
+
+/* @ngInject */
+function SavedSearchesList($scope) {
+
+  $scope.savedSearches =
+    [
+      {
+        id: 118,
+        name: 'In Leuven',
+        query: 'city:\u0022leuven\u0022'
+      },
+      {
+        id: 119,
+        name: 'In Herent',
+        query: 'city:\u0022Herent\u0022'
+      }
+    ];
+}
+SavedSearchesList.$inject = ["$scope"];
 
 // Source: src/search/components/query-editor-daterangepicker.directive.js
 /**
@@ -6140,7 +6325,18 @@ function searchDirective() {
 
 // Source: .tmp/udb3-angular.templates.js
 angular.module('udb.core').run(['$templateCache', function($templateCache) {
-$templateCache.put('templates/job-logo.directive.html',
+$templateCache.put('templates/unexpected-error-modal.html',
+    "<div class=\"modal-body\">\n" +
+    "  <p ng-bind=\"errorMessage\"></p>\n" +
+    "</div>\n" +
+    "\n" +
+    "<div class=\"modal-footer\">\n" +
+    "  <button class=\"btn btn-primary\" ng-click=\"dismiss()\">sluiten</button>\n" +
+    "</div>\n"
+  );
+
+
+  $templateCache.put('templates/job-logo.directive.html',
     "<div id=\"logo\" class=\"{{jl.getState()}}\">\n" +
     "  <svg version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" width=\"200\"\n" +
     "       height=\"56\">\n" +
@@ -6613,6 +6809,73 @@ $templateCache.put('templates/job-logo.directive.html',
   );
 
 
+  $templateCache.put('templates/save-search-modal.html',
+    "<form name=\"saveQueryForm\" novalidate class=\"save-search-modal\">\n" +
+    "<div class=\"modal-body\">\n" +
+    "\n" +
+    "    <label>Geef je zoekopdracht een naam</label>\n" +
+    "\n" +
+    "    <div class=\"row\">\n" +
+    "        <div class=\"col-lg-12\">\n" +
+    "            <p class=\"alert alert-danger\" role=\"alert\" ng-show=\"wasSubmitted && saveQueryForm.queryName.$error.required\">Een naam is verplicht.</p>\n" +
+    "            <input type=\"text\" ng-required=\"'true'\" name=\"queryName\" ng-model=\"queryName\" class=\"form-control\"/>\n" +
+    "        </div>\n" +
+    "    </div>\n" +
+    "</div>\n" +
+    "\n" +
+    "<div class=\"modal-footer\">\n" +
+    "    <button class=\"btn btn-primary udb-save-query-ok-button fa fa-check\" ng-click=\"ok()\">bewaren</button>\n" +
+    "    <button class=\"btn btn-warning udb-save-query-cancel-button fa fa-times\" ng-click=\"cancel()\">annuleren</button>\n" +
+    "</div>\n" +
+    "</form>\n"
+  );
+
+
+  $templateCache.put('templates/save-search.directive.html',
+    "<p>\n" +
+    "    <strong>Jouw zoekdracht</strong>\n" +
+    "    <a href=\"#\" ng-click=\"saveSearch()\" class=\"btn btn-sm btn-default\">\n" +
+    "        <i class=\"fa fa-bookmark-o\"></i> Bewaren\n" +
+    "    </a>\n" +
+    "</p>\n"
+  );
+
+
+  $templateCache.put('templates/saved-searches-list.html',
+    "<div class=\"container-fluid\">\n" +
+    "    <h1>Mijn zoekopdrachten</h1>\n" +
+    "\n" +
+    "    <table class=\"table\">\n" +
+    "        <tr>\n" +
+    "            <th>\n" +
+    "                <strong>Titel</strong>\n" +
+    "            </th>\n" +
+    "            <th>\n" +
+    "                Query\n" +
+    "            </th>\n" +
+    "            <td>\n" +
+    "            </td>\n" +
+    "        </tr>\n" +
+    "\n" +
+    "\n" +
+    "        <tr ng-repeat=\"savedSearch in savedSearches\">\n" +
+    "            <td>\n" +
+    "                <p><i class=\"fa fa-bookmark\"></i> {{savedSearch.name}}</p>\n" +
+    "                <p><a href=\"#\" class=\"small\">Resultaten bekijken</a></p>\n" +
+    "            </td>\n" +
+    "            <td>\n" +
+    "                <textarea class=\"query form-control\" rows=\"3\">{{savedSearch.query}}</textarea>\n" +
+    "            </td>\n" +
+    "            <td>\n" +
+    "                <a class=\"btn btn-default\">Verwijderen</a>\n" +
+    "            </td>\n" +
+    "        </tr>\n" +
+    "\n" +
+    "    </table>\n" +
+    "</div>\n"
+  );
+
+
   $templateCache.put('templates/query-editor-daterangepicker.directive.html',
     "<div>\n" +
     "  <p class=\"input-group\" ng-hide=\"field.transformer === '<'\">\n" +
@@ -6819,6 +7082,9 @@ $templateCache.put('templates/job-logo.directive.html',
     "          <div class=\"row\">\n" +
     "              <div class=\"col-xs-12\">\n" +
     "                  <ul class=\"nav nav-pills\" role=\"tablist\">\n" +
+    "                      <li udb-save-search ng-show=\"activeQuery.queryString\"\n" +
+    "                              udb-query-string=\"activeQuery.queryString\">\n" +
+    "                      </li>\n" +
     "                      <li>\n" +
     "                          <p class=\"rv-item-counter\">\n" +
     "                              <span ng-bind=\"resultViewer.totalItems\"></span> resultaten\n" +

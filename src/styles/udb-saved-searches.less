@@ -1,0 +1,43 @@
+// results list 
+  
+  /* Tablist */
+  .nav-pills > li[udb-save-search] {
+    width: 100%;
+  }
+  
+  /* Modal buttons */
+  .btn {
+    &.fa:before {
+      margin-right: 10px;
+    }
+  }
+
+  /* pagination */
+  .pagination {
+    display: block;
+    text-align: center;
+    > li {
+      display: inline-block;
+      &:first-child {
+        a,
+        span {
+          border-radius: 3px 0 0 3px;
+        }
+      }
+      &:last-child {
+        a,
+        span {
+          border-radius: 0 3px 3px 0;
+        }  
+      }
+    }
+    > li > a,
+    > li > span {
+      border-color: #ccc;
+      &:hover,
+      &:focus {
+        background-color: @brand-primary;
+        color: white;
+      }
+    }
+  }

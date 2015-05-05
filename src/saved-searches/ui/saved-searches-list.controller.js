@@ -12,7 +12,7 @@ angular
   .controller('SavedSearchesListController', SavedSearchesList);
 
 /* @ngInject */
-function SavedSearchesList($scope, savedSearchesService) {
+function SavedSearchesList($scope, savedSearchesService, $modal) {
 
   $scope.savedSearches = [];
 
@@ -33,4 +33,34 @@ function SavedSearchesList($scope, savedSearchesService) {
   savedSearchesPromise.then(function (savedSearches) {
     $scope.savedSearches = savedSearches;
   });
+
+  this.deleteSavedSearch = function(searchId) {
+    var modal = $modal.open({
+      templateUrl: 'templates/delete-search-modal.html',
+      controller: 'DeleteSearchModalController'
+    });
+
+    modal.result.then(function () {
+      var savedSearchPromise = savedSearchesService.deleteSavedSearch(searchId);
+
+      savedSearchPromise
+        .then(function () {
+          _.remove($scope.savedSearches, {id: searchId});
+        },
+        function() {
+          var modalInstance = $modal.open({
+            templateUrl: 'templates/unexpected-error-modal.html',
+            controller: 'UnexpectedErrorModalController',
+            size: 'lg',
+            resolve: {
+              errorMessage: function() {
+                return 'Het verwijderen van de zoekopdracht is mislukt. Controleer de verbinding en probeer opnieuw.';
+              }
+            }
+          });
+        });
+    });
+  };
+
+  $scope.deleteSavedSearch = this.deleteSavedSearch;
 }

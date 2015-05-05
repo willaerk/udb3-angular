@@ -1,6 +1,5 @@
 <div class="container-fluid">
     <h1>Mijn zoekopdrachten</h1>
-
     <table class="table">
         <tr>
             <th class="saved-search-title-column">
@@ -12,8 +11,6 @@
             <td>
             </td>
         </tr>
-
-
         <tr ng-repeat="savedSearch in savedSearches">
             <td>
                 <p>
@@ -26,9 +23,8 @@
                           ui-codemirror-opts="editorOptions"></textarea>
             </td>
             <td>
-                <a class="btn btn-default">Verwijderen</a>
+                <a class="btn btn-default" ng-click="::deleteSavedSearch(savedSearch.id)">Verwijderen</a>
             </td>
         </tr>
-
     </table>
 </div>

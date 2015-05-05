@@ -12,7 +12,7 @@ angular
   .controller('EventExportController', EventExportController);
 
 /* @ngInject */
-function EventExportController($modalInstance, udbApi, eventExporter, queryFields, $window) {
+function EventExportController($modalInstance, udbApi, eventExporter, ExportFormats) {
 
   var exporter = this;
 
@@ -40,30 +40,7 @@ function EventExportController($modalInstance, udbApi, eventExporter, queryField
     {name: 'language', include: false, sortable: false, excludable: true}
   ];
 
-  exporter.exportFormats = [
-    {
-      type: 'ooxml',
-      label: 'Office Open XML (Excel)',
-      description: 'Het standaard formaat van Excel vanaf Microsoft Office 2007.'
-    },
-    //{
-    //  type: 'html',
-    //  label: 'Als HTML',
-    //  description: 'Exporteren naar HTML is een gemakkelijke manier om de inhoud geschikt voor het web te maken.',
-    //  customizable: true
-    //},
-    {
-      type: 'pdf',
-      label: 'Als PDF',
-      description: 'Druk snel en eenvoudig items uit de UiTdatabank af. Kies een Vlieg, UiT-, of UiTPAS-sjabloon.',
-      customizable: true
-    },
-    {
-      type: 'json',
-      label: 'Als json',
-      description: 'Exporteren naar event-ld om de informatie voor ontwikkelaars beschikbaar te maken.'
-    }
-  ];
+  exporter.exportFormats = _.map(ExportFormats);
 
   exporter.brands = [
     {name: 'vlieg', label: 'Vlieg'},

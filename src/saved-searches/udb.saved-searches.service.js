@@ -39,4 +39,8 @@ function SavedSearchesService($q, $http, appConfig) {
 
     return deferredSavedSearches.promise;
   };
+
+  this.deleteSavedSearch = function (searchId) {
+    return $http.delete(apiUrl + 'saved-searches/' + searchId, defaultApiConfig);
+  };
 }

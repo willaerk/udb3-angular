@@ -63,4 +63,19 @@ describe('Service: savedSearchesService', function() {
       expect(savedSearches).toEqual(expectedSavedSearches);
     })
   });
+
+  it('requests to delete a saved search and receives a job', function () {
+    var searchId = '1337';
+
+    $httpBackend
+      .expectDELETE(baseUrl + 'saved-searches/' + searchId)
+      .respond(200, '{"jobId":"xyz"}');
+
+    var response = savedSearchesService.deleteSavedSearch(searchId);
+    $httpBackend.flush();
+
+    response.success(function (data) {
+      expect(data).toEqual({jobId: 'xyz'});
+    });
+  });
 });

@@ -84,7 +84,9 @@ angular
  */
 angular
   .module('udb.saved-searches', [
-   'ui.codemirror'
+    'udb.core',
+    'ui.bootstrap',
+    'ui.codemirror'
   ]);
 
 /**
@@ -4071,6 +4073,34 @@ function udbExportModalButtons() {
   };
 }
 
+// Source: src/saved-searches/components/delete-search-modal.controller.js
+/**
+ * @ngdoc function
+ * @name udb.entry.controller:DeleteSearchModalController
+ * @description
+ * # DeleteSearchModalController
+ * Controller of the udb.entry
+ */
+angular
+  .module('udb.saved-searches')
+  .controller('DeleteSearchModalController', DeleteSearchModalController);
+
+/* @ngInject */
+function DeleteSearchModalController($scope, $modalInstance) {
+
+  var confirm = function () {
+    $modalInstance.close();
+  };
+
+  var cancel = function () {
+    $modalInstance.dismiss('cancel');
+  };
+
+  $scope.cancel = cancel;
+  $scope.confirm = confirm;
+}
+DeleteSearchModalController.$inject = ["$scope", "$modalInstance"];
+
 // Source: src/saved-searches/components/save-search-modal.controller.js
 /**
  * @ngdoc function
@@ -4199,6 +4229,10 @@ function SavedSearchesService($q, $http, appConfig) {
 
     return deferredSavedSearches.promise;
   };
+
+  this.deleteSavedSearch = function (searchId) {
+    return $http.delete(apiUrl + 'saved-searches/' + searchId, defaultApiConfig);
+  };
 }
 SavedSearchesService.$inject = ["$q", "$http", "appConfig"];
 
@@ -4215,7 +4249,7 @@ angular
   .controller('SavedSearchesListController', SavedSearchesList);
 
 /* @ngInject */
-function SavedSearchesList($scope, savedSearchesService) {
+function SavedSearchesList($scope, savedSearchesService, $modal) {
 
   $scope.savedSearches = [];
 
@@ -4240,8 +4274,38 @@ function SavedSearchesList($scope, savedSearchesService) {
   savedSearchesPromise.then(function (savedSearches) {
     $scope.savedSearches = savedSearches;
   });
+
+  this.deleteSavedSearch = function(searchId) {
+    var modal = $modal.open({
+      templateUrl: 'templates/delete-search-modal.html',
+      controller: 'DeleteSearchModalController'
+    });
+
+    modal.result.then(function () {
+      var savedSearchPromise = savedSearchesService.deleteSavedSearch(searchId);
+
+      savedSearchPromise
+        .then(function () {
+          _.remove($scope.savedSearches, {id: searchId});
+        },
+        function() {
+          var modalInstance = $modal.open({
+            templateUrl: 'templates/unexpected-error-modal.html',
+            controller: 'UnexpectedErrorModalController',
+            size: 'lg',
+            resolve: {
+              errorMessage: function() {
+                return 'Het verwijderen van de zoekopdracht is mislukt. Controleer de verbinding en probeer opnieuw.';
+              }
+            }
+          });
+        });
+    });
+  };
+
+  $scope.deleteSavedSearch = this.deleteSavedSearch;
 }
-SavedSearchesList.$inject = ["$scope", "savedSearchesService"];
+SavedSearchesList.$inject = ["$scope", "savedSearchesService", "$modal"];
 
 // Source: src/search/components/query-editor-daterangepicker.directive.js
 /**
@@ -6832,6 +6896,18 @@ $templateCache.put('templates/unexpected-error-modal.html',
   );
 
 
+  $templateCache.put('templates/delete-search-modal.html',
+    "<div class=\"modal-body\">\n" +
+    "    <p>Ben je zeker dat je deze zoekopdracht wil verwijderen?</p>\n" +
+    "</div>\n" +
+    "\n" +
+    "<div class=\"modal-footer\">\n" +
+    "    <button class=\"btn btn-primary udb-delete-query-cancel-button\" ng-click=\"cancel()\">annuleren</button>\n" +
+    "    <button class=\"btn btn-danger udb-delete-query-confirm-button\" ng-click=\"confirm()\">verwijderen</button>\n" +
+    "</div>\n"
+  );
+
+
   $templateCache.put('templates/save-search-modal.html',
     "<form name=\"saveQueryForm\" novalidate class=\"save-search-modal\">\n" +
     "<div class=\"modal-body\">\n" +
@@ -6867,7 +6943,6 @@ $templateCache.put('templates/unexpected-error-modal.html',
   $templateCache.put('templates/saved-searches-list.html',
     "<div class=\"container-fluid\">\n" +
     "    <h1>Mijn zoekopdrachten</h1>\n" +
-    "\n" +
     "    <table class=\"table\">\n" +
     "        <tr>\n" +
     "            <th class=\"saved-search-title-column\">\n" +
@@ -6879,8 +6954,6 @@ $templateCache.put('templates/unexpected-error-modal.html',
     "            <td>\n" +
     "            </td>\n" +
     "        </tr>\n" +
-    "\n" +
-    "\n" +
     "        <tr ng-repeat=\"savedSearch in savedSearches\">\n" +
     "            <td>\n" +
     "                <p>\n" +
@@ -6893,10 +6966,9 @@ $templateCache.put('templates/unexpected-error-modal.html',
     "                          ui-codemirror-opts=\"editorOptions\"></textarea>\n" +
     "            </td>\n" +
     "            <td>\n" +
-    "                <a class=\"btn btn-default\">Verwijderen</a>\n" +
+    "                <a class=\"btn btn-default\" ng-click=\"::deleteSavedSearch(savedSearch.id)\">Verwijderen</a>\n" +
     "            </td>\n" +
     "        </tr>\n" +
-    "\n" +
     "    </table>\n" +
     "</div>\n"
   );

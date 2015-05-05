@@ -8,5 +8,7 @@
  */
 angular
   .module('udb.saved-searches', [
-   'ui.codemirror'
+    'udb.core',
+    'ui.bootstrap',
+    'ui.codemirror'
   ]);

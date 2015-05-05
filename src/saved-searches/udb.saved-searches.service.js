@@ -28,4 +28,15 @@ function SavedSearchesService($q, $http, appConfig) {
     };
     return $http.post(apiUrl + 'saved-searches/', post, defaultApiConfig);
   };
+
+  this.getSavedSearches = function () {
+    var deferredSavedSearches = $q.defer(),
+        savedSearchesRequest = $http.get(apiUrl + 'saved-searches/', defaultApiConfig);
+
+    savedSearchesRequest.success(function (data) {
+      deferredSavedSearches.resolve(data);
+    });
+
+    return deferredSavedSearches.promise;
+  };
 }

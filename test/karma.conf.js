@@ -56,6 +56,9 @@ module.exports = function(config) {
       'bower_components/accounting/accounting.js',
       'bower_components/angular-translate/angular-translate.js',
       'bower_components/angular-moment/angular-moment.js',
+      'bower_components/codemirror/lib/codemirror.js',
+      'bower_components/codemirror/mode/solr/solr.js',
+      'bower_components/angular-ui-codemirror/ui-codemirror.js',
       'src/**/*.module.js',
       'src/**/*.js',
       'src/**/*.html'

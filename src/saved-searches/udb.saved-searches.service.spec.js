@@ -44,5 +44,23 @@ describe('Service: savedSearchesService', function() {
     response.success(function (data) {
       expect(data).toEqual({jobId: 'xyz'});
     });
-  })
+  });
+
+  it('gets a list of JSON-encoded saved searches', function () {
+    var expectedSavedSearches = [
+      {"id": "126", "name": "alles in Tienen", "query": "city:Tienen"},
+      {"id": "127", "name": "alles in Leuven", "query": "city:leuven"}
+    ];
+
+    $httpBackend
+      .expectGET(baseUrl + 'saved-searches/')
+      .respond(200, JSON.stringify(expectedSavedSearches));
+
+    var response = savedSearchesService.getSavedSearches();
+    $httpBackend.flush();
+
+    response.then(function (savedSearches) {
+      expect(savedSearches).toEqual(expectedSavedSearches);
+    })
+  });
 });

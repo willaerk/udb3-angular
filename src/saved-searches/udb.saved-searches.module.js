@@ -7,4 +7,6 @@
  * The udb saved-searches module
  */
 angular
-  .module('udb.saved-searches', []);
+  .module('udb.saved-searches', [
+   'ui.codemirror'
+  ]);

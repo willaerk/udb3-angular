@@ -12,19 +12,29 @@ angular
   .controller('SavedSearchesListController', SavedSearchesList);
 
 /* @ngInject */
-function SavedSearchesList($scope) {
+function SavedSearchesList($scope, savedSearchesService) {
 
-  $scope.savedSearches =
-    [
-      {
-        id: 118,
-        name: 'In Leuven',
-        query: 'city:\u0022leuven\u0022'
-      },
-      {
-        id: 119,
-        name: 'In Herent',
-        query: 'city:\u0022Herent\u0022'
-      }
-    ];
+  $scope.savedSearches = [];
+
+  $scope.editorOptions = {
+    mode: 'solr',
+    lineWrapping: true,
+    readOnly: true
+  };
+
+  $scope.codemirrorLoaded = function(editorInstance) {
+    editorInstance.on('focus', function () {
+      editorInstance.execCommand('selectAll');
+    });
+
+    editorInstance.on('blur', function() {
+      editorInstance.setCursor(0, 0, true);
+    });
+  };
+
+  var savedSearchesPromise = savedSearchesService.getSavedSearches();
+
+  savedSearchesPromise.then(function (savedSearches) {
+    $scope.savedSearches = savedSearches;
+  });
 }

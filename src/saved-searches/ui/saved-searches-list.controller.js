@@ -26,6 +26,10 @@ function SavedSearchesList($scope, savedSearchesService, $modal) {
     editorInstance.on('focus', function () {
       editorInstance.execCommand('selectAll');
     });
+
+    editorInstance.on('blur', function() {
+      editorInstance.setCursor(0, 0, true);
+    });
   };
 
   var savedSearchesPromise = savedSearchesService.getSavedSearches();

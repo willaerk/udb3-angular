@@ -11,7 +11,7 @@ angular
   .directive('udbSearchBar', udbSearchBar);
 
 /* @ngInject */
-function udbSearchBar(searchHelper, $rootScope) {
+function udbSearchBar(searchHelper, $rootScope, $modal) {
   return {
     templateUrl: 'templates/search-bar.directive.html',
     restrict: 'E',
@@ -24,9 +24,18 @@ function udbSearchBar(searchHelper, $rootScope) {
         isEditing: false
       };
 
+      var editorModal;
+
       searchBar.editQuery = function () {
         $rootScope.$emit('startEditingQuery');
         searchBar.isEditing = true;
+
+        editorModal = $modal.open({
+          templateUrl: 'templates/query-editor-modal.html',
+          controller: 'QueryEditorController',
+          controllerAs: 'qe',
+          size: 'lg'
+        });
       };
 
       searchBar.searchChange = function() {
@@ -42,6 +51,9 @@ function udbSearchBar(searchHelper, $rootScope) {
 
       $rootScope.$on('stopEditingQuery', function () {
         scope.sb.isEditing = false;
+        if (editorModal) {
+          editorModal.dismiss();
+        }
       });
 
       scope.$watch(function () {

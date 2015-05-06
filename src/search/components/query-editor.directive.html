@@ -1,67 +1,54 @@
-<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-backdrop="static">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h2>Geavanceerde zoekopdracht bouwer</h2>
-      </div>
-      <div class="modal-body">
-        <div class="udb-query-editor">
-          <div class="panel panel-default" ng-repeat="rootGroup in qe.groupedQueryTree.nodes">
+<div class="udb-query-editor">
+  <div class="panel panel-default" ng-repeat="rootGroup in qe.groupedQueryTree.nodes">
 
-            <div class="panel-heading">
-              <div class="row">
-                <div class="col-sm-3">
-                  <h3 class="panel-title">Groep <span ng-bind="$index + 1"></span></h3>
-                </div>
-                <div class="col-sm-7">
-                  <div class="btn-group control-in-uitsluiten" role="group" aria-label="...">
-                    <button type="button" class="btn btn-default btn-sm" ng-click="qe.toggleExcludeGroup(rootGroup)">
-                      <span ng-hide="rootGroup.excluded" class="fa fa-check-circle"></span>
-                      Insluiten
-                    </button>
-                    <button type="button" class="btn btn-default btn-sm" ng-click="qe.toggleExcludeGroup(rootGroup)">
-                      <span ng-show="rootGroup.excluded" class="fa fa-check-circle"></span>
-                      Uitsluiten
-                    </button>
-                  </div>
-                </div>
-                <div class="col-sm-2">
-                  <button type="button" class="close" aria-label="Close"
-                      ng-show="qe.canRemoveGroup()" ng-click="qe.removeGroup($index)">
-                    <span aria-hidden="true">×</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <div class="panel-body">
-              <div ng-repeat="field in rootGroup.nodes" ng-switch="field.type">
-                <div ng-switch-default>
-                  <udb-query-editor-field></udb-query-editor-field>
-                </div>
-
-                <div ng-switch-when="group">
-                  <udb-query-editor-field ng-repeat="field in field.nodes"></udb-query-editor-field>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="modal-footer">
-            <button type="button" class="pull-left btn btn-default" ng-click="qe.addGroup()">
-              Groep toevoegen
+    <div class="panel-heading">
+      <div class="row">
+        <div class="col-sm-3">
+          <h3 class="panel-title">Groep <span ng-bind="$index + 1"></span></h3>
+        </div>
+        <div class="col-sm-7">
+          <div class="btn-group control-in-uitsluiten" role="group" aria-label="...">
+            <button type="button" class="btn btn-default btn-sm" ng-click="qe.toggleExcludeGroup(rootGroup)">
+              <span ng-hide="rootGroup.excluded" class="fa fa-check-circle"></span>
+              Insluiten
             </button>
-            <div class="pull-right">
-              <a type="button" class="btn btn-link" ng-click="qe.stopEditing()" data-dismiss="modal">
-                Annuleren
-              </a>
-              <button type="button" class="btn btn-primary" ng-click="qe.updateQueryString()" data-dismiss="modal">
-                Zoeken
-              </button>
-            </div>
+            <button type="button" class="btn btn-default btn-sm" ng-click="qe.toggleExcludeGroup(rootGroup)">
+              <span ng-show="rootGroup.excluded" class="fa fa-check-circle"></span>
+              Uitsluiten
+            </button>
           </div>
+        </div>
+        <div class="col-sm-2">
+          <button type="button" class="close" aria-label="Close"
+                  ng-show="qe.canRemoveGroup()" ng-click="qe.removeGroup($index)">
+            <span aria-hidden="true">×</span>
+          </button>
         </div>
       </div>
     </div>
+
+    <div class="panel-body">
+      <div ng-repeat="field in rootGroup.nodes" ng-switch="field.type">
+        <div ng-switch-default>
+          <udb-query-editor-field></udb-query-editor-field>
+        </div>
+
+        <div ng-switch-when="group">
+          <udb-query-editor-field ng-repeat="field in field.nodes"></udb-query-editor-field>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <button type="button" class="btn btn-default" ng-click="qe.addGroup()">
+    Groep toevoegen
+  </button>
+  <div class="pull-right">
+    <a type="button" class="btn btn-link" ng-click="qe.stopEditing()">
+      Annuleren
+    </a>
+    <button type="button" class="btn btn-primary" ng-click="qe.updateQueryString()">
+      Zoeken
+    </button>
   </div>
 </div>

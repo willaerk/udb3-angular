@@ -4457,29 +4457,19 @@ function udbQueryEditorField() {
   };
 }
 
-// Source: src/search/components/query-editor.directive.js
+// Source: src/search/components/query-editor.controller.js
 /**
  * @ngdoc directive
- * @name udb.search.directive:udbQueryEditor
+ * @name udb.search.controller:QueryEditorController
  * @description
- * # udbQueryEditor
+ * # QueryEditorController
  */
 angular
   .module('udb.search')
-  .directive('udbQueryEditor', udbQueryEditor);
+  .controller('QueryEditorController', QueryEditorController);
 
 /* @ngInject */
-function udbQueryEditor() {
-  return {
-    templateUrl: 'templates/query-editor.directive.html',
-    restrict: 'E',
-    controllerAs: 'qe',
-    controller: QueryEditor
-  };
-}
-
-/* @ngInject */
-function QueryEditor(
+function QueryEditorController(
   queryFields,
   LuceneQueryBuilder,
   taxonomyTerms,
@@ -4730,7 +4720,28 @@ function QueryEditor(
     return (qe.groupedQueryTree.nodes.length === 1);
   };
 }
-QueryEditor.$inject = ["queryFields", "LuceneQueryBuilder", "taxonomyTerms", "fieldTypeTransformers", "searchHelper", "$translate", "$rootScope"];
+QueryEditorController.$inject = ["queryFields", "LuceneQueryBuilder", "taxonomyTerms", "fieldTypeTransformers", "searchHelper", "$translate", "$rootScope"];
+
+// Source: src/search/components/query-editor.directive.js
+/**
+ * @ngdoc directive
+ * @name udb.search.directive:udbQueryEditor
+ * @description
+ * # udbQueryEditor
+ */
+angular
+  .module('udb.search')
+  .directive('udbQueryEditor', udbQueryEditor);
+
+/* @ngInject */
+function udbQueryEditor() {
+  return {
+    templateUrl: 'templates/query-editor.directive.html',
+    restrict: 'EA',
+    controllerAs: 'qe',
+    controller: 'QueryEditorController'
+  };
+}
 
 // Source: src/search/components/search-bar.directive.js
 /**
@@ -4744,7 +4755,7 @@ angular
   .directive('udbSearchBar', udbSearchBar);
 
 /* @ngInject */
-function udbSearchBar(searchHelper, $rootScope) {
+function udbSearchBar(searchHelper, $rootScope, $modal) {
   return {
     templateUrl: 'templates/search-bar.directive.html',
     restrict: 'E',
@@ -4757,9 +4768,18 @@ function udbSearchBar(searchHelper, $rootScope) {
         isEditing: false
       };
 
+      var editorModal;
+
       searchBar.editQuery = function () {
         $rootScope.$emit('startEditingQuery');
         searchBar.isEditing = true;
+
+        editorModal = $modal.open({
+          templateUrl: 'templates/query-editor-modal.html',
+          controller: 'QueryEditorController',
+          controllerAs: 'qe',
+          size: 'lg'
+        });
       };
 
       searchBar.searchChange = function() {
@@ -4775,6 +4795,9 @@ function udbSearchBar(searchHelper, $rootScope) {
 
       $rootScope.$on('stopEditingQuery', function () {
         scope.sb.isEditing = false;
+        if (editorModal) {
+          editorModal.dismiss();
+        }
       });
 
       scope.$watch(function () {
@@ -4804,7 +4827,7 @@ function udbSearchBar(searchHelper, $rootScope) {
     }
   };
 }
-udbSearchBar.$inject = ["searchHelper", "$rootScope"];
+udbSearchBar.$inject = ["searchHelper", "$rootScope", "$modal"];
 
 // Source: src/search/filters/currency.filter.js
 /**
@@ -7096,72 +7119,125 @@ $templateCache.put('templates/unexpected-error-modal.html',
   );
 
 
-  $templateCache.put('templates/query-editor.directive.html',
-    "<div class=\"modal fade\" id=\"myModal\" tabindex=\"-1\" role=\"dialog\" aria-labelledby=\"myModalLabel\" aria-hidden=\"true\" data-backdrop=\"static\">\n" +
-    "  <div class=\"modal-dialog modal-lg\">\n" +
-    "    <div class=\"modal-content\">\n" +
-    "      <div class=\"modal-header\">\n" +
-    "        <h2>Geavanceerde zoekopdracht bouwer</h2>\n" +
-    "      </div>\n" +
-    "      <div class=\"modal-body\">\n" +
-    "        <div class=\"udb-query-editor\">\n" +
-    "          <div class=\"panel panel-default\" ng-repeat=\"rootGroup in qe.groupedQueryTree.nodes\">\n" +
+  $templateCache.put('templates/query-editor-modal.html',
+    "<div class=\"modal-header\">\n" +
+    "  <h2>Geavanceerde zoekopdracht bouwer</h2>\n" +
+    "</div>\n" +
     "\n" +
-    "            <div class=\"panel-heading\">\n" +
-    "              <div class=\"row\">\n" +
-    "                <div class=\"col-sm-3\">\n" +
-    "                  <h3 class=\"panel-title\">Groep <span ng-bind=\"$index + 1\"></span></h3>\n" +
-    "                </div>\n" +
-    "                <div class=\"col-sm-7\">\n" +
-    "                  <div class=\"btn-group control-in-uitsluiten\" role=\"group\" aria-label=\"...\">\n" +
-    "                    <button type=\"button\" class=\"btn btn-default btn-sm\" ng-click=\"qe.toggleExcludeGroup(rootGroup)\">\n" +
-    "                      <span ng-hide=\"rootGroup.excluded\" class=\"fa fa-check-circle\"></span>\n" +
-    "                      Insluiten\n" +
-    "                    </button>\n" +
-    "                    <button type=\"button\" class=\"btn btn-default btn-sm\" ng-click=\"qe.toggleExcludeGroup(rootGroup)\">\n" +
-    "                      <span ng-show=\"rootGroup.excluded\" class=\"fa fa-check-circle\"></span>\n" +
-    "                      Uitsluiten\n" +
-    "                    </button>\n" +
-    "                  </div>\n" +
-    "                </div>\n" +
-    "                <div class=\"col-sm-2\">\n" +
-    "                  <button type=\"button\" class=\"close\" aria-label=\"Close\"\n" +
-    "                      ng-show=\"qe.canRemoveGroup()\" ng-click=\"qe.removeGroup($index)\">\n" +
-    "                    <span aria-hidden=\"true\">×</span>\n" +
-    "                  </button>\n" +
-    "                </div>\n" +
-    "              </div>\n" +
-    "            </div>\n" +
+    "<div class=\"modal-body\">\n" +
+    "  <div class=\"udb-query-editor\">\n" +
+    "    <div class=\"panel panel-default\" ng-repeat=\"rootGroup in qe.groupedQueryTree.nodes\">\n" +
     "\n" +
-    "            <div class=\"panel-body\">\n" +
-    "              <div ng-repeat=\"field in rootGroup.nodes\" ng-switch=\"field.type\">\n" +
-    "                <div ng-switch-default>\n" +
-    "                  <udb-query-editor-field></udb-query-editor-field>\n" +
-    "                </div>\n" +
-    "\n" +
-    "                <div ng-switch-when=\"group\">\n" +
-    "                  <udb-query-editor-field ng-repeat=\"field in field.nodes\"></udb-query-editor-field>\n" +
-    "                </div>\n" +
-    "              </div>\n" +
-    "            </div>\n" +
+    "      <div class=\"panel-heading\">\n" +
+    "        <div class=\"row\">\n" +
+    "          <div class=\"col-sm-3\">\n" +
+    "            <h3 class=\"panel-title\">Groep <span ng-bind=\"$index + 1\"></span></h3>\n" +
     "          </div>\n" +
-    "\n" +
-    "          <div class=\"modal-footer\">\n" +
-    "            <button type=\"button\" class=\"pull-left btn btn-default\" ng-click=\"qe.addGroup()\">\n" +
-    "              Groep toevoegen\n" +
-    "            </button>\n" +
-    "            <div class=\"pull-right\">\n" +
-    "              <a type=\"button\" class=\"btn btn-link\" ng-click=\"qe.stopEditing()\" data-dismiss=\"modal\">\n" +
-    "                Annuleren\n" +
-    "              </a>\n" +
-    "              <button type=\"button\" class=\"btn btn-primary\" ng-click=\"qe.updateQueryString()\" data-dismiss=\"modal\">\n" +
-    "                Zoeken\n" +
+    "          <div class=\"col-sm-7\">\n" +
+    "            <div class=\"btn-group control-in-uitsluiten\" role=\"group\" aria-label=\"...\">\n" +
+    "              <button type=\"button\" class=\"btn btn-default btn-sm\" ng-click=\"qe.toggleExcludeGroup(rootGroup)\">\n" +
+    "                <span ng-hide=\"rootGroup.excluded\" class=\"fa fa-check-circle\"></span>\n" +
+    "                Insluiten\n" +
+    "              </button>\n" +
+    "              <button type=\"button\" class=\"btn btn-default btn-sm\" ng-click=\"qe.toggleExcludeGroup(rootGroup)\">\n" +
+    "                <span ng-show=\"rootGroup.excluded\" class=\"fa fa-check-circle\"></span>\n" +
+    "                Uitsluiten\n" +
     "              </button>\n" +
     "            </div>\n" +
+    "          </div>\n" +
+    "          <div class=\"col-sm-2\">\n" +
+    "            <button type=\"button\" class=\"close\" aria-label=\"Close\"\n" +
+    "                ng-show=\"qe.canRemoveGroup()\" ng-click=\"qe.removeGroup($index)\">\n" +
+    "              <span aria-hidden=\"true\">×</span>\n" +
+    "            </button>\n" +
+    "          </div>\n" +
+    "        </div>\n" +
+    "      </div>\n" +
+    "\n" +
+    "      <div class=\"panel-body\">\n" +
+    "        <div ng-repeat=\"field in rootGroup.nodes\" ng-switch=\"field.type\">\n" +
+    "          <div ng-switch-default>\n" +
+    "            <udb-query-editor-field></udb-query-editor-field>\n" +
+    "          </div>\n" +
+    "\n" +
+    "          <div ng-switch-when=\"group\">\n" +
+    "            <udb-query-editor-field ng-repeat=\"field in field.nodes\"></udb-query-editor-field>\n" +
     "          </div>\n" +
     "        </div>\n" +
     "      </div>\n" +
     "    </div>\n" +
+    "\n" +
+    "    <div class=\"modal-footer\">\n" +
+    "      <button type=\"button\" class=\"pull-left btn btn-default\" ng-click=\"qe.addGroup()\">\n" +
+    "        Groep toevoegen\n" +
+    "      </button>\n" +
+    "      <div class=\"pull-right\">\n" +
+    "        <a type=\"button\" class=\"btn btn-link\" ng-click=\"qe.stopEditing()\">\n" +
+    "          Annuleren\n" +
+    "        </a>\n" +
+    "        <button type=\"button\" class=\"btn btn-primary\" ng-click=\"qe.updateQueryString()\">\n" +
+    "          Zoeken\n" +
+    "        </button>\n" +
+    "      </div>\n" +
+    "    </div>\n" +
+    "  </div>\n" +
+    "</div>\n"
+  );
+
+
+  $templateCache.put('templates/query-editor.directive.html',
+    "<div class=\"udb-query-editor\">\n" +
+    "  <div class=\"panel panel-default\" ng-repeat=\"rootGroup in qe.groupedQueryTree.nodes\">\n" +
+    "\n" +
+    "    <div class=\"panel-heading\">\n" +
+    "      <div class=\"row\">\n" +
+    "        <div class=\"col-sm-3\">\n" +
+    "          <h3 class=\"panel-title\">Groep <span ng-bind=\"$index + 1\"></span></h3>\n" +
+    "        </div>\n" +
+    "        <div class=\"col-sm-7\">\n" +
+    "          <div class=\"btn-group control-in-uitsluiten\" role=\"group\" aria-label=\"...\">\n" +
+    "            <button type=\"button\" class=\"btn btn-default btn-sm\" ng-click=\"qe.toggleExcludeGroup(rootGroup)\">\n" +
+    "              <span ng-hide=\"rootGroup.excluded\" class=\"fa fa-check-circle\"></span>\n" +
+    "              Insluiten\n" +
+    "            </button>\n" +
+    "            <button type=\"button\" class=\"btn btn-default btn-sm\" ng-click=\"qe.toggleExcludeGroup(rootGroup)\">\n" +
+    "              <span ng-show=\"rootGroup.excluded\" class=\"fa fa-check-circle\"></span>\n" +
+    "              Uitsluiten\n" +
+    "            </button>\n" +
+    "          </div>\n" +
+    "        </div>\n" +
+    "        <div class=\"col-sm-2\">\n" +
+    "          <button type=\"button\" class=\"close\" aria-label=\"Close\"\n" +
+    "                  ng-show=\"qe.canRemoveGroup()\" ng-click=\"qe.removeGroup($index)\">\n" +
+    "            <span aria-hidden=\"true\">×</span>\n" +
+    "          </button>\n" +
+    "        </div>\n" +
+    "      </div>\n" +
+    "    </div>\n" +
+    "\n" +
+    "    <div class=\"panel-body\">\n" +
+    "      <div ng-repeat=\"field in rootGroup.nodes\" ng-switch=\"field.type\">\n" +
+    "        <div ng-switch-default>\n" +
+    "          <udb-query-editor-field></udb-query-editor-field>\n" +
+    "        </div>\n" +
+    "\n" +
+    "        <div ng-switch-when=\"group\">\n" +
+    "          <udb-query-editor-field ng-repeat=\"field in field.nodes\"></udb-query-editor-field>\n" +
+    "        </div>\n" +
+    "      </div>\n" +
+    "    </div>\n" +
+    "  </div>\n" +
+    "\n" +
+    "  <button type=\"button\" class=\"btn btn-default\" ng-click=\"qe.addGroup()\">\n" +
+    "    Groep toevoegen\n" +
+    "  </button>\n" +
+    "  <div class=\"pull-right\">\n" +
+    "    <a type=\"button\" class=\"btn btn-link\" ng-click=\"qe.stopEditing()\">\n" +
+    "      Annuleren\n" +
+    "    </a>\n" +
+    "    <button type=\"button\" class=\"btn btn-primary\" ng-click=\"qe.updateQueryString()\">\n" +
+    "      Zoeken\n" +
+    "    </button>\n" +
     "  </div>\n" +
     "</div>\n"
   );
@@ -7172,7 +7248,6 @@ $templateCache.put('templates/unexpected-error-modal.html',
     "      ng-class=\"{'has-errors': sb.hasErrors, 'is-editing': sb.isEditing}\">\n" +
     "  <div class=\"form-group has-warning has-feedback\">\n" +
     "    <input type=\"text\" class=\"form-control\" ng-model=\"sb.query\" ng-change=\"sb.searchChange()\">\n" +
-    "    <i class=\"fa fa-flask editor-icon\" ng-click=\"sb.editQuery()\"></i>\n" +
     "    <i ng-show=\"sb.hasErrors\" class=\"fa fa-warning warning-icon\" tooltip-append-to-body=\"true\"\n" +
     "       tooltip-placement=\"bottom\" tooltip=\"{{sb.errors}}\"></i>\n" +
     "  </div>\n" +
@@ -7180,12 +7255,12 @@ $templateCache.put('templates/unexpected-error-modal.html',
     "    <i class=\"fa fa-search\"></i>\n" +
     "  </button>\n" +
     "</form>\n" +
-    "<a href data-toggle=\"modal\" data-target=\"#myModal\" ng-click=\"sb.editQuery()\" class=\"advanced-search\" ng-class=\"{'is-editing': sb.isEditing}\">Geavanceerd</a>\n"
+    "<a ng-click=\"sb.editQuery()\" class=\"advanced-search\" ng-class=\"{'is-editing': sb.isEditing}\">Geavanceerd</a>\n"
   );
 
 
   $templateCache.put('templates/search.html',
-    "<udb-query-editor></udb-query-editor>\n" +
+    "<udb-query-editor ng-show=\"queryEditorShown\"></udb-query-editor>\n" +
     "\n" +
     "<div class=\"row rv-result-viewer\">\n" +
     "  <div class=\"col-sm-12 rv-search-results\" ng-class=\"{loading: resultViewer.loading}\">\n" +

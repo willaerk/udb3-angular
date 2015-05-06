@@ -403,7 +403,6 @@ udb-search-bar .advanced-search {
 }
 .udb-header-search .warning-icon {
   left: auto;
-  right: 36px;
   color: yellow;
   display: block;
   background-color: #4b79a0;

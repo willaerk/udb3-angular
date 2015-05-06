@@ -7260,8 +7260,6 @@ $templateCache.put('templates/unexpected-error-modal.html',
 
 
   $templateCache.put('templates/search.html',
-    "<udb-query-editor ng-show=\"queryEditorShown\"></udb-query-editor>\n" +
-    "\n" +
     "<div class=\"row rv-result-viewer\">\n" +
     "  <div class=\"col-sm-12 rv-search-results\" ng-class=\"{loading: resultViewer.loading}\">\n" +
     "\n" +

@@ -7255,7 +7255,7 @@ $templateCache.put('templates/unexpected-error-modal.html',
     "    <i class=\"fa fa-search\"></i>\n" +
     "  </button>\n" +
     "</form>\n" +
-    "<a ng-click=\"sb.editQuery()\" class=\"advanced-search\" ng-class=\"{'is-editing': sb.isEditing}\">Geavanceerd</a>\n"
+    "<a href=\"#\" ng-click=\"sb.editQuery()\" class=\"advanced-search\" ng-class=\"{'is-editing': sb.isEditing}\">Geavanceerd</a>\n"
   );
 
 

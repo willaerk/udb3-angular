@@ -2,7 +2,6 @@
       ng-class="{'has-errors': sb.hasErrors, 'is-editing': sb.isEditing}">
   <div class="form-group has-warning has-feedback">
     <input type="text" class="form-control" ng-model="sb.query" ng-change="sb.searchChange()">
-    <i class="fa fa-flask editor-icon" ng-click="sb.editQuery()"></i>
     <i ng-show="sb.hasErrors" class="fa fa-warning warning-icon" tooltip-append-to-body="true"
        tooltip-placement="bottom" tooltip="{{sb.errors}}"></i>
   </div>
@@ -10,3 +9,4 @@
     <i class="fa fa-search"></i>
   </button>
 </form>
+<a href="#" ng-click="sb.editQuery()" class="advanced-search" ng-class="{'is-editing': sb.isEditing}">Geavanceerd</a>

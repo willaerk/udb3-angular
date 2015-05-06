@@ -31,6 +31,7 @@ function BaseJobFactory(JobStates) {
     this.state = JobStates.CREATED;
     this.progress = 0;
     this.created = new Date();
+    this.finished = null;
     this.tasks = [];
     this.completedTaskCount = 0;
   };
@@ -44,6 +45,7 @@ function BaseJobFactory(JobStates) {
   // The following functions are used to update the job state based on feedback of the server.
 
   BaseJob.prototype.fail = function () {
+    this.finished = new Date();
     this.state = JobStates.FAILED;
     this.progress = 100;
   };
@@ -55,6 +57,7 @@ function BaseJobFactory(JobStates) {
   BaseJob.prototype.finish = function () {
     if (this.state !== JobStates.FAILED) {
       this.state = JobStates.FINISHED;
+      this.finished = new Date();
     }
     this.progress = 100;
   };
@@ -76,6 +79,18 @@ function BaseJobFactory(JobStates) {
    */
   BaseJob.prototype.getDescription = function () {
     return 'Job with id: ' + this.id;
+  };
+
+  /**
+   * Returns a date string to use for the job log based on job state.
+   *
+   * @return {string}
+   */
+  BaseJob.prototype.getLogDateByState = function () {
+    if (_.contains([JobStates.FAILED, JobStates.FINISHED], this.state) && this.finished !== null) {
+      return this.finished;
+    }
+    return this.created;
   };
 
   /**

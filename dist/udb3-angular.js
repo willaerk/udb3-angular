@@ -17,6 +17,7 @@ angular
     'udb.entry',
     'udb.export',
     'udb.event-detail',
+    'udb.saved-searches',
     'btford.socket-io',
     'pascalprecht.translate'
   ]);
@@ -62,7 +63,8 @@ angular
     'udb.config',
     'udb.search',
     'btford.socket-io',
-    'pascalprecht.translate'
+    'pascalprecht.translate',
+    'angularMoment'
   ]);
 
 /**
@@ -73,6 +75,19 @@ angular
  */
 angular
   .module('udb.event-detail', []);
+
+/**
+ * @ngdoc module
+ * @name udb.saved-searches
+ * @description
+ * The udb saved-searches module
+ */
+angular
+  .module('udb.saved-searches', [
+    'udb.core',
+    'ui.bootstrap',
+    'ui.codemirror'
+  ]);
 
 /**
  * @ngdoc module
@@ -2132,6 +2147,30 @@ angular.module('udb.core')
   }
 );
 
+// Source: src/core/error-handling/unexpected-error-modal.controller.js
+/**
+ * @ngdoc function
+ * @name udb.core.controller:UnexpectedErrorModalController
+ * @description
+ * # UnexpectedErrorModalController
+ * Controller of the udb.core
+ */
+angular
+  .module('udb.core')
+  .controller('UnexpectedErrorModalController', UnexpectedErrorModalController);
+
+/* @ngInject */
+function UnexpectedErrorModalController($scope, $modalInstance, errorMessage) {
+
+  var dismiss = function () {
+    $modalInstance.dismiss('closed');
+  };
+
+  $scope.dismiss = dismiss;
+  $scope.errorMessage = errorMessage;
+}
+UnexpectedErrorModalController.$inject = ["$scope", "$modalInstance", "errorMessage"];
+
 // Source: src/core/udb-api.service.js
 /**
  * @ngdoc service
@@ -2450,6 +2489,7 @@ function UdbEventFactory() {
       this.pricing = getPricing(jsonEvent);
       this.publisher = jsonEvent.publisher || '';
       this.created = new Date(jsonEvent.created);
+      this.modified = new Date(jsonEvent.modified);
       this.creator = jsonEvent.creator || '';
       this.type = getCategoryLabel(jsonEvent, 'eventtype') || '';
       this.theme = getCategoryLabel(jsonEvent, 'theme') || '';
@@ -3004,6 +3044,7 @@ function BaseJobFactory(JobStates) {
     this.state = JobStates.CREATED;
     this.progress = 0;
     this.created = new Date();
+    this.finished = null;
     this.tasks = [];
     this.completedTaskCount = 0;
   };
@@ -3017,6 +3058,7 @@ function BaseJobFactory(JobStates) {
   // The following functions are used to update the job state based on feedback of the server.
 
   BaseJob.prototype.fail = function () {
+    this.finished = new Date();
     this.state = JobStates.FAILED;
     this.progress = 100;
   };
@@ -3028,6 +3070,7 @@ function BaseJobFactory(JobStates) {
   BaseJob.prototype.finish = function () {
     if (this.state !== JobStates.FAILED) {
       this.state = JobStates.FINISHED;
+      this.finished = new Date();
     }
     this.progress = 100;
   };
@@ -3049,6 +3092,18 @@ function BaseJobFactory(JobStates) {
    */
   BaseJob.prototype.getDescription = function () {
     return 'Job with id: ' + this.id;
+  };
+
+  /**
+   * Returns a date string to use for the job log based on job state.
+   *
+   * @return {string}
+   */
+  BaseJob.prototype.getLogDateByState = function () {
+    if (_.contains([JobStates.FAILED, JobStates.FINISHED], this.state) && this.finished !== null) {
+      return this.finished;
+    }
+    return this.created;
   };
 
   /**
@@ -3646,7 +3701,7 @@ angular
   .factory('EventExportJob', EventExportJobFactory);
 
 /* @ngInject */
-function EventExportJobFactory(BaseJob, JobStates) {
+function EventExportJobFactory(BaseJob, JobStates, ExportFormats) {
 
   /**
    * @class EventExportJob
@@ -3660,6 +3715,7 @@ function EventExportJobFactory(BaseJob, JobStates) {
     this.exportUrl = '';
     this.eventCount = eventCount;
     this.format = format;
+    this.extension = _.find(ExportFormats, {type: format}).extension;
   };
 
   EventExportJob.prototype = Object.create(BaseJob.prototype);
@@ -3688,8 +3744,7 @@ function EventExportJobFactory(BaseJob, JobStates) {
     if (this.state === JobStates.FAILED) {
       description = 'Exporteren van evenementen mislukt';
     } else {
-      var exportExtension = this.exportUrl.split('.').pop();
-      description = 'Document .' + exportExtension + ' met ' + this.eventCount + ' evenementen';
+      description = 'Document .' + this.extension + ' met ' + this.eventCount + ' evenementen';
     }
 
     return description;
@@ -3707,7 +3762,7 @@ function EventExportJobFactory(BaseJob, JobStates) {
 
   return (EventExportJob);
 }
-EventExportJobFactory.$inject = ["BaseJob", "JobStates"];
+EventExportJobFactory.$inject = ["BaseJob", "JobStates", "ExportFormats"];
 
 // Source: src/export/event-export.controller.js
 /**
@@ -3722,7 +3777,7 @@ angular
   .controller('EventExportController', EventExportController);
 
 /* @ngInject */
-function EventExportController($modalInstance, udbApi, eventExporter, queryFields, $window) {
+function EventExportController($modalInstance, udbApi, eventExporter, ExportFormats) {
 
   var exporter = this;
 
@@ -3750,30 +3805,7 @@ function EventExportController($modalInstance, udbApi, eventExporter, queryField
     {name: 'language', include: false, sortable: false, excludable: true}
   ];
 
-  exporter.exportFormats = [
-    {
-      type: 'ooxml',
-      label: 'Office Open XML (Excel)',
-      description: 'Het standaard formaat van Excel vanaf Microsoft Office 2007.'
-    },
-    //{
-    //  type: 'html',
-    //  label: 'Als HTML',
-    //  description: 'Exporteren naar HTML is een gemakkelijke manier om de inhoud geschikt voor het web te maken.',
-    //  customizable: true
-    //},
-    {
-      type: 'pdf',
-      label: 'Als PDF',
-      description: 'Druk snel en eenvoudig items uit de UiTdatabank af. Kies een Vlieg, UiT-, of UiTPAS-sjabloon.',
-      customizable: true
-    },
-    {
-      type: 'json',
-      label: 'Als json',
-      description: 'Exporteren naar event-ld om de informatie voor ontwikkelaars beschikbaar te maken.'
-    }
-  ];
+  exporter.exportFormats = _.map(ExportFormats);
 
   exporter.brands = [
     {name: 'vlieg', label: 'Vlieg'},
@@ -3928,7 +3960,7 @@ function EventExportController($modalInstance, udbApi, eventExporter, queryField
 
   exporter.eventCount = eventExporter.activeExport.eventCount;
 }
-EventExportController.$inject = ["$modalInstance", "udbApi", "eventExporter", "queryFields", "$window"];
+EventExportController.$inject = ["$modalInstance", "udbApi", "eventExporter", "ExportFormats"];
 
 // Source: src/export/event-exporter.service.js
 /**
@@ -3982,6 +4014,46 @@ function eventExporter(jobLogger, udbApi, EventExportJob) {
 }
 eventExporter.$inject = ["jobLogger", "udbApi", "EventExportJob"];
 
+// Source: src/export/export-formats.constant.js
+/* jshint sub: true */
+
+/**
+ * @ngdoc constant
+ * @name udb.export.ExportFormats
+ * @description
+ * # ExportFormats
+ * Event export formats
+ */
+angular
+  .module('udb.export')
+  .constant('ExportFormats',
+  /**
+   * Enum for export formats
+   * @readonly
+   * @enum {string}
+   */
+  {
+    OOXML:{
+      type: 'ooxml',
+      extension: 'xlsx',
+      label: 'Office Open XML (Excel)',
+      description: 'Het standaard formaat van Excel vanaf Microsoft Office 2007.'
+    },
+    PDF: {
+      type: 'pdf',
+      label: 'Als PDF',
+      extension: 'pdf',
+      description: 'Druk snel en eenvoudig items uit de UiTdatabank af. Kies een Vlieg, UiT-, of UiTPAS-sjabloon.',
+      customizable: true
+    },
+    JSON: {
+      type: 'json',
+      label: 'Als json',
+      extension: 'json',
+      description: 'Exporteren naar event-ld om de informatie voor ontwikkelaars beschikbaar te maken.'
+    }
+  });
+
 // Source: src/export/export-modal-buttons.directive.js
 /**
  * @ngdoc directive
@@ -4000,6 +4072,240 @@ function udbExportModalButtons() {
     restrict: 'E'
   };
 }
+
+// Source: src/saved-searches/components/delete-search-modal.controller.js
+/**
+ * @ngdoc function
+ * @name udb.entry.controller:DeleteSearchModalController
+ * @description
+ * # DeleteSearchModalController
+ * Controller of the udb.entry
+ */
+angular
+  .module('udb.saved-searches')
+  .controller('DeleteSearchModalController', DeleteSearchModalController);
+
+/* @ngInject */
+function DeleteSearchModalController($scope, $modalInstance) {
+
+  var confirm = function () {
+    $modalInstance.close();
+  };
+
+  var cancel = function () {
+    $modalInstance.dismiss('cancel');
+  };
+
+  $scope.cancel = cancel;
+  $scope.confirm = confirm;
+}
+DeleteSearchModalController.$inject = ["$scope", "$modalInstance"];
+
+// Source: src/saved-searches/components/save-search-modal.controller.js
+/**
+ * @ngdoc function
+ * @name udb.entry.controller:SaveSearchModalController
+ * @description
+ * # SaveSearchModalController
+ * Controller of the udb.entry
+ */
+angular
+  .module('udb.saved-searches')
+  .controller('SaveSearchModalController', SaveSearchModalController);
+
+/* @ngInject */
+function SaveSearchModalController($scope, $modalInstance) {
+
+  var ok = function () {
+    var name = $scope.queryName;
+    $scope.wasSubmitted = true;
+
+    if (name) {
+      $modalInstance.close(name);
+    }
+  };
+
+  var cancel = function () {
+    $modalInstance.dismiss('cancel');
+  };
+
+  $scope.cancel = cancel;
+  $scope.ok = ok;
+  $scope.queryName = '';
+  $scope.wasSubmitted = false;
+}
+SaveSearchModalController.$inject = ["$scope", "$modalInstance"];
+
+// Source: src/saved-searches/components/save-search.directive.js
+/**
+ * @ngdoc directive
+ * @name udb.savedSearches.directive:udbSaveSearch
+ * @description
+ * # udbSaveSearch
+ */
+angular
+  .module('udb.saved-searches')
+  .directive('udbSaveSearch', udbSaveSearch);
+
+/* @ngInject */
+function udbSaveSearch(savedSearchesService, $modal) {
+  var directive = {
+    link: link,
+    templateUrl: 'templates/save-search.directive.html',
+    restrict: 'AE',
+    scope: {
+      queryString: '=udbQueryString'
+    }
+  };
+  return directive;
+
+  function link(scope, element, attrs, controllers) {
+    scope.saveSearch = function () {
+      var modal = $modal.open({
+        templateUrl: 'templates/save-search-modal.html',
+        controller: 'SaveSearchModalController'
+      });
+
+      modal.result.then(function (name) {
+        var savedSearchPromise = savedSearchesService.createSavedSearch(name, scope.queryString);
+
+        savedSearchPromise.catch(function() {
+          var modalInstance = $modal.open(
+            {
+              templateUrl: 'templates/unexpected-error-modal.html',
+              controller: 'UnexpectedErrorModalController',
+              size: 'lg',
+              resolve: {
+                errorMessage: function() {
+                  return 'Het opslaan van de zoekopdracht is mislukt. Controleer de verbinding en probeer opnieuw.';
+                }
+              }
+            }
+          );
+        });
+      });
+    };
+  }
+}
+udbSaveSearch.$inject = ["savedSearchesService", "$modal"];
+
+// Source: src/saved-searches/udb.saved-searches.service.js
+/**
+ * @ngdoc service
+ * @name udb.saved-searches.savedSearchesService
+ * @description
+ * # savedSearchesService
+ * Service in udb.saved-searches.
+ */
+angular
+  .module('udb.saved-searches')
+  .service('savedSearchesService', SavedSearchesService);
+
+/* @ngInject */
+function SavedSearchesService($q, $http, appConfig) {
+  var apiUrl = appConfig.baseUrl;
+  var defaultApiConfig = {
+    withCredentials: true,
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  };
+
+  this.createSavedSearch = function(name, query) {
+    var post = {
+      name: name,
+      query: query
+    };
+    return $http.post(apiUrl + 'saved-searches/', post, defaultApiConfig);
+  };
+
+  this.getSavedSearches = function () {
+    var deferredSavedSearches = $q.defer(),
+        savedSearchesRequest = $http.get(apiUrl + 'saved-searches/', defaultApiConfig);
+
+    savedSearchesRequest.success(function (data) {
+      deferredSavedSearches.resolve(data);
+    });
+
+    return deferredSavedSearches.promise;
+  };
+
+  this.deleteSavedSearch = function (searchId) {
+    return $http.delete(apiUrl + 'saved-searches/' + searchId, defaultApiConfig);
+  };
+}
+SavedSearchesService.$inject = ["$q", "$http", "appConfig"];
+
+// Source: src/saved-searches/ui/saved-searches-list.controller.js
+/**
+ * @ngdoc function
+ * @name udb.saved-searches-list.controller:SavedSearchesListController
+ * @description
+ * # SavedSearchesListController
+ * Saved searches list controller
+ */
+angular
+  .module('udb.saved-searches')
+  .controller('SavedSearchesListController', SavedSearchesList);
+
+/* @ngInject */
+function SavedSearchesList($scope, savedSearchesService, $modal) {
+
+  $scope.savedSearches = [];
+
+  $scope.editorOptions = {
+    mode: 'solr',
+    lineWrapping: true,
+    readOnly: true
+  };
+
+  $scope.codemirrorLoaded = function(editorInstance) {
+    editorInstance.on('focus', function () {
+      editorInstance.execCommand('selectAll');
+    });
+
+    editorInstance.on('blur', function() {
+      editorInstance.setCursor(0, 0, true);
+    });
+  };
+
+  var savedSearchesPromise = savedSearchesService.getSavedSearches();
+
+  savedSearchesPromise.then(function (savedSearches) {
+    $scope.savedSearches = savedSearches;
+  });
+
+  this.deleteSavedSearch = function(searchId) {
+    var modal = $modal.open({
+      templateUrl: 'templates/delete-search-modal.html',
+      controller: 'DeleteSearchModalController'
+    });
+
+    modal.result.then(function () {
+      var savedSearchPromise = savedSearchesService.deleteSavedSearch(searchId);
+
+      savedSearchPromise
+        .then(function () {
+          _.remove($scope.savedSearches, {id: searchId});
+        },
+        function() {
+          var modalInstance = $modal.open({
+            templateUrl: 'templates/unexpected-error-modal.html',
+            controller: 'UnexpectedErrorModalController',
+            size: 'lg',
+            resolve: {
+              errorMessage: function() {
+                return 'Het verwijderen van de zoekopdracht is mislukt. Controleer de verbinding en probeer opnieuw.';
+              }
+            }
+          });
+        });
+    });
+  };
+
+  $scope.deleteSavedSearch = this.deleteSavedSearch;
+}
+SavedSearchesList.$inject = ["$scope", "savedSearchesService", "$modal"];
 
 // Source: src/search/components/query-editor-daterangepicker.directive.js
 /**
@@ -4206,23 +4512,30 @@ function QueryEditor(
     });
   });
 
-  qe.groupedQueryTree = {
-    type: 'root',
-    nodes: [
-      {
-        type: 'group',
-        operator: 'OR',
-        nodes: [
-          {
-            field: 'title',
-            term: '',
-            fieldType: 'tokenized-string',
-            transformer: '+'
-          }
-        ]
-      }
-    ]
+  $rootScope.$on('searchBarChanged', function () {
+    qe.resetGroups();
+  });
+
+  qe.getDefaultQueryTree = function () {
+    return {
+      type: 'root',
+      nodes: [
+        {
+          type: 'group',
+          operator: 'OR',
+          nodes: [
+            {
+              field: 'title',
+              term: '',
+              fieldType: 'tokenized-string',
+              transformer: '+'
+            }
+          ]
+        }
+      ]
+    };
   };
+  qe.groupedQueryTree = qe.getDefaultQueryTree();
 
   // Holds options for both term and choice query-field types
   qe.transformers = {};
@@ -4336,6 +4649,10 @@ function QueryEditor(
     }
   };
 
+  qe.resetGroups = function () {
+    qe.groupedQueryTree = qe.getDefaultQueryTree();
+  };
+
   /**
    * Add a field group
    */
@@ -4443,6 +4760,11 @@ function udbSearchBar(searchHelper, $rootScope) {
       searchBar.editQuery = function () {
         $rootScope.$emit('startEditingQuery');
         searchBar.isEditing = true;
+      };
+
+      searchBar.searchChange = function() {
+        $rootScope.$emit('searchBarChanged');
+        $rootScope.$emit('stopEditingQuery');
       };
 
       searchBar.search = function () {
@@ -6090,7 +6412,18 @@ function searchDirective() {
 
 // Source: .tmp/udb3-angular.templates.js
 angular.module('udb.core').run(['$templateCache', function($templateCache) {
-$templateCache.put('templates/job-logo.directive.html',
+$templateCache.put('templates/unexpected-error-modal.html',
+    "<div class=\"modal-body\">\n" +
+    "  <p ng-bind=\"errorMessage\"></p>\n" +
+    "</div>\n" +
+    "\n" +
+    "<div class=\"modal-footer\">\n" +
+    "  <button class=\"btn btn-primary\" ng-click=\"dismiss()\">sluiten</button>\n" +
+    "</div>\n"
+  );
+
+
+  $templateCache.put('templates/job-logo.directive.html',
     "<div id=\"logo\" class=\"{{jl.getState()}}\">\n" +
     "  <svg version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" width=\"200\"\n" +
     "       height=\"56\">\n" +
@@ -6214,11 +6547,11 @@ $templateCache.put('templates/job-logo.directive.html',
   $templateCache.put('templates/base-job.template.html',
     "<p>\n" +
     "  <ins>\n" +
-    "    <span ng-bind=\"::job.created | date:'HH:mm'\"></span> <i class=\"fa fa-circle-o-notch fa-spin udb-job-busy\"\n" +
+    "    <span am-time-ago=\"::job.getLogDateByState()\"></span> <i class=\"fa fa-circle-o-notch fa-spin udb-job-busy\"\n" +
     "       ng-show=\"job.state === 'started'\"></i>\n" +
     "  </ins>\n" +
     "  <span class=\"udb-job-description\" ng-bind=\"::job.getDescription()\"></span>\n" +
-    "</p>"
+    "</p>\n"
   );
 
 
@@ -6228,10 +6561,11 @@ $templateCache.put('templates/job-logo.directive.html',
     "    <span aria-hidden=\"true\">×</span>\n" +
     "  </button>\n" +
     "  <ins>\n" +
-    "    <span ng-bind=\"::job.created | date:'HH:mm'\"></span>\n" +
+    "    <span am-time-ago=\"::job.getLogDateByState()\"></span>\n" +
     "  </ins>\n" +
     "  <span ng-bind=\"job.getDescription()\"></span>\n" +
-    "</p>\n"
+    "</p>\n" +
+    "\n"
   );
 
 
@@ -6541,13 +6875,13 @@ $templateCache.put('templates/job-logo.directive.html',
     "    <span aria-hidden=\"true\">×</span>\n" +
     "  </button>\n" +
     "  <ins>\n" +
-    "    <span ng-bind=\"::job.created | date:'HH:mm'\"></span> <i class=\"fa fa-check-circle udb-job-success\"></i>\n" +
+    "    <span am-time-ago=\"::job.getLogDateByState()\"></span> <i class=\"fa fa-check-circle udb-job-success\"></i>\n" +
     "  </ins>\n" +
     "  <span class=\"udb-job-description\" ng-bind=\"::job.getDescription()\"></span>\n" +
     "  <a role=\"button\" target=\"_blank\" class=\"btn btn-default\" ng-href=\"{{job.exportUrl}}\">\n" +
     "    Downloaden\n" +
     "  </a>\n" +
-    "</p>"
+    "</p>\n"
   );
 
 
@@ -6558,6 +6892,84 @@ $templateCache.put('templates/job-logo.directive.html',
     "  <button ng-hide=\"exporter.onLastStep()\" class=\"btn btn-primary\"\n" +
     "          ng-click=\"exporter.nextStep()\">volgende</button>\n" +
     "  <button ng-show=\"exporter.onLastStep()\" class=\"btn btn-primary\" ng-click=\"exporter.export()\">exporteren</button>\n" +
+    "</div>\n"
+  );
+
+
+  $templateCache.put('templates/delete-search-modal.html',
+    "<div class=\"modal-body\">\n" +
+    "    <p>Ben je zeker dat je deze zoekopdracht wil verwijderen?</p>\n" +
+    "</div>\n" +
+    "\n" +
+    "<div class=\"modal-footer\">\n" +
+    "    <button class=\"btn btn-primary udb-delete-query-cancel-button\" ng-click=\"cancel()\">annuleren</button>\n" +
+    "    <button class=\"btn btn-danger udb-delete-query-confirm-button\" ng-click=\"confirm()\">verwijderen</button>\n" +
+    "</div>\n"
+  );
+
+
+  $templateCache.put('templates/save-search-modal.html',
+    "<form name=\"saveQueryForm\" novalidate class=\"save-search-modal\">\n" +
+    "<div class=\"modal-body\">\n" +
+    "\n" +
+    "    <label>Geef je zoekopdracht een naam</label>\n" +
+    "\n" +
+    "    <div class=\"row\">\n" +
+    "        <div class=\"col-lg-12\">\n" +
+    "            <p class=\"alert alert-danger\" role=\"alert\" ng-show=\"wasSubmitted && saveQueryForm.queryName.$error.required\">Een naam is verplicht.</p>\n" +
+    "            <input type=\"text\" ng-required=\"'true'\" name=\"queryName\" ng-model=\"queryName\" class=\"form-control\"/>\n" +
+    "        </div>\n" +
+    "    </div>\n" +
+    "</div>\n" +
+    "\n" +
+    "<div class=\"modal-footer\">\n" +
+    "    <button class=\"btn btn-primary udb-save-query-ok-button fa fa-check\" ng-click=\"ok()\">bewaren</button>\n" +
+    "    <button class=\"btn btn-warning udb-save-query-cancel-button fa fa-times\" ng-click=\"cancel()\">annuleren</button>\n" +
+    "</div>\n" +
+    "</form>\n"
+  );
+
+
+  $templateCache.put('templates/save-search.directive.html',
+    "<p>\n" +
+    "    <strong>Jouw zoekdracht</strong>\n" +
+    "    <a href=\"#\" ng-click=\"saveSearch()\" class=\"btn btn-sm btn-default\">\n" +
+    "        <i class=\"fa fa-bookmark-o\"></i> Bewaren\n" +
+    "    </a>\n" +
+    "</p>\n"
+  );
+
+
+  $templateCache.put('templates/saved-searches-list.html',
+    "<div class=\"container-fluid\">\n" +
+    "    <h1>Mijn zoekopdrachten</h1>\n" +
+    "    <table class=\"table\">\n" +
+    "        <tr>\n" +
+    "            <th class=\"saved-search-title-column\">\n" +
+    "                <strong>Titel</strong>\n" +
+    "            </th>\n" +
+    "            <th>\n" +
+    "                Query\n" +
+    "            </th>\n" +
+    "            <td>\n" +
+    "            </td>\n" +
+    "        </tr>\n" +
+    "        <tr ng-repeat=\"savedSearch in savedSearches\">\n" +
+    "            <td>\n" +
+    "                <p>\n" +
+    "                  <i class=\"fa fa-bookmark\"></i>\n" +
+    "                  <span ng-bind=\"::savedSearch.name\"></span></p>\n" +
+    "                <p><a ng-href=\"/search?query={{::savedSearch.query}}\" class=\"small\">Resultaten bekijken</a></p>\n" +
+    "            </td>\n" +
+    "            <td class=\"saved-search-query\">\n" +
+    "                <textarea ui-codemirror=\"{ onLoad : codemirrorLoaded }\" ng-model=\"::savedSearch.query\" class=\"query form-control\" rows=\"3\"\n" +
+    "                          ui-codemirror-opts=\"editorOptions\"></textarea>\n" +
+    "            </td>\n" +
+    "            <td>\n" +
+    "                <a class=\"btn btn-default\" ng-click=\"::deleteSavedSearch(savedSearch.id)\">Verwijderen</a>\n" +
+    "            </td>\n" +
+    "        </tr>\n" +
+    "    </table>\n" +
     "</div>\n"
   );
 
@@ -6759,7 +7171,8 @@ $templateCache.put('templates/job-logo.directive.html',
     "<form class=\"navbar-form navbar-left udb-header-search\" role=\"search\"\n" +
     "      ng-class=\"{'has-errors': sb.hasErrors, 'is-editing': sb.isEditing}\">\n" +
     "  <div class=\"form-group has-warning has-feedback\">\n" +
-    "    <input type=\"text\" class=\"form-control\" ng-model=\"sb.query\">\n" +
+    "    <input type=\"text\" class=\"form-control\" ng-model=\"sb.query\" ng-change=\"sb.searchChange()\">\n" +
+    "    <i class=\"fa fa-flask editor-icon\" ng-click=\"sb.editQuery()\"></i>\n" +
     "    <i ng-show=\"sb.hasErrors\" class=\"fa fa-warning warning-icon\" tooltip-append-to-body=\"true\"\n" +
     "       tooltip-placement=\"bottom\" tooltip=\"{{sb.errors}}\"></i>\n" +
     "  </div>\n" +
@@ -6781,6 +7194,9 @@ $templateCache.put('templates/job-logo.directive.html',
     "          <div class=\"row\">\n" +
     "              <div class=\"col-xs-12\">\n" +
     "                  <ul class=\"nav nav-pills\" role=\"tablist\">\n" +
+    "                      <li udb-save-search ng-show=\"activeQuery.queryString\"\n" +
+    "                              udb-query-string=\"activeQuery.queryString\">\n" +
+    "                      </li>\n" +
     "                      <li>\n" +
     "                          <p class=\"rv-item-counter\">\n" +
     "                              <span ng-bind=\"resultViewer.totalItems\"></span> resultaten\n" +
@@ -6850,10 +7266,10 @@ $templateCache.put('templates/job-logo.directive.html',
     "                      <ul class=\"dropdown-menu\">\n" +
     "                          <li role=\"presentation\" class=\"dropdown-header\">Selecteer</li>\n" +
     "                          <li ng-click=\"resultViewer.toggleSelection()\">\n" +
-    "                              <a href>Alles op deze pagina (30 items)</a>\n" +
+    "                              <a href>Alles op deze pagina <ng-pluralize count=\"resultViewer.events.length\" when=\"{'0': '(0 items)','one': '(1 item)','other': '({} items)'}\"></ng-pluralize></a>\n" +
     "                          </li>\n" +
     "                          <li ng-click=\"resultViewer.selectQuery()\">\n" +
-    "                              <a href>Alles resultaten (<span ng-bind=\"resultViewer.totalItems\"></span> items)</a>\n" +
+    "                              <a href>Alle resultaten <ng-pluralize count=\"resultViewer.totalItems\" when=\"{'0': '(0 items)','one': '(1 item)','other': '({} items)'}\"></ng-pluralize></a>\n" +
     "                          </li>\n" +
     "                      </ul>\n" +
     "                    </span>\n" +
@@ -6910,12 +7326,12 @@ $templateCache.put('templates/job-logo.directive.html',
     "                  </span>\n" +
     "              </div>\n" +
     "\n" +
-    "              <div class=\"col-sm-3\" class=\"rv-specific-event-info\">\n" +
+    "              <div class=\"col-sm-3 rv-specific-event-info\">\n" +
     "                  <div class=\"rv-event-info-input udb-organizer\"\n" +
     "                       ng-show=\"resultViewer.activeSpecific.id === 'input'\">\n" +
     "                      <div>\n" +
     "                          <span class=\"fa fa-clock-o\"></span>&nbsp;\n" +
-    "                          <span ng-bind=\"event.created | date : 'dd/MM/yyyy • HH:mm'\"></span>\n" +
+    "                          <span ng-bind=\"event.modified | date : 'dd/MM/yyyy • HH:mm'\"></span>\n" +
     "                      </div>\n" +
     "                      <div class=\"udb-email\">\n" +
     "                          <span class=\"fa fa-user\"></span>&nbsp;\n" +

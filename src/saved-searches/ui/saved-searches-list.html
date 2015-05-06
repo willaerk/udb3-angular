@@ -23,7 +23,7 @@
                           ui-codemirror-opts="editorOptions"></textarea>
             </td>
             <td>
-                <a class="btn btn-default" ng-click="::deleteSavedSearch(savedSearch.id)">Verwijderen</a>
+                <a class="btn btn-default" ng-if="::savedSearch.id" ng-click="::deleteSavedSearch(savedSearch.id)">Verwijderen</a>
             </td>
         </tr>
     </table>

@@ -369,7 +369,7 @@ udb-search-bar .advanced-search {
   top: 30px;
   left: 20px;
 }
-.udb-header-search .editor-icon,
+.udb-header-search .saved-search-icon,
 .udb-search-button,
 .udb-header-search .warning-icon {
   width: 36px;
@@ -387,7 +387,7 @@ udb-search-bar .advanced-search {
 .udb-search-button:focus {
   outline: none;
 }
-.udb-header-search .editor-icon,
+.udb-header-search .saved-search-icon,
 .udb-header-search .warning-icon {
   position: absolute;
   right: 0;
@@ -395,14 +395,15 @@ udb-search-bar .advanced-search {
   text-align: center;
   cursor: pointer;
 }
-.udb-header-search .editor-icon {
+.udb-header-search .saved-search-icon {
   color: #78acd9;
 }
-.udb-header-search.is-editing .editor-icon {
+.open.saved-search-icon {
   color: white;
 }
 .udb-header-search .warning-icon {
   left: auto;
+  right: 36px;
   color: yellow;
   display: block;
   background-color: #4b79a0;

@@ -68,7 +68,7 @@ udb-search-bar {
   }
 }
 
-.udb-header-search .editor-icon,
+.udb-header-search .saved-search-icon,
 .udb-search-button,
 .udb-header-search .warning-icon {
   width: 36px;
@@ -89,7 +89,7 @@ udb-search-bar {
   outline: none;
 }
 
-.udb-header-search .editor-icon,
+.udb-header-search .saved-search-icon,
 .udb-header-search .warning-icon {
   position: absolute;
   right: 0;
@@ -98,16 +98,17 @@ udb-search-bar {
   cursor: pointer;
 }
 
-.udb-header-search .editor-icon {
+.udb-header-search .saved-search-icon {
   color: lighten(@brand-primary, 20%);
 }
 
-.udb-header-search.is-editing .editor-icon {
+.open.saved-search-icon {
   color: white;
 }
 
 .udb-header-search .warning-icon {
   left: auto;
+  right: 36px;
   color: yellow;
   display: block;
   background-color: desaturate(@brand-primary, 20%);

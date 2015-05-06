@@ -11,7 +11,7 @@ angular
   .directive('udbSearchBar', udbSearchBar);
 
 /* @ngInject */
-function udbSearchBar(searchHelper, $rootScope, $modal) {
+function udbSearchBar(searchHelper, $rootScope, $modal, savedSearchesService) {
   return {
     templateUrl: 'templates/search-bar.directive.html',
     restrict: 'E',
@@ -21,7 +21,8 @@ function udbSearchBar(searchHelper, $rootScope, $modal) {
         query: '',
         hasErrors: false,
         errors: '',
-        isEditing: false
+        isEditing: false,
+        savedSearches: []
       };
 
       var editorModal;
@@ -48,6 +49,11 @@ function udbSearchBar(searchHelper, $rootScope, $modal) {
       };
 
       scope.sb = searchBar;
+
+      var savedSearchesPromise = savedSearchesService.getSavedSearches();
+      savedSearchesPromise.then(function (savedSearches) {
+        searchBar.savedSearches = _.take(savedSearches, 5);
+      });
 
       $rootScope.$on('stopEditingQuery', function () {
         scope.sb.isEditing = false;

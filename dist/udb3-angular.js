@@ -4755,7 +4755,7 @@ angular
   .directive('udbSearchBar', udbSearchBar);
 
 /* @ngInject */
-function udbSearchBar(searchHelper, $rootScope, $modal) {
+function udbSearchBar(searchHelper, $rootScope, $modal, savedSearchesService) {
   return {
     templateUrl: 'templates/search-bar.directive.html',
     restrict: 'E',
@@ -4765,7 +4765,8 @@ function udbSearchBar(searchHelper, $rootScope, $modal) {
         query: '',
         hasErrors: false,
         errors: '',
-        isEditing: false
+        isEditing: false,
+        savedSearches: []
       };
 
       var editorModal;
@@ -4792,6 +4793,11 @@ function udbSearchBar(searchHelper, $rootScope, $modal) {
       };
 
       scope.sb = searchBar;
+
+      var savedSearchesPromise = savedSearchesService.getSavedSearches();
+      savedSearchesPromise.then(function (savedSearches) {
+        searchBar.savedSearches = _.take(savedSearches, 5);
+      });
 
       $rootScope.$on('stopEditingQuery', function () {
         scope.sb.isEditing = false;
@@ -4827,7 +4833,7 @@ function udbSearchBar(searchHelper, $rootScope, $modal) {
     }
   };
 }
-udbSearchBar.$inject = ["searchHelper", "$rootScope", "$modal"];
+udbSearchBar.$inject = ["searchHelper", "$rootScope", "$modal", "savedSearchesService"];
 
 // Source: src/search/filters/currency.filter.js
 /**
@@ -7248,6 +7254,17 @@ $templateCache.put('templates/unexpected-error-modal.html',
     "      ng-class=\"{'has-errors': sb.hasErrors, 'is-editing': sb.isEditing}\">\n" +
     "  <div class=\"form-group has-warning has-feedback\">\n" +
     "    <input type=\"text\" class=\"form-control\" ng-model=\"sb.query\" ng-change=\"sb.searchChange()\">\n" +
+    "    <span class=\"dropdown saved-search-icon\" dropdown>\n" +
+    "      <i class=\"fa fa-bookmark\" class=\"dropdown-toggle\" dropdown-toggle></i>\n" +
+    "      <ul class=\"dropdown-menu\" role=\"menu\">\n" +
+    "        <li role=\"presentation\" class=\"dropdown-header\">Bewaarde zoekopdrachten</li>\n" +
+    "        <li ng-repeat=\"savedSearch in sb.savedSearches\">\n" +
+    "          <a ng-href=\"/search?query={{::savedSearch.query}}\" ng-bind=\"::savedSearch.name\"></a>\n" +
+    "        </li>\n" +
+    "        <li class=\"divider\"></li>\n" +
+    "        <li><a href=\"/saved-searches\">Beheren</a></li>\n" +
+    "      </ul>\n" +
+    "    </span>\n" +
     "    <i ng-show=\"sb.hasErrors\" class=\"fa fa-warning warning-icon\" tooltip-append-to-body=\"true\"\n" +
     "       tooltip-placement=\"bottom\" tooltip=\"{{sb.errors}}\"></i>\n" +
     "  </div>\n" +

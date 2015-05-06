@@ -6966,7 +6966,7 @@ $templateCache.put('templates/unexpected-error-modal.html',
     "                          ui-codemirror-opts=\"editorOptions\"></textarea>\n" +
     "            </td>\n" +
     "            <td>\n" +
-    "                <a class=\"btn btn-default\" ng-click=\"::deleteSavedSearch(savedSearch.id)\">Verwijderen</a>\n" +
+    "                <a class=\"btn btn-default\" ng-if=\"::savedSearch.id\" ng-click=\"::deleteSavedSearch(savedSearch.id)\">Verwijderen</a>\n" +
     "            </td>\n" +
     "        </tr>\n" +
     "    </table>\n" +

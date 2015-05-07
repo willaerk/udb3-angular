@@ -4202,7 +4202,7 @@ angular
   .service('savedSearchesService', SavedSearchesService);
 
 /* @ngInject */
-function SavedSearchesService($q, $http, appConfig) {
+function SavedSearchesService($q, $http, appConfig, $rootScope) {
   var apiUrl = appConfig.baseUrl;
   var defaultApiConfig = {
     withCredentials: true,
@@ -4210,31 +4210,58 @@ function SavedSearchesService($q, $http, appConfig) {
       'Content-Type': 'application/json'
     }
   };
+  var savedSearches = [];
+  var ss = this;
 
-  this.createSavedSearch = function(name, query) {
+  ss.createSavedSearch = function(name, query) {
     var post = {
       name: name,
       query: query
     };
-    return $http.post(apiUrl + 'saved-searches/', post, defaultApiConfig);
+    var request = $http.post(apiUrl + 'saved-searches/', post, defaultApiConfig);
+
+    request.success(function () {
+      savedSearches.push(post);
+      savedSearchesChanged();
+    });
+
+    return request;
   };
 
-  this.getSavedSearches = function () {
-    var deferredSavedSearches = $q.defer(),
-        savedSearchesRequest = $http.get(apiUrl + 'saved-searches/', defaultApiConfig);
+  ss.getSavedSearches = function () {
+    var deferredSavedSearches = $q.defer();
 
-    savedSearchesRequest.success(function (data) {
-      deferredSavedSearches.resolve(data);
-    });
+    if (savedSearches.length === 0) {
+      var savedSearchesRequest = $http.get(apiUrl + 'saved-searches/', defaultApiConfig);
+
+      savedSearchesRequest.success(function (data) {
+        deferredSavedSearches.resolve(data);
+        savedSearches = data;
+      });
+    } else {
+      deferredSavedSearches.resolve(savedSearches);
+    }
 
     return deferredSavedSearches.promise;
   };
 
-  this.deleteSavedSearch = function (searchId) {
-    return $http.delete(apiUrl + 'saved-searches/' + searchId, defaultApiConfig);
+  ss.deleteSavedSearch = function (searchId) {
+    var request = $http.delete(apiUrl + 'saved-searches/' + searchId, defaultApiConfig);
+
+    request.success(function () {
+      _.remove(savedSearches, {id: searchId});
+      savedSearchesChanged();
+    });
+
+    return request;
   };
+
+  function savedSearchesChanged () {
+    $rootScope.$emit('savedSearchesChanged', savedSearches);
+  }
 }
-SavedSearchesService.$inject = ["$q", "$http", "appConfig"];
+SavedSearchesService.$inject = ["$q", "$http", "appConfig", "$rootScope"];
+
 
 // Source: src/saved-searches/ui/saved-searches-list.controller.js
 /**
@@ -4249,7 +4276,7 @@ angular
   .controller('SavedSearchesListController', SavedSearchesList);
 
 /* @ngInject */
-function SavedSearchesList($scope, savedSearchesService, $modal) {
+function SavedSearchesList($scope, savedSearchesService, $modal, $rootScope) {
 
   $scope.savedSearches = [];
 
@@ -4269,9 +4296,12 @@ function SavedSearchesList($scope, savedSearchesService, $modal) {
     });
   };
 
+  // get the current saved searches and watch for changes
   var savedSearchesPromise = savedSearchesService.getSavedSearches();
-
   savedSearchesPromise.then(function (savedSearches) {
+    $scope.savedSearches = savedSearches;
+  });
+  $rootScope.$on('savedSearchesChanged', function (event, savedSearches) {
     $scope.savedSearches = savedSearches;
   });
 
@@ -4285,10 +4315,7 @@ function SavedSearchesList($scope, savedSearchesService, $modal) {
       var savedSearchPromise = savedSearchesService.deleteSavedSearch(searchId);
 
       savedSearchPromise
-        .then(function () {
-          _.remove($scope.savedSearches, {id: searchId});
-        },
-        function() {
+        .catch(function() {
           var modalInstance = $modal.open({
             templateUrl: 'templates/unexpected-error-modal.html',
             controller: 'UnexpectedErrorModalController',
@@ -4305,7 +4332,7 @@ function SavedSearchesList($scope, savedSearchesService, $modal) {
 
   $scope.deleteSavedSearch = this.deleteSavedSearch;
 }
-SavedSearchesList.$inject = ["$scope", "savedSearchesService", "$modal"];
+SavedSearchesList.$inject = ["$scope", "savedSearchesService", "$modal", "$rootScope"];
 
 // Source: src/search/components/query-editor-daterangepicker.directive.js
 /**
@@ -4796,6 +4823,9 @@ function udbSearchBar(searchHelper, $rootScope, $modal, savedSearchesService) {
 
       var savedSearchesPromise = savedSearchesService.getSavedSearches();
       savedSearchesPromise.then(function (savedSearches) {
+        searchBar.savedSearches = _.take(savedSearches, 5);
+      });
+      $rootScope.$on('savedSearchesChanged', function (event, savedSearches) {
         searchBar.savedSearches = _.take(savedSearches, 5);
       });
 

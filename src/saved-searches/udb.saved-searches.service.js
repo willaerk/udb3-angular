@@ -12,7 +12,7 @@ angular
   .service('savedSearchesService', SavedSearchesService);
 
 /* @ngInject */
-function SavedSearchesService($q, $http, appConfig) {
+function SavedSearchesService($q, $http, appConfig, $rootScope) {
   var apiUrl = appConfig.baseUrl;
   var defaultApiConfig = {
     withCredentials: true,
@@ -20,27 +20,54 @@ function SavedSearchesService($q, $http, appConfig) {
       'Content-Type': 'application/json'
     }
   };
+  var savedSearches = [];
+  var ss = this;
 
-  this.createSavedSearch = function(name, query) {
+  ss.createSavedSearch = function(name, query) {
     var post = {
       name: name,
       query: query
     };
-    return $http.post(apiUrl + 'saved-searches/', post, defaultApiConfig);
+    var request = $http.post(apiUrl + 'saved-searches/', post, defaultApiConfig);
+
+    request.success(function () {
+      savedSearches.push(post);
+      savedSearchesChanged();
+    });
+
+    return request;
   };
 
-  this.getSavedSearches = function () {
-    var deferredSavedSearches = $q.defer(),
-        savedSearchesRequest = $http.get(apiUrl + 'saved-searches/', defaultApiConfig);
+  ss.getSavedSearches = function () {
+    var deferredSavedSearches = $q.defer();
 
-    savedSearchesRequest.success(function (data) {
-      deferredSavedSearches.resolve(data);
-    });
+    if (savedSearches.length === 0) {
+      var savedSearchesRequest = $http.get(apiUrl + 'saved-searches/', defaultApiConfig);
+
+      savedSearchesRequest.success(function (data) {
+        deferredSavedSearches.resolve(data);
+        savedSearches = data;
+      });
+    } else {
+      deferredSavedSearches.resolve(savedSearches);
+    }
 
     return deferredSavedSearches.promise;
   };
 
-  this.deleteSavedSearch = function (searchId) {
-    return $http.delete(apiUrl + 'saved-searches/' + searchId, defaultApiConfig);
+  ss.deleteSavedSearch = function (searchId) {
+    var request = $http.delete(apiUrl + 'saved-searches/' + searchId, defaultApiConfig);
+
+    request.success(function () {
+      _.remove(savedSearches, {id: searchId});
+      savedSearchesChanged();
+    });
+
+    return request;
   };
+
+  function savedSearchesChanged () {
+    $rootScope.$emit('savedSearchesChanged', savedSearches);
+  }
 }
+

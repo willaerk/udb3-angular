@@ -4230,17 +4230,12 @@ function SavedSearchesService($q, $http, appConfig, $rootScope) {
 
   ss.getSavedSearches = function () {
     var deferredSavedSearches = $q.defer();
+    var savedSearchesRequest = $http.get(apiUrl + 'saved-searches/', {withCredentials: true});
 
-    if (savedSearches.length === 0) {
-      var savedSearchesRequest = $http.get(apiUrl + 'saved-searches/', defaultApiConfig);
-
-      savedSearchesRequest.success(function (data) {
-        deferredSavedSearches.resolve(data);
-        savedSearches = data;
-      });
-    } else {
-      deferredSavedSearches.resolve(savedSearches);
-    }
+    savedSearchesRequest.success(function (data) {
+      deferredSavedSearches.resolve(data);
+      savedSearches = data;
+    });
 
     return deferredSavedSearches.promise;
   };

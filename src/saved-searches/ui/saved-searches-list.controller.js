@@ -12,7 +12,7 @@ angular
   .controller('SavedSearchesListController', SavedSearchesList);
 
 /* @ngInject */
-function SavedSearchesList($scope, savedSearchesService, $modal) {
+function SavedSearchesList($scope, savedSearchesService, $modal, $rootScope) {
 
   $scope.savedSearches = [];
 
@@ -32,9 +32,12 @@ function SavedSearchesList($scope, savedSearchesService, $modal) {
     });
   };
 
+  // get the current saved searches and watch for changes
   var savedSearchesPromise = savedSearchesService.getSavedSearches();
-
   savedSearchesPromise.then(function (savedSearches) {
+    $scope.savedSearches = savedSearches;
+  });
+  $rootScope.$on('savedSearchesChanged', function (event, savedSearches) {
     $scope.savedSearches = savedSearches;
   });
 
@@ -48,10 +51,7 @@ function SavedSearchesList($scope, savedSearchesService, $modal) {
       var savedSearchPromise = savedSearchesService.deleteSavedSearch(searchId);
 
       savedSearchPromise
-        .then(function () {
-          _.remove($scope.savedSearches, {id: searchId});
-        },
-        function() {
+        .catch(function() {
           var modalInstance = $modal.open({
             templateUrl: 'templates/unexpected-error-modal.html',
             controller: 'UnexpectedErrorModalController',

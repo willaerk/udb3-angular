@@ -4790,6 +4790,7 @@ function udbSearchBar(searchHelper, $rootScope, $modal, savedSearchesService) {
 
       searchBar.search = function () {
         searchHelper.setQueryString(searchBar.query);
+        $rootScope.$emit('searchSubmitted');
       };
 
       scope.sb = searchBar;

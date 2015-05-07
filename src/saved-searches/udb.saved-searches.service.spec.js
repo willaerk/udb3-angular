@@ -3,6 +3,7 @@
 describe('Service: savedSearchesService', function() {
   var $httpBackend;
   var savedSearchesService;
+  var $rootScope;
 
   var baseUrl = 'http://example.com/';
 
@@ -16,10 +17,13 @@ describe('Service: savedSearchesService', function() {
 
   beforeEach(module('udb.saved-searches'));
 
-  beforeEach(inject(function($injector, _savedSearchesService_) {
+  beforeEach(inject(function($injector) {
     // Set up the mock http service responses
     $httpBackend = $injector.get('$httpBackend');
-    savedSearchesService = _savedSearchesService_;
+    savedSearchesService = $injector.get('savedSearchesService');
+    $rootScope = $injector.get('$rootScope');
+
+    spyOn($rootScope, '$emit');
   }));
 
   afterEach(function() {
@@ -28,10 +32,15 @@ describe('Service: savedSearchesService', function() {
   });
 
   it('posts a JSON-encoded title & query to /saved-searches', function() {
+    var newSavedSearch = {
+      name: 'In Leuven',
+      query: 'city:"Leuven"'
+    };
+
     $httpBackend
       .expectPOST(
         baseUrl + 'saved-searches/',
-        '{"name":"In Leuven","query":"city:\\\"Leuven\\\""}',
+        JSON.stringify(newSavedSearch),
         function (headers) {
           return headers['Content-Type'] == 'application/json';
         }
@@ -43,6 +52,7 @@ describe('Service: savedSearchesService', function() {
 
     response.success(function (data) {
       expect(data).toEqual({jobId: 'xyz'});
+      expect($rootScope.$emit).toHaveBeenCalledWith('savedSearchesChanged', [newSavedSearch]);
     });
   });
 
@@ -76,6 +86,7 @@ describe('Service: savedSearchesService', function() {
 
     response.success(function (data) {
       expect(data).toEqual({jobId: 'xyz'});
+      expect($rootScope.$emit).toHaveBeenCalledWith('savedSearchesChanged', []);
     });
   });
 });

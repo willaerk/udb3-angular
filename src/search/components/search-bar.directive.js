@@ -55,6 +55,9 @@ function udbSearchBar(searchHelper, $rootScope, $modal, savedSearchesService) {
       savedSearchesPromise.then(function (savedSearches) {
         searchBar.savedSearches = _.take(savedSearches, 5);
       });
+      $rootScope.$on('savedSearchesChanged', function (event, savedSearches) {
+        searchBar.savedSearches = _.take(savedSearches, 5);
+      });
 
       $rootScope.$on('stopEditingQuery', function () {
         scope.sb.isEditing = false;

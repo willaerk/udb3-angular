@@ -35,7 +35,8 @@ describe('Controller: Saved Searches List', function () {
     savedSearchesListController = $controller('SavedSearchesListController', {
       $scope: $scope,
       savedSearchesService: savedSearchesService,
-      $modal: $modal
+      $modal: $modal,
+      $rootScope: $scope
     });
   }));
 
@@ -70,9 +71,6 @@ describe('Controller: Saved Searches List', function () {
       $scope.$digest();
       apiRequest.resolve();
       expect(savedSearchesService.deleteSavedSearch).toHaveBeenCalledWith(savedSearchId);
-      //make sure the saved search is eagerly removed when we the command is successfully created.
-      $scope.$digest();
-      expect($scope.savedSearches).not.toContain(aSavedSearch);
     });
 
     it('shows an error modal when the search cannot be deleted', function () {

@@ -4809,16 +4809,18 @@ function udbSearchBar(searchHelper, $rootScope, $modal, savedSearchesService) {
 
       scope.$watch(function () {
         return searchHelper.getQuery();
-      }, function (query) {
-        scope.sb.query = query.queryString;
-        scope.sb.search();
+      }, function (query, oldQuery) {
+        if (oldQuery && oldQuery.queryString !== query.queryString) {
+          scope.sb.query = query.queryString;
+          scope.sb.search();
 
-        if (query.errors && query.errors.length) {
-          scope.sb.hasErrors = true;
-          scope.sb.errors = formatErrors(query.errors);
-        } else {
-          scope.sb.hasErrors = false;
-          scope.sb.errors = '';
+          if (query.errors && query.errors.length) {
+            scope.sb.hasErrors = true;
+            scope.sb.errors = formatErrors(query.errors);
+          } else {
+            scope.sb.hasErrors = false;
+            scope.sb.errors = '';
+          }
         }
       }, true);
 

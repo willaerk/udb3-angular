@@ -344,10 +344,40 @@ function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth,
     );
   };
 
+  this.removeEvent = function (id, event) {
+    return $http.delete(
+      appConfig.baseApiUrl + 'event/' + id + '/delete',
+      event,
+      defaultApiConfig
+    );
+  };
+
   this.createPlace = function (event) {
     return $http.post(
       appConfig.baseApiUrl + 'place',
       event,
+      defaultApiConfig
+    );
+  };
+
+  this.removePlace = function (id, event) {
+    return $http.delete(
+      appConfig.baseApiUrl + 'place/' + id + '/delete',
+      event,
+      defaultApiConfig
+    );
+  };
+
+  /**
+   * find events for a given location id
+   * @param {type} id
+   * @returns {array}
+   */
+  this.findEventsForLocation = function(id) {
+    return $http.get(appConfig.baseUrl + 'place/' + id + '/events',
+      {
+        'id': id
+      },
       defaultApiConfig
     );
   };

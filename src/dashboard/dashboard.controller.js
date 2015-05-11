@@ -13,7 +13,7 @@
     .controller('DashboardCtrl', DashboardController);
 
   /* @ngInject */
-  function DashboardController($scope, udb3Content, UdbEvent, UdbPlace, jsonLDLangFilter) {
+  function DashboardController($scope, $modal, udb3Content, eventCrud, UdbEvent, UdbPlace, jsonLDLangFilter) {
 
     // Scope variables.
     $scope.loaded = false;
@@ -22,6 +22,7 @@
 
     // Scope functions.
     $scope.getUdb3ContentForCurrentUser = getUdb3ContentForCurrentUser;
+    $scope.openDeleteConfirmModal = openDeleteConfirmModal;
 
     // Load the udb3 content for the current user.
     getUdb3ContentForCurrentUser();
@@ -62,7 +63,6 @@
             // set urls
             item.editUrl = '/udb3/' + type + '/' + item.details.id + '/edit';
             item.exampleUrl = '/udb3/' + type + '/' + item.details.id;
-            item.deleteUrl = '/udb3/' + type + '/' + item.details.id + '/delete';
 
             $scope.userContent[key] = item;
           }
@@ -76,6 +76,74 @@
 
       });
     }
+
+    /**
+     * Open the confirmation modal to delete an event/place.
+     */
+    function openDeleteConfirmModal(item) {
+
+      var modalInstance = null;
+
+      if (item.type === 'event') {
+
+        modalInstance = $modal.open({
+          templateUrl: 'templates/event-delete-confirm-modal.html',
+          controller: 'EventDeleteConfirmModalCtrl',
+          resolve: {
+            item: function () {
+              return item;
+            }
+          }
+        });
+        modalInstance.result.then(function (item) {
+          removeItem(item);
+        }, function () {
+        });
+
+      }
+      else {
+
+        // Check if this place has planned events.
+        var hasEvents = true;
+        var promise = eventCrud.findEventsForLocation(item.details.id);
+        promise.then(function(jsonResponse) {
+          hasEvents = jsonResponse.data.events !== undefined;
+
+          modalInstance = $modal.open({
+            templateUrl: 'templates/place-delete-confirm-modal.html',
+            controller: 'PlaceDeleteConfirmModalCtrl',
+            resolve: {
+              item: function () {
+                return item;
+              },
+              hasEvents: function () {
+                return hasEvents;
+              }
+            }
+          });
+          modalInstance.result.then(function (item) {
+            console.log('Modal dismissed. Removing item');
+            removeItem(item);
+          }, function () {
+          });
+
+
+        }, function(error) {
+          hasEvents = false;
+        });
+
+      }
+
+    }
+
+    /**
+     * Open the confirmation modal to delete an event/place.
+     */
+    function removeItem(item) {
+      console.log(item);
+      $scope.userContent.splice( $scope.userContent.indexOf(item), 1 );
+    }
+
   }
 
 })();

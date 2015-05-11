@@ -46,10 +46,10 @@
                 <li>
                   <a href="{{ userContentItem.exampleUrl }}">Voorbeeld</a>
                 </li>
-               <!-- <li class="divider"></li>
+                <li class="divider"></li>
                 <li>
-                  <a href="{{ userContentItem.deleteUrl }}">Verwijderen</a>
-                </li> -->
+                  <a href="{{ userContentItem.exampleUrl }}" data-toggle="modal" data-target="#remove-confirm-modal" ng-click="openDeleteConfirmModal(userContentItem)">Verwijderen</a>
+                </li>
               </ul>
             </div>
           </td>

@@ -34,10 +34,45 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
   };
 
   /**
+   * Remove an event.
+   *
+   * @param {int} id
+   * @param {UdbEvent}  event
+   * The event to be removed
+   */
+  this.removeEvent = function (id, event) {
+    var jobPromise = udbApi.removeEvent(id, event);
+    return jobPromise;
+  };
+
+  /**
+   * Finds events for given location/place id.
+   *
+   * @param {int} id
+   *   Place Id to find events for
+   */
+  this.findEventsForLocation = function(id) {
+    var jobPromise = udbApi.findEventsForLocation(id);
+    return jobPromise;
+  };
+
+  /**
    * Creates a new place.
    */
   this.createPlace = function(place) {
     return udbApi.createPlace(place);
+  };
+
+  /**
+   * Remove a place.
+   *
+   * @param {int} id
+   * @param {UdbPlace}  place
+   * The place to be removed
+   */
+  this.removePlace = function (id, place) {
+    var jobPromise = udbApi.removePlace(id, place);
+    return jobPromise;
   };
 
   /**

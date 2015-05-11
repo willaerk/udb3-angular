@@ -2779,10 +2779,40 @@ function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth,
     );
   };
 
+  this.removeEvent = function (id, event) {
+    return $http.delete(
+      appConfig.baseApiUrl + 'event/' + id + '/delete',
+      event,
+      defaultApiConfig
+    );
+  };
+
   this.createPlace = function (event) {
     return $http.post(
       appConfig.baseApiUrl + 'place',
       event,
+      defaultApiConfig
+    );
+  };
+
+  this.removePlace = function (id, event) {
+    return $http.delete(
+      appConfig.baseApiUrl + 'place/' + id + '/delete',
+      event,
+      defaultApiConfig
+    );
+  };
+
+  /**
+   * find events for a given location id
+   * @param {type} id
+   * @returns {array}
+   */
+  this.findEventsForLocation = function(id) {
+    return $http.get(appConfig.baseUrl + 'place/' + id + '/events',
+      {
+        'id': id
+      },
       defaultApiConfig
     );
   };
@@ -3658,6 +3688,125 @@ function UitidAuth($window, $location, $http, appConfig, $cookieStore) {
 }
 UitidAuth.$inject = ["$window", "$location", "$http", "appConfig", "$cookieStore"];
 
+// Source: src/dashboard/components/event-delete-confirm-modal.controller.js
+
+/**
+ * @ngdoc function
+ * @name udbApp.controller:EventDeleteConfirmModalCtrl
+ * @description
+ * # EventDeleteConfirmModalCtrl
+ * Modal to delete an event.
+ */
+angular
+  .module('udb.dashboard')
+  .controller('EventDeleteConfirmModalCtrl', EventDeleteConfirmModalController);
+
+/* @ngInject */
+function EventDeleteConfirmModalController($scope, $modalInstance, eventCrud, item) {
+
+  $scope.item = item;
+  $scope.saving = false;
+
+  $scope.cancelRemoval = cancelRemoval;
+  $scope.deleteEvent = deleteEvent;
+
+  /**
+   * Remove the event in db.
+   */
+  function deleteEvent() {
+
+    $scope.saving = true;
+
+    var promise = eventCrud.removeEvent(item.details.id, item);
+    promise.then(function(jsonResponse) {
+      $modalInstance.close(item);
+      $scope.saving = false;
+      var success = true;
+      return success;
+
+    }, function() {
+
+      $modalInstance.close(item);
+      $scope.saving = false;
+      return false;
+
+    });
+
+  }
+
+  /**
+   * Cancel, modal dismiss.
+   */
+  function cancelRemoval() {
+    $modalInstance.dismiss();
+  }
+
+}
+EventDeleteConfirmModalController.$inject = ["$scope", "$modalInstance", "eventCrud", "item"];
+
+// Source: src/dashboard/components/place-delete-confirm-modal.controller.js
+
+/**
+ * @ngdoc function
+ * @name udbApp.controller:PlaceDeleteConfirmModalCtrl
+ * @description
+ * # PlaceDeleteConfirmModalCtrl
+ * Modal to delete an event.
+ */
+angular
+  .module('udb.dashboard')
+  .controller('PlaceDeleteConfirmModalCtrl', PlaceDeleteConfirmModalController);
+
+/* @ngInject */
+function PlaceDeleteConfirmModalController($scope, $modalInstance, eventCrud, item, hasEvents) {
+
+  $scope.item = item;
+  $scope.saving = false;
+  $scope.hasEvents = hasEvents;
+  console.log('hasEvents: ' + hasEvents);
+
+  $scope.cancelRemoval = cancelRemoval;
+  $scope.deletePlace = deletePlace;
+
+  /**
+   * Remove the event in db.
+   */
+  function deletePlace() {
+
+    // Extra check in case delete place is tried with events.
+    if (hasEvents) {
+      $modalInstance.dismiss();
+    }
+
+    $scope.saving = true;
+    console.log('Location id to remove: ' + item.details.id);
+    var promise = eventCrud.removePlace(item.details.id, item);
+    promise.then(function(jsonResponse) {
+      $modalInstance.close(item);
+      $scope.saving = false;
+      var success = true;
+      return success;
+
+    }, function() {
+
+      $modalInstance.close(item);
+      $scope.saving = false;
+      return false;
+
+    });
+
+  }
+
+  /**
+   * Cancel, modal dismiss.
+   */
+  function cancelRemoval() {
+    $modalInstance.dismiss();
+  }
+
+}
+PlaceDeleteConfirmModalController.$inject = ["$scope", "$modalInstance", "eventCrud", "item", "hasEvents"];
+
 // Source: src/dashboard/dashboard.controller.js
 (function () {
 /**
@@ -3672,7 +3821,7 @@ UitidAuth.$inject = ["$window", "$location", "$http", "appConfig", "$cookieStore
     .controller('DashboardCtrl', DashboardController);
 
   /* @ngInject */
-  function DashboardController($scope, udb3Content, UdbEvent, UdbPlace, jsonLDLangFilter) {
+  function DashboardController($scope, $modal, udb3Content, eventCrud, UdbEvent, UdbPlace, jsonLDLangFilter) {
 
     // Scope variables.
     $scope.loaded = false;
@@ -3681,6 +3830,7 @@ UitidAuth.$inject = ["$window", "$location", "$http", "appConfig", "$cookieStore
 
     // Scope functions.
     $scope.getUdb3ContentForCurrentUser = getUdb3ContentForCurrentUser;
+    $scope.openDeleteConfirmModal = openDeleteConfirmModal;
 
     // Load the udb3 content for the current user.
     getUdb3ContentForCurrentUser();
@@ -3721,7 +3871,6 @@ UitidAuth.$inject = ["$window", "$location", "$http", "appConfig", "$cookieStore
             // set urls
             item.editUrl = '/udb3/' + type + '/' + item.details.id + '/edit';
             item.exampleUrl = '/udb3/' + type + '/' + item.details.id;
-            item.deleteUrl = '/udb3/' + type + '/' + item.details.id + '/delete';
 
             $scope.userContent[key] = item;
           }
@@ -3735,8 +3884,76 @@ UitidAuth.$inject = ["$window", "$location", "$http", "appConfig", "$cookieStore
 
       });
     }
+
+    /**
+     * Open the confirmation modal to delete an event/place.
+     */
+    function openDeleteConfirmModal(item) {
+
+      var modalInstance = null;
+
+      if (item.type === 'event') {
+
+        modalInstance = $modal.open({
+          templateUrl: 'templates/event-delete-confirm-modal.html',
+          controller: 'EventDeleteConfirmModalCtrl',
+          resolve: {
+            item: function () {
+              return item;
+            }
+          }
+        });
+        modalInstance.result.then(function (item) {
+          removeItem(item);
+        }, function () {
+        });
+
+      }
+      else {
+
+        // Check if this place has planned events.
+        var hasEvents = true;
+        var promise = eventCrud.findEventsForLocation(item.details.id);
+        promise.then(function(jsonResponse) {
+          hasEvents = jsonResponse.data.events !== undefined;
+
+          modalInstance = $modal.open({
+            templateUrl: 'templates/place-delete-confirm-modal.html',
+            controller: 'PlaceDeleteConfirmModalCtrl',
+            resolve: {
+              item: function () {
+                return item;
+              },
+              hasEvents: function () {
+                return hasEvents;
+              }
+            }
+          });
+          modalInstance.result.then(function (item) {
+            console.log('Modal dismissed. Removing item');
+            removeItem(item);
+          }, function () {
+          });
+
+
+        }, function(error) {
+          hasEvents = false;
+        });
+
+      }
+
+    }
+
+    /**
+     * Open the confirmation modal to delete an event/place.
+     */
+    function removeItem(item) {
+      console.log(item);
+      $scope.userContent.splice( $scope.userContent.indexOf(item), 1 );
+    }
+
   }
-  DashboardController.$inject = ["$scope", "udb3Content", "UdbEvent", "UdbPlace", "jsonLDLangFilter"];
+  DashboardController.$inject = ["$scope", "$modal", "udb3Content", "eventCrud", "UdbEvent", "UdbPlace", "jsonLDLangFilter"];
 
 })();
 
@@ -3881,10 +4098,45 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
   };
 
   /**
+   * Remove an event.
+   *
+   * @param {int} id
+   * @param {UdbEvent}  event
+   * The event to be removed
+   */
+  this.removeEvent = function (id, event) {
+    var jobPromise = udbApi.removeEvent(id, event);
+    return jobPromise;
+  };
+
+  /**
+   * Finds events for given location/place id.
+   *
+   * @param {int} id
+   *   Place Id to find events for
+   */
+  this.findEventsForLocation = function(id) {
+    var jobPromise = udbApi.findEventsForLocation(id);
+    return jobPromise;
+  };
+
+  /**
    * Creates a new place.
    */
   this.createPlace = function(place) {
     return udbApi.createPlace(place);
+  };
+
+  /**
+   * Remove a place.
+   *
+   * @param {int} id
+   * @param {UdbPlace}  place
+   * The place to be removed
+   */
+  this.removePlace = function (id, place) {
+    var jobPromise = udbApi.removePlace(id, place);
+    return jobPromise;
   };
 
   /**
@@ -10717,6 +10969,47 @@ $templateCache.put('templates/time-autocomplete.html',
   );
 
 
+  $templateCache.put('templates/event-delete-confirm-modal.html',
+    "<div class=\"modal-body\">\n" +
+    "\n" +
+    "    <div class=\"row\">\n" +
+    "\n" +
+    "      <div class=\"col-xs-12\">\n" +
+    "        <p>Ben je zeker dat je \"{{item.details.name}}\" wil verwijderen?</p>\n" +
+    "      </div>\n" +
+    "\n" +
+    "    </div>\n" +
+    "</div>\n" +
+    "<div class=\"modal-footer\">\n" +
+    "  <button type=\"button\" class=\"btn btn-default\" data-dismiss=\"modal\" ng-click=\"cancelRemoval()\">Annuleren</button>\n" +
+    "  <button type=\"button\" class=\"btn btn-primary\" data-dismiss=\"modal\" ng-click=\"deleteEvent()\">Verwijderen <i class=\"fa fa-circle-o-notch fa-spin\" ng-show=\"saving\"></i></button>\n" +
+    "</div>"
+  );
+
+
+  $templateCache.put('templates/place-delete-confirm-modal.html',
+    "<div class=\"modal-body\">\n" +
+    "\n" +
+    "    <div class=\"row\">\n" +
+    "\n" +
+    "      <div class=\"col-xs-12\" ng-hide=\"hasEvents\">\n" +
+    "        <p>Ben je zeker dat je \"{{item.details.name}}\" wil verwijderen?</p>\n" +
+    "      </div>\n" +
+    "      \n" +
+    "      <div class=\"col-xs-12\" ng-show=\"hasEvents\">\n" +
+    "        <p>De locatie \"{{item.details.name}}\" kan niet verwijderd worden omdat er activiteiten gepland zijn.</p>\n" +
+    "      </div>\n" +
+    "\n" +
+    "    </div>\n" +
+    "</div>\n" +
+    "<div class=\"modal-footer\">\n" +
+    "  <button type=\"button\" class=\"btn btn-primary\" data-dismiss=\"modal\" ng-show=\"hasEvents\" ng-click=\"cancelRemoval()\">Sluiten</button>\n" +
+    "  <button type=\"button\" class=\"btn btn-default\" data-dismiss=\"modal\" ng-hide=\"hasEvents\" ng-click=\"cancelRemoval()\">Annuleren</button>\n" +
+    "  <button type=\"button\" class=\"btn btn-primary\" ng-hide=\"hasEvents\" ng-click=\"deletePlace()\">Verwijderen <i class=\"fa fa-circle-o-notch fa-spin\" ng-show=\"saving\"></i></button>\n" +
+    "</div>"
+  );
+
+
   $templateCache.put('templates/dashboard.html',
     "<div>\n" +
     "\n" +
@@ -10766,10 +11059,10 @@ $templateCache.put('templates/time-autocomplete.html',
     "                <li>\n" +
     "                  <a href=\"{{ userContentItem.exampleUrl }}\">Voorbeeld</a>\n" +
     "                </li>\n" +
-    "               <!-- <li class=\"divider\"></li>\n" +
+    "                <li class=\"divider\"></li>\n" +
     "                <li>\n" +
-    "                  <a href=\"{{ userContentItem.deleteUrl }}\">Verwijderen</a>\n" +
-    "                </li> -->\n" +
+    "                  <a href=\"{{ userContentItem.exampleUrl }}\" data-toggle=\"modal\" data-target=\"#remove-confirm-modal\" ng-click=\"openDeleteConfirmModal(userContentItem)\">Verwijderen</a>\n" +
+    "                </li>\n" +
     "              </ul>\n" +
     "            </div>\n" +
     "          </td>\n" +

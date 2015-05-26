@@ -26,6 +26,7 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
   // Age range vars
   $scope.savingAgeRange = false;
   $scope.ageRangeError = false;
+  $scope.invalidAgeRange = false;
   $scope.ageRange = 0;
   $scope.ageCssClass = EventFormData.ageRange ? 'state-complete' : 'state-incomplete';
   $scope.minAge = '';
@@ -176,16 +177,40 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
    */
   function saveAgeRange() {
 
-    $scope.savingAgeRange = true;
-    $scope.ageRangeError = false;
+    $scope.invalidAgeRange = false;
 
     if ($scope.ageRange > 0) {
 
-      if ($scope.ageRange === 12 || $scope.ageRange === 18) {
-        EventFormData.typicalAgeRange = $scope.minAge + '-' + $scope.ageRange;
-      }
-      else {
-        EventFormData.typicalAgeRange = $scope.minAge + '-';
+      // Check if the entered age is valid for selected range.
+      switch ($scope.ageRange) {
+
+        case 12:
+
+          if ($scope.minAge > 12 || $scope.minAge < 1) {
+            $scope.invalidAgeRange = true;
+          }
+
+          EventFormData.typicalAgeRange = $scope.minAge + '-' + $scope.ageRange;
+          break;
+
+        case 18:
+
+          if ($scope.minAge < 12 || $scope.minAge > 18) {
+            $scope.invalidAgeRange = true;
+          }
+
+          EventFormData.typicalAgeRange = $scope.minAge + '-' + $scope.ageRange;
+          break;
+
+        case 99:
+
+          if ($scope.minAge < 19) {
+            $scope.invalidAgeRange = true;
+          }
+
+          EventFormData.typicalAgeRange = $scope.minAge + '-';
+          break;
+
       }
 
     }
@@ -193,16 +218,23 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
       EventFormData.typicalAgeRange = $scope.ageRange;
     }
 
-    var promise = eventCrud.updateTypicalAgeRange(EventFormData);
-    promise.then(function() {
-      $scope.savingAgeRange = false;
-      updateLastUpdated();
-      $scope.ageCssClass = 'state-complete';
-    }, function() {
-      // Error occured.
-      $scope.savingAgeRange = false;
-      $scope.ageRangeError = true;
-    });
+    // Save to db if valid age entered.
+    if (!$scope.invalidAgeRange) {
+
+      $scope.ageRangeError = false;
+      $scope.savingAgeRange = true;
+      var promise = eventCrud.updateTypicalAgeRange(EventFormData);
+      promise.then(function() {
+        $scope.savingAgeRange = false;
+        updateLastUpdated();
+        $scope.ageCssClass = 'state-complete';
+      }, function() {
+        // Error occured.
+        $scope.savingAgeRange = false;
+        $scope.ageRangeError = true;
+      });
+
+    }
 
   }
 

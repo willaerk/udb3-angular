@@ -249,11 +249,11 @@
 
                           <div ng-if="resultViewer.eventProperties.labels.visible" class="udb-labels">
                               <span ng-hide="event.labels.length">Dit evenement is nog niet gelabeld.</span>
-                              <ui-select multiple tagging tagging-label="(label toevoegen)" ng-model="event.labels"
+                              <ui-select multiple tagging tagging-label="false" ng-model="event.labels"
                                          reset-search-input="true" tagging-tokens="ENTER|;"
                                          on-select="labelAdded($item)" on-remove="labelRemoved($item)">
                                   <ui-select-match placeholder="Voeg een label toe...">{{$item}}</ui-select-match>
-                                  <ui-select-choices repeat="label in availableLabels">
+                                  <ui-select-choices repeat="label in availableLabels | filter:$select.search">
                                       <div ng-bind-html="label | highlight: $select.search"></div>
                                   </ui-select-choices>
                               </ui-select>

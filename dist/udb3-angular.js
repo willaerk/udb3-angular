@@ -7565,11 +7565,11 @@ $templateCache.put('templates/unexpected-error-modal.html',
     "\n" +
     "                          <div ng-if=\"resultViewer.eventProperties.labels.visible\" class=\"udb-labels\">\n" +
     "                              <span ng-hide=\"event.labels.length\">Dit evenement is nog niet gelabeld.</span>\n" +
-    "                              <ui-select multiple tagging tagging-label=\"(label toevoegen)\" ng-model=\"event.labels\"\n" +
+    "                              <ui-select multiple tagging tagging-label=\"false\" ng-model=\"event.labels\"\n" +
     "                                         reset-search-input=\"true\" tagging-tokens=\"ENTER|;\"\n" +
     "                                         on-select=\"labelAdded($item)\" on-remove=\"labelRemoved($item)\">\n" +
     "                                  <ui-select-match placeholder=\"Voeg een label toe...\">{{$item}}</ui-select-match>\n" +
-    "                                  <ui-select-choices repeat=\"label in availableLabels\">\n" +
+    "                                  <ui-select-choices repeat=\"label in availableLabels | filter:$select.search\">\n" +
     "                                      <div ng-bind-html=\"label | highlight: $select.search\"></div>\n" +
     "                                  </ui-select-choices>\n" +
     "                              </ui-select>\n" +

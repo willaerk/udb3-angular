@@ -5025,6 +5025,7 @@ angular
 
 /* @ngInject */
 function EventDetail($scope, $location, eventId, udbApi, jsonLDLangFilter, locationTypes) {
+
   $scope.eventId = eventId;
   $scope.eventIdIsInvalid = false;
   $scope.eventHistory = [];
@@ -5055,55 +5056,17 @@ function EventDetail($scope, $location, eventId, udbApi, jsonLDLangFilter, locat
         });
         $scope.event = jsonLDLangFilter(event, 'nl');
         $scope.eventIdIsInvalid = false;
-        $scope.event.omdEvent = false;
-
-        if (typeof $scope.event.additionalData.omdInfo !== 'undefined') {
-          $scope.event.omdEvent = true;
-
-          $scope.tabs.push({
-            id: 'omd',
-            header: 'Open Monumentendag'
-          });
-
-          // Get category list.
-          $scope.event.additionalData.omdInfo.categoryList = $scope.event.additionalData.omdInfo.categories.join(', ');
-
-          // Get free brochure info.
-          if ($scope.event.additionalData.omdInfo.brochure) {
-            if ($scope.event.additionalData.omdInfo.freeBrochure) {
-              $scope.event.additionalData.omdInfo.brochure = 'Ja, gratis';
-            }
-            else if ($scope.event.additionalData.omdInfo.priceBrochure) {
-              $scope.event.additionalData.omdInfo.brochure = 'Ja, ' +
-                $scope.event.additionalData.omdInfo.priceBrochure + ' €';
-            }
-            else {
-              $scope.event.additionalData.omdInfo.brochure = 'Ja';
-            }
-          }
-          else {
-            $scope.event.additionalData.omdInfo.brochure = 'Nee';
-          }
-
-          // First time?
-          if ($scope.event.additionalData.omdInfo.firstParticipation) {
-            $scope.event.additionalData.omdInfo.firstParticipation = 'Ja';
-          }
-          else {
-            $scope.event.additionalData.omdInfo.firstParticipation = 'Nee';
-          }
-
-        }
 
       },
       function (reason) {
+        $scope.loaded = true;
         $scope.eventIdIsInvalid = true;
       }
   );
 
   var getActiveTabId = function() {
-    var hash = $location.hash();
 
+    var hash = $location.hash();
     if (hash) {
       return hash;
     }
@@ -8591,53 +8554,6 @@ function PlaceDetail($scope, $location, placeId, udbApi, jsonLDLangFilter, locat
         });
         $scope.place = place;
         $scope.placeIdIsInvalid = false;
-        $scope.place.omdEvent = false;
-
-        if (typeof $scope.place.additionalData.omdInfo !== 'undefined') {
-          $scope.place.omdEvent = true;
-
-          $scope.tabs.push({
-            id: 'omd',
-            header: 'Open Monumentendag'
-          });
-
-          // Get category list.
-          $scope.place.additionalData.omdInfo.categoryList = $scope.place.additionalData.omdInfo.categories.join(', ');
-
-          // Get free brochure info.
-          if ($scope.place.additionalData.omdInfo.brochure) {
-            if ($scope.place.additionalData.omdInfo.freeBrochure) {
-              $scope.place.additionalData.omdInfo.brochure = 'Ja, gratis';
-            }
-            else if ($scope.place.additionalData.omdInfo.priceBrochure) {
-              $scope.place.additionalData.omdInfo.brochure = 'Ja, ' +
-                $scope.place.additionalData.omdInfo.priceBrochure + ' €';
-            }
-            else {
-              $scope.place.additionalData.omdInfo.brochure = 'Ja';
-            }
-          }
-          else {
-            $scope.place.additionalData.omdInfo.brochure = 'Nee';
-          }
-
-          // First time?
-          if ($scope.place.additionalData.omdInfo.firstParticipation) {
-            $scope.place.additionalData.omdInfo.firstParticipation = 'Ja';
-          }
-          else {
-            $scope.place.additionalData.omdInfo.firstParticipation = 'Nee';
-          }
-
-          // Infopunt
-          if ($scope.place.additionalData.omdInfo.hasInfoOffice) {
-            $scope.place.additionalData.omdInfo.infoOffice = 'Ja';
-          }
-          else {
-            $scope.place.additionalData.omdInfo.infoOffice = 'Nee';
-          }
-
-        }
 
       },
       function (reason) {
@@ -11046,45 +10962,6 @@ $templateCache.put('templates/time-autocomplete.html',
     "                </ul>\n" +
     "              </td>\n" +
     "            </tr>\n" +
-    "            </tbody>\n" +
-    "          </table>\n" +
-    "        </div>\n" +
-    "      </div>\n" +
-    "\n" +
-    "      <div class=\"tab-pane\" role=\"tabpanel\" ng-show=\"isTabActive('omd')\" ng-if=\"event.omdEvent\">\n" +
-    "        <div class=\"panel panel-default\">\n" +
-    "          <table class=\"table\">\n" +
-    "            <tbody>\n" +
-    "              <tr>\n" +
-    "                <td><strong>Deelname</strong></td>\n" +
-    "                <td>\n" +
-    "                  Ja\n" +
-    "                </td>\n" +
-    "              </tr>\n" +
-    "              <tr>\n" +
-    "                <td><strong>Categorieën</strong></td>\n" +
-    "                <td>\n" +
-    "                  {{ event.additionalData.omdInfo.categoryList }}\n" +
-    "                </td>\n" +
-    "              </tr>\n" +
-    "              <tr>\n" +
-    "                <td><strong>Motivatie</strong></td>\n" +
-    "                <td>\n" +
-    "                  {{ event.additionalData.omdInfo.reasonOfParticipation }}\n" +
-    "                </td>\n" +
-    "              </tr>\n" +
-    "              <tr>\n" +
-    "                <td><strong>Eerste deelname</strong></td>\n" +
-    "                <td>\n" +
-    "                  {{ event.additionalData.omdInfo.firstParticipation }}\n" +
-    "                </td>\n" +
-    "              </tr>\n" +
-    "              <tr>\n" +
-    "                <td><strong>Brochure beschikbaar</strong></td>\n" +
-    "                <td>\n" +
-    "                  {{ event.additionalData.omdInfo.brochure }}\n" +
-    "                </td>\n" +
-    "              </tr>\n" +
     "            </tbody>\n" +
     "          </table>\n" +
     "        </div>\n" +

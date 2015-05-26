@@ -13,6 +13,7 @@ angular
 
 /* @ngInject */
 function EventDetail($scope, $location, eventId, udbApi, jsonLDLangFilter, locationTypes) {
+
   $scope.eventId = eventId;
   $scope.eventIdIsInvalid = false;
   $scope.eventHistory = [];
@@ -43,45 +44,6 @@ function EventDetail($scope, $location, eventId, udbApi, jsonLDLangFilter, locat
         });
         $scope.event = jsonLDLangFilter(event, 'nl');
         $scope.eventIdIsInvalid = false;
-        $scope.event.omdEvent = false;
-
-        if (typeof $scope.event.additionalData.omdInfo !== 'undefined') {
-          $scope.event.omdEvent = true;
-
-          $scope.tabs.push({
-            id: 'omd',
-            header: 'Open Monumentendag'
-          });
-
-          // Get category list.
-          $scope.event.additionalData.omdInfo.categoryList = $scope.event.additionalData.omdInfo.categories.join(', ');
-
-          // Get free brochure info.
-          if ($scope.event.additionalData.omdInfo.brochure) {
-            if ($scope.event.additionalData.omdInfo.freeBrochure) {
-              $scope.event.additionalData.omdInfo.brochure = 'Ja, gratis';
-            }
-            else if ($scope.event.additionalData.omdInfo.priceBrochure) {
-              $scope.event.additionalData.omdInfo.brochure = 'Ja, ' +
-                $scope.event.additionalData.omdInfo.priceBrochure + ' €';
-            }
-            else {
-              $scope.event.additionalData.omdInfo.brochure = 'Ja';
-            }
-          }
-          else {
-            $scope.event.additionalData.omdInfo.brochure = 'Nee';
-          }
-
-          // First time?
-          if ($scope.event.additionalData.omdInfo.firstParticipation) {
-            $scope.event.additionalData.omdInfo.firstParticipation = 'Ja';
-          }
-          else {
-            $scope.event.additionalData.omdInfo.firstParticipation = 'Nee';
-          }
-
-        }
 
       },
       function (reason) {
@@ -90,8 +52,8 @@ function EventDetail($scope, $location, eventId, udbApi, jsonLDLangFilter, locat
   );
 
   var getActiveTabId = function() {
-    var hash = $location.hash();
 
+    var hash = $location.hash();
     if (hash) {
       return hash;
     }

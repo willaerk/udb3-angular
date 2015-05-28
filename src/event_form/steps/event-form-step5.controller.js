@@ -26,6 +26,7 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
   // Age range vars
   $scope.savingAgeRange = false;
   $scope.ageRangeError = false;
+  $scope.invalidAgeRange = false;
   $scope.ageRange = 0;
   $scope.ageCssClass = EventFormData.ageRange ? 'state-complete' : 'state-incomplete';
   $scope.minAge = '';
@@ -46,12 +47,11 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
     urlRequired : false,
     emailRequired : false,
     phoneRequired : false,
+    url : EventFormData.bookingInfo.urlLabel ? EventFormData.bookingInfo.url : '',
     urlLabel : EventFormData.bookingInfo.urlLabel ? EventFormData.bookingInfo.urlLabel : 'Reserveer plaatsen',
     urlLabelCustom : '',
-    availabilityStarts : EventFormData.bookingInfo.availabilityStarts ?
-      EventFormData.bookingInfo.availabilityStarts : '',
-    availabilityEnds : EventFormData.bookingInfo.availabilityEnds ?
-      EventFormData.bookingInfo.availabilityEnds : '',
+    phone : EventFormData.bookingInfo.phone ? EventFormData.bookingInfo.phone : '',
+    email : EventFormData.bookingInfo.phone ? EventFormData.bookingInfo.email : '',
   };
 
   $scope.viaWebsite =  EventFormData.bookingInfo.url ? true : false;
@@ -62,13 +62,13 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
   $scope.bookingPeriodShowValidation = false;
   $scope.bookingInfoCssClass = 'state-incomplete';
 
+  // Booking info vars.
   $scope.toggleBookingType = toggleBookingType;
   $scope.saveBookingType = saveBookingType;
   $scope.validateBookingType = validateBookingType;
   $scope.saveWebsitePreview = saveWebsitePreview;
   $scope.enableWebsitePreview = enableWebsitePreview;
-  $scope.saveBookingPeriod = saveBookingPeriod;
-  $scope.enableBookingPeriodPreview = enableBookingPeriodPreview;
+  $scope.openBookingPeriodModal = openBookingPeriodModal;
 
   // Contactinfo vars.
   $scope.contactInfoCssClass = 'state-incomplete';
@@ -176,16 +176,40 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
    */
   function saveAgeRange() {
 
-    $scope.savingAgeRange = true;
-    $scope.ageRangeError = false;
+    $scope.invalidAgeRange = false;
 
     if ($scope.ageRange > 0) {
 
-      if ($scope.ageRange === 12 || $scope.ageRange === 18) {
-        EventFormData.typicalAgeRange = $scope.minAge + '-' + $scope.ageRange;
-      }
-      else {
-        EventFormData.typicalAgeRange = $scope.minAge + '-';
+      // Check if the entered age is valid for selected range.
+      switch ($scope.ageRange) {
+
+        case 12:
+
+          if ($scope.minAge > 12 || $scope.minAge < 1) {
+            $scope.invalidAgeRange = true;
+          }
+
+          EventFormData.typicalAgeRange = $scope.minAge + '-' + $scope.ageRange;
+          break;
+
+        case 18:
+
+          if ($scope.minAge < 12 || $scope.minAge > 18) {
+            $scope.invalidAgeRange = true;
+          }
+
+          EventFormData.typicalAgeRange = $scope.minAge + '-' + $scope.ageRange;
+          break;
+
+        case 99:
+
+          if ($scope.minAge < 19) {
+            $scope.invalidAgeRange = true;
+          }
+
+          EventFormData.typicalAgeRange = $scope.minAge + '-';
+          break;
+
       }
 
     }
@@ -193,16 +217,23 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
       EventFormData.typicalAgeRange = $scope.ageRange;
     }
 
-    var promise = eventCrud.updateTypicalAgeRange(EventFormData);
-    promise.then(function() {
-      $scope.savingAgeRange = false;
-      updateLastUpdated();
-      $scope.ageCssClass = 'state-complete';
-    }, function() {
-      // Error occured.
-      $scope.savingAgeRange = false;
-      $scope.ageRangeError = true;
-    });
+    // Save to db if valid age entered.
+    if (!$scope.invalidAgeRange) {
+
+      $scope.ageRangeError = false;
+      $scope.savingAgeRange = true;
+      var promise = eventCrud.updateTypicalAgeRange(EventFormData);
+      promise.then(function() {
+        $scope.savingAgeRange = false;
+        updateLastUpdated();
+        $scope.ageCssClass = 'state-complete';
+      }, function() {
+        // Error occured.
+        $scope.savingAgeRange = false;
+        $scope.ageRangeError = true;
+      });
+
+    }
 
   }
 
@@ -559,31 +590,27 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
   }
 
   /**
-   * Save the booking period settings.
+   * Open the booking period modal.
    */
-  function saveBookingPeriod() {
+  function openBookingPeriodModal() {
 
-    $scope.bookingPeriodShowValidation = true;
+    var modalInstance = $modal.open({
+      templateUrl: 'templates/reservation-modal.html',
+      controller: 'EventFormReservationModalCtrl',
+    });
 
-    // Forms are automatically known in scope.
-    if (!$scope.step5TicketsForm.$valid) {
-      return;
-    }
+    modalInstance.result.then(function () {
+      $scope.bookingInfoCssClass = 'state-complete';
+      $scope.bookingPeriodPreviewEnabled = true;
+    }, function () {
+      if (EventFormData.bookingInfo.availabilityStarts) {
+        $scope.bookingPeriodPreviewEnabled = true;
+      }
+      else {
+        $scope.bookingPeriodPreviewEnabled = false;
+      }
+    });
 
-    $scope.bookingPeriodPreviewEnabled = false;
-
-    EventFormData.bookingInfo.availabilityStarts = $scope.bookingModel.availabilityStarts;
-    EventFormData.bookingInfo.availabilityEnds = $scope.bookingModel.availabilityEnds;
-
-    saveBookingInfo();
-
-  }
-
-  /**
-   * Enable the booking period preview modal.
-   */
-  function enableBookingPeriodPreview() {
-    $scope.bookingPeriodPreviewEnabled = true;
   }
 
   /**
@@ -597,9 +624,9 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
       urlLabel : 'Reserveer plaatsen',
       email : '',
       phone : '',
-      availabilityStarts : '',
-      availabilityEnds : ''
-    }, EventFormData.bookingInfo);
+      availabilityStarts : EventFormData.bookingInfo.availabilityStarts,
+      availabilityEnds : EventFormData.bookingInfo.availabilityEnds
+    }, $scope.bookingModel);
 
     $scope.savingBookingInfo = true;
     $scope.bookingInfoError = false;

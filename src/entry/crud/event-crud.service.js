@@ -37,11 +37,9 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
    * Remove an event.
    *
    * @param {int} id
-   * @param {UdbEvent}  event
-   * The event to be removed
    */
-  this.removeEvent = function (id, event) {
-    var jobPromise = udbApi.removeEvent(id, event);
+  this.removeEvent = function (id) {
+    var jobPromise = udbApi.removeEvent(id);
     return jobPromise;
   };
 
@@ -67,11 +65,9 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
    * Remove a place.
    *
    * @param {int} id
-   * @param {UdbPlace}  place
-   * The place to be removed
    */
-  this.removePlace = function (id, place) {
-    var jobPromise = udbApi.removePlace(id, place);
+  this.removePlace = function (id) {
+    var jobPromise = udbApi.removePlace(id);
     return jobPromise;
   };
 

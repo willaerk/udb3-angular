@@ -17,6 +17,7 @@ function EventDeleteConfirmModalController($scope, $modalInstance, eventCrud, it
 
   $scope.item = item;
   $scope.saving = false;
+  $scope.error = false;
 
   $scope.cancelRemoval = cancelRemoval;
   $scope.deleteEvent = deleteEvent;
@@ -26,21 +27,16 @@ function EventDeleteConfirmModalController($scope, $modalInstance, eventCrud, it
    */
   function deleteEvent() {
 
+    $scope.error = false;
     $scope.saving = true;
 
-    var promise = eventCrud.removeEvent(item.details.id, item);
+    var promise = eventCrud.removeEvent(item.id);
     promise.then(function(jsonResponse) {
-      $modalInstance.close(item);
       $scope.saving = false;
-      var success = true;
-      return success;
-
+      $modalInstance.close(item);
     }, function() {
-
-      $modalInstance.close(item);
       $scope.saving = false;
-      return false;
-
+      $scope.error = true;
     });
 
   }

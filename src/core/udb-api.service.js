@@ -347,7 +347,7 @@ function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth,
   this.removeEvent = function (id, event) {
     return $http.delete(
       appConfig.baseApiUrl + 'event/' + id + '/delete',
-      event,
+      {},
       defaultApiConfig
     );
   };
@@ -363,7 +363,7 @@ function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth,
   this.removePlace = function (id, event) {
     return $http.delete(
       appConfig.baseApiUrl + 'place/' + id + '/delete',
-      event,
+      {},
       defaultApiConfig
     );
   };

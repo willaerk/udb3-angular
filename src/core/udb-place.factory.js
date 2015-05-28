@@ -64,6 +64,7 @@ function UdbPlaceFactory() {
    * @constructor
    */
   var UdbPlace = function () {
+    this.id = '';
     this.name = {};
     this.type = {};
     this.theme = {};

@@ -91,45 +91,37 @@
           controller: 'EventDeleteConfirmModalCtrl',
           resolve: {
             item: function () {
-              return item;
+              return item.details;
             }
           }
         });
         modalInstance.result.then(function (item) {
           removeItem(item);
-        }, function () {
         });
 
       }
       else {
 
         // Check if this place has planned events.
-        var hasEvents = true;
         var promise = eventCrud.findEventsForLocation(item.details.id);
         promise.then(function(jsonResponse) {
-          hasEvents = jsonResponse.data.events !== undefined;
 
           modalInstance = $modal.open({
             templateUrl: 'templates/place-delete-confirm-modal.html',
             controller: 'PlaceDeleteConfirmModalCtrl',
             resolve: {
               item: function () {
-                return item;
+                return item.details;
               },
-              hasEvents: function () {
-                return hasEvents;
+              events: function () {
+                return jsonResponse.data.events;
               }
             }
           });
           modalInstance.result.then(function (item) {
-            console.log('Modal dismissed. Removing item');
             removeItem(item);
-          }, function () {
           });
 
-
-        }, function(error) {
-          hasEvents = false;
         });
 
       }
@@ -140,8 +132,7 @@
      * Open the confirmation modal to delete an event/place.
      */
     function removeItem(item) {
-      console.log(item);
-      $scope.userContent.splice( $scope.userContent.indexOf(item), 1 );
+      $scope.userContent.splice($scope.userContent.indexOf(item), 1);
     }
 
   }

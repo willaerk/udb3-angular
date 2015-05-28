@@ -43,53 +43,6 @@ function PlaceDetail($scope, $location, placeId, udbApi, jsonLDLangFilter, locat
         });
         $scope.place = place;
         $scope.placeIdIsInvalid = false;
-        $scope.place.omdEvent = false;
-
-        if (typeof $scope.place.additionalData.omdInfo !== 'undefined') {
-          $scope.place.omdEvent = true;
-
-          $scope.tabs.push({
-            id: 'omd',
-            header: 'Open Monumentendag'
-          });
-
-          // Get category list.
-          $scope.place.additionalData.omdInfo.categoryList = $scope.place.additionalData.omdInfo.categories.join(', ');
-
-          // Get free brochure info.
-          if ($scope.place.additionalData.omdInfo.brochure) {
-            if ($scope.place.additionalData.omdInfo.freeBrochure) {
-              $scope.place.additionalData.omdInfo.brochure = 'Ja, gratis';
-            }
-            else if ($scope.place.additionalData.omdInfo.priceBrochure) {
-              $scope.place.additionalData.omdInfo.brochure = 'Ja, ' +
-                $scope.place.additionalData.omdInfo.priceBrochure + ' €';
-            }
-            else {
-              $scope.place.additionalData.omdInfo.brochure = 'Ja';
-            }
-          }
-          else {
-            $scope.place.additionalData.omdInfo.brochure = 'Nee';
-          }
-
-          // First time?
-          if ($scope.place.additionalData.omdInfo.firstParticipation) {
-            $scope.place.additionalData.omdInfo.firstParticipation = 'Ja';
-          }
-          else {
-            $scope.place.additionalData.omdInfo.firstParticipation = 'Nee';
-          }
-
-          // Infopunt
-          if ($scope.place.additionalData.omdInfo.hasInfoOffice) {
-            $scope.place.additionalData.omdInfo.infoOffice = 'Ja';
-          }
-          else {
-            $scope.place.additionalData.omdInfo.infoOffice = 'Nee';
-          }
-
-        }
 
       },
       function (reason) {

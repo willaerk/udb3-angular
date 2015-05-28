@@ -103,6 +103,7 @@ function UdbEventFactory() {
      */
     label: function (label) {
       var newLabels = [];
+      var existingLabels = this.labels;
 
       if (_.isArray(label)) {
         newLabels = label;
@@ -111,6 +112,14 @@ function UdbEventFactory() {
       if (_.isString(label)) {
         newLabels = [label];
       }
+
+      newLabels = _.filter(newLabels, function (newLabel) {
+        var similarLabel = _.find(existingLabels, function (existingLabel) {
+          return existingLabel.toUpperCase() === newLabel.toUpperCase();
+        });
+
+        return !similarLabel;
+      });
 
       this.labels = _.union(this.labels, newLabels);
     },

@@ -132,7 +132,13 @@
      * Open the confirmation modal to delete an event/place.
      */
     function removeItem(item) {
-      $scope.userContent.splice($scope.userContent.indexOf(item), 1);
+      var i = 0;
+      for (; i < $scope.userContent.length; i++) {
+        if ($scope.userContent[i].details.id === item.id) {
+          break;
+        }
+      }
+      $scope.userContent.splice(i, 1);
     }
 
   }

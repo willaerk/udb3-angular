@@ -177,39 +177,57 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
   function saveAgeRange() {
 
     $scope.invalidAgeRange = false;
-
+    $scope.ageRange = parseInt($scope.ageRange);
+    $scope.minAge = parseInt($scope.minAge);
     if ($scope.ageRange > 0) {
 
-      // Check if the entered age is valid for selected range.
-      switch ($scope.ageRange) {
+      if (isNaN($scope.minAge)) {
+        $scope.invalidAgeRange = true;
+      }
+      else {
+        // Check if the entered age is valid for selected range.
+        switch ($scope.ageRange) {
 
-        case 12:
+          case 12:
 
-          if ($scope.minAge > 12 || $scope.minAge < 1) {
-            $scope.invalidAgeRange = true;
-          }
+            if ($scope.minAge > 12 || $scope.minAge < 1) {
+              $scope.invalidAgeRange = true;
+            }
 
-          EventFormData.typicalAgeRange = $scope.minAge + '-' + $scope.ageRange;
-          break;
+            if ($scope.minAge === $scope.ageRange) {
+              EventFormData.typicalAgeRange = $scope.minAge;
+            }
+            else {
+              EventFormData.typicalAgeRange = $scope.minAge + '-' + $scope.ageRange;
+            }
 
-        case 18:
+            break;
 
-          if ($scope.minAge < 12 || $scope.minAge > 18) {
-            $scope.invalidAgeRange = true;
-          }
+          case 18:
 
-          EventFormData.typicalAgeRange = $scope.minAge + '-' + $scope.ageRange;
-          break;
+            if ($scope.minAge < 12 || $scope.minAge > 18) {
+              $scope.invalidAgeRange = true;
+            }
 
-        case 99:
+            if ($scope.minAge === $scope.ageRange) {
+              EventFormData.typicalAgeRange = $scope.minAge;
+            }
+            else {
+              EventFormData.typicalAgeRange = $scope.minAge + '-' + $scope.ageRange;
+            }
 
-          if ($scope.minAge < 19) {
-            $scope.invalidAgeRange = true;
-          }
+            break;
 
-          EventFormData.typicalAgeRange = $scope.minAge + '-';
-          break;
+          case 99:
 
+            if ($scope.minAge < 19) {
+              $scope.invalidAgeRange = true;
+            }
+
+            EventFormData.typicalAgeRange = $scope.minAge + '-';
+            break;
+
+        }
       }
 
     }
@@ -716,14 +734,20 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
       $scope.ageCssClass = 'state-complete';
       $scope.ageRange = -1;
       if (EventFormData.typicalAgeRange) {
-        var range = EventFormData.typicalAgeRange.split('-');
-        if (range[1]) {
-          $scope.ageRange = range[1];
-          $scope.minAge = parseInt(range[0]);
+        if (typeof EventFormData.typicalAgeRange === 'string') {
+          var range = EventFormData.typicalAgeRange.split('-');
+          if (range[1]) {
+            $scope.ageRange = range[1];
+            $scope.minAge = parseInt(range[0]);
+          }
+          else {
+            $scope.ageRange = 99;
+            $scope.minAge = parseInt(range[0]);
+          }
         }
         else {
-          $scope.ageRange = 99;
-          $scope.minAge = parseInt(range[0]);
+          $scope.minAge = EventFormData.typicalAgeRange;
+          $scope.ageRange = EventFormData.typicalAgeRange;
         }
       }
     }

@@ -3931,7 +3931,13 @@ PlaceDeleteConfirmModalController.$inject = ["$scope", "$modalInstance", "eventC
      * Open the confirmation modal to delete an event/place.
      */
     function removeItem(item) {
-      $scope.userContent.splice($scope.userContent.indexOf(item), 1);
+      var i = 0;
+      for (; i < $scope.userContent.length; i++) {
+        if ($scope.userContent[i].details.id === item.id) {
+          break;
+        }
+      }
+      $scope.userContent.splice(i, 1);
     }
 
   }
@@ -7928,39 +7934,57 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
   function saveAgeRange() {
 
     $scope.invalidAgeRange = false;
-
+    $scope.ageRange = parseInt($scope.ageRange);
+    $scope.minAge = parseInt($scope.minAge);
     if ($scope.ageRange > 0) {
 
-      // Check if the entered age is valid for selected range.
-      switch ($scope.ageRange) {
+      if (isNaN($scope.minAge)) {
+        $scope.invalidAgeRange = true;
+      }
+      else {
+        // Check if the entered age is valid for selected range.
+        switch ($scope.ageRange) {
 
-        case 12:
+          case 12:
 
-          if ($scope.minAge > 12 || $scope.minAge < 1) {
-            $scope.invalidAgeRange = true;
-          }
+            if ($scope.minAge > 12 || $scope.minAge < 1) {
+              $scope.invalidAgeRange = true;
+            }
 
-          EventFormData.typicalAgeRange = $scope.minAge + '-' + $scope.ageRange;
-          break;
+            if ($scope.minAge === $scope.ageRange) {
+              EventFormData.typicalAgeRange = $scope.minAge;
+            }
+            else {
+              EventFormData.typicalAgeRange = $scope.minAge + '-' + $scope.ageRange;
+            }
 
-        case 18:
+            break;
 
-          if ($scope.minAge < 12 || $scope.minAge > 18) {
-            $scope.invalidAgeRange = true;
-          }
+          case 18:
 
-          EventFormData.typicalAgeRange = $scope.minAge + '-' + $scope.ageRange;
-          break;
+            if ($scope.minAge < 12 || $scope.minAge > 18) {
+              $scope.invalidAgeRange = true;
+            }
 
-        case 99:
+            if ($scope.minAge === $scope.ageRange) {
+              EventFormData.typicalAgeRange = $scope.minAge;
+            }
+            else {
+              EventFormData.typicalAgeRange = $scope.minAge + '-' + $scope.ageRange;
+            }
 
-          if ($scope.minAge < 19) {
-            $scope.invalidAgeRange = true;
-          }
+            break;
 
-          EventFormData.typicalAgeRange = $scope.minAge + '-';
-          break;
+          case 99:
 
+            if ($scope.minAge < 19) {
+              $scope.invalidAgeRange = true;
+            }
+
+            EventFormData.typicalAgeRange = $scope.minAge + '-';
+            break;
+
+        }
       }
 
     }
@@ -8467,14 +8491,20 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
       $scope.ageCssClass = 'state-complete';
       $scope.ageRange = -1;
       if (EventFormData.typicalAgeRange) {
-        var range = EventFormData.typicalAgeRange.split('-');
-        if (range[1]) {
-          $scope.ageRange = range[1];
-          $scope.minAge = parseInt(range[0]);
+        if (typeof EventFormData.typicalAgeRange === 'string') {
+          var range = EventFormData.typicalAgeRange.split('-');
+          if (range[1]) {
+            $scope.ageRange = range[1];
+            $scope.minAge = parseInt(range[0]);
+          }
+          else {
+            $scope.ageRange = 99;
+            $scope.minAge = parseInt(range[0]);
+          }
         }
         else {
-          $scope.ageRange = 99;
-          $scope.minAge = parseInt(range[0]);
+          $scope.minAge = EventFormData.typicalAgeRange;
+          $scope.ageRange = EventFormData.typicalAgeRange;
         }
       }
     }
@@ -11640,16 +11670,16 @@ $templateCache.put('templates/time-autocomplete.html',
     "            <input type=\"text\" class=\"form-control\" name=\"street\" ng-model=\"newOrganizer.address.streetAddress\">\n" +
     "          </div>\n" +
     "        </div>\n" +
-    "        <div class=\"col-xs-9\">\n" +
-    "          <div class=\"form-group\">\n" +
-    "            <label>Gemeente</label>\n" +
-    "            <input type=\"text\" class=\"form-control\" name=\"city\" ng-model=\"newOrganizer.address.locality\">\n" +
-    "          </div>\n" +
-    "        </div>\n" +
     "        <div class=\"col-xs-3\">\n" +
     "          <div class=\"form-group\">\n" +
     "            <label>Postcode</label>\n" +
     "            <input type=\"number\" class=\"form-control\" name=\"postalCode\" ng-model=\"newOrganizer.address.postalCode\">\n" +
+    "          </div>\n" +
+    "        </div>\n" +
+    "        <div class=\"col-xs-9\">\n" +
+    "          <div class=\"form-group\">\n" +
+    "            <label>Gemeente</label>\n" +
+    "            <input type=\"text\" class=\"form-control\" name=\"city\" ng-model=\"newOrganizer.address.locality\">\n" +
     "          </div>\n" +
     "        </div>\n" +
     "\n" +
@@ -12063,7 +12093,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "      </div>\n" +
     "      <div class=\"col-xs-12 col-md-8\">\n" +
     "        <p class=\"text-block\">\n" +
-    "          Bv. Candide, Magritte en het surrealisme, Cursus keramiek,... <br>Begin met een <strong>hoofdletter</strong> en hou het <strong>kort &amp; bondig</strong>:  een uitgebreide beschrijving vul je later in.\n" +
+    "          Vb. Ontdek het Fort, Het geheim van het kasteel ontrafeld, Fietsen langs kapelletjes,… Geef een <strong>sprekende titel</strong> in (dus niet ‘Open Monumentendag’), begin met een <strong>hoofdletter</strong> en hou het <strong>kort & bondig</strong>. Een uitgebreide beschrijving vul je verder in stap 5 in.\n" +
     "        </p>\n" +
     "      </div>\n" +
     "    </div>\n" +

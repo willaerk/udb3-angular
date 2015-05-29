@@ -15,5 +15,6 @@ angular
     'udb.config',
     'udb.search',
     'btford.socket-io',
-    'pascalprecht.translate'
+    'pascalprecht.translate',
+    'xeditable'
   ]);

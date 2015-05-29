@@ -11,7 +11,7 @@ angular
   .directive('udbEvent', udbEvent);
 
 /* @ngInject */
-function udbEvent(udbApi, jsonLDLangFilter, eventTranslator, eventLabeller) {
+function udbEvent(udbApi, jsonLDLangFilter, eventTranslator, eventLabeller, $q) {
   var event = {
     restrict: 'A',
     link: function postLink(scope, iElement, iAttrs) {
@@ -105,6 +105,17 @@ function udbEvent(udbApi, jsonLDLangFilter, eventTranslator, eventLabeller) {
           scope.event.labels = labels;
         });
       }
+
+      scope.updateDescription = function (data) {
+        var deferredUpdate = $q.defer();
+        console.log('updating description to: ' + data);
+
+        setTimeout(function () {
+          deferredUpdate.resolve();
+        }, 1234);
+
+        return deferredUpdate.promise;
+      };
 
       scope.eventTranslation = false;
       /**

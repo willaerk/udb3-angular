@@ -244,7 +244,8 @@
                       </div>
                       <div ng-class="resultViewer.eventProperties.image.visible ? 'col-sm-10' : 'col-sm-12'">
                           <div ng-if="resultViewer.eventProperties.description.visible">
-                              <div ng-bind-html="event.description" class="udb-description"></div>
+                              <div ng-bind-html="event.description" class="udb-description" onbeforesave="updateDescription($data)"
+                                   editable-textarea="event.description" e-rows="6" e-cols="66"></div>
                           </div>
 
                           <div ng-if="resultViewer.eventProperties.labels.visible" class="udb-labels">

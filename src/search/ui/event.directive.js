@@ -178,6 +178,7 @@ function udbEvent(udbApi, jsonLDLangFilter, eventTranslator, eventLabeller, $win
 
         if (similarLabel) {
           scope.event.labels = event.labels;
+          scope.$apply();
           $window.alert('Het label ' + newLabel + ' is reeds toegevoegd als ' + similarLabel + '.');
         } else {
           eventLabeller.label(event, newLabel);

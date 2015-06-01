@@ -11,7 +11,7 @@ angular
   .directive('udbEvent', udbEvent);
 
 /* @ngInject */
-function udbEvent(udbApi, jsonLDLangFilter, eventTranslator, eventLabeller) {
+function udbEvent(udbApi, jsonLDLangFilter, eventTranslator, eventLabeller, $window) {
   var event = {
     restrict: 'A',
     link: function postLink(scope, iElement, iAttrs) {
@@ -171,8 +171,18 @@ function udbEvent(udbApi, jsonLDLangFilter, eventTranslator, eventLabeller) {
         }
       }
 
-      scope.labelAdded = function (label) {
-        eventLabeller.label(event, label);
+      scope.labelAdded = function (newLabel) {
+        var similarLabel = _.find(event.labels, function (label) {
+          return newLabel.toUpperCase() === label.toUpperCase();
+        });
+
+        if (similarLabel) {
+          scope.event.labels = event.labels;
+          scope.$apply();
+          $window.alert('Het label ' + newLabel + ' is reeds toegevoegd als ' + similarLabel + '.');
+        } else {
+          eventLabeller.label(event, newLabel);
+        }
       };
 
       scope.labelRemoved = function (label) {

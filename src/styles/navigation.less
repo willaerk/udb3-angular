@@ -15,7 +15,7 @@
   animation: rotating 1s linear infinite;
   opacity: 1;
 }
-
+  
 .navbar-brand {
   padding: 15px;
 }
@@ -24,34 +24,61 @@
   position: relative;
 }
 
-.udb-header-search input,
-.udb-header-search {
-  background: desaturate(@brand-primary, 20%);
-  color: white;
-}
-
-.udb-header-search {
-  margin-top: 18px;
-  margin-bottom: 18px;
-  padding: 5px;
-}
-
-.udb-header-search .form-group{
-  position: relative;
-
-  @media(min-width: @screen-lg-min) {
-    width: 610px;
+.navbar-nav {
+  span.udb-user {
+    display: inline-block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: bottom;
+    @media(min-width: @screen-md-min) {
+      max-width: 136px;
+      max-height: 2em;
+      float: left;
+    }
   }
 }
 
-.udb-header-search input.form-control {
-  border: none;
-  box-shadow: none !important;
-  outline: none;
-  padding-left: 12px;
-  padding-right: 36px;
-  line-height: 100%;
-  width: 100% !important;
+.udb-header-search {
+  color: white;
+  background: desaturate(@brand-primary, 20%);
+  position: relative;
+  overflow: hidden;
+  padding: 10px 60px 10px 10px;
+  input {
+    background: desaturate(@brand-primary, 20%);
+    box-shadow: none !important;
+    border: none;
+    outline: none;
+    width: 100%;
+  }
+  input.form-control {
+    padding-left: 12px;
+    padding-right: 36px;
+  }
+  button {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+  }
+  @media(min-width: @screen-sm-min) {
+    margin-top: 0;
+    margin-bottom: 0;
+    width: 100%;
+  }
+  @media(min-width: @screen-md-min) {
+    max-width: 45%;
+    display: inline-block;
+    margin-top: 18px;
+    margin-bottom: 18px;
+  }
+}
+
+.udb-header-search .form-group {
+  position: relative;
+  display: block;
+  @media(min-width: @screen-md-min) {
+    //display: inline-block;
+  }
 }
 
 .udb-header-search .saved-search-icon,

@@ -11,7 +11,7 @@ angular
   .directive('udbEvent', udbEvent);
 
 /* @ngInject */
-function udbEvent(udbApi, jsonLDLangFilter, eventTranslator, eventLabeller, $q) {
+function udbEvent(udbApi, jsonLDLangFilter, eventTranslator, eventLabeller, $q, eventEditor) {
   var event = {
     restrict: 'A',
     link: function postLink(scope, iElement, iAttrs) {
@@ -107,14 +107,7 @@ function udbEvent(udbApi, jsonLDLangFilter, eventTranslator, eventLabeller, $q) 
       }
 
       scope.updateDescription = function (data) {
-        var deferredUpdate = $q.defer();
-        console.log('updating description to: ' + data);
-
-        setTimeout(function () {
-          deferredUpdate.resolve();
-        }, 1234);
-
-        return deferredUpdate.promise;
+        return eventEditor.editDescription(event, data);
       };
 
       scope.eventTranslation = false;

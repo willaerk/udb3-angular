@@ -2405,6 +2405,22 @@ function UdbApi($q, $http, appConfig, $cookieStore, uitidAuth, $cacheFactory, Ud
       defaultApiConfig
     );
   };
+
+  this.updateEventDescription = function (eventId, description, purpose) {
+    var activeUser = uitidAuth.getUser(),
+        requestData = {
+          'owner': activeUser.id,
+          'purpose': purpose,
+          'same_as': appConfig.baseUrl + 'event/' + eventId,
+          'description': description
+        };
+
+    return $http.post(
+      appConfig.baseUrl + 'variations',
+      requestData,
+      defaultApiConfig
+    );
+  };
 }
 UdbApi.$inject = ["$q", "$http", "appConfig", "$cookieStore", "uitidAuth", "$cacheFactory", "UdbEvent"];
 
@@ -2698,6 +2714,42 @@ function udbJobLogo() {
   function link(scope, element, attrs) {
   }
 }
+
+// Source: src/entry/editing/event-editor.service.js
+/**
+ * @ngdoc service
+ * @name udb.entry.eventEditor
+ * @description
+ * # eventEditor
+ * Service in the udb.entry.
+ */
+angular
+  .module('udb.entry')
+  .service('eventEditor', EventEditor);
+
+/* @ngInject */
+function EventEditor(jobLogger, udbApi, BaseJob) {
+
+  /**
+   * Edit the description of an event. We never edit the original event but use a variation instead.
+   *
+   * @param {UdbEvent} event                 The original event
+   * @param {string}   description           The new description text
+   * @param {string}   [purpose=optional]    The purpose of the variation that will be edited
+   */
+  this.editDescription = function (event, description, purpose) {
+    purpose = purpose || 'personal';
+    var updatePromise = udbApi.updateEventDescription(event.id, description, purpose);
+
+    updatePromise.success(function (jobData) {
+      event.description = description;
+      jobLogger.add(new BaseJob(jobData.commandId));
+    });
+
+    return updatePromise;
+  };
+}
+EventEditor.$inject = ["jobLogger", "udbApi", "BaseJob"];
 
 // Source: src/entry/labelling/event-label-batch-job.factory.js
 /**
@@ -6014,7 +6066,7 @@ angular
   .directive('udbEvent', udbEvent);
 
 /* @ngInject */
-function udbEvent(udbApi, jsonLDLangFilter, eventTranslator, eventLabeller, $q) {
+function udbEvent(udbApi, jsonLDLangFilter, eventTranslator, eventLabeller, $q, eventEditor) {
   var event = {
     restrict: 'A',
     link: function postLink(scope, iElement, iAttrs) {
@@ -6110,14 +6162,7 @@ function udbEvent(udbApi, jsonLDLangFilter, eventTranslator, eventLabeller, $q) 
       }
 
       scope.updateDescription = function (data) {
-        var deferredUpdate = $q.defer();
-        console.log('updating description to: ' + data);
-
-        setTimeout(function () {
-          deferredUpdate.resolve();
-        }, 1234);
-
-        return deferredUpdate.promise;
+        return eventEditor.editDescription(event, data);
       };
 
       scope.eventTranslation = false;
@@ -6197,7 +6242,7 @@ function udbEvent(udbApi, jsonLDLangFilter, eventTranslator, eventLabeller, $q) 
 
   return event;
 }
-udbEvent.$inject = ["udbApi", "jsonLDLangFilter", "eventTranslator", "eventLabeller", "$q"];
+udbEvent.$inject = ["udbApi", "jsonLDLangFilter", "eventTranslator", "eventLabeller", "$q", "eventEditor"];
 
 // Source: src/search/ui/search.controller.js
 /**

@@ -59,6 +59,7 @@ module.exports = function(config) {
       'bower_components/codemirror/lib/codemirror.js',
       'bower_components/codemirror/mode/solr/solr.js',
       'bower_components/angular-ui-codemirror/ui-codemirror.js',
+      'bower_components/angular-xeditable/dist/js/xeditable.js',
       'src/**/*.module.js',
       'src/**/*.js',
       'src/**/*.html'

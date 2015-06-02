@@ -232,4 +232,20 @@ function UdbApi($q, $http, appConfig, $cookieStore, uitidAuth, $cacheFactory, Ud
       defaultApiConfig
     );
   };
+
+  this.updateEventDescription = function (eventId, description, purpose) {
+    var activeUser = uitidAuth.getUser(),
+        requestData = {
+          'owner': activeUser.id,
+          'purpose': purpose,
+          'same_as': appConfig.baseUrl + 'event/' + eventId,
+          'description': description
+        };
+
+    return $http.post(
+      appConfig.baseUrl + 'variations',
+      requestData,
+      defaultApiConfig
+    );
+  };
 }

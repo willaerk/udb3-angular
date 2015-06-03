@@ -11,7 +11,7 @@ angular
   .directive('udbEvent', udbEvent);
 
 /* @ngInject */
-function udbEvent(udbApi, jsonLDLangFilter, eventTranslator, eventLabeller, $q, eventEditor) {
+function udbEvent(udbApi, jsonLDLangFilter, eventTranslator, eventLabeller, eventEditor) {
   var event = {
     restrict: 'A',
     link: function postLink(scope, iElement, iAttrs) {
@@ -107,6 +107,10 @@ function udbEvent(udbApi, jsonLDLangFilter, eventTranslator, eventLabeller, $q, 
       }
 
       scope.updateDescription = function (data) {
+        if (!data) {
+          return eventEditor.deleteDescription(event, {variation: 'noid'});
+        }
+
         if (scope.event.description !== data) {
           return eventEditor.editDescription(event, data);
         }

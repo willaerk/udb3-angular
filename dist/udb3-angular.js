@@ -2421,6 +2421,13 @@ function UdbApi($q, $http, appConfig, $cookieStore, uitidAuth, $cacheFactory, Ud
       defaultApiConfig
     );
   };
+
+  this.deleteEventDescription = function (eventId, variationId) {
+    return $http.delete(
+      appConfig.baseUrl + 'variations/' + variationId,
+      defaultApiConfig
+    );
+  };
 }
 UdbApi.$inject = ["$q", "$http", "appConfig", "$cookieStore", "uitidAuth", "$cacheFactory", "UdbEvent"];
 
@@ -2742,11 +2749,21 @@ function EventEditor(jobLogger, udbApi, BaseJob) {
     var updatePromise = udbApi.updateEventDescription(event.id, description, purpose);
 
     updatePromise.success(function (jobData) {
-      event.description = description;
+      event.nl.description = description;
       jobLogger.add(new BaseJob(jobData.commandId));
     });
 
     return updatePromise;
+  };
+
+  this.deleteDescription = function (event, variation) {
+    var deletePromise = udbApi.deleteEventDescription(event.id, variation.id);
+
+    deletePromise.success(function (jobData) {
+      jobLogger.add(new BaseJob(jobData.commandId));
+    });
+
+    return deletePromise;
   };
 }
 EventEditor.$inject = ["jobLogger", "udbApi", "BaseJob"];
@@ -6066,7 +6083,7 @@ angular
   .directive('udbEvent', udbEvent);
 
 /* @ngInject */
-function udbEvent(udbApi, jsonLDLangFilter, eventTranslator, eventLabeller, $q, eventEditor) {
+function udbEvent(udbApi, jsonLDLangFilter, eventTranslator, eventLabeller, eventEditor) {
   var event = {
     restrict: 'A',
     link: function postLink(scope, iElement, iAttrs) {
@@ -6162,6 +6179,10 @@ function udbEvent(udbApi, jsonLDLangFilter, eventTranslator, eventLabeller, $q, 
       }
 
       scope.updateDescription = function (data) {
+        if (!data) {
+          return eventEditor.deleteDescription(event, {variation: 'noid'});
+        }
+
         if (scope.event.description !== data) {
           return eventEditor.editDescription(event, data);
         }
@@ -6244,7 +6265,7 @@ function udbEvent(udbApi, jsonLDLangFilter, eventTranslator, eventLabeller, $q, 
 
   return event;
 }
-udbEvent.$inject = ["udbApi", "jsonLDLangFilter", "eventTranslator", "eventLabeller", "$q", "eventEditor"];
+udbEvent.$inject = ["udbApi", "jsonLDLangFilter", "eventTranslator", "eventLabeller", "eventEditor"];
 
 // Source: src/search/ui/search.controller.js
 /**

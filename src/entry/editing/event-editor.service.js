@@ -26,10 +26,20 @@ function EventEditor(jobLogger, udbApi, BaseJob) {
     var updatePromise = udbApi.updateEventDescription(event.id, description, purpose);
 
     updatePromise.success(function (jobData) {
-      event.description = description;
+      event.nl.description = description;
       jobLogger.add(new BaseJob(jobData.commandId));
     });
 
     return updatePromise;
+  };
+
+  this.deleteDescription = function (event, variation) {
+    var deletePromise = udbApi.deleteEventDescription(event.id, variation.id);
+
+    deletePromise.success(function (jobData) {
+      jobLogger.add(new BaseJob(jobData.commandId));
+    });
+
+    return deletePromise;
   };
 }

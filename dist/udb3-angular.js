@@ -6162,7 +6162,9 @@ function udbEvent(udbApi, jsonLDLangFilter, eventTranslator, eventLabeller, $q, 
       }
 
       scope.updateDescription = function (data) {
-        return eventEditor.editDescription(event, data);
+        if (scope.event.description !== data) {
+          return eventEditor.editDescription(event, data);
+        }
       };
 
       scope.eventTranslation = false;

@@ -6083,7 +6083,7 @@ angular
   .directive('udbEvent', udbEvent);
 
 /* @ngInject */
-function udbEvent(udbApi, jsonLDLangFilter, eventTranslator, eventLabeller, eventEditor) {
+function udbEvent(udbApi, jsonLDLangFilter, eventTranslator, eventLabeller, eventEditor, $q) {
   var event = {
     restrict: 'A',
     link: function postLink(scope, iElement, iAttrs) {
@@ -6093,6 +6093,8 @@ function udbEvent(udbApi, jsonLDLangFilter, eventTranslator, eventLabeller, even
         NONE: {'name': 'none', 'icon': 'fa-circle-o'},
         SOME: {'name': 'some', 'icon': 'fa-dot-circle-o'}
       };
+
+      var defaultLanguage = 'nl';
 
       function updateTranslationState(event) {
         var languages = {'en': false, 'fr': false, 'de': false},
@@ -6143,7 +6145,7 @@ function udbEvent(udbApi, jsonLDLangFilter, eventTranslator, eventLabeller, even
         scope.applyPropertyChanges('description');
       };
 
-      scope.activeLanguage = 'nl';
+      scope.activeLanguage = defaultLanguage;
       scope.languageSelector = [
         {'lang': 'fr'},
         {'lang': 'en'},
@@ -6162,7 +6164,7 @@ function udbEvent(udbApi, jsonLDLangFilter, eventTranslator, eventLabeller, even
           event = eventObject;
           updateTranslationState(event);
           scope.availableLabels = _.union(event.labels, eventLabeller.recentLabels);
-          scope.event = jsonLDLangFilter(event, 'nl');
+          scope.event = jsonLDLangFilter(event, defaultLanguage);
           scope.fetching = false;
           watchLabels();
         });
@@ -6180,7 +6182,13 @@ function udbEvent(udbApi, jsonLDLangFilter, eventTranslator, eventLabeller, even
 
       scope.updateDescription = function (data) {
         if (!data) {
-          return eventEditor.deleteDescription(event, {variation: 'noid'});
+          var deletePromise = eventEditor.deleteDescription(event, {variation: 'noid'});
+
+          deletePromise.then(function () {
+            scope.event.description = event[defaultLanguage].description;
+          });
+
+          return deletePromise;
         }
 
         if (scope.event.description !== data) {
@@ -6237,7 +6245,7 @@ function udbEvent(udbApi, jsonLDLangFilter, eventTranslator, eventLabeller, even
 
       scope.stopTranslating = function () {
         scope.eventTranslation = undefined;
-        scope.activeLanguage = 'nl';
+        scope.activeLanguage = defaultLanguage;
       };
 
       function translateEventProperty(property, translation, apiProperty) {
@@ -6265,7 +6273,7 @@ function udbEvent(udbApi, jsonLDLangFilter, eventTranslator, eventLabeller, even
 
   return event;
 }
-udbEvent.$inject = ["udbApi", "jsonLDLangFilter", "eventTranslator", "eventLabeller", "eventEditor"];
+udbEvent.$inject = ["udbApi", "jsonLDLangFilter", "eventTranslator", "eventLabeller", "eventEditor", "$q"];
 
 // Source: src/search/ui/search.controller.js
 /**

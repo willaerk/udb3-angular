@@ -12,6 +12,7 @@ angular
     'ngSanitize',
     'ui.bootstrap',
     'peg',
+    'udb.core',
     'udb.config',
     'udb.search',
     'btford.socket-io',

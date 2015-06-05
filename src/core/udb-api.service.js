@@ -25,7 +25,7 @@ function UdbApi($q, $http, appConfig, $cookieStore, uitidAuth, $cacheFactory, Ud
   /**
    * @param {string} queryString - The query used to find events.
    * @param {?number} start - From which event offset the result set should start.
-   * @returns {Promise} A promise that signals a succesful retrieval of
+   * @returns {Promise} A promise that signals a successful retrieval of
    *  search results or a failure.
    */
   this.findEvents = function (queryString, start) {
@@ -249,10 +249,31 @@ function UdbApi($q, $http, appConfig, $cookieStore, uitidAuth, $cacheFactory, Ud
     );
   };
 
-  this.deleteEventDescription = function (eventId, variationId) {
+  this.deleteEventDescription = function (variationId) {
     return $http.delete(
       appConfig.baseUrl + 'variations/' + variationId,
       defaultApiConfig
+    );
+  };
+
+  this.getEventVariations = function (ownerId, purpose, eventId) {
+    var parameters = {
+      'owner': ownerId,
+      'purpose': purpose,
+      'same_as': eventId
+    };
+
+    var config = {
+      withCredentials: true,
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      params: _.pick(parameters, _.isString)
+    };
+
+    return $http.get(
+      appConfig.baseUrl + 'variations/',
+      config
     );
   };
 }

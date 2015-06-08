@@ -47,15 +47,15 @@ function EventController(
 
         var personalVariationPromise = eventEditor.getPersonalVariation(cachedEvent);
         personalVariationPromise
-        .then(function (personalVariation) {
-          $scope.event = jsonLDLangFilter(personalVariation, defaultLanguage);
-        }, function () {
-          $scope.event = jsonLDLangFilter(cachedEvent, defaultLanguage);
-        })
-        .finally(function () {
-          controller.fetching = false;
-          watchLabels();
-        });
+          .then(function (personalVariation) {
+            $scope.event = jsonLDLangFilter(personalVariation, defaultLanguage);
+          }, function () {
+            $scope.event = jsonLDLangFilter(cachedEvent, defaultLanguage);
+          })
+          .finally(function () {
+            controller.fetching = false;
+            watchLabels();
+          });
       });
     } else {
       controller.fetching = false;

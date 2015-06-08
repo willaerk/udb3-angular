@@ -25,18 +25,22 @@ function EventEditor(jobLogger, udbApi, BaseJob, $q, $cacheFactory) {
     } else {
       var userPromise = udbApi.getMe();
 
-      userPromise.then(function(user) {
-        var personalVariationPromise = udbApi.getEventVariations(user.id, 'personal', event.id);
-        personalVariationPromise.then(function (variations) {
-          var personalVariation = _.first(variations.member);
-          if (personalVariation) {
-            personalVariationCache.put(event.id, personalVariation);
-            deferredVariation.resolve(personalVariation);
-          } else {
-            deferredVariation.reject('there is no personal variation for event with id: ' + event.id);
-          }
+      userPromise
+        .then(function(user) {
+          var personalVariationPromise = udbApi.getEventVariations(user.id, 'personal', event.id);
+          personalVariationPromise.then(function (variations) {
+            var personalVariation = _.first(variations.member);
+            if (personalVariation) {
+              personalVariationCache.put(event.id, personalVariation);
+              deferredVariation.resolve(personalVariation);
+            } else {
+              deferredVariation.reject('there is no personal variation for event with id: ' + event.id);
+            }
+          },
+          function () {
+            deferredVariation.reject('no variations found for event with id: ' + event.id);
+          });
         });
-      });
     }
 
     return deferredVariation.promise;

@@ -2804,18 +2804,22 @@ function EventEditor(jobLogger, udbApi, BaseJob, $q, $cacheFactory) {
     } else {
       var userPromise = udbApi.getMe();
 
-      userPromise.then(function(user) {
-        var personalVariationPromise = udbApi.getEventVariations(user.id, 'personal', event.id);
-        personalVariationPromise.then(function (variations) {
-          var personalVariation = _.first(variations.member);
-          if (personalVariation) {
-            personalVariationCache.put(event.id, personalVariation);
-            deferredVariation.resolve(personalVariation);
-          } else {
-            deferredVariation.reject('there is no personal variation for event with id: ' + event.id);
-          }
+      userPromise
+        .then(function(user) {
+          var personalVariationPromise = udbApi.getEventVariations(user.id, 'personal', event.id);
+          personalVariationPromise.then(function (variations) {
+            var personalVariation = _.first(variations.member);
+            if (personalVariation) {
+              personalVariationCache.put(event.id, personalVariation);
+              deferredVariation.resolve(personalVariation);
+            } else {
+              deferredVariation.reject('there is no personal variation for event with id: ' + event.id);
+            }
+          },
+          function () {
+            deferredVariation.reject('no variations found for event with id: ' + event.id);
+          });
         });
-      });
     }
 
     return deferredVariation.promise;
@@ -6230,15 +6234,15 @@ function EventController(
 
         var personalVariationPromise = eventEditor.getPersonalVariation(cachedEvent);
         personalVariationPromise
-        .then(function (personalVariation) {
-          $scope.event = jsonLDLangFilter(personalVariation, defaultLanguage);
-        }, function () {
-          $scope.event = jsonLDLangFilter(cachedEvent, defaultLanguage);
-        })
-        .finally(function () {
-          controller.fetching = false;
-          watchLabels();
-        });
+          .then(function (personalVariation) {
+            $scope.event = jsonLDLangFilter(personalVariation, defaultLanguage);
+          }, function () {
+            $scope.event = jsonLDLangFilter(cachedEvent, defaultLanguage);
+          })
+          .finally(function () {
+            controller.fetching = false;
+            watchLabels();
+          });
       });
     } else {
       controller.fetching = false;

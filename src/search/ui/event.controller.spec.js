@@ -9,12 +9,15 @@ describe('Controller: Event', function() {
       eventEditor,
       EventTranslationState,
       udbApi,
-      UdbEvent;
+      UdbEvent,
+      $q;
+
+  var deferredEvent, deferredVariation;
 
   beforeEach(module('udb.search'));
   beforeEach(module('udb.templates'));
 
-  beforeEach(inject(function($injector, $rootScope, $controller, $q) {
+  beforeEach(inject(function($injector, $rootScope, $controller, _$q_) {
     $scope = $rootScope.$new();
     udbApi = $injector.get('udbApi');
     jsonLDLangFilter = $injector.get('jsonLDLangFilter');
@@ -23,14 +26,10 @@ describe('Controller: Event', function() {
     eventEditor = $injector.get('eventEditor');
     EventTranslationState = $injector.get('EventTranslationState');
     UdbEvent = $injector.get('UdbEvent');
+    $q = _$q_;
 
     $scope.event = {};
-    var deferredEvent = $q.defer(), deferredVariation = $q.defer();
-    deferredEvent.resolve(new UdbEvent(exampleEventJson));
-    exampleEventJson.description = {
-      'nl': 'een variatie van de originele beschrijving'
-    };
-    deferredVariation.resolve(new UdbEvent(exampleEventJson));
+    deferredEvent = $q.defer(); deferredVariation = $q.defer();
     spyOn(udbApi, 'getEventByLDId').andReturn(deferredEvent.promise);
     spyOn(eventEditor, 'getPersonalVariation').andReturn(deferredVariation.promise);
 
@@ -47,9 +46,35 @@ describe('Controller: Event', function() {
     );
   }));
 
-  it('reverts back to the original event description when deleting the personal variation', function() {
-    $scope.$digest();
-    //TODO: do some testing here
+  describe('Event variations: ', function (){
+    deferredEvent.resolve(new UdbEvent(exampleEventJson));
+    exampleEventJson.description = {
+      'nl': 'Een variatie van de originele beschrijving'
+    };
+
+    it('displays the original event description when no personal variation is found', function () {
+      deferredVariation.reject();
+      $scope.$digest();
+      expect($scope.event.description).toEqual('Een korte beschrijving voor dit evenement');
+    });
+
+    it('displays a custom description when a personal variation of an event is available', function () {
+      deferredVariation.resolve(new UdbEvent(exampleEventJson));
+      $scope.$digest();
+      expect($scope.event.description).toEqual('Een variatie van de originele beschrijving');
+    });
+
+    it('reverts back to the original event description when deleting the personal description', function() {+
+      deferredVariation.resolve(new UdbEvent(exampleEventJson));
+      $scope.$digest();
+      var deferredDeletion = $q.defer();
+      spyOn(eventEditor, 'deleteDescription').andReturn(deferredDeletion.promise);
+      eventController.updateDescription('');
+
+      deferredDeletion.resolve();
+      $scope.$digest();
+      expect($scope.event.description).toEqual('Een korte beschrijving voor dit evenement');
+    });
   });
 
   var exampleEventJson = {

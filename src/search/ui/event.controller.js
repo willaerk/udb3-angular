@@ -164,7 +164,7 @@ function EventController(
       var deletePromise = eventEditor.deleteDescription(event, {variation: 'noid'});
 
       deletePromise.then(function () {
-        $scope.event.description = cachedEvent[defaultLanguage].description;
+        $scope.event.description = cachedEvent.description[defaultLanguage];
       });
 
       return deletePromise;

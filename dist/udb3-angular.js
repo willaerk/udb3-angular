@@ -4015,6 +4015,9 @@ function EventCrudJobFactory(BaseJob) {
       case 'createPlace':
         return 'Locatie toevoegen: "' + this.item.name.nl + '".';
 
+      case 'updateDescription':
+        return 'Beschrijving aanpassen: "' + this.item.name.nl + '".';
+
       case 'updateTypicalAgeRange':
         return 'Leeftijd aanpassen: "' + this.item.name.nl + '".';
 
@@ -4182,7 +4185,7 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
     );
 
     jobPromise.success(function (jobData) {
-      var job = new EventCrudJob(jobData.commandId, item, 'updateTypicalAgeRange');
+      var job = new EventCrudJob(jobData.commandId, item, 'updateDescription');
       jobLogger.addJob(job);
     });
 

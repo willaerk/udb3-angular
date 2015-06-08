@@ -119,7 +119,7 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
     );
 
     jobPromise.success(function (jobData) {
-      var job = new EventCrudJob(jobData.commandId, item, 'updateTypicalAgeRange');
+      var job = new EventCrudJob(jobData.commandId, item, 'updateDescription');
       jobLogger.addJob(job);
     });
 

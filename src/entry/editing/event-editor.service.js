@@ -56,9 +56,10 @@ function EventEditor(jobLogger, udbApi, BaseJob, $q, $cacheFactory) {
   this.editDescription = function (event, description, purpose) {
     purpose = purpose || 'personal';
     var updatePromise = udbApi.updateEventDescription(event.id, description, purpose);
+    var eventVariation = this.getPersonalVariation(event);
 
     updatePromise.success(function (jobData) {
-      event.nl.description = description;
+      eventVariation.description.nl = description;
       jobLogger.add(new BaseJob(jobData.commandId));
     });
 

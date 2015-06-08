@@ -91,7 +91,7 @@ function UdbEventFactory(EventTranslationState) {
     parseJson: function (jsonEvent) {
       this.id = jsonEvent['@id'].split('/').pop();
       this.name = jsonEvent.name || {};
-      this.description = jsonEvent.description || {};
+      this.description = angular.copy(jsonEvent.description) || {};
       this.calendarSummary = jsonEvent.calendarSummary;
       this.location = jsonEvent.location;
       this.image = jsonEvent.image;

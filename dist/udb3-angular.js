@@ -2545,7 +2545,7 @@ function UdbEventFactory(EventTranslationState) {
     parseJson: function (jsonEvent) {
       this.id = jsonEvent['@id'].split('/').pop();
       this.name = jsonEvent.name || {};
-      this.description = jsonEvent.description || {};
+      this.description = angular.copy(jsonEvent.description) || {};
       this.calendarSummary = jsonEvent.calendarSummary;
       this.location = jsonEvent.location;
       this.image = jsonEvent.image;
@@ -2835,9 +2835,10 @@ function EventEditor(jobLogger, udbApi, BaseJob, $q, $cacheFactory) {
   this.editDescription = function (event, description, purpose) {
     purpose = purpose || 'personal';
     var updatePromise = udbApi.updateEventDescription(event.id, description, purpose);
+    var eventVariation = this.getPersonalVariation(event);
 
     updatePromise.success(function (jobData) {
-      event.nl.description = description;
+      eventVariation.description.nl = description;
       jobLogger.add(new BaseJob(jobData.commandId));
     });
 

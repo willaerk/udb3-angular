@@ -246,6 +246,17 @@ function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth,
     return deferredUser.promise;
   };
 
+  /**
+   * @param {string} id
+   *   Id of item to check
+   */
+  this.hasPermission = function(id) {
+    return $http.get(appConfig.baseUrl + 'event/' + id + '/permission',
+      {},
+      defaultApiConfig
+    );
+  };
+
   this.labelEvents = function (eventIds, label) {
     return $http.post(appConfig.baseUrl + 'events/label',
       {

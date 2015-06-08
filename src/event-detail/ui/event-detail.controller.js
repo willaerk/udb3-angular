@@ -16,6 +16,7 @@ function EventDetail($scope, $location, eventId, udbApi, jsonLDLangFilter, locat
 
   $scope.eventId = eventId;
   $scope.eventIdIsInvalid = false;
+  $scope.hasEditPermissions = false;
   $scope.eventHistory = [];
   $scope.tabs = [
     {
@@ -31,6 +32,11 @@ function EventDetail($scope, $location, eventId, udbApi, jsonLDLangFilter, locat
       header: 'Publicatie'
     },
   ];
+
+  // Check if user has permissions.
+  udbApi.hasPermission(eventId).then(function(result) {
+    $scope.hasEditPermissions = result.data.hasPermission;
+  });
 
   var eventLoaded = udbApi.getEventById($scope.eventId);
 

@@ -2681,6 +2681,17 @@ function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth,
     return deferredUser.promise;
   };
 
+  /**
+   * @param {string} id
+   *   Id of item to check
+   */
+  this.hasPermission = function(id) {
+    return $http.get(appConfig.baseUrl + 'event/' + id + '/permission',
+      {},
+      defaultApiConfig
+    );
+  };
+
   this.labelEvents = function (eventIds, label) {
     return $http.post(appConfig.baseUrl + 'events/label',
       {
@@ -5264,6 +5275,7 @@ function EventDetail($scope, $location, eventId, udbApi, jsonLDLangFilter, locat
 
   $scope.eventId = eventId;
   $scope.eventIdIsInvalid = false;
+  $scope.hasEditPermissions = false;
   $scope.eventHistory = [];
   $scope.tabs = [
     {
@@ -5279,6 +5291,11 @@ function EventDetail($scope, $location, eventId, udbApi, jsonLDLangFilter, locat
       header: 'Publicatie'
     },
   ];
+
+  // Check if user has permissions.
+  udbApi.hasPermission(eventId).then(function(result) {
+    $scope.hasEditPermissions = result.data.hasPermission;
+  });
 
   var eventLoaded = udbApi.getEventById($scope.eventId);
 
@@ -8868,10 +8885,11 @@ angular
     .controller('PlaceDetailController', PlaceDetail);
 
 /* @ngInject */
-function PlaceDetail($scope, $location, placeId, udbApi, jsonLDLangFilter, locationTypes) {
+function PlaceDetail($scope, $location, placeId, udbApi) {
 
   $scope.placeId = placeId;
   $scope.placeIdIsInvalid = false;
+  $scope.hasEditPermissions = false;
   $scope.placeHistory = [];
   $scope.tabs = [
     {
@@ -8887,6 +8905,11 @@ function PlaceDetail($scope, $location, placeId, udbApi, jsonLDLangFilter, locat
       header: 'Publicatie'
     },
   ];
+
+  // Check if user has permissions.
+  udbApi.hasPermission(placeId).then(function(result) {
+    $scope.hasEditPermissions = result.data.hasPermission;
+  });
 
   var placeLoaded = udbApi.getPlaceById($scope.placeId);
 
@@ -8950,7 +8973,7 @@ function PlaceDetail($scope, $location, placeId, udbApi, jsonLDLangFilter, locat
     return tabId === activeTabId;
   };
 }
-PlaceDetail.$inject = ["$scope", "$location", "placeId", "udbApi", "jsonLDLangFilter", "locationTypes"];
+PlaceDetail.$inject = ["$scope", "$location", "placeId", "udbApi"];
 
 // Source: src/search/components/query-editor-daterangepicker.directive.js
 /**

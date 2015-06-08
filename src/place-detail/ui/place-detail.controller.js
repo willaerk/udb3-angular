@@ -12,10 +12,11 @@ angular
     .controller('PlaceDetailController', PlaceDetail);
 
 /* @ngInject */
-function PlaceDetail($scope, $location, placeId, udbApi, jsonLDLangFilter, locationTypes) {
+function PlaceDetail($scope, $location, placeId, udbApi) {
 
   $scope.placeId = placeId;
   $scope.placeIdIsInvalid = false;
+  $scope.hasEditPermissions = false;
   $scope.placeHistory = [];
   $scope.tabs = [
     {
@@ -31,6 +32,11 @@ function PlaceDetail($scope, $location, placeId, udbApi, jsonLDLangFilter, locat
       header: 'Publicatie'
     },
   ];
+
+  // Check if user has permissions.
+  udbApi.hasPermission(placeId).then(function(result) {
+    $scope.hasEditPermissions = result.data.hasPermission;
+  });
 
   var placeLoaded = udbApi.getPlaceById($scope.placeId);
 

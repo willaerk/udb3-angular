@@ -55,13 +55,13 @@ function EventCrudJobFactory(BaseJob) {
         return 'Organisatie verwijderen: "' + this.item.name.nl + '".';
 
       case 'updateContactPoint':
-        return 'Contact informatie aanpassen: "' + this.item.name + '".';
+        return 'Contact informatie aanpassen: "' + this.item.name.nl + '".';
 
       case 'updateBookingInfo':
-        return 'Booking informatie aanpassen: "' + this.item.name + '".';
+        return 'Reservatie informatie aanpassen: "' + this.item.name.nl + '".';
 
       case 'updateExtraInfo':
-        return 'Extra informatie aanpassen: "' + this.item.name + '".';
+        return 'Extra informatie aanpassen: "' + this.item.name.nl + '".';
 
       case 'updateFacilities':
         return 'Voorzieningen aanpassen: "' + this.item.name.nl + '".';

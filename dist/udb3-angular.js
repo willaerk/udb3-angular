@@ -4031,13 +4031,13 @@ function EventCrudJobFactory(BaseJob) {
         return 'Organisatie verwijderen: "' + this.item.name.nl + '".';
 
       case 'updateContactPoint':
-        return 'Contact informatie aanpassen: "' + this.item.name + '".';
+        return 'Contact informatie aanpassen: "' + this.item.name.nl + '".';
 
       case 'updateBookingInfo':
-        return 'Booking informatie aanpassen: "' + this.item.name + '".';
+        return 'Reservatie informatie aanpassen: "' + this.item.name.nl + '".';
 
       case 'updateExtraInfo':
-        return 'Extra informatie aanpassen: "' + this.item.name + '".';
+        return 'Extra informatie aanpassen: "' + this.item.name.nl + '".';
 
       case 'updateFacilities':
         return 'Voorzieningen aanpassen: "' + this.item.name.nl + '".';
@@ -7939,7 +7939,12 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
     $scope.ageRange = parseInt($scope.ageRange);
 
     if ($scope.ageRange > 0) {
+
+      // Always reset the min age.
+      $scope.minAge = '';
+      $scope.invalidAgeRange = false;
       $scope.ageCssClass = 'state-complete';
+
     }
     else {
       setAllAges();
@@ -8314,13 +8319,13 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
     if (type === 'website') {
 
       // Autoset http://.
-      if (EventFormData.bookingInfo.url.substring(0, 7) !== 'http://') {
-        EventFormData.bookingInfo.url = 'http://' + EventFormData.bookingInfo.url;
+      if ($scope.bookingModel.url.substring(0, 7) !== 'http://') {
+        $scope.bookingModel.url = 'http://' + $scope.bookingModel.url;
       }
 
       // Valid url?
       $scope.step5TicketsForm.url.$setValidity('url', true);
-      if (!URL_REGEXP.test(EventFormData.bookingInfo.url)) {
+      if (!URL_REGEXP.test($scope.bookingModel.url)) {
         $scope.step5TicketsForm.url.$setValidity('url', false);
       }
 

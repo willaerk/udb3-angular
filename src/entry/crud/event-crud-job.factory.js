@@ -81,6 +81,12 @@ function EventCrudJobFactory(BaseJob) {
       case 'updateMajorInfo':
         return 'Hoofdinformatie aanpassen: "' +  this.item.name.nl + '".';
 
+      case 'removeEvent':
+        return 'Event verwijderen: "' +  this.item.name.nl + '".';
+
+      case 'removePlace':
+        return 'Locatie verwijderen: "' +  this.item.name + '".';
+
     }
 
   };

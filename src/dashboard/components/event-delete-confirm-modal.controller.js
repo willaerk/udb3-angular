@@ -30,7 +30,7 @@ function EventDeleteConfirmModalController($scope, $modalInstance, eventCrud, it
     $scope.error = false;
     $scope.saving = true;
 
-    var promise = eventCrud.removeEvent(item.id);
+    var promise = eventCrud.removeEvent(item);
     promise.then(function(jsonResponse) {
       $scope.saving = false;
       $modalInstance.close(item);

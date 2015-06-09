@@ -35,7 +35,7 @@ function PlaceDeleteConfirmModalController($scope, $modalInstance, eventCrud, it
 
     $scope.saving = true;
     $scope.error = false;
-    var promise = eventCrud.removePlace(item.id, item);
+    var promise = eventCrud.removePlace(item);
     promise.then(function(jsonResponse) {
       $scope.saving = false;
       $modalInstance.close(item);

@@ -3731,7 +3731,7 @@ function EventDeleteConfirmModalController($scope, $modalInstance, eventCrud, it
     $scope.error = false;
     $scope.saving = true;
 
-    var promise = eventCrud.removeEvent(item.id);
+    var promise = eventCrud.removeEvent(item);
     promise.then(function(jsonResponse) {
       $scope.saving = false;
       $modalInstance.close(item);
@@ -3788,7 +3788,7 @@ function PlaceDeleteConfirmModalController($scope, $modalInstance, eventCrud, it
 
     $scope.saving = true;
     $scope.error = false;
-    var promise = eventCrud.removePlace(item.id, item);
+    var promise = eventCrud.removePlace(item);
     promise.then(function(jsonResponse) {
       $scope.saving = false;
       $modalInstance.close(item);
@@ -4057,6 +4057,12 @@ function EventCrudJobFactory(BaseJob) {
       case 'updateMajorInfo':
         return 'Hoofdinformatie aanpassen: "' +  this.item.name.nl + '".';
 
+      case 'removeEvent':
+        return 'Event verwijderen: "' +  this.item.name.nl + '".';
+
+      case 'removePlace':
+        return 'Locatie verwijderen: "' +  this.item.name + '".';
+
     }
 
   };
@@ -4101,11 +4107,13 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
 
   /**
    * Remove an event.
-   *
-   * @param {int} id
    */
-  this.removeEvent = function (id) {
-    var jobPromise = udbApi.removeEvent(id);
+  this.removeEvent = function (item) {
+    var jobPromise = udbApi.removeEvent(item.id);
+    jobPromise.success(function (jobData) {
+      var job = new EventCrudJob(jobData.commandId, item, 'removeEvent');
+      jobLogger.addJob(job);
+    });
     return jobPromise;
   };
 
@@ -4129,11 +4137,13 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
 
   /**
    * Remove a place.
-   *
-   * @param {int} id
    */
-  this.removePlace = function (id) {
-    var jobPromise = udbApi.removePlace(id);
+  this.removePlace = function (item) {
+    var jobPromise = udbApi.removePlace(item.id);
+    jobPromise.success(function (jobData) {
+      var job = new EventCrudJob(jobData.commandId, item, 'removePlace');
+      jobLogger.addJob(job);
+    });
     return jobPromise;
   };
 

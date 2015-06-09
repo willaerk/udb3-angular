@@ -35,11 +35,13 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
 
   /**
    * Remove an event.
-   *
-   * @param {int} id
    */
-  this.removeEvent = function (id) {
-    var jobPromise = udbApi.removeEvent(id);
+  this.removeEvent = function (item) {
+    var jobPromise = udbApi.removeEvent(item.id);
+    jobPromise.success(function (jobData) {
+      var job = new EventCrudJob(jobData.commandId, item, 'removeEvent');
+      jobLogger.addJob(job);
+    });
     return jobPromise;
   };
 
@@ -63,11 +65,13 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
 
   /**
    * Remove a place.
-   *
-   * @param {int} id
    */
-  this.removePlace = function (id) {
-    var jobPromise = udbApi.removePlace(id);
+  this.removePlace = function (item) {
+    var jobPromise = udbApi.removePlace(item.id);
+    jobPromise.success(function (jobData) {
+      var job = new EventCrudJob(jobData.commandId, item, 'removePlace');
+      jobLogger.addJob(job);
+    });
     return jobPromise;
   };
 

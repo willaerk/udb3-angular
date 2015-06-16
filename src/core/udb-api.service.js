@@ -233,7 +233,7 @@ function UdbApi($q, $http, appConfig, $cookieStore, uitidAuth, $cacheFactory, Ud
     );
   };
 
-  this.updateEventDescription = function (eventId, description, purpose) {
+  this.createVariation = function (eventId, description, purpose) {
     var activeUser = uitidAuth.getUser(),
         requestData = {
           'owner': activeUser.id,
@@ -243,8 +243,16 @@ function UdbApi($q, $http, appConfig, $cookieStore, uitidAuth, $cacheFactory, Ud
         };
 
     return $http.post(
-      appConfig.baseUrl + 'variations',
+      appConfig.baseUrl + 'variations/',
       requestData,
+      defaultApiConfig
+    );
+  };
+
+  this.editDescription = function (variationId, description) {
+    return $http.patch(
+      appConfig.baseUrl + 'variations/' + variationId,
+      {'description': description},
       defaultApiConfig
     );
   };

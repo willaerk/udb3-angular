@@ -2407,7 +2407,7 @@ function UdbApi($q, $http, appConfig, $cookieStore, uitidAuth, $cacheFactory, Ud
     );
   };
 
-  this.updateEventDescription = function (eventId, description, purpose) {
+  this.createVariation = function (eventId, description, purpose) {
     var activeUser = uitidAuth.getUser(),
         requestData = {
           'owner': activeUser.id,
@@ -2417,8 +2417,16 @@ function UdbApi($q, $http, appConfig, $cookieStore, uitidAuth, $cacheFactory, Ud
         };
 
     return $http.post(
-      appConfig.baseUrl + 'variations',
+      appConfig.baseUrl + 'variations/',
       requestData,
+      defaultApiConfig
+    );
+  };
+
+  this.editDescription = function (variationId, description) {
+    return $http.patch(
+      appConfig.baseUrl + 'variations/' + variationId,
+      {'description': description},
       defaultApiConfig
     );
   };
@@ -2791,7 +2799,7 @@ angular
   .service('eventEditor', EventEditor);
 
 /* @ngInject */
-function EventEditor(jobLogger, udbApi, BaseJob, $q, $cacheFactory) {
+function EventEditor(jobLogger, udbApi, VariationCreationJob, BaseJob, $q, $cacheFactory) {
 
   var personalVariationCache = $cacheFactory('personalVariationCache');
 
@@ -2833,14 +2841,46 @@ function EventEditor(jobLogger, udbApi, BaseJob, $q, $cacheFactory) {
    * @param {string}   [purpose=personal]    The purpose of the variation that will be edited
    */
   this.editDescription = function (event, description, purpose) {
-    purpose = purpose || 'personal';
-    var updatePromise = udbApi.updateEventDescription(event.id, description, purpose);
-    var eventVariation = this.getPersonalVariation(event);
+    var updatePromise = $q.defer();
+    var variationPromise = this.getPersonalVariation(event);
 
-    updatePromise.success(function (jobData) {
-      eventVariation.description.nl = description;
-      jobLogger.add(new BaseJob(jobData.commandId));
-    });
+    var rejectUpdate = function (reason) {
+      updatePromise.reject(reason);
+    };
+
+    var createVariation = function () {
+      purpose = purpose || 'personal';
+      var creationRequest = udbApi.createVariation(event.id, description, purpose);
+
+      creationRequest.success(function (jobData) {
+        var variation = angular.copy(event);
+        variation.description.nl = description;
+        var variationCreationJob = new VariationCreationJob(jobData.commandId, event.id);
+        jobLogger.addJob(variationCreationJob);
+
+        variationCreationJob.task.promise.then(function (jobInfo) {
+          variation.id = jobInfo['event_variation_id']; // jshint ignore:line
+          personalVariationCache.put(event.id, variation);
+          updatePromise.resolve();
+        }, rejectUpdate);
+      });
+
+      creationRequest.error(rejectUpdate);
+    };
+
+    var editDescription = function (variation) {
+      var editRequest = udbApi.editDescription(variation.id, description);
+
+      editRequest.success(function (jobData) {
+        variation.description.nl = description;
+        jobLogger.addJob(new BaseJob(jobData.commandId));
+        updatePromise.resolve();
+      });
+
+      editRequest.error(rejectUpdate);
+    };
+
+    variationPromise.then(editDescription, createVariation);
 
     return updatePromise;
   };
@@ -2849,14 +2889,67 @@ function EventEditor(jobLogger, udbApi, BaseJob, $q, $cacheFactory) {
     var deletePromise = udbApi.deleteEventDescription(variation.id);
 
     deletePromise.success(function (jobData) {
-      jobLogger.add(new BaseJob(jobData.commandId));
+      jobLogger.addJob(new BaseJob(jobData.commandId));
       personalVariationCache.remove(event.id);
     });
 
     return deletePromise;
   };
 }
-EventEditor.$inject = ["jobLogger", "udbApi", "BaseJob", "$q", "$cacheFactory"];
+EventEditor.$inject = ["jobLogger", "udbApi", "VariationCreationJob", "BaseJob", "$q", "$cacheFactory"];
+
+// Source: src/entry/editing/variation-creation-job.factory.js
+/**
+ * @ngdoc service
+ * @name udb.entry.VariationCreationJob
+ * @description
+ * # Variation Creation Job
+ * This Is the factory that creates a variation creation job
+ */
+angular
+  .module('udb.entry')
+  .factory('VariationCreationJob', VariationCreationJobFactory);
+
+/* @ngInject */
+function VariationCreationJobFactory(BaseJob, JobStates, $q) {
+
+  /**
+   * @class VariationCreationJob
+   * @constructor
+   * @param {string} commandId
+   * @param {string} eventId
+   */
+  var VariationCreationJob = function (commandId, eventId) {
+    BaseJob.call(this, commandId);
+    this.task = $q.defer();
+    this.eventId = eventId;
+  };
+
+  VariationCreationJob.prototype = Object.create(BaseJob.prototype);
+  VariationCreationJob.prototype.constructor = VariationCreationJob;
+
+  VariationCreationJob.prototype.finish = function () {
+    if (this.state !== JobStates.FAILED) {
+      this.state = JobStates.FINISHED;
+      this.finished = new Date();
+    }
+    this.progress = 100;
+  };
+
+  VariationCreationJob.prototype.info = function (jobInfo) {
+    this.task.resolve(jobInfo);
+  };
+
+  VariationCreationJob.prototype.fail = function () {
+    this.finished = new Date();
+    this.state = JobStates.FAILED;
+    this.progress = 100;
+    this.task.reject('Failed to create a variation for event with id: ' + this.eventId);
+  };
+
+  return (VariationCreationJob);
+}
+VariationCreationJobFactory.$inject = ["BaseJob", "JobStates", "$q"];
 
 // Source: src/entry/labelling/event-label-batch-job.factory.js
 /**

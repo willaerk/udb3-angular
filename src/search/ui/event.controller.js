@@ -49,7 +49,7 @@ function EventController(
         personalVariationPromise
           .then(function (personalVariation) {
             $scope.event = jsonLDLangFilter(personalVariation, defaultLanguage);
-          }, function () {
+          }, function (reason) {
             $scope.event = jsonLDLangFilter(cachedEvent, defaultLanguage);
           })
           .finally(function () {

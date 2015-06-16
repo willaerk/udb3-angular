@@ -27,17 +27,20 @@ function EventEditor(jobLogger, udbApi, VariationCreationJob, BaseJob, $q, $cach
 
       userPromise
         .then(function(user) {
-          var personalVariationPromise = udbApi.getEventVariations(user.id, 'personal', event.apiUrl);
-          personalVariationPromise.then(function (variations) {
+          var personalVariationRequest = udbApi.getEventVariations(user.id, 'personal', event.apiUrl);
+
+          personalVariationRequest.success(function (variations) {
             var jsonPersonalVariation = _.first(variations.member);
             if (jsonPersonalVariation) {
               var variation = new UdbEvent(jsonPersonalVariation);
               personalVariationCache.put(event.id, personalVariation);
+              deferredVariation.resolve(variation);
             } else {
               deferredVariation.reject('there is no personal variation for event with id: ' + event.id);
             }
-          },
-          function () {
+          });
+
+          personalVariationRequest.error(function () {
             deferredVariation.reject('no variations found for event with id: ' + event.id);
           });
         });

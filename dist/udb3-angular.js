@@ -2458,6 +2458,29 @@ function UdbApi($q, $http, appConfig, $cookieStore, uitidAuth, $cacheFactory, Ud
       config
     );
   };
+
+  this.getVariation = function (variationId) {
+    var deferredVariation = $q.defer();
+
+    var variationRequest = $http.get(
+      appConfig.baseUrl + 'variations/' + variationId,
+      {
+        headers: {
+          'Accept': 'application/ld+json'
+        }
+      });
+
+    variationRequest.success(function (jsonEvent) {
+      var event = new UdbEvent(jsonEvent);
+      deferredVariation.resolve(event);
+    });
+
+    variationRequest.error(function () {
+      deferredVariation.reject();
+    });
+
+    return deferredVariation.promise;
+  };
 }
 UdbApi.$inject = ["$q", "$http", "appConfig", "$cookieStore", "uitidAuth", "$cacheFactory", "UdbEvent"];
 
@@ -2816,10 +2839,17 @@ function EventEditor(jobLogger, udbApi, VariationCreationJob, BaseJob, $q, $cach
         .then(function(user) {
           var personalVariationPromise = udbApi.getEventVariations(user.id, 'personal', event.id);
           personalVariationPromise.then(function (variations) {
-            var personalVariation = _.first(variations.member);
-            if (personalVariation) {
-              personalVariationCache.put(event.id, personalVariation);
-              deferredVariation.resolve(personalVariation);
+            var personalVariationId = _.first(variations.member);
+            if (personalVariationId) {
+              var variationPromise = udbApi.getVariation(personalVariationId);
+
+              variationPromise.then(function (personalVariation) {
+                personalVariationCache.put(event.id, personalVariation);
+                deferredVariation.resolve(personalVariation);
+              }, function () {
+                deferredVariation.reject('Could not load personal variation for event with id: ' + event.id);
+              });
+
             } else {
               deferredVariation.reject('there is no personal variation for event with id: ' + event.id);
             }

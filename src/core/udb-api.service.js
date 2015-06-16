@@ -284,4 +284,27 @@ function UdbApi($q, $http, appConfig, $cookieStore, uitidAuth, $cacheFactory, Ud
       config
     );
   };
+
+  this.getVariation = function (variationId) {
+    var deferredVariation = $q.defer();
+
+    var variationRequest = $http.get(
+      appConfig.baseUrl + 'variations/' + variationId,
+      {
+        headers: {
+          'Accept': 'application/ld+json'
+        }
+      });
+
+    variationRequest.success(function (jsonEvent) {
+      var event = new UdbEvent(jsonEvent);
+      deferredVariation.resolve(event);
+    });
+
+    variationRequest.error(function () {
+      deferredVariation.reject();
+    });
+
+    return deferredVariation.promise;
+  };
 }

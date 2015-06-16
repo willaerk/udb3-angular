@@ -27,7 +27,7 @@ function EventEditor(jobLogger, udbApi, VariationCreationJob, BaseJob, $q, $cach
 
       userPromise
         .then(function(user) {
-          var personalVariationPromise = udbApi.getEventVariations(user.id, 'personal', event.id);
+          var personalVariationPromise = udbApi.getEventVariations(user.id, 'personal', event.apiUrl);
           personalVariationPromise.then(function (variations) {
             var jsonPersonalVariation = _.first(variations.member);
             if (jsonPersonalVariation) {

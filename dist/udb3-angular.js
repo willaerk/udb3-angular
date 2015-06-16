@@ -2438,11 +2438,11 @@ function UdbApi($q, $http, appConfig, $cookieStore, uitidAuth, $cacheFactory, Ud
     );
   };
 
-  this.getEventVariations = function (ownerId, purpose, eventId) {
+  this.getEventVariations = function (ownerId, purpose, eventUrl) {
     var parameters = {
       'owner': ownerId,
       'purpose': purpose,
-      'same_as': eventId
+      'same_as': eventUrl
     };
 
     var config = {
@@ -2575,6 +2575,7 @@ function UdbEventFactory(EventTranslationState) {
   UdbEvent.prototype = {
     parseJson: function (jsonEvent) {
       this.id = jsonEvent['@id'].split('/').pop();
+      this.apiUrl = jsonEvent['@id'];
       this.name = jsonEvent.name || {};
       this.description = angular.copy(jsonEvent.description) || {};
       this.calendarSummary = jsonEvent.calendarSummary;
@@ -2837,7 +2838,7 @@ function EventEditor(jobLogger, udbApi, VariationCreationJob, BaseJob, $q, $cach
 
       userPromise
         .then(function(user) {
-          var personalVariationPromise = udbApi.getEventVariations(user.id, 'personal', event.id);
+          var personalVariationPromise = udbApi.getEventVariations(user.id, 'personal', event.apiUrl);
           personalVariationPromise.then(function (variations) {
             var jsonPersonalVariation = _.first(variations.member);
             if (jsonPersonalVariation) {

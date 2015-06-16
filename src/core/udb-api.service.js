@@ -264,11 +264,11 @@ function UdbApi($q, $http, appConfig, $cookieStore, uitidAuth, $cacheFactory, Ud
     );
   };
 
-  this.getEventVariations = function (ownerId, purpose, eventId) {
+  this.getEventVariations = function (ownerId, purpose, eventUrl) {
     var parameters = {
       'owner': ownerId,
       'purpose': purpose,
-      'same_as': eventId
+      'same_as': eventUrl
     };
 
     var config = {

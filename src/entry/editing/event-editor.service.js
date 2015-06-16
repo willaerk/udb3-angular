@@ -12,7 +12,7 @@ angular
   .service('eventEditor', EventEditor);
 
 /* @ngInject */
-function EventEditor(jobLogger, udbApi, VariationCreationJob, BaseJob, $q, $cacheFactory) {
+function EventEditor(jobLogger, udbApi, VariationCreationJob, BaseJob, $q, $cacheFactory, UdbEvent) {
 
   var personalVariationCache = $cacheFactory('personalVariationCache');
 
@@ -31,8 +31,8 @@ function EventEditor(jobLogger, udbApi, VariationCreationJob, BaseJob, $q, $cach
           personalVariationPromise.then(function (variations) {
             var jsonPersonalVariation = _.first(variations.member);
             if (jsonPersonalVariation) {
-                var variation = new UdbEvent(jsonPersonalVariation);
-                personalVariationCache.put(event.id, personalVariation);
+              var variation = new UdbEvent(jsonPersonalVariation);
+              personalVariationCache.put(event.id, personalVariation);
             } else {
               deferredVariation.reject('there is no personal variation for event with id: ' + event.id);
             }

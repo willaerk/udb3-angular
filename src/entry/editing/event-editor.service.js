@@ -22,7 +22,7 @@ function EventEditor(jobLogger, udbApi, VariationCreationJob, BaseJob, $q, varia
    */
   this.editDescription = function (event, description, purpose) {
     var updatePromise = $q.defer();
-    var variationPromise = this.getPersonalVariation(event);
+    var variationPromise = variationRepository.getPersonalVariation(event);
 
     var rejectUpdate = function (reason) {
       updatePromise.reject(reason);

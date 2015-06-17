@@ -11,6 +11,7 @@ describe('Controller: Event', function() {
       udbApi,
       UdbEvent,
       $q,
+      variationRepository,
       exampleEventJson = {
         "@id": "http://culudb-silex.dev:8080/event/1111be8c-a412-488d-9ecc-8fdf9e52edbc",
         "@context": "/api/1.0/event.jsonld",
@@ -142,12 +143,13 @@ describe('Controller: Event', function() {
     eventEditor = $injector.get('eventEditor');
     EventTranslationState = $injector.get('EventTranslationState');
     UdbEvent = $injector.get('UdbEvent');
+    variationRepository = $injector.get('variationRepository');
     $q = _$q_;
 
     $scope.event = {};
     deferredEvent = $q.defer(); deferredVariation = $q.defer();
     spyOn(udbApi, 'getEventByLDId').andReturn(deferredEvent.promise);
-    spyOn(eventEditor, 'getPersonalVariation').andReturn(deferredVariation.promise);
+    spyOn(variationRepository, 'getPersonalVariation').andReturn(deferredVariation.promise);
 
     eventController = $controller(
       'EventController', {

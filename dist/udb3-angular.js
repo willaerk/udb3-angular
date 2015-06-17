@@ -3836,7 +3836,15 @@ angular
     .controller('EventDetailController', EventDetail);
 
 /* @ngInject */
-function EventDetail($scope, $location, eventId, udbApi, jsonLDLangFilter, locationTypes) {
+function EventDetail(
+  $scope,
+  $location,
+  eventId,
+  udbApi,
+  jsonLDLangFilter,
+  locationTypes,
+  variationRepository
+) {
   $scope.eventId = eventId;
   $scope.eventIdIsInvalid = false;
   $scope.eventHistory = [];
@@ -3846,6 +3854,7 @@ function EventDetail($scope, $location, eventId, udbApi, jsonLDLangFilter, locat
   eventLoaded.then(
       function (event) {
         var eventHistoryLoaded = udbApi.getEventHistoryById($scope.eventId);
+        var personalVariationLoaded = variationRepository.getPersonalVariation(event);
 
         eventHistoryLoaded.then(function(eventHistory) {
           $scope.eventHistory = eventHistory;
@@ -3853,6 +3862,14 @@ function EventDetail($scope, $location, eventId, udbApi, jsonLDLangFilter, locat
         $scope.event = jsonLDLangFilter(event, 'nl');
 
         $scope.eventIdIsInvalid = false;
+
+        personalVariationLoaded
+          .then(function (variation) {
+            $scope.event = jsonLDLangFilter(variation, 'nl');
+          })
+          .finally(function () {
+            $scope.personalVariationChecked = true;
+          });
       },
       function (reason) {
         $scope.eventIdIsInvalid = true;
@@ -3930,7 +3947,7 @@ function EventDetail($scope, $location, eventId, udbApi, jsonLDLangFilter, locat
     return tabId === activeTabId;
   };
 }
-EventDetail.$inject = ["$scope", "$location", "eventId", "udbApi", "jsonLDLangFilter", "locationTypes"];
+EventDetail.$inject = ["$scope", "$location", "eventId", "udbApi", "jsonLDLangFilter", "locationTypes", "variationRepository"];
 
 // Source: src/export/event-export-job.factory.js
 /**
@@ -7080,7 +7097,10 @@ $templateCache.put('templates/unexpected-error-modal.html',
     "            </tr>\n" +
     "            <tr>\n" +
     "              <td><strong>Beschrijving</strong></td>\n" +
-    "              <td ng-bind-html=\"event.description\"></td>\n" +
+    "              <td>\n" +
+    "                <div ng-if=\"personalVariationChecked\" ng-bind-html=\"event.description\"></div>\n" +
+    "                <i ng-if=\"!personalVariationChecked\" class=\"fa fa-circle-o-notch fa-spin\"></i>\n" +
+    "              </td>\n" +
     "            </tr>\n" +
     "            <tr>\n" +
     "              <td><strong>Waar</strong></td>\n" +

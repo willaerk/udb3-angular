@@ -12,7 +12,15 @@ angular
     .controller('EventDetailController', EventDetail);
 
 /* @ngInject */
-function EventDetail($scope, $location, eventId, udbApi, jsonLDLangFilter, locationTypes) {
+function EventDetail(
+  $scope,
+  $location,
+  eventId,
+  udbApi,
+  jsonLDLangFilter,
+  locationTypes,
+  variationRepository
+) {
   $scope.eventId = eventId;
   $scope.eventIdIsInvalid = false;
   $scope.eventHistory = [];
@@ -22,6 +30,7 @@ function EventDetail($scope, $location, eventId, udbApi, jsonLDLangFilter, locat
   eventLoaded.then(
       function (event) {
         var eventHistoryLoaded = udbApi.getEventHistoryById($scope.eventId);
+        var personalVariationLoaded = variationRepository.getPersonalVariation(event);
 
         eventHistoryLoaded.then(function(eventHistory) {
           $scope.eventHistory = eventHistory;
@@ -29,6 +38,14 @@ function EventDetail($scope, $location, eventId, udbApi, jsonLDLangFilter, locat
         $scope.event = jsonLDLangFilter(event, 'nl');
 
         $scope.eventIdIsInvalid = false;
+
+        personalVariationLoaded
+          .then(function (variation) {
+            $scope.event = jsonLDLangFilter(variation, 'nl');
+          })
+          .finally(function () {
+            $scope.personalVariationChecked = true;
+          });
       },
       function (reason) {
         $scope.eventIdIsInvalid = true;

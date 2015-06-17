@@ -43,7 +43,10 @@
             </tr>
             <tr>
               <td><strong>Beschrijving</strong></td>
-              <td ng-bind-html="event.description"></td>
+              <td>
+                <div ng-if="personalVariationChecked" ng-bind-html="event.description"></div>
+                <i ng-if="!personalVariationChecked" class="fa fa-circle-o-notch fa-spin"></i>
+              </td>
             </tr>
             <tr>
               <td><strong>Waar</strong></td>

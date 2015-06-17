@@ -13,11 +13,6 @@ angular
 
 /* @ngInject */
 function EventEditor(jobLogger, udbApi, VariationCreationJob, BaseJob, $q, variationRepository) {
-
-  this.getPersonalVariation = function (event) {
-    return variationRepository.getPersonalVariation(event);
-  };
-
   /**
    * Edit the description of an event. We never edit the original event but use a variation instead.
    *

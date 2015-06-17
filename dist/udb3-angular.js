@@ -2824,11 +2824,6 @@ angular
 
 /* @ngInject */
 function EventEditor(jobLogger, udbApi, VariationCreationJob, BaseJob, $q, variationRepository) {
-
-  this.getPersonalVariation = function (event) {
-    return variationRepository.getPersonalVariation(event);
-  };
-
   /**
    * Edit the description of an event. We never edit the original event but use a variation instead.
    *
@@ -6273,7 +6268,11 @@ function VariationRepository(udbApi, $cacheFactory, $q, UdbEvent) {
         personalVariation = personalVariationCache.get(event.id);
 
     if (personalVariation) {
-      deferredVariation.resolve(personalVariation);
+      if (personalVariation === 'no-personal-variation') {
+        deferredVariation.reject('there is no personal variation for event with id: ' + event.id);
+      } else {
+        deferredVariation.resolve(personalVariation);
+      }
     } else {
       var userPromise = udbApi.getMe();
 
@@ -6291,20 +6290,22 @@ function VariationRepository(udbApi, $cacheFactory, $q, UdbEvent) {
   function requestVariation(userId, purpose, eventUrl, deferredVariation) {
     return function () {
       var personalVariationRequest = udbApi.getEventVariations(userId, purpose, eventUrl, deferredVariation);
+      var eventId = eventUrl.split('/').pop();
 
       personalVariationRequest.success(function (variations) {
         var jsonPersonalVariation = _.first(variations.member);
         if (jsonPersonalVariation) {
           var variation = new UdbEvent(jsonPersonalVariation);
-          personalVariationCache.put(event.id, variation);
+          personalVariationCache.put(eventId, variation);
           deferredVariation.resolve(variation);
         } else {
-          deferredVariation.reject('there is no personal variation for event with id: ' + event.id);
+          personalVariationCache.put(eventId, 'no-personal-variation');
+          deferredVariation.reject('there is no personal variation for event with id: ' + eventId);
         }
       });
 
       personalVariationRequest.error(function () {
-        deferredVariation.reject('no variations found for event with id: ' + event.id);
+        deferredVariation.reject('no variations found for event with id: ' + eventId);
       });
 
       return personalVariationRequest.then();
@@ -6366,7 +6367,8 @@ function EventController(
   eventLabeller,
   eventEditor,
   EventTranslationState,
-  $scope
+  $scope,
+  variationRepository
 ) {
   var controller = this;
   var cachedEvent;
@@ -6405,7 +6407,7 @@ function EventController(
     }
 
     function fetchPersonalVariation() {
-      var personalVariationPromise = eventEditor.getPersonalVariation(cachedEvent);
+      var personalVariationPromise = variationRepository.getPersonalVariation(cachedEvent);
       personalVariationPromise
         .then(function (personalVariation) {
           $scope.event = jsonLDLangFilter(personalVariation, defaultLanguage);
@@ -6528,7 +6530,7 @@ function EventController(
   };
 
 }
-EventController.$inject = ["udbApi", "jsonLDLangFilter", "eventTranslator", "eventLabeller", "eventEditor", "EventTranslationState", "$scope"];
+EventController.$inject = ["udbApi", "jsonLDLangFilter", "eventTranslator", "eventLabeller", "eventEditor", "EventTranslationState", "$scope", "variationRepository"];
 
 // Source: src/search/ui/event.directive.js
 /**

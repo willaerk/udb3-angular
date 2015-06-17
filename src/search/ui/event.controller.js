@@ -18,7 +18,8 @@ function EventController(
   eventLabeller,
   eventEditor,
   EventTranslationState,
-  $scope
+  $scope,
+  variationRepository
 ) {
   var controller = this;
   var cachedEvent;
@@ -57,7 +58,7 @@ function EventController(
     }
 
     function fetchPersonalVariation() {
-      var personalVariationPromise = eventEditor.getPersonalVariation(cachedEvent);
+      var personalVariationPromise = variationRepository.getPersonalVariation(cachedEvent);
       personalVariationPromise
         .then(function (personalVariation) {
           $scope.event = jsonLDLangFilter(personalVariation, defaultLanguage);

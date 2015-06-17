@@ -2823,41 +2823,10 @@ angular
   .service('eventEditor', EventEditor);
 
 /* @ngInject */
-function EventEditor(jobLogger, udbApi, VariationCreationJob, BaseJob, $q, $cacheFactory, UdbEvent) {
-
-  var personalVariationCache = $cacheFactory('personalVariationCache');
+function EventEditor(jobLogger, udbApi, VariationCreationJob, BaseJob, $q, variationRepository) {
 
   this.getPersonalVariation = function (event) {
-    var deferredVariation =  $q.defer();
-    var personalVariation = personalVariationCache.get(event.id);
-
-    if (personalVariation) {
-      deferredVariation.resolve(personalVariation);
-    } else {
-      var userPromise = udbApi.getMe();
-
-      userPromise
-        .then(function(user) {
-          var personalVariationRequest = udbApi.getEventVariations(user.id, 'personal', event.apiUrl);
-
-          personalVariationRequest.success(function (variations) {
-            var jsonPersonalVariation = _.first(variations.member);
-            if (jsonPersonalVariation) {
-              var variation = new UdbEvent(jsonPersonalVariation);
-              personalVariationCache.put(event.id, personalVariation);
-              deferredVariation.resolve(variation);
-            } else {
-              deferredVariation.reject('there is no personal variation for event with id: ' + event.id);
-            }
-          });
-
-          personalVariationRequest.error(function () {
-            deferredVariation.reject('no variations found for event with id: ' + event.id);
-          });
-        });
-    }
-
-    return deferredVariation.promise;
+    return variationRepository.getPersonalVariation(event);
   };
 
   /**
@@ -2887,7 +2856,7 @@ function EventEditor(jobLogger, udbApi, VariationCreationJob, BaseJob, $q, $cach
 
         variationCreationJob.task.promise.then(function (jobInfo) {
           variation.id = jobInfo['event_variation_id']; // jshint ignore:line
-          personalVariationCache.put(event.id, variation);
+          variationRepository.save(event.id, variation);
           updatePromise.resolve();
         }, rejectUpdate);
       });
@@ -2917,13 +2886,13 @@ function EventEditor(jobLogger, udbApi, VariationCreationJob, BaseJob, $q, $cach
 
     deletePromise.success(function (jobData) {
       jobLogger.addJob(new BaseJob(jobData.commandId));
-      personalVariationCache.remove(event.id);
+      variationRepository.remove(event.id);
     });
 
     return deletePromise;
   };
 }
-EventEditor.$inject = ["jobLogger", "udbApi", "VariationCreationJob", "BaseJob", "$q", "$cacheFactory", "UdbEvent"];
+EventEditor.$inject = ["jobLogger", "udbApi", "VariationCreationJob", "BaseJob", "$q", "variationRepository"];
 
 // Source: src/entry/editing/variation-creation-job.factory.js
 /**
@@ -6281,6 +6250,77 @@ angular.module('udb.search')
     return (SearchResultViewer);
   });
 
+// Source: src/search/services/variation-repository.service.js
+/**
+ * @ngdoc service
+ * @name udb.search.variationRepository
+ * @description
+ * # variationRepository
+ * Service in the udb.search.
+ */
+angular
+  .module('udb.search')
+  .service('variationRepository', VariationRepository);
+
+/* @ngInject */
+function VariationRepository(udbApi, $cacheFactory, $q, UdbEvent) {
+
+  var requestChain = $q.when();
+  var personalVariationCache = $cacheFactory('personalVariationCache');
+
+  this.getPersonalVariation = function (event) {
+    var deferredVariation =  $q.defer(),
+        personalVariation = personalVariationCache.get(event.id);
+
+    if (personalVariation) {
+      deferredVariation.resolve(personalVariation);
+    } else {
+      var userPromise = udbApi.getMe();
+
+      userPromise
+        .then(function(user) {
+          requestChain = requestChain.then(
+            requestVariation(user.id, 'personal', event.apiUrl, deferredVariation)
+          );
+        });
+    }
+
+    return deferredVariation.promise;
+  };
+
+  function requestVariation(userId, purpose, eventUrl, deferredVariation) {
+    return function () {
+      var personalVariationRequest = udbApi.getEventVariations(userId, purpose, eventUrl, deferredVariation);
+
+      personalVariationRequest.success(function (variations) {
+        var jsonPersonalVariation = _.first(variations.member);
+        if (jsonPersonalVariation) {
+          var variation = new UdbEvent(jsonPersonalVariation);
+          personalVariationCache.put(event.id, variation);
+          deferredVariation.resolve(variation);
+        } else {
+          deferredVariation.reject('there is no personal variation for event with id: ' + event.id);
+        }
+      });
+
+      personalVariationRequest.error(function () {
+        deferredVariation.reject('no variations found for event with id: ' + event.id);
+      });
+
+      return personalVariationRequest.then();
+    };
+  }
+
+  this.save = function (eventId, variation) {
+    personalVariationCache.put(eventId, variation);
+  };
+
+  this.remote = function (eventId) {
+    personalVariationCache.remove(eventId);
+  };
+}
+VariationRepository.$inject = ["udbApi", "$cacheFactory", "$q", "UdbEvent"];
+
 // Source: src/search/ui/event-translation-state.constant.js
 /* jshint sub: true */
 
@@ -6353,20 +6393,24 @@ function EventController(
         cachedEvent.updateTranslationState();
         controller.availableLabels = _.union(cachedEvent.labels, eventLabeller.recentLabels);
 
-        var personalVariationPromise = eventEditor.getPersonalVariation(cachedEvent);
-        personalVariationPromise
-          .then(function (personalVariation) {
-            $scope.event = jsonLDLangFilter(personalVariation, defaultLanguage);
-          }, function (reason) {
-            $scope.event = jsonLDLangFilter(cachedEvent, defaultLanguage);
-          })
-          .finally(function () {
-            controller.fetching = false;
-            watchLabels();
-          });
+        $scope.event = jsonLDLangFilter(cachedEvent, defaultLanguage);
+        controller.fetching = false;
+        watchLabels();
+
+        // Try to fetch a personal variation for the event
+        fetchPersonalVariation();
       });
     } else {
       controller.fetching = false;
+    }
+
+    function fetchPersonalVariation() {
+      var personalVariationPromise = eventEditor.getPersonalVariation(cachedEvent);
+      personalVariationPromise
+        .then(function (personalVariation) {
+          $scope.event = jsonLDLangFilter(personalVariation, defaultLanguage);
+          watchLabels();
+        });
     }
 
     function watchLabels() {

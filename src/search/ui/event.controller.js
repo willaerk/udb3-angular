@@ -45,20 +45,24 @@ function EventController(
         cachedEvent.updateTranslationState();
         controller.availableLabels = _.union(cachedEvent.labels, eventLabeller.recentLabels);
 
-        var personalVariationPromise = eventEditor.getPersonalVariation(cachedEvent);
-        personalVariationPromise
-          .then(function (personalVariation) {
-            $scope.event = jsonLDLangFilter(personalVariation, defaultLanguage);
-          }, function (reason) {
-            $scope.event = jsonLDLangFilter(cachedEvent, defaultLanguage);
-          })
-          .finally(function () {
-            controller.fetching = false;
-            watchLabels();
-          });
+        $scope.event = jsonLDLangFilter(cachedEvent, defaultLanguage);
+        controller.fetching = false;
+        watchLabels();
+
+        // Try to fetch a personal variation for the event
+        fetchPersonalVariation();
       });
     } else {
       controller.fetching = false;
+    }
+
+    function fetchPersonalVariation() {
+      var personalVariationPromise = eventEditor.getPersonalVariation(cachedEvent);
+      personalVariationPromise
+        .then(function (personalVariation) {
+          $scope.event = jsonLDLangFilter(personalVariation, defaultLanguage);
+          watchLabels();
+        });
     }
 
     function watchLabels() {

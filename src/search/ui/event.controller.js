@@ -63,6 +63,9 @@ function EventController(
         .then(function (personalVariation) {
           $scope.event = jsonLDLangFilter(personalVariation, defaultLanguage);
           watchLabels();
+        })
+        .finally(function () {
+          controller.editable = true;
         });
     }
 

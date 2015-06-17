@@ -6412,6 +6412,9 @@ function EventController(
         .then(function (personalVariation) {
           $scope.event = jsonLDLangFilter(personalVariation, defaultLanguage);
           watchLabels();
+        })
+        .finally(function () {
+          controller.editable = true;
         });
     }
 
@@ -7824,9 +7827,13 @@ $templateCache.put('templates/unexpected-error-modal.html',
     "        <img ng-src=\"{{event.image}}\" alt=\"{{event.name}}\" class=\"img-responsive\">\n" +
     "      </div>\n" +
     "      <div ng-class=\"resultViewer.eventProperties.image.visible ? 'col-sm-10' : 'col-sm-12'\">\n" +
-    "        <div ng-if=\"resultViewer.eventProperties.description.visible\">\n" +
+    "        <div ng-if=\"resultViewer.eventProperties.description.visible && eventCtrl.editable\">\n" +
     "          <div ng-bind-html=\"event.description\" class=\"udb-description\" onbeforesave=\"eventCtrl.updateDescription($data)\"\n" +
     "               editable-textarea=\"event.description\" e-rows=\"6\" e-cols=\"66\"></div>\n" +
+    "        </div>\n" +
+    "        <div ng-if=\"resultViewer.eventProperties.description.visible && !eventCtrl.editable\"\n" +
+    "             class=\"event-description-loading-indicator\">\n" +
+    "          <i class=\"fa fa-circle-o-notch fa-spin\"></i>\n" +
     "        </div>\n" +
     "\n" +
     "        <div ng-if=\"resultViewer.eventProperties.labels.visible\" class=\"udb-labels\">\n" +

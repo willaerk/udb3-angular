@@ -6275,9 +6275,10 @@ angular
   .service('variationRepository', VariationRepository);
 
 /* @ngInject */
-function VariationRepository(udbApi, $cacheFactory, $q, UdbEvent) {
+function VariationRepository(udbApi, $cacheFactory, $q, UdbEvent, $rootScope) {
 
   var requestChain = $q.when();
+  var interruptRequestChain = false;
   var personalVariationCache = $cacheFactory('personalVariationCache');
 
   this.getPersonalVariation = function (event) {
@@ -6306,8 +6307,14 @@ function VariationRepository(udbApi, $cacheFactory, $q, UdbEvent) {
 
   function requestVariation(userId, purpose, eventUrl, deferredVariation) {
     return function () {
-      var personalVariationRequest = udbApi.getEventVariations(userId, purpose, eventUrl, deferredVariation);
       var eventId = eventUrl.split('/').pop();
+
+      if (interruptRequestChain) {
+        deferredVariation.reject('navigating away, interrupting request for variation for event with id: ' + eventId);
+        return deferredVariation;
+      }
+
+      var personalVariationRequest = udbApi.getEventVariations(userId, purpose, eventUrl, deferredVariation);
 
       personalVariationRequest.success(function (variations) {
         var jsonPersonalVariation = _.first(variations.member);
@@ -6336,8 +6343,15 @@ function VariationRepository(udbApi, $cacheFactory, $q, UdbEvent) {
   this.remote = function (eventId) {
     personalVariationCache.remove(eventId);
   };
+
+  $rootScope.$on('$locationChangeStart', function() {
+    interruptRequestChain = true;
+    requestChain = requestChain.finally(function () {
+      interruptRequestChain = false;
+    });
+  });
 }
-VariationRepository.$inject = ["udbApi", "$cacheFactory", "$q", "UdbEvent"];
+VariationRepository.$inject = ["udbApi", "$cacheFactory", "$q", "UdbEvent", "$rootScope"];
 
 // Source: src/search/ui/event-translation-state.constant.js
 /* jshint sub: true */

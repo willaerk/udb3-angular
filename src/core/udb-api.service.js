@@ -257,7 +257,7 @@ function UdbApi($q, $http, appConfig, $cookieStore, uitidAuth, $cacheFactory, Ud
     );
   };
 
-  this.deleteEventDescription = function (variationId) {
+  this.deleteVariation = function (variationId) {
     return $http.delete(
       appConfig.baseUrl + 'variations/' + variationId,
       defaultApiConfig

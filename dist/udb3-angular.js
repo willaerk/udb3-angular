@@ -2431,7 +2431,7 @@ function UdbApi($q, $http, appConfig, $cookieStore, uitidAuth, $cacheFactory, Ud
     );
   };
 
-  this.deleteEventDescription = function (variationId) {
+  this.deleteVariation = function (variationId) {
     return $http.delete(
       appConfig.baseUrl + 'variations/' + variationId,
       defaultApiConfig
@@ -2824,6 +2824,7 @@ angular
 
 /* @ngInject */
 function EventEditor(jobLogger, udbApi, VariationCreationJob, BaseJob, $q, variationRepository) {
+  var editor = this;
   /**
    * Edit the description of an event. We never edit the original event but use a variation instead.
    *
@@ -2832,31 +2833,38 @@ function EventEditor(jobLogger, udbApi, VariationCreationJob, BaseJob, $q, varia
    * @param {string}   [purpose=personal]    The purpose of the variation that will be edited
    */
   this.editDescription = function (event, description, purpose) {
-    var updatePromise = $q.defer();
+    var deferredUpdate = $q.defer();
     var variationPromise = variationRepository.getPersonalVariation(event);
 
+    var removeDescription = function (variation) {
+      var deletePromise = editor.deleteVariation(event, variation.id);
+      deletePromise.then(function () {
+        deferredUpdate.resolve(false);
+      }, rejectUpdate);
+    };
+
     var rejectUpdate = function (reason) {
-      updatePromise.reject(reason);
+      deferredUpdate.reject(reason);
     };
 
     var createVariation = function () {
       purpose = purpose || 'personal';
       var creationRequest = udbApi.createVariation(event.id, description, purpose);
-
-      creationRequest.success(function (jobData) {
-        var variation = angular.copy(event);
-        variation.description.nl = description;
-        var variationCreationJob = new VariationCreationJob(jobData.commandId, event.id);
-        jobLogger.addJob(variationCreationJob);
-
-        variationCreationJob.task.promise.then(function (jobInfo) {
-          variation.id = jobInfo['event_variation_id']; // jshint ignore:line
-          variationRepository.save(event.id, variation);
-          updatePromise.resolve();
-        }, rejectUpdate);
-      });
-
+      creationRequest.success(handleCreationJob);
       creationRequest.error(rejectUpdate);
+    };
+
+    var handleCreationJob = function (jobData) {
+      var variation = angular.copy(event);
+      variation.description.nl = description;
+      var variationCreationJob = new VariationCreationJob(jobData.commandId, event.id);
+      jobLogger.addJob(variationCreationJob);
+
+      variationCreationJob.task.promise.then(function (jobInfo) {
+        variation.id = jobInfo['event_variation_id']; // jshint ignore:line
+        variationRepository.save(event.id, variation);
+        deferredUpdate.resolve();
+      }, rejectUpdate);
     };
 
     var editDescription = function (variation) {
@@ -2865,19 +2873,27 @@ function EventEditor(jobLogger, udbApi, VariationCreationJob, BaseJob, $q, varia
       editRequest.success(function (jobData) {
         variation.description.nl = description;
         jobLogger.addJob(new BaseJob(jobData.commandId));
-        updatePromise.resolve();
+        deferredUpdate.resolve();
       });
 
       editRequest.error(rejectUpdate);
     };
 
-    variationPromise.then(editDescription, createVariation);
+    var revertToOriginal = function () {
+      deferredUpdate.resolve(false);
+    };
 
-    return updatePromise;
+    if (description) {
+      variationPromise.then(editDescription, createVariation);
+    } else {
+      variationPromise.then(removeDescription, revertToOriginal);
+    }
+
+    return deferredUpdate.promise;
   };
 
-  this.deleteDescription = function (event, variation) {
-    var deletePromise = udbApi.deleteEventDescription(variation.id);
+  this.deleteVariation = function (event, variationId) {
+    var deletePromise = udbApi.deleteVariation(variationId);
 
     deletePromise.success(function (jobData) {
       jobLogger.addJob(new BaseJob(jobData.commandId));
@@ -6316,7 +6332,7 @@ function VariationRepository(udbApi, $cacheFactory, $q, UdbEvent) {
     personalVariationCache.put(eventId, variation);
   };
 
-  this.remote = function (eventId) {
+  this.remove = function (eventId) {
     personalVariationCache.remove(eventId);
   };
 }
@@ -6371,6 +6387,7 @@ function EventController(
   variationRepository
 ) {
   var controller = this;
+  /* @type {UdbEvent} */
   var cachedEvent;
 
   // Translation
@@ -6517,18 +6534,16 @@ function EventController(
 
   // Editing
   controller.updateDescription = function (description) {
-    if (!description) {
-      var deletePromise = eventEditor.deleteDescription(event, {variation: 'noid'});
+    if ($scope.event.description !== description) {
+      var updatePromise = eventEditor.editDescription(cachedEvent, description);
 
-      deletePromise.then(function () {
-        $scope.event.description = cachedEvent.description[defaultLanguage];
+      updatePromise.finally(function () {
+        if (!description) {
+          $scope.event.description = cachedEvent.description[defaultLanguage];
+        }
       });
 
-      return deletePromise;
-    }
-
-    if ($scope.event.description !== description) {
-      return eventEditor.editDescription(cachedEvent, description);
+      return updatePromise;
     }
   };
 

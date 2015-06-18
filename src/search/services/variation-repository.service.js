@@ -70,7 +70,7 @@ function VariationRepository(udbApi, $cacheFactory, $q, UdbEvent) {
     personalVariationCache.put(eventId, variation);
   };
 
-  this.remote = function (eventId) {
+  this.remove = function (eventId) {
     personalVariationCache.remove(eventId);
   };
 }

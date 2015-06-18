@@ -12,7 +12,7 @@ angular
   .factory('UdbEvent', UdbEventFactory);
 
 /* @ngInject */
-function UdbEventFactory() {
+function UdbEventFactory(EventTranslationState) {
 
   var EventPricing = {
     FREE: 'free',
@@ -48,6 +48,36 @@ function UdbEventFactory() {
     return pricing;
   }
 
+  function updateTranslationState(event) {
+    var languages = {'en': false, 'fr': false, 'de': false},
+        properties = ['name', 'description'];
+
+    _.forEach(languages, function (language, languageKey) {
+      var translationCount = 0,
+          state;
+
+      _.forEach(properties, function (property) {
+        if (event[property] && event[property][languageKey]) {
+          ++translationCount;
+        }
+      });
+
+      if (translationCount) {
+        if (translationCount === properties.length) {
+          state = EventTranslationState.ALL;
+        } else {
+          state = EventTranslationState.SOME;
+        }
+      } else {
+        state = EventTranslationState.NONE;
+      }
+
+      languages[languageKey] = state;
+    });
+
+    event.translationState = languages;
+  }
+
   /**
    * @class UdbEvent
    * @constructor
@@ -60,8 +90,9 @@ function UdbEventFactory() {
   UdbEvent.prototype = {
     parseJson: function (jsonEvent) {
       this.id = jsonEvent['@id'].split('/').pop();
+      this.apiUrl = jsonEvent['@id'];
       this.name = jsonEvent.name || {};
-      this.description = jsonEvent.description || {};
+      this.description = angular.copy(jsonEvent.description) || {};
       this.calendarSummary = jsonEvent.calendarSummary;
       this.location = jsonEvent.location;
       this.image = jsonEvent.image;
@@ -131,6 +162,9 @@ function UdbEventFactory() {
       _.remove(this.labels, function (label) {
         return label === labelName;
       });
+    },
+    updateTranslationState: function () {
+      updateTranslationState(this);
     }
   };
 

@@ -19,32 +19,36 @@ function EventDetail(
   udbApi,
   jsonLDLangFilter,
   locationTypes,
-  variationRepository
+  variationRepository,
+  eventEditor
 ) {
   $scope.eventId = eventId;
   $scope.eventIdIsInvalid = false;
   $scope.eventHistory = [];
 
   var eventLoaded = udbApi.getEventById($scope.eventId);
+  var language = 'nl';
+  var cachedEvent;
 
   eventLoaded.then(
       function (event) {
+        cachedEvent = event;
         var eventHistoryLoaded = udbApi.getEventHistoryById($scope.eventId);
         var personalVariationLoaded = variationRepository.getPersonalVariation(event);
 
         eventHistoryLoaded.then(function(eventHistory) {
           $scope.eventHistory = eventHistory;
         });
-        $scope.event = jsonLDLangFilter(event, 'nl');
+        $scope.event = jsonLDLangFilter(event, language);
 
         $scope.eventIdIsInvalid = false;
 
         personalVariationLoaded
           .then(function (variation) {
-            $scope.event = jsonLDLangFilter(variation, 'nl');
+            $scope.event.description = variation.description[language];
           })
           .finally(function () {
-            $scope.personalVariationChecked = true;
+            $scope.eventIsEditable = true;
           });
       },
       function (reason) {
@@ -121,5 +125,19 @@ function EventDetail(
 
   $scope.isTabActive = function (tabId) {
     return tabId === activeTabId;
+  };
+
+  $scope.updateDescription = function(description) {
+    if ($scope.event.description !== description) {
+      var updatePromise = eventEditor.editDescription(cachedEvent, description);
+
+      updatePromise.finally(function () {
+        if (!description) {
+          $scope.event.description = cachedEvent.description[language];
+        }
+      });
+
+      return updatePromise;
+    }
   };
 }

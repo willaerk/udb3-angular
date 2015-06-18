@@ -44,8 +44,11 @@
             <tr>
               <td><strong>Beschrijving</strong></td>
               <td>
-                <div ng-if="personalVariationChecked" ng-bind-html="event.description"></div>
-                <i ng-if="!personalVariationChecked" class="fa fa-circle-o-notch fa-spin"></i>
+                <div ng-if="eventIsEditable">
+                  <div ng-bind-html="event.description" onbeforesave="updateDescription($data)" class="event-detail-description"
+                       editable-textarea="event.description" e-rows="6" e-cols="33"></div>
+                </div>
+                <i ng-if="!eventIsEditable" class="fa fa-circle-o-notch fa-spin"></i>
               </td>
             </tr>
             <tr>

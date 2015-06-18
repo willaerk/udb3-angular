@@ -480,6 +480,9 @@ body {
   z-index: 99;
   content: "";
 }
+.event-detail-description {
+  color: black;
+}
 #logo .letter,
 #logo #deur {
   fill: #9d9d9d;

@@ -3859,32 +3859,36 @@ function EventDetail(
   udbApi,
   jsonLDLangFilter,
   locationTypes,
-  variationRepository
+  variationRepository,
+  eventEditor
 ) {
   $scope.eventId = eventId;
   $scope.eventIdIsInvalid = false;
   $scope.eventHistory = [];
 
   var eventLoaded = udbApi.getEventById($scope.eventId);
+  var language = 'nl';
+  var cachedEvent;
 
   eventLoaded.then(
       function (event) {
+        cachedEvent = event;
         var eventHistoryLoaded = udbApi.getEventHistoryById($scope.eventId);
         var personalVariationLoaded = variationRepository.getPersonalVariation(event);
 
         eventHistoryLoaded.then(function(eventHistory) {
           $scope.eventHistory = eventHistory;
         });
-        $scope.event = jsonLDLangFilter(event, 'nl');
+        $scope.event = jsonLDLangFilter(event, language);
 
         $scope.eventIdIsInvalid = false;
 
         personalVariationLoaded
           .then(function (variation) {
-            $scope.event = jsonLDLangFilter(variation, 'nl');
+            $scope.event.description = variation.description[language];
           })
           .finally(function () {
-            $scope.personalVariationChecked = true;
+            $scope.eventIsEditable = true;
           });
       },
       function (reason) {
@@ -3962,8 +3966,22 @@ function EventDetail(
   $scope.isTabActive = function (tabId) {
     return tabId === activeTabId;
   };
+
+  $scope.updateDescription = function(description) {
+    if ($scope.event.description !== description) {
+      var updatePromise = eventEditor.editDescription(cachedEvent, description);
+
+      updatePromise.finally(function () {
+        if (!description) {
+          $scope.event.description = cachedEvent.description[language];
+        }
+      });
+
+      return updatePromise;
+    }
+  };
 }
-EventDetail.$inject = ["$scope", "$location", "eventId", "udbApi", "jsonLDLangFilter", "locationTypes", "variationRepository"];
+EventDetail.$inject = ["$scope", "$location", "eventId", "udbApi", "jsonLDLangFilter", "locationTypes", "variationRepository", "eventEditor"];
 
 // Source: src/export/event-export-job.factory.js
 /**
@@ -7126,8 +7144,11 @@ $templateCache.put('templates/unexpected-error-modal.html',
     "            <tr>\n" +
     "              <td><strong>Beschrijving</strong></td>\n" +
     "              <td>\n" +
-    "                <div ng-if=\"personalVariationChecked\" ng-bind-html=\"event.description\"></div>\n" +
-    "                <i ng-if=\"!personalVariationChecked\" class=\"fa fa-circle-o-notch fa-spin\"></i>\n" +
+    "                <div ng-if=\"eventIsEditable\">\n" +
+    "                  <div ng-bind-html=\"event.description\" onbeforesave=\"updateDescription($data)\" class=\"event-detail-description\"\n" +
+    "                       editable-textarea=\"event.description\" e-rows=\"6\" e-cols=\"33\"></div>\n" +
+    "                </div>\n" +
+    "                <i ng-if=\"!eventIsEditable\" class=\"fa fa-circle-o-notch fa-spin\"></i>\n" +
     "              </td>\n" +
     "            </tr>\n" +
     "            <tr>\n" +

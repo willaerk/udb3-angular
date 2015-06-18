@@ -6441,8 +6441,7 @@ function EventController(
       var personalVariationPromise = variationRepository.getPersonalVariation(cachedEvent);
       personalVariationPromise
         .then(function (personalVariation) {
-          $scope.event = jsonLDLangFilter(personalVariation, defaultLanguage);
-          watchLabels();
+          $scope.event.description = personalVariation.description[defaultLanguage];
         })
         .finally(function () {
           controller.editable = true;

@@ -189,7 +189,7 @@ describe('Controller: Event', function() {
       deferredVariation.resolve(variation);
       $scope.$digest();
       var deferredDeletion = $q.defer();
-      spyOn(eventEditor, 'deleteDescription').andReturn(deferredDeletion.promise);
+      spyOn(eventEditor, 'deleteVariation').andReturn(deferredDeletion.promise);
       eventController.updateDescription('');
 
       deferredDeletion.resolve();

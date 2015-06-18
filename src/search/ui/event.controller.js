@@ -22,6 +22,7 @@ function EventController(
   variationRepository
 ) {
   var controller = this;
+  /* @type {UdbEvent} */
   var cachedEvent;
 
   // Translation
@@ -167,18 +168,16 @@ function EventController(
 
   // Editing
   controller.updateDescription = function (description) {
-    if (!description) {
-      var deletePromise = eventEditor.deleteDescription(event, {variation: 'noid'});
+    if ($scope.event.description !== description) {
+      var updatePromise = eventEditor.editDescription(cachedEvent, description);
 
-      deletePromise.then(function () {
-        $scope.event.description = cachedEvent.description[defaultLanguage];
+      updatePromise.finally(function () {
+        if (!description) {
+          $scope.event.description = cachedEvent.description[defaultLanguage];
+        }
       });
 
-      return deletePromise;
-    }
-
-    if ($scope.event.description !== description) {
-      return eventEditor.editDescription(cachedEvent, description);
+      return updatePromise;
     }
   };
 

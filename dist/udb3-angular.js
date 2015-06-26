@@ -11292,7 +11292,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "    <div class=\"col-xs-9\">\n" +
     "      <div class=\"tab-pane\" role=\"tabpanel\" ng-show=\"isTabActive('data')\">\n" +
     "        <div class=\"panel panel-default\">\n" +
-    "          <table class=\"table\">\n" +
+    "          <table class=\"table udb3-data-table\">\n" +
     "            <colgroup>\n" +
     "              <col style=\"width:20%\"/>\n" +
     "              <col style=\"width:80%\"/>\n" +
@@ -11308,7 +11308,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "            </tr>\n" +
     "            <tr>\n" +
     "              <td><strong>Beschrijving</strong></td>\n" +
-    "              <td ng-bind-html=\"event.description\" style=\"white-space: pre;\"></td>\n" +
+    "              <td ng-bind-html=\"event.description\"></td>\n" +
     "            </tr>\n" +
     "            <tr>\n" +
     "              <td><strong>Waar</strong></td>\n" +
@@ -12339,7 +12339,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "                </div>\n" +
     "              </section>\n" +
     "              <section class=\"state complete\">\n" +
-    "                <p><span ng-bind-html=\"eventFormData.description.nl\" style=\"white-space: pre;\"></span> <a class=\"btn btn-link\" ng-click=\"descriptionCssClass = 'state-filling'\">Wijzigen</a>\n" +
+    "                <p><span ng-bind-html=\"eventFormData.description.nl\"></span> <a class=\"btn btn-link\" ng-click=\"descriptionCssClass = 'state-filling'\">Wijzigen</a>\n" +
     "                </p>\n" +
     "              </section>\n" +
     "              <section class=\"state filling\">\n" +
@@ -12845,7 +12845,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "    <div class=\"col-xs-9\">\n" +
     "      <div class=\"tab-pane\" role=\"tabpanel\" ng-show=\"isTabActive('data')\">\n" +
     "        <div class=\"panel panel-default\">\n" +
-    "          <table class=\"table\">\n" +
+    "          <table class=\"table udb3-data-table\">\n" +
     "            <colgroup>\n" +
     "              <col style=\"width:20%\"/>\n" +
     "              <col style=\"width:80%\"/>\n" +
@@ -12861,7 +12861,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "              </tr>\n" +
     "              <tr>\n" +
     "                <td><strong>Beschrijving</strong></td>\n" +
-    "                <td ng-bind-html=\"place.description.nl\" style=\"white-space: pre;\"></td>\n" +
+    "                <td ng-bind-html=\"place.description.nl\"></td>\n" +
     "              </tr>\n" +
     "              <tr>\n" +
     "                <td><strong>Waar</strong></td>\n" +

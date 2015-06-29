@@ -245,7 +245,14 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
 
       $scope.ageRangeError = false;
       $scope.savingAgeRange = true;
-      var promise = eventCrud.updateTypicalAgeRange(EventFormData);
+      var promise = null;
+      if ($scope.ageRange > 0) {
+        promise = eventCrud.updateTypicalAgeRange(EventFormData);
+      }
+      else {
+        promise = eventCrud.deleteTypicalAgeRange(EventFormData);
+      }
+
       promise.then(function() {
         $scope.savingAgeRange = false;
         updateLastUpdated();

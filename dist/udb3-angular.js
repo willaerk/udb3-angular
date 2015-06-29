@@ -2851,6 +2851,18 @@ function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth,
   };
 
   /**
+   * Delete the typical age range for an offer.
+   */
+  this.deleteTypicalAgeRange = function(id, type) {
+
+    return $http.delete(
+      appConfig.baseApiUrl + type + '/' + id + '/typicalAgeRange',
+      {},
+      defaultApiConfig
+    );
+  };
+
+  /**
    * Delete the organizer for an offer.
    */
   this.deleteOfferOrganizer = function(id, type, organizerId) {
@@ -4182,7 +4194,7 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
    * Update the main language description and add it to the job logger.
    *
    * @param {EventFormData} item
-   * @returns {EventCrud.updateTypicalAgeRange.jobPromise}
+   * @returns {EventCrud.updateDescription.jobPromise}
    */
   this.updateDescription = function(item) {
 
@@ -4212,6 +4224,44 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
   this.updateTypicalAgeRange = function(item) {
 
     var jobPromise = udbApi.updateProperty(item.id, item.getType(), 'typicalAgeRange', item.typicalAgeRange);
+
+    jobPromise.success(function (jobData) {
+      var job = new EventCrudJob(jobData.commandId, item, 'updateTypicalAgeRange');
+      jobLogger.addJob(job);
+    });
+
+    return jobPromise;
+
+  };
+
+  /**
+   * Update the typical age range and add it to the job logger.
+   *
+   * @param {EventFormData} item
+   * @returns {EventCrud.updateTypicalAgeRange.jobPromise}
+   */
+  this.updateTypicalAgeRange = function(item) {
+
+    var jobPromise = udbApi.updateProperty(item.id, item.getType(), 'typicalAgeRange', item.typicalAgeRange);
+
+    jobPromise.success(function (jobData) {
+      var job = new EventCrudJob(jobData.commandId, item, 'updateTypicalAgeRange');
+      jobLogger.addJob(job);
+    });
+
+    return jobPromise;
+
+  };
+
+  /**
+   * Update the typical age range and add it to the job logger.
+   *
+   * @param {EventFormData} item
+   * @returns {EventCrud.deleteTypicalAgeRange.jobPromise}
+   */
+  this.deleteTypicalAgeRange = function(item) {
+
+    var jobPromise = udbApi.deleteTypicalAgeRange(item.id, item.getType());
 
     jobPromise.success(function (jobData) {
       var job = new EventCrudJob(jobData.commandId, item, 'updateTypicalAgeRange');
@@ -8032,7 +8082,14 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
 
       $scope.ageRangeError = false;
       $scope.savingAgeRange = true;
-      var promise = eventCrud.updateTypicalAgeRange(EventFormData);
+      var promise = null;
+      if ($scope.ageRange > 0) {
+        promise = eventCrud.updateTypicalAgeRange(EventFormData);
+      }
+      else {
+        promise = eventCrud.deleteTypicalAgeRange(EventFormData);
+      }
+
       promise.then(function() {
         $scope.savingAgeRange = false;
         updateLastUpdated();

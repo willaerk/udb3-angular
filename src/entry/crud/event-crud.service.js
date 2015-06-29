@@ -110,7 +110,7 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
    * Update the main language description and add it to the job logger.
    *
    * @param {EventFormData} item
-   * @returns {EventCrud.updateTypicalAgeRange.jobPromise}
+   * @returns {EventCrud.updateDescription.jobPromise}
    */
   this.updateDescription = function(item) {
 
@@ -140,6 +140,44 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
   this.updateTypicalAgeRange = function(item) {
 
     var jobPromise = udbApi.updateProperty(item.id, item.getType(), 'typicalAgeRange', item.typicalAgeRange);
+
+    jobPromise.success(function (jobData) {
+      var job = new EventCrudJob(jobData.commandId, item, 'updateTypicalAgeRange');
+      jobLogger.addJob(job);
+    });
+
+    return jobPromise;
+
+  };
+
+  /**
+   * Update the typical age range and add it to the job logger.
+   *
+   * @param {EventFormData} item
+   * @returns {EventCrud.updateTypicalAgeRange.jobPromise}
+   */
+  this.updateTypicalAgeRange = function(item) {
+
+    var jobPromise = udbApi.updateProperty(item.id, item.getType(), 'typicalAgeRange', item.typicalAgeRange);
+
+    jobPromise.success(function (jobData) {
+      var job = new EventCrudJob(jobData.commandId, item, 'updateTypicalAgeRange');
+      jobLogger.addJob(job);
+    });
+
+    return jobPromise;
+
+  };
+
+  /**
+   * Update the typical age range and add it to the job logger.
+   *
+   * @param {EventFormData} item
+   * @returns {EventCrud.deleteTypicalAgeRange.jobPromise}
+   */
+  this.deleteTypicalAgeRange = function(item) {
+
+    var jobPromise = udbApi.deleteTypicalAgeRange(item.id, item.getType());
 
     jobPromise.success(function (jobData) {
       var job = new EventCrudJob(jobData.commandId, item, 'updateTypicalAgeRange');

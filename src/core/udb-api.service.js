@@ -416,6 +416,18 @@ function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth,
   };
 
   /**
+   * Delete the typical age range for an offer.
+   */
+  this.deleteTypicalAgeRange = function(id, type) {
+
+    return $http.delete(
+      appConfig.baseApiUrl + type + '/' + id + '/typicalAgeRange',
+      {},
+      defaultApiConfig
+    );
+  };
+
+  /**
    * Delete the organizer for an offer.
    */
   this.deleteOfferOrganizer = function(id, type, organizerId) {

@@ -1999,7 +1999,7 @@ CityAutocomplete.$inject = ["$q", "$http", "appConfig"];
               return attrs.startLabel;
             }
           }
-       });
+        });
       }
 
     };
@@ -8003,10 +8003,10 @@ function EventFormStep3Controller($scope, EventFormData, cityAutocomplete, event
         'id' : place.id,
         'name': place.name.nl,
         'address': {
-            'addressCountry': 'BE',
-            'addressLocality': place.address.addressLocality,
-            'postalCode': place.address.postalCode,
-            'streetAddress': place.address.streetAddress
+          'addressCountry': 'BE',
+          'addressLocality': place.address.addressLocality,
+          'postalCode': place.address.postalCode,
+          'streetAddress': place.address.streetAddress
         }
       };
       EventFormData.setLocation(location);

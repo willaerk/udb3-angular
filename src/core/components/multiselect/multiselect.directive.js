@@ -31,7 +31,7 @@
               return attrs.startLabel;
             }
           }
-       });
+        });
       }
 
     };

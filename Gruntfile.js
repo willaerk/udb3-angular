@@ -280,6 +280,7 @@ module.exports = function (grunt) {
           'src/entry/udb.entry.module.js',
           'src/event-detail/udb.event-detail.module.js',
           'src/place-detail/udb.place-detail.module.js',
+          'src/saved-searches/udb.saved-searches.module.js',
           'src/export/udb.export.module.js',
           'src/search/parsers/udb-query-parser.service.js'
         ],
@@ -403,6 +404,13 @@ module.exports = function (grunt) {
       options: {
         config: '.jscs.json'
       }
+    },
+
+    coveralls: {
+      options: {
+        coverageDir: 'coverage/',
+        recursive: true
+      }
     }
   });
 
@@ -412,6 +420,7 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-curl');
   grunt.loadNpmTasks('grunt-angular-templates');
   grunt.loadNpmTasks('grunt-jscs');
+  grunt.loadNpmTasks('grunt-karma-coveralls');
 
   grunt.registerTask('test', [
     'clean:server',

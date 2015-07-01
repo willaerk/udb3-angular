@@ -3,7 +3,8 @@
     <span aria-hidden="true">×</span>
   </button>
   <ins>
-    <span ng-bind="::job.created | date:'HH:mm'"></span>
+    <span am-time-ago="::job.getLogDateByState()"></span>
   </ins>
   <span ng-bind="job.getDescription()"></span>
 </p>
+

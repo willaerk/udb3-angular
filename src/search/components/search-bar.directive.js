@@ -11,7 +11,7 @@ angular
   .directive('udbSearchBar', udbSearchBar);
 
 /* @ngInject */
-function udbSearchBar(searchHelper, $rootScope) {
+function udbSearchBar(searchHelper, $rootScope, $modal, savedSearchesService) {
   return {
     templateUrl: 'templates/search-bar.directive.html',
     restrict: 'E',
@@ -21,36 +21,65 @@ function udbSearchBar(searchHelper, $rootScope) {
         query: '',
         hasErrors: false,
         errors: '',
-        isEditing: false
+        isEditing: false,
+        savedSearches: []
       };
+
+      var editorModal;
 
       searchBar.editQuery = function () {
         $rootScope.$emit('startEditingQuery');
         searchBar.isEditing = true;
+
+        editorModal = $modal.open({
+          templateUrl: 'templates/query-editor-modal.html',
+          controller: 'QueryEditorController',
+          controllerAs: 'qe',
+          size: 'lg'
+        });
+      };
+
+      searchBar.searchChange = function() {
+        $rootScope.$emit('searchBarChanged');
+        $rootScope.$emit('stopEditingQuery');
       };
 
       searchBar.search = function () {
         searchHelper.setQueryString(searchBar.query);
+        $rootScope.$emit('searchSubmitted');
       };
 
       scope.sb = searchBar;
 
+      var savedSearchesPromise = savedSearchesService.getSavedSearches();
+      savedSearchesPromise.then(function (savedSearches) {
+        searchBar.savedSearches = _.take(savedSearches, 5);
+      });
+      $rootScope.$on('savedSearchesChanged', function (event, savedSearches) {
+        searchBar.savedSearches = _.take(savedSearches, 5);
+      });
+
       $rootScope.$on('stopEditingQuery', function () {
         scope.sb.isEditing = false;
+        if (editorModal) {
+          editorModal.dismiss();
+        }
       });
 
       scope.$watch(function () {
         return searchHelper.getQuery();
-      }, function (query) {
-        scope.sb.query = query.queryString;
-        scope.sb.search();
+      }, function (query, oldQuery) {
+        if (oldQuery && oldQuery.queryString !== query.queryString) {
+          scope.sb.query = query.queryString;
+          scope.sb.search();
 
-        if (query.errors && query.errors.length) {
-          scope.sb.hasErrors = true;
-          scope.sb.errors = formatErrors(query.errors);
-        } else {
-          scope.sb.hasErrors = false;
-          scope.sb.errors = '';
+          if (query.errors && query.errors.length) {
+            scope.sb.hasErrors = true;
+            scope.sb.errors = formatErrors(query.errors);
+          } else {
+            scope.sb.hasErrors = false;
+            scope.sb.errors = '';
+          }
         }
       }, true);
 

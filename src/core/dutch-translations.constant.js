@@ -329,7 +329,9 @@ angular.module('udb.core')
       'input-information': 'Invoerders-informatie',
       'translations': 'Vertalingen',
       'other': 'Andere'
-
+    },
+    'EVENT-EXPORT': {
+      'QUERY-IS-MISSING': 'Een export is pas mogelijk nadat je een zoekopdracht hebt uitgevoerd'
     }
   }
 );

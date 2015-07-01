@@ -8,7 +8,6 @@
  */
 angular
   .module('udb.export', [
-    'ngAnimate',
     'ngSanitize',
     'ui.bootstrap',
     'udb.config',

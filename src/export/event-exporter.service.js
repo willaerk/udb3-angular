@@ -29,15 +29,16 @@ function eventExporter(jobLogger, udbApi, EventExportJob) {
    * @param {string}        email
    * @param {string[]}      properties
    * @param {boolean}       perDay
+   * @param {object}        customizations
    *
    * @return {object}
    */
-  ex.export = function (format, email, properties, perDay) {
+  ex.export = function (format, email, properties, perDay, customizations) {
     var queryString = ex.activeExport.query.queryString,
         selection = ex.activeExport.selection || [],
         eventCount = ex.activeExport.eventCount;
 
-    var jobPromise = udbApi.exportEvents(queryString, email, format, properties, perDay, selection);
+    var jobPromise = udbApi.exportEvents(queryString, email, format, properties, perDay, selection, customizations);
 
     jobPromise.success(function (jobData) {
       var job = new EventExportJob(jobData.commandId, eventCount, format);

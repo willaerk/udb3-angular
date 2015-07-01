@@ -30,7 +30,7 @@ function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth,
    * @param {?number} start - From which event offset the result set should start.
    * @param {object} conditions
    *   Extra conditions. E.g. location_zip or location_id.
-   * @returns {Promise} A promise that signals a succesful retrieval of
+   * @returns {Promise} A promise that signals a successful retrieval of
    *  search results or a failure.
    */
   this.findEvents = function (queryString, start, conditions) {
@@ -277,22 +277,22 @@ function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth,
     );
   };
 
-  this.exportEvents = function (query, email, format, properties, perDay, selection) {
+  this.exportEvents = function (query, email, format, properties, perDay, selection, customizations) {
 
     var exportData = {
       query: query,
       selection: selection || [],
       order: {},
       include: properties,
-      perDay: perDay
+      perDay: perDay,
+      customizations: customizations || {}
     };
 
     if (email) {
       exportData.email = email;
     }
 
-    return $http.post(appConfig.baseUrl + 'events/export/' + format, exportData, defaultApiConfig
-    );
+    return $http.post(appConfig.baseUrl + 'events/export/' + format, exportData, defaultApiConfig);
   };
 
   this.translateProperty = function (id, type, property, language, translation) {
@@ -373,8 +373,32 @@ function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth,
 
   this.removePlace = function (id, event) {
     return $http.delete(
-      appConfig.baseApiUrl + 'place/' + id + '/delete',
-      {},
+        appConfig.baseApiUrl + 'place/' + id + '/delete',
+        {},
+        defaultApiConfig
+    );
+  };
+
+  this.createVariation = function (eventId, description, purpose) {
+    var activeUser = uitidAuth.getUser(),
+        requestData = {
+          'owner': activeUser.id,
+          'purpose': purpose,
+          'same_as': appConfig.baseUrl + 'event/' + eventId,
+          'description': description
+        };
+
+    return $http.post(
+      appConfig.baseUrl + 'variations/',
+      requestData,
+      defaultApiConfig
+    );
+  };
+
+  this.editDescription = function (variationId, description) {
+    return $http.patch(
+      appConfig.baseUrl + 'variations/' + variationId,
+      {'description': description},
       defaultApiConfig
     );
   };
@@ -433,8 +457,15 @@ function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth,
   this.deleteOfferOrganizer = function(id, type, organizerId) {
 
     return $http.delete(
-      appConfig.baseApiUrl + type + '/' + id + '/organizer/' + organizerId,
-      {},
+        appConfig.baseApiUrl + type + '/' + id + '/organizer/' + organizerId,
+        {},
+        defaultApiConfig
+    );
+  };
+
+  this.deleteVariation = function (variationId) {
+    return $http.delete(
+      appConfig.baseUrl + 'variations/' + variationId,
       defaultApiConfig
     );
   };
@@ -509,4 +540,47 @@ function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth,
 
   };
 
+  this.getEventVariations = function (ownerId, purpose, eventUrl) {
+    var parameters = {
+      'owner': ownerId,
+      'purpose': purpose,
+      'same_as': eventUrl
+    };
+
+    var config = {
+      withCredentials: true,
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      params: _.pick(parameters, _.isString)
+    };
+
+    return $http.get(
+      appConfig.baseUrl + 'variations/',
+      config
+    );
+  };
+
+  this.getVariation = function (variationId) {
+    var deferredVariation = $q.defer();
+
+    var variationRequest = $http.get(
+      appConfig.baseUrl + 'variations/' + variationId,
+      {
+        headers: {
+          'Accept': 'application/ld+json'
+        }
+      });
+
+    variationRequest.success(function (jsonEvent) {
+      var event = new UdbEvent(jsonEvent);
+      deferredVariation.resolve(event);
+    });
+
+    variationRequest.error(function () {
+      deferredVariation.reject();
+    });
+
+    return deferredVariation.promise;
+  };
 }

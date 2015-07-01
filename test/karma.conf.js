@@ -7,6 +7,30 @@ module.exports = function(config) {
   'use strict';
 
   config.set({
+    reporters: ['progress', 'coverage'],
+
+    preprocessors: {
+      'src/**/!(*.spec).js': ['coverage'],
+      'src/**/*.html': 'ng-html2js'
+    },
+
+    ngHtml2JsPreprocessor: {
+      // templates are moved to another path with a grunt task
+      // the cacheId has to be calculated the same way
+      cacheIdFromPath: function(filepath) {
+        var templateName = filepath.split('/').pop();
+        return 'templates/' + templateName;
+      },
+      // all templates are made available in one module
+      // include this module in your tests and it will load templates from cache without making http requests
+      moduleName: 'udb.templates'
+    },
+
+    coverageReporter: {
+      type: "lcov",
+      dir: "coverage/"
+    },
+
     // enable / disable watching file and executing tests whenever any file changes
     autoWatch: true,
 
@@ -31,8 +55,14 @@ module.exports = function(config) {
       'bower_components/moment/moment.js',
       'bower_components/accounting/accounting.js',
       'bower_components/angular-translate/angular-translate.js',
+      'bower_components/angular-moment/angular-moment.js',
+      'bower_components/codemirror/lib/codemirror.js',
+      'bower_components/codemirror/mode/solr/solr.js',
+      'bower_components/angular-ui-codemirror/ui-codemirror.js',
+      'bower_components/angular-xeditable/dist/js/xeditable.js',
       'src/**/*.module.js',
-      'src/**/*.js'
+      'src/**/*.js',
+      'src/**/*.html'
     ],
 
     // list of files / patterns to exclude
@@ -55,8 +85,10 @@ module.exports = function(config) {
 
     // Which plugins to enable
     plugins: [
+      'karma-coverage',
       'karma-phantomjs-launcher',
-      'karma-jasmine'
+      'karma-jasmine',
+      'karma-ng-html2js-preprocessor'
     ],
 
     // Continuous Integration mode

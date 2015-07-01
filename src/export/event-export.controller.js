@@ -12,7 +12,7 @@ angular
   .controller('EventExportController', EventExportController);
 
 /* @ngInject */
-function EventExportController($modalInstance, udbApi, eventExporter, queryFields, $window) {
+function EventExportController($modalInstance, udbApi, eventExporter, ExportFormats) {
 
   var exporter = this;
 
@@ -40,26 +40,57 @@ function EventExportController($modalInstance, udbApi, eventExporter, queryField
     {name: 'language', include: false, sortable: false, excludable: true}
   ];
 
-  exporter.exportFormats = [
-    {
-      type: 'json',
-      label: 'Als json',
-      description: 'Exporteren naar event-ld om de informatie voor ontwikkelaars beschikbaar te maken.'
-    },
-    {
-      type: 'ooxml',
-      label: 'Office Open XML (Excel)',
-      description: 'Het standaard formaat van Excel vanaf Microsoft Office 2007.'
-    }
+  exporter.exportFormats = _.map(ExportFormats);
+
+  exporter.brands = [
+    {name: 'vlieg', label: 'Vlieg'},
+    {name: 'uit', label: 'UiT'},
+    {name: 'uitpas', label: 'UiTPAS'}
   ];
 
+  exporter.customizations = {
+    brand: exporter.brands[0].name,
+    title: '',
+    subtitle: '',
+    footer: '',
+    publisher: ''
+  };
+
   /**
-   * This is a list of steps that the user has to navigate through.
+   * A map of all the possible export steps.
    * You can add a callback to its incomplete property which will be used to check if a step is completed.
    */
-  exporter.steps = [
-    {name: 'format'},
-    {
+  exporter.exportSteps = {
+    format: {
+      name: 'format',
+      incomplete: function () {
+        var format = exporter.format,
+            isCustomizable = !!_.find(exporter.exportFormats, {type: format, customizable: true});
+
+        if (isCustomizable) {
+          exporter.steps = [
+            exporter.exportSteps.format,
+            exporter.exportSteps.customize,
+            exporter.exportSteps.confirm
+          ];
+        } else {
+          exporter.steps = [
+            exporter.exportSteps.format,
+            exporter.exportSteps.filter,
+            exporter.exportSteps.confirm
+          ];
+        }
+
+        return !format;
+      }
+    },
+    customize: {
+      name: 'customize',
+      incomplete: function () {
+        return !exporter.customizations.brand || !exporter.customizations.title;
+      }
+    },
+    filter: {
       name: 'filter',
       incomplete: function () {
         return !_.find(exporter.eventProperties, function (property) {
@@ -67,14 +98,26 @@ function EventExportController($modalInstance, udbApi, eventExporter, queryField
         });
       }
     },
-    //{name: 'sort' },
-    {name: 'confirm'}
+    confirm: {
+      name: 'confirm'
+    }
+  };
+
+  /**
+   * This is a list of steps that the user has to navigate through.
+   */
+  exporter.steps = [
+    exporter.exportSteps.format,
+    exporter.exportSteps.confirm
   ];
 
   var activeStep = 0;
   exporter.nextStep = function () {
     if (exporter.isStepCompleted()) {
       setActiveStep(activeStep + 1);
+    }
+    else {
+      exporter.hasErrors = true;
     }
   };
 
@@ -120,9 +163,20 @@ function EventExportController($modalInstance, udbApi, eventExporter, queryField
   };
 
   exporter.export = function () {
-    var includedProperties = _.pluck(_.filter(exporter.eventProperties, 'include'), 'name');
+    var exportFormat = _.find(exporter.exportFormats, {type: exporter.format}),
+        isCustomized = exportFormat && exportFormat.customizable === true,
+        includedProperties,
+        customizations;
 
-    eventExporter.export(exporter.format, exporter.email, includedProperties, exporter.dayByDay);
+    if (isCustomized) {
+      customizations = exporter.customizations;
+      includedProperties = [];
+    } else {
+      customizations = {};
+      includedProperties = _.pluck(_.filter(exporter.eventProperties, 'include'), 'name');
+    }
+
+    eventExporter.export(exporter.format, exporter.email, includedProperties, exporter.dayByDay, customizations);
     activeStep = -1;
   };
 

@@ -292,14 +292,10 @@ describe('Service: LuceneQueryBuilder', function () {
               "operator": "AND",
               "nodes": [
                 {
-                  "field": "startdate",
-                  "term": "",
-                  "fieldType": "date-range",
-                  "transformer": ">",
-                  "$$hashKey": "object:486",
-                  "lowerBound": "2015-03-03T23:00:00.000Z",
-                  "upperBound": "2015-03-04T22:59:59.999Z",
-                  "inclusive": true
+                  "field": "category_eventtype_name",
+                  "term": "Concert",
+                  "fieldType": "term",
+                  "transformer": "="
                 }
               ]
             }
@@ -321,14 +317,10 @@ describe('Service: LuceneQueryBuilder', function () {
               "operator": "AND",
               "nodes": [
                 {
-                  "field": "startdate",
-                  "term": "",
-                  "fieldType": "date-range",
-                  "transformer": ">",
-                  "$$hashKey": "object:1154",
-                  "lowerBound": "2015-03-13T23:00:00.000Z",
-                  "upperBound": "2015-03-04T22:59:59.999Z",
-                  "inclusive": true
+                  "field": "category_eventtype_name",
+                  "term": "Film",
+                  "fieldType": "term",
+                  "transformer": "="
                 }
               ]
             }
@@ -338,7 +330,7 @@ describe('Service: LuceneQueryBuilder', function () {
     };
 
     var queryString = LuceneQueryBuilder.unparseGroupedTree(groupedTree);
-    expect(queryString).toBe('(city:Gent AND startdate:[2015-03-03T23:00:00.000Z TO *]) OR (city:Brugge AND startdate:[2015-03-13T23:00:00.000Z TO *])');
+    expect(queryString).toBe('(city:Gent AND category_eventtype_name:Concert) OR (city:Brugge AND category_eventtype_name:Film)');
   });
 
   it('Combines NOT groups with multiple fields and AND subgroups', function () {

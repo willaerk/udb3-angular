@@ -10,6 +10,7 @@
   background: #ffffff;
   border-right: silver;
   padding: 10px;
+  z-index: 75;
 
   .repeat-animation.ng-enter {
     -webkit-transition: all linear 1s;
@@ -65,11 +66,18 @@
   display: block;
 }
 
-body {
-  transition: margin-left 0.3s ease;
-  margin-left: 0;
+.udb-job-log-overlay {
+  position: fixed;
+  top: @navbar-height;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: #000;
+  opacity: 0.5;
+  z-index: 50;
+  display:none;
 }
 
-body.push-left {
-  margin-left: @job-log-width;
+.udb-job-log-overlay.shown {
+  display: block;
 }

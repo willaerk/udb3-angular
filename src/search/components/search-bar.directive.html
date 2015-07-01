@@ -1,8 +1,18 @@
 <form class="navbar-form navbar-left udb-header-search" role="search"
       ng-class="{'has-errors': sb.hasErrors, 'is-editing': sb.isEditing}">
   <div class="form-group has-warning has-feedback">
-    <input type="text" class="form-control" ng-model="sb.query">
-    <i class="fa fa-flask editor-icon" ng-click="sb.editQuery()"></i>
+    <input type="text" class="form-control" ng-model="sb.query" ng-change="sb.searchChange()">
+    <span class="dropdown saved-search-icon" dropdown>
+      <i class="fa fa-bookmark" class="dropdown-toggle" dropdown-toggle></i>
+      <ul class="dropdown-menu" role="menu">
+        <li role="presentation" class="dropdown-header">Bewaarde zoekopdrachten</li>
+        <li ng-repeat="savedSearch in sb.savedSearches">
+          <a ng-href="/search?query={{::savedSearch.query}}" ng-bind="::savedSearch.name"></a>
+        </li>
+        <li class="divider"></li>
+        <li><a href="/saved-searches">Beheren</a></li>
+      </ul>
+    </span>
     <i ng-show="sb.hasErrors" class="fa fa-warning warning-icon" tooltip-append-to-body="true"
        tooltip-placement="bottom" tooltip="{{sb.errors}}"></i>
   </div>
@@ -10,3 +20,4 @@
     <i class="fa fa-search"></i>
   </button>
 </form>
+<a href="#" ng-click="sb.editQuery()" class="advanced-search" ng-class="{'is-editing': sb.isEditing}">Geavanceerd</a>

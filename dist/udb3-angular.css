@@ -178,6 +178,38 @@ textarea.resize-vertical {
 .rv-item .udb-description {
   margin: 1em 0;
 }
+/* result viewer pagination */
+.pagination {
+  display: block;
+  text-align: center;
+}
+.pagination > li {
+  display: inline-block;
+}
+.pagination > li:first-child a,
+.pagination > li:first-child span {
+  border-radius: 3px 0 0 3px;
+}
+.pagination > li:last-child a,
+.pagination > li:last-child span {
+  border-radius: 0 3px 3px 0;
+}
+.pagination > li > a,
+.pagination > li > span {
+  border-color: #ccc;
+}
+.pagination > li > a:hover,
+.pagination > li > span:hover,
+.pagination > li > a:focus,
+.pagination > li > span:focus {
+  background-color: #337ab7;
+  color: white;
+}
+.event-description-loading-indicator {
+  text-align: center;
+  color: grey;
+  font-size: 1.5em;
+}
 .udb-translation-info {
   font-size: 30px;
   font-weight: bold;
@@ -198,6 +230,7 @@ textarea.resize-vertical {
   background: #ffffff;
   border-right: silver;
   padding: 10px;
+  z-index: 75;
 }
 .udb-job-log .repeat-animation.ng-enter {
   -webkit-transition: all linear 1s;
@@ -241,12 +274,19 @@ textarea.resize-vertical {
 .udb-job-description {
   display: block;
 }
-body {
-  transition: margin-left 0.3s ease;
-  margin-left: 0;
+.udb-job-log-overlay {
+  position: fixed;
+  top: 50px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: #000;
+  opacity: 0.5;
+  z-index: 50;
+  display: none;
 }
-body.push-left {
-  margin-left: 320px;
+.udb-job-log-overlay.shown {
+  display: block;
 }
 .udb-query-editor {
   padding-top: 24px;
@@ -293,7 +333,7 @@ body.push-left {
   opacity: 1;
 }
 .navbar-brand {
-  padding: 20px 15px;
+  padding: 15px;
 }
 .navbar-header {
   position: relative;
@@ -325,7 +365,16 @@ body.push-left {
   line-height: 100%;
   width: 100% !important;
 }
-.udb-header-search .editor-icon,
+udb-search-bar {
+  position: relative;
+}
+udb-search-bar .advanced-search {
+  position: absolute;
+  color: white;
+  top: 30px;
+  left: 20px;
+}
+.udb-header-search .saved-search-icon,
 .udb-search-button,
 .udb-header-search .warning-icon {
   width: 36px;
@@ -343,7 +392,7 @@ body.push-left {
 .udb-search-button:focus {
   outline: none;
 }
-.udb-header-search .editor-icon,
+.udb-header-search .saved-search-icon,
 .udb-header-search .warning-icon {
   position: absolute;
   right: 0;
@@ -351,10 +400,10 @@ body.push-left {
   text-align: center;
   cursor: pointer;
 }
-.udb-header-search .editor-icon {
+.udb-header-search .saved-search-icon {
   color: #78acd9;
 }
-.udb-header-search.is-editing .editor-icon {
+.open.saved-search-icon {
   color: white;
 }
 .udb-header-search .warning-icon {
@@ -387,6 +436,14 @@ body {
 .export-field-selection {
   max-height: 500px;
   overflow-y: auto;
+}
+.export-customization-brand {
+  display: inline-block;
+  margin-right: 1em;
+}
+.export-customization-brand img {
+  border: 1px solid silver;
+  padding: 5px;
 }
 .muted td {
   background-color: #EDEDED;
@@ -422,4 +479,84 @@ body {
   height: 9px;
   z-index: 99;
   content: "";
+}
+.event-detail-description {
+  color: black;
+}
+#logo .letter,
+#logo #deur {
+  fill: #9d9d9d;
+}
+#logo .warning {
+  display: none;
+}
+#logo.warning .warning {
+  display: block;
+  animation-duration: 1s;
+  animation-iteration-count: infinite;
+  animation-fill-mode: both;
+  animation-name: bounce;
+  -webkit-animation-name: bounce;
+  -webkit-animation-duration: 1s;
+  -webkit-animation-iteration-count: infinite;
+  transform-origin: center bottom 0;
+}
+#logo .busy {
+  display: none;
+}
+#logo.busy .busy {
+  display: block;
+}
+.busy-spinner {
+  stroke: #3e88ab;
+  /* info text */
+}
+#logo .complete {
+  display: none;
+}
+#logo.complete .complete {
+  display: block;
+  animation-duration: 0.75s;
+  animation-iteration-count: 1;
+  animation-fill-mode: both;
+  animation-name: bounceIn;
+  -webkit-animation-name: bounceIn;
+}
+#complete-background,
+#warning-background,
+#busy-background {
+  fill: #FFFFFF;
+}
+#complete-circle {
+  fill: #48874a;
+  /* Succes text */
+}
+#warning-circle {
+  fill: #d9534f;
+}
+.complete-check {
+  fill: #DCF2D7;
+  /* Succces background */
+}
+.saved-search-query .CodeMirror {
+  border: 1px solid #ccc;
+  height: auto;
+  padding: 11px;
+}
+.saved-search-title-column {
+  width: 15%;
+}
+.save-search-modal {
+  /* Modal buttons */
+  /* Modal alert */
+}
+.save-search-modal .btn.fa:before {
+  margin-right: 10px;
+}
+.save-search-modal .alert {
+  margin-top: 10px;
+}
+/* Tablist */
+.nav-pills > li[udb-save-search] {
+  width: 100%;
 }

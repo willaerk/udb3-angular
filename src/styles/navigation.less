@@ -17,7 +17,7 @@
 }
 
 .navbar-brand {
-  padding: 20px 15px;
+  padding: 15px;
 }
 
 .navbar-header {
@@ -58,7 +58,17 @@
 //  padding-right: 72px;
 //}
 
-.udb-header-search .editor-icon,
+udb-search-bar {
+  position: relative;
+  .advanced-search {
+    position: absolute;
+    color: white;
+    top: 30px;
+    left: 20px;
+  }
+}
+
+.udb-header-search .saved-search-icon,
 .udb-search-button,
 .udb-header-search .warning-icon {
   width: 36px;
@@ -79,7 +89,7 @@
   outline: none;
 }
 
-.udb-header-search .editor-icon,
+.udb-header-search .saved-search-icon,
 .udb-header-search .warning-icon {
   position: absolute;
   right: 0;
@@ -88,11 +98,11 @@
   cursor: pointer;
 }
 
-.udb-header-search .editor-icon {
+.udb-header-search .saved-search-icon {
   color: lighten(@brand-primary, 20%);
 }
 
-.udb-header-search.is-editing .editor-icon {
+.open.saved-search-icon {
   color: white;
 }
 

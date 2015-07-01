@@ -43,7 +43,13 @@
             </tr>
             <tr>
               <td><strong>Beschrijving</strong></td>
-              <td ng-bind-html="event.description"></td>
+              <td>
+                <div ng-if="eventIsEditable">
+                  <div ng-bind-html="event.description" onbeforesave="updateDescription($data)" class="event-detail-description"
+                       editable-textarea="event.description" e-rows="6" e-cols="33"></div>
+                </div>
+                <i ng-if="!eventIsEditable" class="fa fa-circle-o-notch fa-spin"></i>
+              </td>
             </tr>
             <tr>
               <td><strong>Waar</strong></td>
@@ -72,10 +78,17 @@
               <td><strong>Organisator</strong></td>
               <td>{{event.organizer.name}}</td>
             </tr>
-            <!--<tr>
+            <tr class="rv-event-info-price" ng-class="{muted: event.pricing === 'unknown'}">
               <td><strong>Prijs</strong></td>
-              <td></td>
-            </tr>-->
+              <td ng-switch="event.pricing">
+                <span ng-switch-when="free">Gratis</span>
+                <span ng-switch-when="payed">
+                  <i class="fa fa-eur meta icon"></i>
+                  <span ng-if="event.price" ng-bind="event.price | currency"></span>
+                </span>
+                <span ng-switch-when="unknown">Geen prijsinformatie</span>
+              </td>
+            </tr>
             <tr ng-class="{muted: !event.typicalAgeRange}">
               <td><strong>Geschikt voor</strong></td>
               <td>

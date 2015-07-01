@@ -8,12 +8,12 @@
  */
 angular
   .module('udb.entry', [
-    'ngAnimate',
     'ngCookies',
     'ngSanitize',
     'ui.bootstrap',
     'udb.config',
     'udb.search',
     'btford.socket-io',
-    'pascalprecht.translate'
+    'pascalprecht.translate',
+    'angularMoment'
   ]);

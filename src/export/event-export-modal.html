@@ -6,88 +6,110 @@
 </div>
 
 <div ng-switch="exporter.getActiveStepName()">
+  <form ng-switch-when="format" name="formatForm">
+    <div class="modal-body">
+      <h5>Selecteer het formaat</h5>
 
-  <div class="modal-body" ng-switch-when="format">
-    <h5>Selecteer het formaat</h5>
-
-    <div class="export-format-field" ng-repeat="format in ::exporter.exportFormats">
-      <label>
-        <input type="radio" name="event-export-format" ng-model="exporter.format" ng-value="format.type"
-               class="export-format-radio">
-        <span ng-bind="format.label" class="export-format-label"></span>
-      </label>
-      <div class="export-format-description" ng-bind="format.description"></div>
-    </div>
-  </div>
-
-  <div class="modal-body" ng-switch-when="filter">
-    <h5>Kies de gewenste velden</h5>
-
-    <div class="export-field-selection">
-      <div class="checkbox" ng-repeat="property in ::exporter.eventProperties">
+      <div class="export-format-field" ng-repeat="format in ::exporter.exportFormats">
         <label>
-          <input type="checkbox" ng-model="property.include" name="event-export-fields"
-                 ng-disabled="!property.excludable">
-          <span ng-bind="('property.' + property.name) | translate"></span>
+          <input type="radio" name="eventExportFormat" ng-model="exporter.format" ng-value="format.type"
+                 class="export-format-radio">
+          <span ng-bind="format.label" class="export-format-label"></span>
         </label>
+        <div class="export-format-description" ng-bind="format.description"></div>
       </div>
     </div>
+    <udb-export-modal-buttons></udb-export-modal-buttons>
+  </form>
 
-  </div>
+  <form ng-switch-when="filter" name="filterForm">
+    <div class="modal-body">
+      <h5>Kies de gewenste velden</h5>
 
-  <div class="modal-body" ng-switch-when="sort">
-    <h5>Herschik en verfijn</h5>
-
-    <strong>Sorteer op</strong>
-    <div class="row" ng-repeat="sorter in exporter.fieldSorters">
-      <div class="col-sm-3">
-        Niveau <span ng-bind="($index + 1)"></span>
-      </div>
-      <div class="col-sm-3">
-        <select ng-options="field.name as field.name.toUpperCase() | translate for field in exporter.getUnsortedFields(sorter.fieldName)"
-                ng-model="sorter.fieldName" class="form-control">
-        </select>
-      </div>
-      <div class="col-sm-3">
-        <select ng-options="'choice.' + order | translate for order in ['asc', 'desc']" ng-model="sorter.order"
-                class="form-control"></select>
-      </div>
-      <div class="col-sm-3" ng-show="$last">
-        <a href ng-click="exporter.addSorter()">Niveau toevoegen</a>
+      <div class="export-field-selection">
+        <div class="checkbox" ng-repeat="property in ::exporter.eventProperties">
+          <label>
+            <input type="checkbox" ng-model="property.include" name="eventExportFields"
+                   ng-disabled="!property.excludable">
+            <span ng-bind="('property.' + property.name) | translate"></span>
+          </label>
+        </div>
       </div>
     </div>
+    <udb-export-modal-buttons></udb-export-modal-buttons>
+  </form>
 
+  <form ng-switch-when="customize" name="customizeForm" novalidate>
+    <div class="modal-body">
+      <h5>Verfraai je rapport</h5>
 
-    <strong>Dag per dag</strong>
-    <label>
-      <input type="checkbox" ng-model="exporter.dayByDay" name="event-export-day-by-day">
-      <span>Toon evenementen met meerdere datums dag per dag</span>
-    </label>
-  </div>
+        <div class="form-group">
+          <label>Logo</label>
 
-  <div class="modal-body" ng-switch-when="confirm">
-    <h5>Export versturen</h5>
+          <div class="export-customization-brands">
+            <div class="export-customization-brand" ng-repeat="brand in ::exporter.brands">
+              <label>
+                <img ng-src="images/{{brand.name}}-logo.svg" alt="{{brand.name}} logo" width="100px" height="100px"/>
 
-    <label>Email</label>
-    <input type="text" ng-model="exporter.email"/>
-  </div>
+                <div>
+                  <input type="radio" name="eventExportBrand" ng-model="exporter.customizations.brand"
+                         ng-value="brand.name" class="export-customization-brand-radio">
+                  <span ng-bind="brand.label" class="export-customization-brand-label"></span>
+                </div>
+              </label>
+            </div>
+          </div>
+        </div>
 
-  <div class="modal-body" ng-show="exporter.getActiveStepName() === 'finished'">
-    <h5>Bedankt</h5>
+        <div class="form-group">
+          <label for="export-customization-title">Titel</label> <small class="text-muted">verplicht in te vullen</small>
+          <input placeholder="Bv. Uit met Vlieg of UiT in Gent" class="form-control" id="export-customization-title"
+                 ng-model="exporter.customizations.title" name="eventExportTitle" ng-required="'true'">
+          <p class="alert alert-danger" role="alert" ng-show="exporter.hasErrors && customizeForm.eventExportTitle.$error.required">Gelieve een titel toe te voegen. Dit is een noodzakelijk veld.</p>
+        </div>
 
-    <p>De gevraagde items worden geëxporteerd.</p>
+        <div class="form-group">
+          <label for="export-customization-subtitle">Ondertitel</label>
+          <input placeholder="Bv. 5 meeneemtips voor families" class="form-control" id="export-customization-subtitle"
+                 ng-model="exporter.customizations.subtitle" name="eventExportSubtitle">
+        </div>
 
-    <p ng-hide="exporter.email">Wanneer het gevraagde bestand klaar is, verschijnt een melding in de taakbalk.</p>
-    <p ng-show="exporter.email">Wanneer het gevraagde bestand klaar is, verschijnt een melding in de taakbalk en sturen we je het document via mail.</p>
-  </div>
-</div>
+        <div class="form-group">
+          <label for="export.customization-footer">Afsluiter</label>
+          <input placeholder="Bv. Meer tips op www.uitinvlaanderen.be" class="form-control"
+                 id="export.customization-footer" ng-model="exporter.customizations.footer" name="eventExportFooter">
+        </div>
 
-<div class="modal-footer" ng-hide="exporter.getActiveStepName() === 'finished'">
-  <button class="btn btn-default pull-left" ng-click="exporter.previousStep()"
-          ng-hide="exporter.isOnFirstStep()">vorige stap</button>
-  <button ng-disabled="!exporter.isStepCompleted()" ng-hide="exporter.onLastStep()" class="btn btn-primary"
-          ng-click="exporter.nextStep()">volgende</button>
-  <button ng-show="exporter.onLastStep()" class="btn btn-primary" ng-click="exporter.export()">exporteren</button>
+        <div class="form-group">
+          <label for="export.customization-publisher">Verantwoordelijke uitgever</label>
+          <input placeholder="Bv. Cultuurnet Vlaanderen" class="form-control" id="export.customization-publisher"
+                 ng-model="exporter.customizations.publisher" name="eventExportPublisher">
+        </div>
+    </div>
+    <udb-export-modal-buttons></udb-export-modal-buttons>
+  </form>
+
+  <form ng-switch-when="confirm">
+    <div class="modal-body">
+      <h5>Export versturen</h5>
+
+      <label>Email</label>
+      <input type="text" ng-model="exporter.email" name="eventExportEmail"/>
+    </div>
+    <udb-export-modal-buttons></udb-export-modal-buttons>
+  </form>
+
+  <form ng-switch-when="finished">
+    <div class="modal-body">
+      <h5>Bedankt</h5>
+
+      <p>De gevraagde items worden geëxporteerd.</p>
+
+      <p ng-hide="exporter.email">Wanneer het gevraagde bestand klaar is, verschijnt een melding in de taakbalk.</p>
+      <p ng-show="exporter.email">Wanneer het gevraagde bestand klaar is, verschijnt een melding in de taakbalk en sturen we je het document via mail.</p>
+    </div>
+  </form>
+
 </div>
 
 <div class="modal-footer" ng-show="exporter.getActiveStepName() === 'finished'">

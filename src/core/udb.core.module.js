@@ -8,7 +8,6 @@
  */
 angular
   .module('udb.core', [
-    'ngAnimate',
     'ngCookies',
     'ngSanitize',
     'ui.bootstrap',
@@ -22,6 +21,7 @@ angular
     'udb.event-detail',
     'udb.place-detail',
     'udb.dashboard',
+    'udb.saved-searches',
     'btford.socket-io',
     'pascalprecht.translate'
   ]);

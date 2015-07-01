@@ -12,9 +12,20 @@ angular
   .controller('Search', Search);
 
 /* @ngInject */
-function Search($scope, udbApi, LuceneQueryBuilder, $window, $location, $modal, SearchResultViewer, eventLabeller,
-                searchHelper, $rootScope, eventExporter) {
-
+function Search(
+  $scope,
+  udbApi,
+  LuceneQueryBuilder,
+  $window,
+  $location,
+  $modal,
+  SearchResultViewer,
+  eventLabeller,
+  searchHelper,
+  $rootScope,
+  eventExporter,
+  $translate
+) {
   var queryBuilder = LuceneQueryBuilder;
 
   function getSearchQuery() {
@@ -124,7 +135,7 @@ function Search($scope, udbApi, LuceneQueryBuilder, $window, $location, $modal, 
         var eventPromise = udbApi.getEventById(eventId);
 
         eventPromise.then(function (event) {
-          event.labels = _.union((event.labels || []), labels);
+          event.label(labels);
         });
       });
 
@@ -149,6 +160,16 @@ function Search($scope, udbApi, LuceneQueryBuilder, $window, $location, $modal, 
       });
 
       modal.result.then(function (labels) {
+        // eagerly label all cached events on the first page
+        var selectedIds = $scope.resultViewer.selectedIds;
+        _.each(selectedIds, function (eventId) {
+          var eventPromise = udbApi.getEventById(eventId);
+
+          eventPromise.then(function (event) {
+            event.label(labels);
+          });
+        });
+
         _.each(labels, function (label) {
           eventLabeller.labelQuery(query.queryString, label, eventCount);
         });
@@ -189,7 +210,9 @@ function Search($scope, udbApi, LuceneQueryBuilder, $window, $location, $modal, 
         size: 'lg'
       });
     } else {
-      $window.alert('provide a valid query to export');
+      $translate('EVENT-EXPORT.QUERY-IS-MISSING').then(function(message) {
+        $window.alert(message);
+      });
     }
   }
 

@@ -12,7 +12,7 @@ angular
   .factory('UdbEvent', UdbEventFactory);
 
 /* @ngInject */
-function UdbEventFactory() {
+function UdbEventFactory(EventTranslationState) {
 
   var EventPricing = {
     FREE: 'free',
@@ -62,6 +62,36 @@ function UdbEventFactory() {
     return pricing;
   }
 
+  function updateTranslationState(event) {
+    var languages = {'en': false, 'fr': false, 'de': false},
+        properties = ['name', 'description'];
+
+    _.forEach(languages, function (language, languageKey) {
+      var translationCount = 0,
+          state;
+
+      _.forEach(properties, function (property) {
+        if (event[property] && event[property][languageKey]) {
+          ++translationCount;
+        }
+      });
+
+      if (translationCount) {
+        if (translationCount === properties.length) {
+          state = EventTranslationState.ALL;
+        } else {
+          state = EventTranslationState.SOME;
+        }
+      } else {
+        state = EventTranslationState.NONE;
+      }
+
+      languages[languageKey] = state;
+    });
+
+    event.translationState = languages;
+  }
+
   /**
    * Get the images that exist for this event.
    */
@@ -97,8 +127,9 @@ function UdbEventFactory() {
   UdbEvent.prototype = {
     parseJson: function (jsonEvent) {
       this.id = jsonEvent['@id'].split('/').pop();
+      this.apiUrl = jsonEvent['@id'];
       this.name = jsonEvent.name || {};
-      this.description = jsonEvent.description || {};
+      this.description = angular.copy(jsonEvent.description) || {};
       this.calendarSummary = jsonEvent.calendarSummary;
       this.location = jsonEvent.location;
       this.image = getImages(jsonEvent);
@@ -118,6 +149,7 @@ function UdbEventFactory() {
       this.pricing = getPricing(jsonEvent);
       this.publisher = jsonEvent.publisher || '';
       this.created = new Date(jsonEvent.created);
+      this.modified = new Date(jsonEvent.modified);
       this.creator = jsonEvent.creator || '';
       this.type = getCategoryByType(jsonEvent, 'eventtype') || {};
       this.theme = getCategoryByType(jsonEvent, 'theme') || {};
@@ -236,17 +268,26 @@ function UdbEventFactory() {
      * @param {string|string[]} label
      */
     label: function (label) {
-      var labels = [];
+      var newLabels = [];
+      var existingLabels = this.labels;
 
       if (_.isArray(label)) {
-        labels = label;
+        newLabels = label;
       }
 
       if (_.isString(label)) {
-        labels = [label];
+        newLabels = [label];
       }
 
-      this.labels = _.union(this.labels, labels);
+      newLabels = _.filter(newLabels, function (newLabel) {
+        var similarLabel = _.find(existingLabels, function (existingLabel) {
+          return existingLabel.toUpperCase() === newLabel.toUpperCase();
+        });
+
+        return !similarLabel;
+      });
+
+      this.labels = _.union(this.labels, newLabels);
     },
 
     /**
@@ -254,9 +295,12 @@ function UdbEventFactory() {
      * @param {string} labelName
      */
     unlabel: function (labelName) {
-      _.remove(event.labels, function (label) {
+      _.remove(this.labels, function (label) {
         return label === labelName;
       });
+    },
+    updateTranslationState: function () {
+      updateTranslationState(this);
     }
   };
 

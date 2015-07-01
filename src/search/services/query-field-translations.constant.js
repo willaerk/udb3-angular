@@ -27,8 +27,8 @@ angular
       'AVAILABLEFROM' : 'available'
     },
     fr: {
-        LOCATION_LABEL: 'location',
-        TITLE: 'titre'
+      'LOCATION_LABEL': 'location',
+      'TITLE': 'titre'
     },
     nl: {
       'TYPE' : 'type',

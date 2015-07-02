@@ -115,13 +115,17 @@ function UdbEventFactory(EventTranslationState) {
    * @constructor
    * @param {object}  jsonEvent
    */
-  var UdbEvent = function () {
+  var UdbEvent = function (jsonEvent) {
     this.id = '';
     this.name = {};
     this.place = {};
     this.type = {};
     this.theme = {};
     this.openingHours = [];
+
+    if (jsonEvent) {
+      this.parseJson(jsonEvent);
+    }
   };
 
   UdbEvent.prototype = {

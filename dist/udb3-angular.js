@@ -2778,7 +2778,7 @@ function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth,
     translationData[property] = translation;
 
     return $http.post(
-      appConfig.baseApiUrl + type + '/' + id + '/' + language + '/' + property,
+      appConfig.baseUrl + type + '/' + id + '/' + language + '/' + property,
       translationData,
       defaultApiConfig
     );
@@ -3179,13 +3179,17 @@ function UdbEventFactory(EventTranslationState) {
    * @constructor
    * @param {object}  jsonEvent
    */
-  var UdbEvent = function () {
+  var UdbEvent = function (jsonEvent) {
     this.id = '';
     this.name = {};
     this.place = {};
     this.type = {};
     this.theme = {};
     this.openingHours = [];
+
+    if (jsonEvent) {
+      this.parseJson(jsonEvent);
+    }
   };
 
   UdbEvent.prototype = {

@@ -301,7 +301,7 @@ function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth,
     translationData[property] = translation;
 
     return $http.post(
-      appConfig.baseApiUrl + type + '/' + id + '/' + language + '/' + property,
+      appConfig.baseUrl + type + '/' + id + '/' + language + '/' + property,
       translationData,
       defaultApiConfig
     );

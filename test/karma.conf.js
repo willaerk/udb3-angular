@@ -60,6 +60,7 @@ module.exports = function(config) {
       'bower_components/codemirror/mode/solr/solr.js',
       'bower_components/angular-ui-codemirror/ui-codemirror.js',
       'bower_components/angular-xeditable/dist/js/xeditable.js',
+      'bower_components/ng-file-upload/angular-file-upload.js',
       'src/**/*.module.js',
       'src/**/*.js',
       'src/**/*.html'

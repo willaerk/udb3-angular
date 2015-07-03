@@ -99,4 +99,9 @@ describe('Factory: UdbEvent', function () {
     expect(event.labels).toContain('Foo Bar');
     expect(event.labels).toNotContain('foo bar');
   });
+
+  it('Parses the event type and theme from their matching json-ld terms', function () {
+    expect(event.type).toBe('Film');
+    expect(event.theme).toBe('Drama');
+  });
 });

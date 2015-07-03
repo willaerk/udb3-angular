@@ -3084,31 +3084,17 @@ function UdbEventFactory(EventTranslationState) {
     PAYED: 'payed'
   };
 
-  function getCategoryByType(jsonEvent, domain) {
+  function getCategoryLabel(jsonEvent, domain) {
+    var label;
     var category = _.find(jsonEvent.terms, function (category) {
       return category.domain === domain;
     });
 
     if (category) {
-      return category;
+      label = category.label;
     }
 
-    return;
-  }
-
-  /**
-   * Return all categories for a given type.
-   */
-  function getCategoriesByType(jsonEvent, domain) {
-
-    var categories = [];
-    for (var i = 0; i < jsonEvent.terms.length; i++) {
-      if (jsonEvent.terms[i].domain === domain) {
-        categories.push(jsonEvent.terms[i]);
-      }
-    }
-
-    return categories;
+    return label;
   }
 
   function getPricing(jsonEvent) {
@@ -3219,8 +3205,8 @@ function UdbEventFactory(EventTranslationState) {
       this.created = new Date(jsonEvent.created);
       this.modified = new Date(jsonEvent.modified);
       this.creator = jsonEvent.creator || '';
-      this.type = getCategoryByType(jsonEvent, 'eventtype') || {};
-      this.theme = getCategoryByType(jsonEvent, 'theme') || {};
+      this.type = getCategoryLabel(jsonEvent, 'eventtype') || '';
+      this.theme = getCategoryLabel(jsonEvent, 'theme') || '';
       this.calendarType = jsonEvent.calendarType || '';
       this.startDate = jsonEvent.startDate;
       this.endDate = jsonEvent.endDate;
@@ -3233,7 +3219,9 @@ function UdbEventFactory(EventTranslationState) {
       this.url = '/event/' + this.id;
       this.sameAs = jsonEvent.sameAs;
       this.additionalData = jsonEvent.additionalData || {};
-
+      if (jsonEvent.typicalAgeRange) {
+        this.typicalAgeRange = jsonEvent.typicalAgeRange;
+      }
       if (jsonEvent.available) {
         this.available = jsonEvent.available;
       }

@@ -12,11 +12,13 @@ angular
   .controller('EventFormStep3Ctrl', EventFormStep3Controller);
 
 /* @ngInject */
-function EventFormStep3Controller($scope, EventFormData, cityAutocomplete, eventTypes, $modal) {
+function EventFormStep3Controller($scope, EventFormData, cityAutocomplete, placeCategories, $modal) {
 
   // Scope vars.
   // main storage for event form.
   $scope.eventFormData = EventFormData;
+
+  $scope.categories = placeCategories;
 
   // Autocomplete model field for the City/Postal code.
   $scope.cityAutocompleteTextField = '';
@@ -41,8 +43,6 @@ function EventFormStep3Controller($scope, EventFormData, cityAutocomplete, event
 
   // Convenient scope variables for current controller (in multistep).
   $scope.locationsForCity = [];
-
-  getLocationCategories();
 
   // Scope functions.
   $scope.getCities = getCities;
@@ -184,19 +184,6 @@ function EventFormStep3Controller($scope, EventFormData, cityAutocomplete, event
       $scope.searchingLocation = false;
       $scope.locationAutoCompleteError = true;
       return [];
-    });
-
-  }
-
-  /**
-   * Get the location categories.
-   * @returns {undefined}
-   */
-  function getLocationCategories() {
-
-    var eventPromise = eventTypes.getCategories();
-    eventPromise.then(function (categories) {
-      $scope.categories = categories.place;
     });
 
   }

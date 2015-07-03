@@ -34,6 +34,12 @@ angular.module('udb.config', [])
 
 .constant('locationTypes', ['8.9.1.0.0','8.46.0.0.0','8.9.2.0.0','8.2.0.0.0','8.47.0.0.0','8.3.0.0.0','8.4.0.0.0','8.48.0.0.0','8.6.0.0.0','8.5.0.0.0','8.21.1.0.0','8.32.0.0.0','8.49.0.0.0','8.1.0.0.0','8.44.0.0.0','8.10.0.0.0','8.50.0.0.0','8.51.0.0.0','8.52.0.0.0','8.53.0.0.0','8.40.0.0.0'])
 
+.constant('eventCategories', [{label:'Begeleide rondleiding',id:'0.7.0.0.0',primary:true},{label:'Concert',id:'0.50.4.0.0',primary:true,themes:[{id:'1.8.1.0.0',label:'Klassieke muziek'},{id:'1.8.2.0.0',label:'Jazz en blues'},{id:'1.8.3.1.0',label:'Pop en rock'},{id:'1.8.3.2.0',label:'Hip hop, rnb en rap'},{id:'1.8.3.3.0',label:'Dance'},{id:'1.8.4.0.0',label:'Folk en wereldmuziek'},{id:'1.8.3.5.0',label:'Amusementsmuziek'}]},{label:'Cursus of workshop',id:'0.3.1.0.0',primary:true,themes:[{id:'1.42.0.0.0',label:'Creativiteit'},{id:'1.21.0.0.0',label:'Computer en techniek'},{id:'1.37.0.0.0',label:'Opvoeding'},{id:'1.61.0.0.0',label:'Persoon en relaties'},{id:'1.43.0.0.0',label:'Interculturele vorming'},{id:'1.41.0.0.0',label:'Kunst en kunsteducatie'},{id:'1.37.1.0.0',label:'Gezondheid en zorg'},{id:'1.65.0.0.0',label:'Voeding'},{id:'1.37.2.0.0',label:'Samenleving'},{id:'1.64.0.0.0',label:'Milieu en natuur'},{id:'1.25.0.0.0',label:'Wetenschap'},{id:'1.44.0.0.0',label:'Zingeving, filosofie en religie'}]},{label:'Route',id:'0.17.0.0.0',primary:true},{label:'Film',id:'0.50.6.0.0',primary:true,themes:[{id:'1.7.2.0.0',label:'Actie en avontuur'},{id:'1.7.12.0.0',label:'Animatie en kinderfilms'},{id:'1.7.1.0.0',label:'Documentaires en reportages'},{id:'1.7.6.0.0',label:'Griezelfilm of horror'},{id:'1.7.8.0.0',label:'Historische film'},{id:'1.7.3.0.0',label:'Komedie'},{id:'1.7.13.0.0',label:'Kortfilm'},{id:'1.7.10.0.0',label:'Filmmusical'},{id:'1.7.4.0.0',label:'Drama'},{id:'1.7.7.0.0',label:'Science fiction'},{id:'1.7.11.0.0',label:'Cinefiel'},{id:'1.7.15.0.0',label:'Thriller'}]},{label:'Lezing of congres',id:'0.3.2.0.0',primary:''},{label:'Openstelling',id:'0.12.0.0.0',primary:true},{label:'Tentoonstelling',id:'0.0.0.0.0',primary:true,themes:[{id:'1.1.0.0.0',label:'Audiovisuele kunst'},{id:'1.0.2.0.0',label:'Beeldhouwkunst'},{id:'1.0.6.0.0',label:'Fotografie'},{id:'1.0.4.0.0',label:'Grafiek'},{id:'1.0.3.0.0',label:'Installatiekunst'},{id:'1.0.1.0.0',label:'Schilderkunst'},{id:'1.0.5.0.0',label:'Decoratieve kunst'},{id:'1.2.2.0.0',label:'Design'},{id:'1.49.0.0.0',label:'Mode'}]},{label:'Beurs',id:'0.6.0.0.0',primary:false},{label:'Lezing of congres',id:'0.3.3.0.0',primary:false},{label:'Dansvoorstelling',id:'0.54.0.0.0',primary:false,themes:[{id:'1.9.1.0.0',label:'Ballet en klassieke dans'},{id:'1.9.3.0.0',label:'Volksdans en werelddans'},{id:'1.9.5.0.0',label:'Stijl en salondansen'},{id:'1.9.2.0.0',label:'Moderne dans'}]},{label:'Eten en drinken',id:'1.50.0.0.0',primary:false},{label:'Festival',id:'0.5.0.0.0',primary:false},{label:'Kamp of vakantie',id:'0.57.0.0.0',primary:false},{label:'Kermis of feestelijkheid',id:'0.28.0.0.0',primary:false},{label:'Markt of braderie',id:'0.37.0.0.0',primary:false},{label:'Party of fuif',id:'0.49.0.0.0',primary:false},{label:'Spel of quiz',id:'0.50.21.0.0',primary:false},{label:'Sport en beweging',id:'0.59.0.0.0',primary:false,themes:[{id:'1.51.13.0.0',label:'Bal en racketsport'},{id:'1.51.14.0.0',label:'Atletiek, wandelen en fietsen'},{id:'1.51.3.0.0',label:'Zwemmen en watersport'},{id:'1.51.6.0.0',label:'Fitness, gymnastiek, dans en vechtsport'},{id:'1.51.11.0.0',label:'Outdoor en adventure'},{id:'1.58.8.0.0',label:'Lucht en motorsport'},{id:'1.51.10.0.0',label:'Volkssporten'},{id:'1.51.12.0.0',label:'Omnisport en andere'}]},{label:'Sportwedstrijd bekijken',id:'0.19.0.0.0',primary:false},{label:'Theatervoorstelling',id:'0.55.0.0.0',primary:false,themes:[{id:'0.52.0.0.0',label:'Circus'},{id:'1.3.1.0.0',label:'Tekst en muziektheater'},{id:'1.3.10.0.0',label:'Humor comedy'},{id:'1.4.0.0.0',label:'Musical'},{id:'1.3.5.0.0',label:'Figuren en poppentheater'},{id:'1.5.0.0.0',label:'Opera en operette'},{id:'1.3.4.0.0',label:'Mime en bewegingstheater'}]}])
+
+.constant('placeCategories', [{label:'Monument',id:'0.14.0.0.0',primary:true},{label:'Natuur, park of tuin',id:'0.15.0.0.0',primary:true},{label:'Archeologische Site',id:'3CuHvenJ+EGkcvhXLg9Ykg',primary:true},{label:'Museum of galerij',id:'GnPFp9uvOUyqhOckIFMKmg',primary:true},{label:'Bibliotheek of documentatiecentrum',id:'kI7uAyn2uUu9VV6Z3uWZTA',primary:true},{label:'Recreatiedomein of centrum',id:'0.53.0.0.0',primary:false},{label:'Thema of pretpark',id:'0.41.0.0.0',primary:false},{label:'School of onderwijscentrum',id:'rJRFUqmd6EiqTD4c7HS90w',primary:false},{label:'Sportcentrum',id:'eBwaUAAhw0ur0Z02i5ttnw',primary:false},{label:'Winkel',id:'VRC6HX0Wa063sq98G5ciqw',primary:false},{label:'Jeugdhuis of jeugdcentrum',id:'JCjA0i5COUmdjMwcyjNAFA',primary:false},{label:'Cultuur- of ontmoetingscentrum',id:'Yf4aZBfsUEu2NsQqsprngw',primary:false},{label:'Discotheek',id:'YVBc8KVdrU6XfTNvhMYUpg',primary:false},{label:'Bioscoop',id:'BtVNd33sR0WntjALVbyp3w',primary:false},{label:'Horeca',id:'ekdc4ATGoUitCa0e6me6xA',primary:false},{label:'Zaal of expohal',id:'OyaPaf64AEmEAYXHeLMAtA',primary:false}])
+
+.constant('facilities', {motor:[{label:'Voorzieningen voor rolstoelgebruikers',id:'3.23.1.0.0'},{label:'Assistentie',id:'3.23.2.0.0'},{label:'Rolstoel ter beschikking',id:'3.23.3.0.0'}],visual:[{label:'Voorzieningen voor hulp- en/of geleidehonden',id:'3.13.1.0.0'},{label:'Audiodescriptie',id:'3.13.2.0.0'},{label:'Brochure beschikbaar in braille',id:'3.13.3.0.0'},{label:'Brochure beschikbaar in grootletterschrift',id:'3.13.4.0.0'},{label:'Brochure beschikbaar in gesproken vorm',id:'3.13.5.0.0'}],hearing:[{label:'Ringleiding',id:'3.17.1.0.0'},{label:'Voelstoelen',id:'3.17.2.0.0'},{label:'Ondertiteling',id:'3.17.3.0.0'}]})
+
 ;
 /**
  * @ngdoc module
@@ -2433,48 +2439,6 @@ function UnexpectedErrorModalController($scope, $modalInstance, errorMessage) {
   $scope.errorMessage = errorMessage;
 }
 UnexpectedErrorModalController.$inject = ["$scope", "$modalInstance", "errorMessage"];
-
-// Source: src/core/event-types.service.js
-/**
- * @ngdoc service
- * @name udb.core.eventTypes
- * @description
- * Service in the udb.core.
- */
-angular
-  .module('udb.core')
-  .service('eventTypes', EventTypes);
-
-/* @ngInject */
-function EventTypes($q, $window, $location, $http, $cacheFactory, appConfig, $cookieStore) {
-
-  var cache = $cacheFactory('categoriesCache');
-
-  /**
-   * Get the categories.
-   */
-  this.getCategories = function () {
-
-    var deferredEvent = $q.defer();
-    var categories = cache.get('categories');
-
-    if (categories) {
-      deferredEvent.resolve(categories);
-    } else {
-      var eventTypeRequest = $http.get(appConfig.udb3JsBaseUrl + '/src/event_form/categories.json');
-
-      eventTypeRequest.success(function(jsonData) {
-        deferredEvent.resolve(jsonData);
-        cache.put('categories', jsonData);
-      });
-    }
-
-    return deferredEvent.promise;
-
-  };
-
-}
-EventTypes.$inject = ["$q", "$window", "$location", "$http", "$cacheFactory", "appConfig", "$cookieStore"];
 
 // Source: src/core/udb-api.service.js
 /**
@@ -5950,22 +5914,13 @@ angular
   .controller('EventFormFacilitiesModalCtrl', EventFormFacilitiesModalController);
 
 /* @ngInject */
-function EventFormFacilitiesModalController($scope, $modalInstance, EventFormData, eventCrud, eventFormFacilities) {
+function EventFormFacilitiesModalController($scope, $modalInstance, EventFormData, eventCrud, facilities) {
 
   // Scope vars.
   $scope.saving = false;
   $scope.error = false;
 
-  $scope.facilities = {
-    motor : [],
-    visual : [],
-    hearing : []
-  };
-
-  var eventPromise = eventFormFacilities.getFacilities();
-  eventPromise.then(function (facilities) {
-    $scope.facilities = facilities;
-  });
+  $scope.facilities = facilities;
 
   // Scope functions.
   $scope.cancel = cancel;
@@ -6023,7 +5978,7 @@ function EventFormFacilitiesModalController($scope, $modalInstance, EventFormDat
   }
 
 }
-EventFormFacilitiesModalController.$inject = ["$scope", "$modalInstance", "EventFormData", "eventCrud", "eventFormFacilities"];
+EventFormFacilitiesModalController.$inject = ["$scope", "$modalInstance", "EventFormData", "eventCrud", "facilities"];
 
 // Source: src/event_form/components/image-delete/event-form-image-delete.controller.js
 /**
@@ -7295,48 +7250,6 @@ function EventFormStep5Directive() {
   };
 }
 
-// Source: src/event_form/event-form.facilities.service.js
-/**
- * @ngdoc service
- * @name udb.event-form.eventFormFacilities
- * @description
- * Service for loading the event form facilities.
- */
-angular
-  .module('udb.core')
-  .service('eventFormFacilities', EventFormFacilities);
-
-/* @ngInject */
-function EventFormFacilities($q, $http, $cacheFactory, appConfig) {
-
-  var cache = $cacheFactory('facilitiesCache');
-
-  /**
-   * Get the facilities.
-   */
-  this.getFacilities = function () {
-
-    var deferredEvent = $q.defer();
-    var facilities = cache.get('facilities');
-
-    if (facilities) {
-      deferredEvent.resolve(facilities);
-    } else {
-      var request = $http.get(appConfig.udb3JsBaseUrl + '/src/event_form/facilities.json');
-
-      request.success(function(jsonData) {
-        deferredEvent.resolve(jsonData);
-        cache.put('facilities', jsonData);
-      });
-    }
-
-    return deferredEvent.promise;
-
-  };
-
-}
-EventFormFacilities.$inject = ["$q", "$http", "$cacheFactory", "appConfig"];
-
 // Source: src/event_form/steps/event-form-step1.controller.js
 /**
  * @ngdoc function
@@ -7350,7 +7263,7 @@ angular
   .controller('EventFormStep1Ctrl', EventFormStep1Controller);
 
 /* @ngInject */
-function EventFormStep1Controller($scope, EventFormData, eventTypes) {
+function EventFormStep1Controller($scope, EventFormData, eventCategories, placeCategories) {
 
   // main storage for event form.
   $scope.eventFormData = EventFormData;
@@ -7358,12 +7271,9 @@ function EventFormStep1Controller($scope, EventFormData, eventTypes) {
   // Categories, event types, places.
   $scope.eventTypeLabels = [];
   $scope.placeLabels = [];
-  // Load the categories asynchronously.
-  var eventPromise = eventTypes.getCategories();
-  eventPromise.then(function (categories) {
-    $scope.eventTypeLabels = categories.event;
-    $scope.placeLabels = categories.place;
-  });
+
+  $scope.eventTypeLabels = eventCategories;
+  $scope.placeLabels = placeCategories;
 
   $scope.showEventSelection = EventFormData.id ? false : true;
   $scope.showPlaceSelection = EventFormData.id ? false : true;
@@ -7562,7 +7472,7 @@ function EventFormStep1Controller($scope, EventFormData, eventTypes) {
   }
 
 }
-EventFormStep1Controller.$inject = ["$scope", "EventFormData", "eventTypes"];
+EventFormStep1Controller.$inject = ["$scope", "EventFormData", "eventCategories", "placeCategories"];
 
 // Source: src/event_form/steps/event-form-step2-controller.js
 /**
@@ -7775,11 +7685,13 @@ angular
   .controller('EventFormStep3Ctrl', EventFormStep3Controller);
 
 /* @ngInject */
-function EventFormStep3Controller($scope, EventFormData, cityAutocomplete, eventTypes, $modal) {
+function EventFormStep3Controller($scope, EventFormData, cityAutocomplete, placeCategories, $modal) {
 
   // Scope vars.
   // main storage for event form.
   $scope.eventFormData = EventFormData;
+
+  $scope.categories = placeCategories;
 
   // Autocomplete model field for the City/Postal code.
   $scope.cityAutocompleteTextField = '';
@@ -7804,8 +7716,6 @@ function EventFormStep3Controller($scope, EventFormData, cityAutocomplete, event
 
   // Convenient scope variables for current controller (in multistep).
   $scope.locationsForCity = [];
-
-  getLocationCategories();
 
   // Scope functions.
   $scope.getCities = getCities;
@@ -7952,19 +7862,6 @@ function EventFormStep3Controller($scope, EventFormData, cityAutocomplete, event
   }
 
   /**
-   * Get the location categories.
-   * @returns {undefined}
-   */
-  function getLocationCategories() {
-
-    var eventPromise = eventTypes.getCategories();
-    eventPromise.then(function (categories) {
-      $scope.categories = categories.place;
-    });
-
-  }
-
-  /**
    * Open the organizer modal.
    */
   function openPlaceModal() {
@@ -8059,7 +7956,7 @@ function EventFormStep3Controller($scope, EventFormData, cityAutocomplete, event
   }
 
 }
-EventFormStep3Controller.$inject = ["$scope", "EventFormData", "cityAutocomplete", "eventTypes", "$modal"];
+EventFormStep3Controller.$inject = ["$scope", "EventFormData", "cityAutocomplete", "placeCategories", "$modal"];
 
 // Source: src/event_form/steps/event-form-step4.controller.js
 /**
@@ -13930,6 +13827,19 @@ $templateCache.put('templates/time-autocomplete.html',
     "\n" +
     "  </section>\n" +
     "</div>"
+  );
+
+
+  $templateCache.put('templates/event-form.html',
+    "<udb-event-form-step1></udb-event-form-step1>\n" +
+    "<udb-event-form-step2></udb-event-form-step2>\n" +
+    "<udb-event-form-step3></udb-event-form-step3>\n" +
+    "<udb-event-form-step4></udb-event-form-step4>\n" +
+    "<udb-event-form-step5></udb-event-form-step5>\n" +
+    "\n" +
+    "<div id=\"last-updated\" style=\"display: none;\">\n" +
+    "  Automatisch bewaard om <span></span> uur\n" +
+    "</div>\n"
   );
 
 

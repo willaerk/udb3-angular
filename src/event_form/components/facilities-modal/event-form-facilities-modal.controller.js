@@ -12,22 +12,13 @@ angular
   .controller('EventFormFacilitiesModalCtrl', EventFormFacilitiesModalController);
 
 /* @ngInject */
-function EventFormFacilitiesModalController($scope, $modalInstance, EventFormData, eventCrud, eventFormFacilities) {
+function EventFormFacilitiesModalController($scope, $modalInstance, EventFormData, eventCrud, facilities) {
 
   // Scope vars.
   $scope.saving = false;
   $scope.error = false;
 
-  $scope.facilities = {
-    motor : [],
-    visual : [],
-    hearing : []
-  };
-
-  var eventPromise = eventFormFacilities.getFacilities();
-  eventPromise.then(function (facilities) {
-    $scope.facilities = facilities;
-  });
+  $scope.facilities = facilities;
 
   // Scope functions.
   $scope.cancel = cancel;

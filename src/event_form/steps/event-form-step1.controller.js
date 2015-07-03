@@ -12,7 +12,7 @@ angular
   .controller('EventFormStep1Ctrl', EventFormStep1Controller);
 
 /* @ngInject */
-function EventFormStep1Controller($scope, EventFormData, eventTypes) {
+function EventFormStep1Controller($scope, EventFormData, eventCategories, placeCategories) {
 
   // main storage for event form.
   $scope.eventFormData = EventFormData;
@@ -20,12 +20,9 @@ function EventFormStep1Controller($scope, EventFormData, eventTypes) {
   // Categories, event types, places.
   $scope.eventTypeLabels = [];
   $scope.placeLabels = [];
-  // Load the categories asynchronously.
-  var eventPromise = eventTypes.getCategories();
-  eventPromise.then(function (categories) {
-    $scope.eventTypeLabels = categories.event;
-    $scope.placeLabels = categories.place;
-  });
+
+  $scope.eventTypeLabels = eventCategories;
+  $scope.placeLabels = placeCategories;
 
   $scope.showEventSelection = EventFormData.id ? false : true;
   $scope.showPlaceSelection = EventFormData.id ? false : true;

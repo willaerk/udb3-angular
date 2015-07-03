@@ -59,6 +59,14 @@ module.exports = function (grunt) {
     return locationTypes;
   };
 
+  var getEventFormCategories = function () {
+    return require('./src/event_form/categories.json');
+  };
+
+  var getFacilities = function () {
+    return require('./src/event_form/facilities.json');
+  };
+
   // Define the configuration for all the tasks
   grunt.initConfig({
 
@@ -354,7 +362,10 @@ module.exports = function (grunt) {
           return {
             appConfig: {},
             taxonomyTerms: getTaxonomyTerms(),
-            locationTypes: getLocationTypes()
+            locationTypes: getLocationTypes(),
+            eventCategories: getEventFormCategories().event,
+            placeCategories: getEventFormCategories().place,
+            facilities: getFacilities()
           };
         }
       },
@@ -363,7 +374,10 @@ module.exports = function (grunt) {
           return {
             appConfig: {},
             taxonomyTerms: getTaxonomyTerms(),
-            locationTypes: getLocationTypes()
+            locationTypes: getLocationTypes(),
+            eventCategories: getEventFormCategories().event,
+            placeCategories: getEventFormCategories().place,
+            facilities: getFacilities()
           };
         }
       }

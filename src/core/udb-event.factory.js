@@ -33,21 +33,6 @@ function UdbEventFactory(EventTranslationState) {
     return label;
   }
 
-  /**
-   * Return all categories for a given type.
-   */
-  function getCategoriesByType(jsonEvent, domain) {
-
-    var categories = [];
-    for (var i = 0; i < jsonEvent.terms.length; i++) {
-      if (jsonEvent.terms[i].domain === domain) {
-        categories.push(jsonEvent.terms[i]);
-      }
-    }
-
-    return categories;
-  }
-
   function getPricing(jsonEvent) {
     var pricing = EventPricing.UNKNOWN;
 

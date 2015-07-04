@@ -24,4 +24,5 @@ angular
     'udb.saved-searches',
     'btford.socket-io',
     'pascalprecht.translate'
-  ]);
+  ])
+  .constant('Levenshtein', window.Levenshtein);

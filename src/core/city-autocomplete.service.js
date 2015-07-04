@@ -14,14 +14,6 @@ angular
 function CityAutocomplete($q, $http, appConfig) {
 
   /**
-   * Get the cities that match the searched value.
-   */
-
-  this.getCities = function(value) {
-    return $http.get(appConfig.baseApiUrl + 'city/suggest/' + value);
-  };
-
-  /**
    *
    * Get the locations for a city
    *

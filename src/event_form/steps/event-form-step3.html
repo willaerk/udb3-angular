@@ -17,8 +17,8 @@
                    class="form-control typeahead"
                    placeholder="Gemeente of postcode"
                    ng-model="cityAutocompleteTextField"
-                   typeahead="city.cityId as city.cityLabel for city in getCities($viewValue)"
-                   typeahead-on-select="selectCity($item, $model, $label)"
+                   typeahead="city as city.zip + ' ' + city.name for city in cities | filter:filterCities($viewValue) | orderBy:orderByLevenshteinDistance($viewValue)"
+                   typeahead-on-select="selectCity($item, $label)"
                    typeahead-min-length="3">
           </span>
           <div class="alert alert-danger" ng-show="cityAutoCompleteError">

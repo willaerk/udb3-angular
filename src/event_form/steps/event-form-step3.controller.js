@@ -12,7 +12,15 @@ angular
   .controller('EventFormStep3Ctrl', EventFormStep3Controller);
 
 /* @ngInject */
-function EventFormStep3Controller($scope, EventFormData, cityAutocomplete, placeCategories, $modal) {
+function EventFormStep3Controller(
+    $scope,
+    EventFormData,
+    cityAutocomplete,
+    placeCategories,
+    $modal,
+    cities,
+    Levenshtein
+) {
 
   // Scope vars.
   // main storage for event form.
@@ -45,7 +53,7 @@ function EventFormStep3Controller($scope, EventFormData, cityAutocomplete, place
   $scope.locationsForCity = [];
 
   // Scope functions.
-  $scope.getCities = getCities;
+  $scope.cities = cities;
   $scope.selectCity = selectCity;
   $scope.selectLocation = selectLocation;
   $scope.changeCitySelection = changeCitySelection;
@@ -54,6 +62,24 @@ function EventFormStep3Controller($scope, EventFormData, cityAutocomplete, place
   $scope.changeStreetAddress = changeStreetAddress;
   $scope.getLocations = getLocations;
   $scope.setMajorInfoChanged = setMajorInfoChanged;
+  $scope.filterCities = function(value) {
+    return function (city) {
+      var words = value.match(/\w+/g);
+      var zipMatches = words.filter(function (word) {
+        return city.zip.indexOf(word) !== -1;
+      });
+      var nameMatches = words.filter(function (word) {
+        return city.name.toLowerCase().indexOf(word.toLowerCase()) !== -1;
+      });
+
+      return zipMatches.length + nameMatches.length >= words.length;
+    };
+  };
+  $scope.orderByLevenshteinDistance = function(value) {
+    return function (city) {
+      return new Levenshtein(value, city.zip + '' + city.name);
+    };
+  };
 
   // Default values
   if (EventFormData.location && EventFormData.location.address && EventFormData.location.address.postalCode) {
@@ -73,28 +99,9 @@ function EventFormStep3Controller($scope, EventFormData, cityAutocomplete, place
   }
 
   /**
-   * Automplete function for cities.
-   */
-  function getCities(value) {
-
-    $scope.searchingCities = true;
-    $scope.cityAutoCompleteError = false;
-
-    var promise = cityAutocomplete.getCities(value, EventFormData.location.address.postalCode);
-    return promise.then(function (cities) {
-      $scope.searchingCities = false;
-      return cities.data;
-    }, function() {
-      $scope.searchingCities = false;
-      $scope.cityAutoCompleteError = true;
-      return [];
-    });
-  }
-
-  /**
    * Select City.
    */
-  function selectCity($item, $model, $label) {
+  function selectCity($item, $label) {
 
     EventFormData.resetLocation();
     var location = $scope.eventFormData.getLocation();

@@ -36,6 +36,26 @@ module.exports = function (grunt) {
     return terms;
   };
 
+  var getCities = function () {
+    var parser = new xml2js.Parser({mergeAttrs: true, explicitArray: false});
+    var xmlBuffer = grunt.file.read('cities.xml');
+    var cities = [];
+    parser.parseString(xmlBuffer, function (err, result) {
+      // Limit cities data to Dutch name and zip code. That's all we currently
+      // need in the application.
+      cities = result.cdbxml.cities.city.map(
+        function (city) {
+          return {
+            'name': city.labelnl,
+            'zip': city.zip
+          };
+        }
+      );
+    });
+
+    return cities;
+  };
+
   var getLocationTypes = function () {
     var parser = new xml2js.Parser({mergeAttrs: true, explicitArray: false});
     var xmlBuffer = grunt.file.read('actor-types.xml');
@@ -365,7 +385,8 @@ module.exports = function (grunt) {
             locationTypes: getLocationTypes(),
             eventCategories: getEventFormCategories().event,
             placeCategories: getEventFormCategories().place,
-            facilities: getFacilities()
+            facilities: getFacilities(),
+            cities: getCities()
           };
         }
       },
@@ -377,7 +398,8 @@ module.exports = function (grunt) {
             locationTypes: getLocationTypes(),
             eventCategories: getEventFormCategories().event,
             placeCategories: getEventFormCategories().place,
-            facilities: getFacilities()
+            facilities: getFacilities(),
+            cities: getCities()
           };
         }
       }
@@ -387,6 +409,10 @@ module.exports = function (grunt) {
       'taxonomy-terms': {
         src: 'http://taxonomy.uitdatabank.be/api/term',
         dest: 'taxonomy-terms.xml'
+      },
+      'cities': {
+        src: 'http://taxonomy.uitdatabank.be/api/city',
+        dest: 'cities.xml'
       },
       'actor-types': {
         src: 'http://taxonomy.uitdatabank.be/api/domain/actortype/classification',
@@ -450,6 +476,7 @@ module.exports = function (grunt) {
     'clean:dist',
     'curl:taxonomy-terms',
     'curl:actor-types',
+    'curl:cities',
     'ngconstant:dist',
     'peg',
     'less',

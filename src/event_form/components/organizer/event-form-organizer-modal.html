@@ -82,7 +82,6 @@
           <i class="fa fa-circle-o-notch fa-spin"></i>
         </td>
         <td ng-hide="fetching">
-          {{ organizer }}
           <strong>{{ organizer.name }} </strong>, {{ organizer.addresses[0].streetAddress }}, {{ organizer.addresses[0].postalCode }} {{ organizer.addresses[0].addressLocality }}</strong>
         </td>
         <td ng-hide="fetching"><a class="btn btn-default" ng-click="selectOrganizer(organizer)">Selecteren</a></td>

@@ -1885,21 +1885,44 @@ angular
   .service('cityAutocomplete', CityAutocomplete);
 
 /* @ngInject */
-function CityAutocomplete($q, $http, appConfig) {
+function CityAutocomplete($q, $http, appConfig, UdbPlace) {
 
   /**
    *
-   * Get the locations for a city
+   * Get the places for a city
    *
-   * @param {type} value
+   * @param {type} zipcode
    * @returns {$q@call;defer.promise}
    */
-  this.getLocationsForCity = function(value, postal) {
-    return $http.get(appConfig.baseApiUrl + 'location/suggest/' + value + '/' + postal);
+  this.getPlacesForCity = function(zipcode) {
+
+    var deferredPlaces = $q.defer();
+
+    var config = {
+      params: {
+        q: 'zipcode:' +  zipcode
+      }
+    };
+
+    var parsePagedCollection = function (response) {
+      var locations = _.map(response.data.member, function (placeJson) {
+        return new UdbPlace(placeJson);
+      });
+
+      deferredPlaces.resolve(response.data.member);
+    };
+
+    var failed = function () {
+      deferredPlaces.reject('something went wrong while getting places for city with zipcode: ' + zipcode);
+    };
+
+    $http.get(appConfig.baseUrl + 'places', config).then(parsePagedCollection, failed);
+
+    return deferredPlaces.promise;
   };
 
 }
-CityAutocomplete.$inject = ["$q", "$http", "appConfig"];
+CityAutocomplete.$inject = ["$q", "$http", "appConfig", "UdbPlace"];
 
 // Source: src/core/components/datepicker/datepicker.directive.js
 (function () {
@@ -3598,7 +3621,7 @@ function UdbPlaceFactory() {
    * @class UdbPlace
    * @constructor
    */
-  var UdbPlace = function () {
+  var UdbPlace = function (placeJson) {
     this.id = '';
     this.name = {};
     this.type = {};
@@ -3611,6 +3634,10 @@ function UdbPlaceFactory() {
       'postalCode' : '',
       'streetAddress' : '',
     };
+
+    if (placeJson) {
+      this.parseJson(placeJson);
+    }
   };
 
   UdbPlace.prototype = {
@@ -7690,6 +7717,8 @@ function EventFormStep3Controller(
     Levenshtein
 ) {
 
+  var controller = this;
+
   // Scope vars.
   // main storage for event form.
   $scope.eventFormData = EventFormData;
@@ -7722,13 +7751,10 @@ function EventFormStep3Controller(
 
   // Scope functions.
   $scope.cities = cities;
-  $scope.selectCity = selectCity;
-  $scope.selectLocation = selectLocation;
   $scope.changeCitySelection = changeCitySelection;
   $scope.changeLocationSelection = changeLocationSelection;
   $scope.validatePlace = validatePlace;
   $scope.changeStreetAddress = changeStreetAddress;
-  $scope.getLocations = getLocations;
   $scope.setMajorInfoChanged = setMajorInfoChanged;
   $scope.filterCities = function(value) {
     return function (city) {
@@ -7769,19 +7795,24 @@ function EventFormStep3Controller(
   /**
    * Select City.
    */
-  function selectCity($item, $label) {
+  controller.selectCity = function ($item, $label) {
+
+    var zipcode = $item.zip,
+        name = $item.name;
 
     EventFormData.resetLocation();
     var location = $scope.eventFormData.getLocation();
-    location.address.postalCode = $item.zip;
-    location.address.addressLocality = $item.name;
+    location.address.postalCode = zipcode;
+    location.address.addressLocality = name;
     EventFormData.setLocation(location);
 
     $scope.cityAutocompleteTextField = '';
     $scope.selectedCity = $label;
     $scope.selectedLocation = '';
 
-  }
+    controller.getLocations(zipcode);
+  };
+  $scope.selectCity = controller.selectCity;
 
   /**
    * Change a city selection.
@@ -7802,7 +7833,7 @@ function EventFormStep3Controller(
    * Select location.
    * @returns {undefined}
    */
-  function selectLocation($item, $model, $label) {
+  controller.selectLocation = function ($item, $model, $label) {
 
     // Assign selection, hide the location field and show the selection.
     $scope.selectedLocation = $label;
@@ -7816,7 +7847,8 @@ function EventFormStep3Controller(
     EventFormData.showStep4 = true;
     setMajorInfoChanged();
 
-  }
+  };
+  $scope.selectLocation = controller.selectLocation;
 
   /**
    * Change selected location.
@@ -7842,16 +7874,17 @@ function EventFormStep3Controller(
   /**
    * Get locations for Event.
    * @returns {undefined}
+   * @param {string} zipcode
    */
-  function getLocations($viewValue) {
+  controller.getLocations = function (zipcode) {
 
     $scope.searchingLocation = true;
     $scope.locationAutoCompleteError = false;
 
-    var promise = cityAutocomplete.getLocationsForCity($viewValue, EventFormData.location.address.postalCode);
+    var promise = cityAutocomplete.getPlacesForCity(zipcode);
     return promise.then(function (cities) {
-      $scope.locationsForCity = cities.data;
-      $scope.locationsSearched = true;
+      $scope.locationsForCity = cities;
+      $scope.locationsSearched = false;
       $scope.searchingLocation = false;
       return $scope.locationsForCity;
     }, function() {
@@ -7861,7 +7894,28 @@ function EventFormStep3Controller(
       return [];
     });
 
-  }
+  };
+
+  controller.filterCityLocations = function (filterValue) {
+    return function (location) {
+      // assume a search has been launched once a location goes through the filter
+      // getLocations() is called when the city changes and toggles this off again
+      $scope.locationsSearched = true;
+
+      var words = filterValue.match(/\w+/g).filter(function (word) {
+        return word.length > 2;
+      });
+      var addressMatches = words.filter(function (word) {
+        return location.address.streetAddress.toLowerCase().indexOf(word.toLowerCase()) !== -1;
+      });
+      var nameMatches = words.filter(function (word) {
+        return location.name.toLowerCase().indexOf(word.toLowerCase()) !== -1;
+      });
+
+      return addressMatches.length + nameMatches.length >= words.length;
+    };
+  };
+  $scope.filterCityLocations = controller.filterCityLocations;
 
   /**
    * Open the organizer modal.
@@ -12988,6 +13042,15 @@ $templateCache.put('templates/time-autocomplete.html',
   );
 
 
+  $templateCache.put('templates/place-suggestion.html',
+    "<div class=\"place-suggestion\">\n" +
+    "  <span class=\"place-suggestion-name\" ng-bind-html=\"match.model.name | typeaheadHighlight:query\"></span>\n" +
+    "  <span class=\"place-suggestion-address\" ng-bind-html=\"match.model.address.streetAddress | typeaheadHighlight:query\">\n" +
+    "  </span>\n" +
+    "</div>\n"
+  );
+
+
   $templateCache.put('templates/reservation-modal.html',
     "<div class=\"modal-content\">\n" +
     "  <div class=\"modal-header\">\n" +
@@ -13196,10 +13259,12 @@ $templateCache.put('templates/time-autocomplete.html',
     "                     placeholder=\"Locatie\"\n" +
     "                     class=\"form-control typeahead\"\n" +
     "                     ng-model=\"locationAutocompleteTextField\"\n" +
-    "                     typeahead=\"location.id as location.title for location in getLocations($viewValue)\"\n" +
+    "                     typeahead=\"location.id as location.name for location in filteredLocations = (locationsForCity | filter:filterCityLocations($viewValue))\"\n" +
     "                     typeahead-on-select=\"selectLocation($item, $model, $label)\"\n" +
-    "                     typeahead-min-length=\"3\" />\n" +
-    "              <div class=\"plaats-adres-resultaat dropdown-menu-no-results\" ng-show=\"locationsForCity.length === 0 && locationsSearched\">\n" +
+    "                     typeahead-min-length=\"3\"\n" +
+    "                     typeahead-template-url=\"templates/place-suggestion.html\"/>\n" +
+    "              <div class=\"plaats-adres-resultaat dropdown-menu-no-results\"\n" +
+    "                   ng-show=\"filteredLocations.length === 0 && locationsSearched\">\n" +
     "                <p class=\"text-center\">\n" +
     "                  Locatie niet gevonden?<br />\n" +
     "                  <button type=\"button\" class=\"btn btn-primary\" data-toggle=\"modal\" data-target=\"#waar-locatie-toevoegen\" ng-click=\"openPlaceModal()\">Een locatie toevoegen</button>\n" +

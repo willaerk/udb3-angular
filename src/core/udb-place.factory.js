@@ -63,7 +63,7 @@ function UdbPlaceFactory() {
    * @class UdbPlace
    * @constructor
    */
-  var UdbPlace = function () {
+  var UdbPlace = function (placeJson) {
     this.id = '';
     this.name = {};
     this.type = {};
@@ -76,6 +76,10 @@ function UdbPlaceFactory() {
       'postalCode' : '',
       'streetAddress' : '',
     };
+
+    if (placeJson) {
+      this.parseJson(placeJson);
+    }
   };
 
   UdbPlace.prototype = {

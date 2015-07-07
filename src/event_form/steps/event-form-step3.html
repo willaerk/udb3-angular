@@ -42,10 +42,12 @@
                      placeholder="Locatie"
                      class="form-control typeahead"
                      ng-model="locationAutocompleteTextField"
-                     typeahead="location.id as location.title for location in getLocations($viewValue)"
+                     typeahead="location.id as location.name for location in filteredLocations = (locationsForCity | filter:filterCityLocations($viewValue))"
                      typeahead-on-select="selectLocation($item, $model, $label)"
-                     typeahead-min-length="3" />
-              <div class="plaats-adres-resultaat dropdown-menu-no-results" ng-show="locationsForCity.length === 0 && locationsSearched">
+                     typeahead-min-length="3"
+                     typeahead-template-url="templates/place-suggestion.html"/>
+              <div class="plaats-adres-resultaat dropdown-menu-no-results"
+                   ng-show="filteredLocations.length === 0 && locationsSearched">
                 <p class="text-center">
                   Locatie niet gevonden?<br />
                   <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#waar-locatie-toevoegen" ng-click="openPlaceModal()">Een locatie toevoegen</button>

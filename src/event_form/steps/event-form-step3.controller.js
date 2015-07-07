@@ -22,6 +22,8 @@ function EventFormStep3Controller(
     Levenshtein
 ) {
 
+  var controller = this;
+
   // Scope vars.
   // main storage for event form.
   $scope.eventFormData = EventFormData;
@@ -54,13 +56,10 @@ function EventFormStep3Controller(
 
   // Scope functions.
   $scope.cities = cities;
-  $scope.selectCity = selectCity;
-  $scope.selectLocation = selectLocation;
   $scope.changeCitySelection = changeCitySelection;
   $scope.changeLocationSelection = changeLocationSelection;
   $scope.validatePlace = validatePlace;
   $scope.changeStreetAddress = changeStreetAddress;
-  $scope.getLocations = getLocations;
   $scope.setMajorInfoChanged = setMajorInfoChanged;
   $scope.filterCities = function(value) {
     return function (city) {
@@ -101,19 +100,24 @@ function EventFormStep3Controller(
   /**
    * Select City.
    */
-  function selectCity($item, $label) {
+  controller.selectCity = function ($item, $label) {
+
+    var zipcode = $item.zip,
+        name = $item.name;
 
     EventFormData.resetLocation();
     var location = $scope.eventFormData.getLocation();
-    location.address.postalCode = $item.zip;
-    location.address.addressLocality = $item.name;
+    location.address.postalCode = zipcode;
+    location.address.addressLocality = name;
     EventFormData.setLocation(location);
 
     $scope.cityAutocompleteTextField = '';
     $scope.selectedCity = $label;
     $scope.selectedLocation = '';
 
-  }
+    controller.getLocations(zipcode);
+  };
+  $scope.selectCity = controller.selectCity;
 
   /**
    * Change a city selection.
@@ -134,7 +138,7 @@ function EventFormStep3Controller(
    * Select location.
    * @returns {undefined}
    */
-  function selectLocation($item, $model, $label) {
+  controller.selectLocation = function ($item, $model, $label) {
 
     // Assign selection, hide the location field and show the selection.
     $scope.selectedLocation = $label;
@@ -148,7 +152,8 @@ function EventFormStep3Controller(
     EventFormData.showStep4 = true;
     setMajorInfoChanged();
 
-  }
+  };
+  $scope.selectLocation = controller.selectLocation;
 
   /**
    * Change selected location.
@@ -174,16 +179,17 @@ function EventFormStep3Controller(
   /**
    * Get locations for Event.
    * @returns {undefined}
+   * @param {string} zipcode
    */
-  function getLocations($viewValue) {
+  controller.getLocations = function (zipcode) {
 
     $scope.searchingLocation = true;
     $scope.locationAutoCompleteError = false;
 
-    var promise = cityAutocomplete.getLocationsForCity($viewValue, EventFormData.location.address.postalCode);
+    var promise = cityAutocomplete.getPlacesForCity(zipcode);
     return promise.then(function (cities) {
-      $scope.locationsForCity = cities.data;
-      $scope.locationsSearched = true;
+      $scope.locationsForCity = cities;
+      $scope.locationsSearched = false;
       $scope.searchingLocation = false;
       return $scope.locationsForCity;
     }, function() {
@@ -193,7 +199,28 @@ function EventFormStep3Controller(
       return [];
     });
 
-  }
+  };
+
+  controller.filterCityLocations = function (filterValue) {
+    return function (location) {
+      // assume a search has been launched once a location goes through the filter
+      // getLocations() is called when the city changes and toggles this off again
+      $scope.locationsSearched = true;
+
+      var words = filterValue.match(/\w+/g).filter(function (word) {
+        return word.length > 2;
+      });
+      var addressMatches = words.filter(function (word) {
+        return location.address.streetAddress.toLowerCase().indexOf(word.toLowerCase()) !== -1;
+      });
+      var nameMatches = words.filter(function (word) {
+        return location.name.toLowerCase().indexOf(word.toLowerCase()) !== -1;
+      });
+
+      return addressMatches.length + nameMatches.length >= words.length;
+    };
+  };
+  $scope.filterCityLocations = controller.filterCityLocations;
 
   /**
    * Open the organizer modal.

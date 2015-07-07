@@ -11,17 +11,40 @@ angular
   .service('cityAutocomplete', CityAutocomplete);
 
 /* @ngInject */
-function CityAutocomplete($q, $http, appConfig) {
+function CityAutocomplete($q, $http, appConfig, UdbPlace) {
 
   /**
    *
-   * Get the locations for a city
+   * Get the places for a city
    *
-   * @param {type} value
+   * @param {type} zipcode
    * @returns {$q@call;defer.promise}
    */
-  this.getLocationsForCity = function(value, postal) {
-    return $http.get(appConfig.baseApiUrl + 'location/suggest/' + value + '/' + postal);
+  this.getPlacesForCity = function(zipcode) {
+
+    var deferredPlaces = $q.defer();
+
+    var config = {
+      params: {
+        q: 'zipcode:' +  zipcode
+      }
+    };
+
+    var parsePagedCollection = function (response) {
+      var locations = _.map(response.data.member, function (placeJson) {
+        return new UdbPlace(placeJson);
+      });
+
+      deferredPlaces.resolve(response.data.member);
+    };
+
+    var failed = function () {
+      deferredPlaces.reject('something went wrong while getting places for city with zipcode: ' + zipcode);
+    };
+
+    $http.get(appConfig.baseUrl + 'places', config).then(parsePagedCollection, failed);
+
+    return deferredPlaces.promise;
   };
 
 }

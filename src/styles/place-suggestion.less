@@ -1,0 +1,67 @@
+.twitter-typeahead {
+  .typeahead,
+  .query,
+  .hint {
+    outline: none;
+    width: 422px;
+  }
+  .query {
+    -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+    -moz-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+  }
+  .hint {
+    color: #999999;
+  }
+  .dropdown-menu {
+    width: 422px;
+    margin-top: 0px;
+    padding: 8px 0;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    -webkit-box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+    -moz-box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+    max-height: 150px;
+    overflow-y: auto;
+  }
+  .place-suggestion {
+    padding: 6px 20px;
+    color: fadeout(black, 40%);
+  }
+  .place-suggestion strong{
+    font-weight: normal;
+    color: black;
+  }
+  .place-suggestion-name {
+    display: block;
+  }
+  li.active .place-suggestion {
+    color: fadeout(white, 20%);
+    background-color: @brand-primary;
+    cursor: pointer;
+  }
+  li.active .place-suggestion strong {
+    color: white;
+  }
+  .place-suggestion p {
+    margin: 0;
+  }
+  .place-suggestion {
+    border-bottom: 1px solid #dddddd;
+  }
+  .place-suggestion:hover {
+    border-bottom: 1px solid #dddddd;
+  }
+}
+
+.twitter-typeahead:after {
+  position: absolute;
+  font-family: "FontAwesome";
+  content: "\f002";
+  right: 12px;
+  top: 6px;
+  color: #999;
+}
+

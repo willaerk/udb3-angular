@@ -8063,27 +8063,30 @@ function EventFormStep4Controller($scope, EventFormData, udbApi, appConfig, Sear
 
     // First check if all data is correct.
     $scope.infoMissing = false;
+    var missingInfo = [];
     if (EventFormData.calendarType === 'single' && EventFormData.timestamps[0].date === '') {
-      $scope.infoMissing = true;
+      missingInfo.push('timestamp missing');
     }
     else if (EventFormData.calendarType === 'periodic' &&
       (EventFormData.startDate === '' || EventFormData.endDate === '')
     ) {
-      $scope.infoMissing = true;
+      missingInfo.push('start or end date missing');
     }
 
     if (!EventFormData.type.id) {
-      $scope.infoMissing = true;
+      missingInfo.push('event type missing');
     }
 
     if (EventFormData.isEvent && !EventFormData.location.id) {
-      $scope.infoMissing = true;
+      missingInfo.push('place missing for event');
     }
     else if (EventFormData.isPlace && !EventFormData.location.address.streetAddress) {
-      $scope.infoMissing = true;
+      missingInfo.push('location missing for place');
     }
 
-    if ($scope.infoMissing) {
+    if (missingInfo.length > 0) {
+      $scope.infoMissing = true;
+      console.log(missingInfo);
       return;
     }
 

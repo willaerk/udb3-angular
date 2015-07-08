@@ -39,7 +39,7 @@ function EventFormStep3Controller(
   // Autocomplete helper vars.
   $scope.searchingCities = false;
   $scope.cityAutoCompleteError = false;
-  $scope.searchingLocation = false;
+  $scope.loadingPlaces = false;
   $scope.locationAutoCompleteError = false;
   $scope.locationsSearched = false;
 
@@ -183,18 +183,18 @@ function EventFormStep3Controller(
    */
   controller.getLocations = function (zipcode) {
 
-    $scope.searchingLocation = true;
+    $scope.loadingPlaces = true;
     $scope.locationAutoCompleteError = false;
 
     var promise = cityAutocomplete.getPlacesByZipcode(zipcode);
     return promise.then(function (cities) {
       $scope.locationsForCity = cities;
       $scope.locationsSearched = false;
-      $scope.searchingLocation = false;
+      $scope.loadingPlaces = false;
       return $scope.locationsForCity;
     }, function() {
       $scope.locationsSearched = false;
-      $scope.searchingLocation = false;
+      $scope.loadingPlaces = false;
       $scope.locationAutoCompleteError = true;
       return [];
     });

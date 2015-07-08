@@ -8,7 +8,6 @@
  */
 angular
   .module('udb.event-detail', [
-    'ngAnimate',
     'ngSanitize',
     'ui.bootstrap',
     'udb.config',

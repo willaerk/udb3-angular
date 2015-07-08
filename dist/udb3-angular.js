@@ -72,12 +72,12 @@ angular
  */
 angular
   .module('udb.event-form', [
-    'ngAnimate',
     'ngSanitize',
     'ui.bootstrap',
     'udb.config',
     'udb.entry'
   ]);
+
 /**
  * @ngdoc module
  * @name udb.dashboard
@@ -86,11 +86,11 @@ angular
  */
 angular
   .module('udb.dashboard', [
-    'ngAnimate',
     'ngSanitize',
     'ui.bootstrap',
     'udb.config'
   ]);
+
 /**
  * @ngdoc module
  * @name udb.entry
@@ -117,7 +117,6 @@ angular
  */
 angular
   .module('udb.event-detail', [
-    'ngAnimate',
     'ngSanitize',
     'ui.bootstrap',
     'udb.config',
@@ -132,7 +131,6 @@ angular
  */
 angular
   .module('udb.place-detail', [
-    'ngAnimate',
     'ngSanitize',
     'ui.bootstrap',
     'udb.config',
@@ -7733,7 +7731,7 @@ function EventFormStep3Controller(
   // Autocomplete helper vars.
   $scope.searchingCities = false;
   $scope.cityAutoCompleteError = false;
-  $scope.searchingLocation = false;
+  $scope.loadingPlaces = false;
   $scope.locationAutoCompleteError = false;
   $scope.locationsSearched = false;
 
@@ -7877,18 +7875,18 @@ function EventFormStep3Controller(
    */
   controller.getLocations = function (zipcode) {
 
-    $scope.searchingLocation = true;
+    $scope.loadingPlaces = true;
     $scope.locationAutoCompleteError = false;
 
     var promise = cityAutocomplete.getPlacesByZipcode(zipcode);
     return promise.then(function (cities) {
       $scope.locationsForCity = cities;
       $scope.locationsSearched = false;
-      $scope.searchingLocation = false;
+      $scope.loadingPlaces = false;
       return $scope.locationsForCity;
     }, function() {
       $scope.locationsSearched = false;
-      $scope.searchingLocation = false;
+      $scope.loadingPlaces = false;
       $scope.locationAutoCompleteError = true;
       return [];
     });
@@ -13229,7 +13227,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "\n" +
     "    <div class=\"row\">\n" +
     "      <div class=\"col-xs-12\">\n" +
-    "        <label for=\"gemeente-autocomplete\" id=\"gemeente-label\" ng-hide=\"selectedCity !== ''\">Kies een gemeente <i class=\"fa fa-circle-o-notch fa-spin\" ng-show=\"searchingCities\"></i></label>\n" +
+    "        <label for=\"gemeente-autocomplete\" id=\"gemeente-label\" ng-hide=\"selectedCity !== ''\">Kies een gemeente</label>\n" +
     "        <div id=\"gemeente-kiezer\" ng-hide=\"selectedCity !== ''\">\n" +
     "          <span style=\"position: relative; display: inline-block; direction: ltr;\" class=\"twitter-typeahead\">\n" +
     "            <input type=\"text\"\n" +
@@ -13254,7 +13252,9 @@ $templateCache.put('templates/time-autocomplete.html',
     "    <div id=\"waar-evenement\" ng-show=\"eventFormData.isEvent && selectedCity !== ''\">\n" +
     "      <div class=\"row\">\n" +
     "        <div class=\"col-xs-12\">\n" +
-    "          <label id=\"locatie-label\" ng-show=\"selectedLocation === ''\">Kies een locatie <i class=\"fa fa-circle-o-notch fa-spin\" ng-show=\"searchingLocation\"></i></label>\n" +
+    "          <label id=\"locatie-label\" ng-show=\"selectedLocation === ''\">\n" +
+    "            Kies een locatie <i class=\"fa fa-circle-o-notch fa-spin\" ng-show=\"loadingPlaces\"></i>\n" +
+    "          </label>\n" +
     "          <div id=\"locatie-kiezer\" ng-show=\"selectedLocation === ''\">\n" +
     "            <span style=\"position: relative; display: inline-block; direction: ltr;\" class=\"twitter-typeahead\">\n" +
     "              <input type=\"text\"\n" +
@@ -13269,7 +13269,10 @@ $templateCache.put('templates/time-autocomplete.html',
     "                   ng-show=\"filteredLocations.length === 0 && locationsSearched\">\n" +
     "                <p class=\"text-center\">\n" +
     "                  Locatie niet gevonden?<br />\n" +
-    "                  <button type=\"button\" class=\"btn btn-primary\" data-toggle=\"modal\" data-target=\"#waar-locatie-toevoegen\" ng-click=\"openPlaceModal()\">Een locatie toevoegen</button>\n" +
+    "                  <button type=\"button\" class=\"btn btn-primary\" data-toggle=\"modal\"\n" +
+    "                          data-target=\"#waar-locatie-toevoegen\" ng-click=\"openPlaceModal()\">\n" +
+    "                    Een locatie toevoegen\n" +
+    "                  </button>\n" +
     "                </p>\n" +
     "              </div>\n" +
     "            </span>\n" +
@@ -13279,7 +13282,8 @@ $templateCache.put('templates/time-autocomplete.html',
     "          </div>\n" +
     "          <div id=\"locatie-gekozen\" ng-show=\"selectedLocation !== ''\" >\n" +
     "            <span class=\" btn-chosen\" id=\"locatie-gekozen-button\" ng-bind=\"selectedLocation\"></span>\n" +
-    "            <button type=\"button\" class=\"btn btn-default btn-link\" data-toggle=\"modal\" data-target=\"#waar-locatie-toevoegen\" ng-click=\"changeLocationSelection()\">Wijzigen</button>\n" +
+    "            <button type=\"button\" class=\"btn btn-default btn-link\" data-toggle=\"modal\"\n" +
+    "                    data-target=\"#waar-locatie-toevoegen\"ng-click=\"changeLocationSelection()\">Wijzigen</button>\n" +
     "          </div>\n" +
     "        </div>\n" +
     "      </div>\n" +

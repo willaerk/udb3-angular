@@ -10,7 +10,7 @@
 
     <div class="row">
       <div class="col-xs-12">
-        <label for="gemeente-autocomplete" id="gemeente-label" ng-hide="selectedCity !== ''">Kies een gemeente <i class="fa fa-circle-o-notch fa-spin" ng-show="searchingCities"></i></label>
+        <label for="gemeente-autocomplete" id="gemeente-label" ng-hide="selectedCity !== ''">Kies een gemeente</label>
         <div id="gemeente-kiezer" ng-hide="selectedCity !== ''">
           <span style="position: relative; display: inline-block; direction: ltr;" class="twitter-typeahead">
             <input type="text"
@@ -35,7 +35,9 @@
     <div id="waar-evenement" ng-show="eventFormData.isEvent && selectedCity !== ''">
       <div class="row">
         <div class="col-xs-12">
-          <label id="locatie-label" ng-show="selectedLocation === ''">Kies een locatie <i class="fa fa-circle-o-notch fa-spin" ng-show="searchingLocation"></i></label>
+          <label id="locatie-label" ng-show="selectedLocation === ''">
+            Kies een locatie <i class="fa fa-circle-o-notch fa-spin" ng-show="loadingPlaces"></i>
+          </label>
           <div id="locatie-kiezer" ng-show="selectedLocation === ''">
             <span style="position: relative; display: inline-block; direction: ltr;" class="twitter-typeahead">
               <input type="text"
@@ -50,7 +52,10 @@
                    ng-show="filteredLocations.length === 0 && locationsSearched">
                 <p class="text-center">
                   Locatie niet gevonden?<br />
-                  <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#waar-locatie-toevoegen" ng-click="openPlaceModal()">Een locatie toevoegen</button>
+                  <button type="button" class="btn btn-primary" data-toggle="modal"
+                          data-target="#waar-locatie-toevoegen" ng-click="openPlaceModal()">
+                    Een locatie toevoegen
+                  </button>
                 </p>
               </div>
             </span>
@@ -60,7 +65,8 @@
           </div>
           <div id="locatie-gekozen" ng-show="selectedLocation !== ''" >
             <span class=" btn-chosen" id="locatie-gekozen-button" ng-bind="selectedLocation"></span>
-            <button type="button" class="btn btn-default btn-link" data-toggle="modal" data-target="#waar-locatie-toevoegen" ng-click="changeLocationSelection()">Wijzigen</button>
+            <button type="button" class="btn btn-default btn-link" data-toggle="modal"
+                    data-target="#waar-locatie-toevoegen"ng-click="changeLocationSelection()">Wijzigen</button>
           </div>
         </div>
       </div>

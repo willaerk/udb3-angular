@@ -8,7 +8,6 @@
  */
 angular
   .module('udb.dashboard', [
-    'ngAnimate',
     'ngSanitize',
     'ui.bootstrap',
     'udb.config'

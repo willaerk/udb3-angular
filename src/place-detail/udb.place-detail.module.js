@@ -8,7 +8,6 @@
  */
 angular
   .module('udb.place-detail', [
-    'ngAnimate',
     'ngSanitize',
     'ui.bootstrap',
     'udb.config',

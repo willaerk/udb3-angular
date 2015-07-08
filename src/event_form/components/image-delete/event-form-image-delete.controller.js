@@ -2,14 +2,14 @@
 
 /**
  * @ngdoc function
- * @name udbApp.controller:EventFormImageDeleteCtrl
+ * @name udbApp.controller:EventFormImageDeleteController
  * @description
- * # EventFormImageDeleteCtrl
+ * # EventFormImageDeleteController
  * Modal for deleting images.
  */
 angular
   .module('udb.event-form')
-  .controller('EventFormImageDeleteCtrl', EventFormImageDeleteController);
+  .controller('EventFormImageDeleteController', EventFormImageDeleteController);
 
 /* @ngInject */
 function EventFormImageDeleteController($scope, $modalInstance, EventFormData, eventCrud, indexToDelete) {

@@ -9,7 +9,7 @@ describe('Controller: event form step 3', function (){
   beforeEach(inject(function ($rootScope, $injector) {
     $controller = $injector.get('$controller');
     scope = $rootScope;
-    stepController = $controller('EventFormStep3Ctrl', {
+    stepController = $controller('EventFormStep3Controller', {
       $scope: scope
     })
   }));

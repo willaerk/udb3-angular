@@ -2,14 +2,14 @@
 
 /**
  * @ngdoc function
- * @name udbApp.controller:EventFormOrganizerModalCtrl
+ * @name udbApp.controller:EventFormOrganizerModalController
  * @description
- * # EventFormOrganizerModalCtrl
+ * # EventFormOrganizerModalController
  * Modal for adding an organizer.
  */
 angular
   .module('udb.event-form')
-  .controller('EventFormOrganizerModalCtrl', EventFormOrganizerModalController);
+  .controller('EventFormOrganizerModalController', EventFormOrganizerModalController);
 
 /* @ngInject */
 function EventFormOrganizerModalController($scope, $modalInstance, udbOrganizers, eventCrud) {

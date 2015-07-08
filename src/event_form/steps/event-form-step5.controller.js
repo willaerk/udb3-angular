@@ -2,14 +2,14 @@
 
 /**
  * @ngdoc function
- * @name udbApp.controller:EventFormStep5Ctrl
+ * @name udbApp.controller:EventFormStep5Controller
  * @description
- * # EventFormStep5Ctrl
+ * # EventFormStep5Controller
  * Step 5 of the event form
  */
 angular
   .module('udb.event-form')
-  .controller('EventFormStep5Ctrl', EventFormStep5Controller);
+  .controller('EventFormStep5Controller', EventFormStep5Controller);
 
 /* @ngInject */
 function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizers, $modal) {
@@ -353,7 +353,7 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
 
     var modalInstance = $modal.open({
       templateUrl: 'templates/event-form-organizer-modal.html',
-      controller: 'EventFormOrganizerModalCtrl',
+      controller: 'EventFormOrganizerModalController',
     });
 
     modalInstance.result.then(function (organizer) {
@@ -460,7 +460,7 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
 
     var modalInstance = $modal.open({
       templateUrl: 'templates/event-form-facilities-modal.html',
-      controller: 'EventFormFacilitiesModalCtrl',
+      controller: 'EventFormFacilitiesModalController',
     });
 
     modalInstance.result.then(function () {
@@ -626,7 +626,7 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
 
     var modalInstance = $modal.open({
       templateUrl: 'templates/reservation-modal.html',
-      controller: 'EventFormReservationModalCtrl',
+      controller: 'EventFormReservationModalController',
     });
 
     modalInstance.result.then(function () {
@@ -680,7 +680,7 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
 
     var modalInstance = $modal.open({
       templateUrl: 'templates/event-form-image-upload.html',
-      controller: 'EventFormImageUploadCtrl',
+      controller: 'EventFormImageUploadController',
       resolve: {
         indexToEdit: function () {
           return indexToEdit;
@@ -709,7 +709,7 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
 
     var modalInstance = $modal.open({
       templateUrl: 'templates/event-form-image-delete.html',
-      controller: 'EventFormImageDeleteCtrl',
+      controller: 'EventFormImageDeleteController',
       resolve: {
         indexToDelete: function () {
           return indexToDelete;

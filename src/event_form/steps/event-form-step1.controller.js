@@ -2,14 +2,14 @@
 
 /**
  * @ngdoc function
- * @name udbApp.controller:EventFormStep1Ctrl
+ * @name udbApp.controller:EventFormStep1Controller
  * @description
- * # EventFormStep1Ctrl
+ * # EventFormStep1Controller
  * Step 1 of the event form
  */
 angular
   .module('udb.event-form')
-  .controller('EventFormStep1Ctrl', EventFormStep1Controller);
+  .controller('EventFormStep1Controller', EventFormStep1Controller);
 
 /* @ngInject */
 function EventFormStep1Controller($scope, EventFormData, eventCategories, placeCategories) {

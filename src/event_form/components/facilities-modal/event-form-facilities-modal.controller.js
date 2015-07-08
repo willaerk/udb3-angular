@@ -2,14 +2,14 @@
 
 /**
  * @ngdoc function
- * @name udbApp.controller:EventFormFacilitiesModalCtrl
+ * @name udbApp.controller:EventFormFacilitiesModalController
  * @description
- * # EventFormFacilitiesModalCtrl
+ * # EventFormFacilitiesModalController
  * Modal for selecting facilities.
  */
 angular
   .module('udb.event-form')
-  .controller('EventFormFacilitiesModalCtrl', EventFormFacilitiesModalController);
+  .controller('EventFormFacilitiesModalController', EventFormFacilitiesModalController);
 
 /* @ngInject */
 function EventFormFacilitiesModalController($scope, $modalInstance, EventFormData, eventCrud, facilities) {

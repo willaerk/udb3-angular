@@ -5923,14 +5923,14 @@ function EventFormTimestampDirective() {
 // Source: src/event_form/components/facilities-modal/event-form-facilities-modal.controller.js
 /**
  * @ngdoc function
- * @name udbApp.controller:EventFormFacilitiesModalCtrl
+ * @name udbApp.controller:EventFormFacilitiesModalController
  * @description
- * # EventFormFacilitiesModalCtrl
+ * # EventFormFacilitiesModalController
  * Modal for selecting facilities.
  */
 angular
   .module('udb.event-form')
-  .controller('EventFormFacilitiesModalCtrl', EventFormFacilitiesModalController);
+  .controller('EventFormFacilitiesModalController', EventFormFacilitiesModalController);
 
 /* @ngInject */
 function EventFormFacilitiesModalController($scope, $modalInstance, EventFormData, eventCrud, facilities) {
@@ -6002,14 +6002,14 @@ EventFormFacilitiesModalController.$inject = ["$scope", "$modalInstance", "Event
 // Source: src/event_form/components/image-delete/event-form-image-delete.controller.js
 /**
  * @ngdoc function
- * @name udbApp.controller:EventFormImageDeleteCtrl
+ * @name udbApp.controller:EventFormImageDeleteController
  * @description
- * # EventFormImageDeleteCtrl
+ * # EventFormImageDeleteController
  * Modal for deleting images.
  */
 angular
   .module('udb.event-form')
-  .controller('EventFormImageDeleteCtrl', EventFormImageDeleteController);
+  .controller('EventFormImageDeleteController', EventFormImageDeleteController);
 
 /* @ngInject */
 function EventFormImageDeleteController($scope, $modalInstance, EventFormData, eventCrud, indexToDelete) {
@@ -6054,14 +6054,14 @@ EventFormImageDeleteController.$inject = ["$scope", "$modalInstance", "EventForm
 // Source: src/event_form/components/image-upload/event-form-image-upload.controller.js
 /**
  * @ngdoc function
- * @name udbApp.controller:EventFormImageUploadCtrl
+ * @name udbApp.controller:EventFormImageUploadController
  * @description
- * # EventFormImageUploadCtrl
+ * # EventFormImageUploadController
  * Modal for uploading images.
  */
 angular
   .module('udb.event-form')
-  .controller('EventFormImageUploadCtrl', EventFormImageUploadController);
+  .controller('EventFormImageUploadController', EventFormImageUploadController);
 
 /* @ngInject */
 function EventFormImageUploadController($scope, $modalInstance, EventFormData, eventCrud, indexToEdit,
@@ -6211,14 +6211,14 @@ function EventFormOpeningHoursDirective() {
 // Source: src/event_form/components/organizer/event-form-organizer-modal.controller.js
 /**
  * @ngdoc function
- * @name udbApp.controller:EventFormOrganizerModalCtrl
+ * @name udbApp.controller:EventFormOrganizerModalController
  * @description
- * # EventFormOrganizerModalCtrl
+ * # EventFormOrganizerModalController
  * Modal for adding an organizer.
  */
 angular
   .module('udb.event-form')
-  .controller('EventFormOrganizerModalCtrl', EventFormOrganizerModalController);
+  .controller('EventFormOrganizerModalController', EventFormOrganizerModalController);
 
 /* @ngInject */
 function EventFormOrganizerModalController($scope, $modalInstance, udbOrganizers, eventCrud) {
@@ -6342,14 +6342,14 @@ EventFormOrganizerModalController.$inject = ["$scope", "$modalInstance", "udbOrg
 (function () {
 /**
    * @ngdoc function
-   * @name udbApp.controller:EventFormPlaceModalCtrl
+   * @name udbApp.controller:EventFormPlaceModalController
    * @description
-   * # EventFormPlaceModalCtrl
+   * # EventFormPlaceModalController
    * Modal for adding an place.
    */
   angular
     .module('udb.event-form')
-    .controller('EventFormPlaceModalCtrl', EventFormPlaceModalController);
+    .controller('EventFormPlaceModalController', EventFormPlaceModalController);
 
   /* @ngInject */
   function EventFormPlaceModalController($scope, $modalInstance, eventCrud, UdbPlace, location, categories) {
@@ -6477,14 +6477,14 @@ EventFormOrganizerModalController.$inject = ["$scope", "$modalInstance", "udbOrg
 // Source: src/event_form/components/reservation-modal/reservation-modal.controller.js
 /**
  * @ngdoc function
- * @name udbApp.controller:EventFormReservationModalCtrl
+ * @name udbApp.controller:EventFormReservationModalController
  * @description
- * # EventFormImageUploadCtrl
+ * # EventFormImageUploadController
  * Modal for setting the reservation period.
  */
 angular
   .module('udb.event-form')
-  .controller('EventFormReservationModalCtrl', EventFormReservationModalController);
+  .controller('EventFormReservationModalController', EventFormReservationModalController);
 
 /* @ngInject */
 function EventFormReservationModalController($scope, $modalInstance, EventFormData, eventCrud) {
@@ -6638,14 +6638,14 @@ function UdbContactInfoValidationDirective() {
 // Source: src/event_form/event-form.controller.js
 /**
  * @ngdoc function
- * @name udbApp.controller:EventFormCtrl
+ * @name udbApp.controller:EventFormController
  * @description
- * # EventFormCtrl
+ * # EventFormController
  * Init the event form
  */
 angular
   .module('udb.event-form')
-  .controller('EventFormCtrl', EventFormController);
+  .controller('EventFormController', EventFormController);
 
 /* @ngInject */
 function EventFormController($scope, eventId, placeId, offerType, EventFormData, udbApi, moment) {
@@ -7272,14 +7272,14 @@ function EventFormStep5Directive() {
 // Source: src/event_form/steps/event-form-step1.controller.js
 /**
  * @ngdoc function
- * @name udbApp.controller:EventFormStep1Ctrl
+ * @name udbApp.controller:EventFormStep1Controller
  * @description
- * # EventFormStep1Ctrl
+ * # EventFormStep1Controller
  * Step 1 of the event form
  */
 angular
   .module('udb.event-form')
-  .controller('EventFormStep1Ctrl', EventFormStep1Controller);
+  .controller('EventFormStep1Controller', EventFormStep1Controller);
 
 /* @ngInject */
 function EventFormStep1Controller($scope, EventFormData, eventCategories, placeCategories) {
@@ -7496,14 +7496,14 @@ EventFormStep1Controller.$inject = ["$scope", "EventFormData", "eventCategories"
 // Source: src/event_form/steps/event-form-step2-controller.js
 /**
  * @ngdoc function
- * @name udbApp.controller:EventFormStep2Ctrl
+ * @name udbApp.controller:EventFormStep2Controller
  * @description
- * # EventFormStep2Ctrl
+ * # EventFormStep2Controller
  * Step 2 of the event form
  */
 angular
   .module('udb.event-form')
-  .controller('EventFormStep2Ctrl', EventFormStep2Controller);
+  .controller('EventFormStep2Controller', EventFormStep2Controller);
 
 /* @ngInject */
 function EventFormStep2Controller($scope, EventFormData, UdbOpeningHours) {
@@ -7694,14 +7694,14 @@ EventFormStep2Controller.$inject = ["$scope", "EventFormData", "UdbOpeningHours"
 // Source: src/event_form/steps/event-form-step3.controller.js
 /**
  * @ngdoc function
- * @name udbApp.controller:EventFormStep3Ctrl
+ * @name udbApp.controller:EventFormStep3Controller
  * @description
- * # EventFormStep3Ctrl
+ * # EventFormStep3Controller
  * Step 3 of the event form
  */
 angular
   .module('udb.event-form')
-  .controller('EventFormStep3Ctrl', EventFormStep3Controller);
+  .controller('EventFormStep3Controller', EventFormStep3Controller);
 
 /* @ngInject */
 function EventFormStep3Controller(
@@ -7921,7 +7921,7 @@ function EventFormStep3Controller(
 
     var modalInstance = $modal.open({
       templateUrl: 'templates/event-form-place-modal.html',
-      controller: 'EventFormPlaceModalCtrl',
+      controller: 'EventFormPlaceModalController',
       resolve: {
         location: function () {
           return $scope.eventFormData.location;
@@ -8014,14 +8014,14 @@ EventFormStep3Controller.$inject = ["$scope", "EventFormData", "cityAutocomplete
 // Source: src/event_form/steps/event-form-step4.controller.js
 /**
  * @ngdoc function
- * @name udbApp.controller:EventFormStep4Ctrl
+ * @name udbApp.controller:EventFormStep4Controller
  * @description
- * # EventFormStep4Ctrl
+ * # EventFormStep4Controller
  * Step 4 of the event form
  */
 angular
   .module('udb.event-form')
-  .controller('EventFormStep4Ctrl', EventFormStep4Controller);
+  .controller('EventFormStep4Controller', EventFormStep4Controller);
 
 /* @ngInject */
 function EventFormStep4Controller($scope, EventFormData, udbApi, appConfig, SearchResultViewer, eventCrud, $modal) {
@@ -8253,14 +8253,14 @@ EventFormStep4Controller.$inject = ["$scope", "EventFormData", "udbApi", "appCon
 // Source: src/event_form/steps/event-form-step5.controller.js
 /**
  * @ngdoc function
- * @name udbApp.controller:EventFormStep5Ctrl
+ * @name udbApp.controller:EventFormStep5Controller
  * @description
- * # EventFormStep5Ctrl
+ * # EventFormStep5Controller
  * Step 5 of the event form
  */
 angular
   .module('udb.event-form')
-  .controller('EventFormStep5Ctrl', EventFormStep5Controller);
+  .controller('EventFormStep5Controller', EventFormStep5Controller);
 
 /* @ngInject */
 function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizers, $modal) {
@@ -8604,7 +8604,7 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
 
     var modalInstance = $modal.open({
       templateUrl: 'templates/event-form-organizer-modal.html',
-      controller: 'EventFormOrganizerModalCtrl',
+      controller: 'EventFormOrganizerModalController',
     });
 
     modalInstance.result.then(function (organizer) {
@@ -8711,7 +8711,7 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
 
     var modalInstance = $modal.open({
       templateUrl: 'templates/event-form-facilities-modal.html',
-      controller: 'EventFormFacilitiesModalCtrl',
+      controller: 'EventFormFacilitiesModalController',
     });
 
     modalInstance.result.then(function () {
@@ -8877,7 +8877,7 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
 
     var modalInstance = $modal.open({
       templateUrl: 'templates/reservation-modal.html',
-      controller: 'EventFormReservationModalCtrl',
+      controller: 'EventFormReservationModalController',
     });
 
     modalInstance.result.then(function () {
@@ -8931,7 +8931,7 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
 
     var modalInstance = $modal.open({
       templateUrl: 'templates/event-form-image-upload.html',
-      controller: 'EventFormImageUploadCtrl',
+      controller: 'EventFormImageUploadController',
       resolve: {
         indexToEdit: function () {
           return indexToEdit;
@@ -8960,7 +8960,7 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
 
     var modalInstance = $modal.open({
       templateUrl: 'templates/event-form-image-delete.html',
-      controller: 'EventFormImageDeleteCtrl',
+      controller: 'EventFormImageDeleteController',
       resolve: {
         indexToDelete: function () {
           return indexToDelete;
@@ -13091,7 +13091,7 @@ $templateCache.put('templates/time-autocomplete.html',
 
 
   $templateCache.put('templates/event-form.html',
-    "<div ng-controller=\"EventFormCtrl as eventForm\" data-type=\"{{your_type_variable}}\" data-itemid=\"{{your_item_id_variable}}\">\n" +
+    "<div ng-controller=\"EventFormController as eventForm\" data-type=\"{{your_type_variable}}\" data-itemid=\"{{your_item_id_variable}}\">\n" +
     "  <udb-event-form-step1></udb-event-form-step1>\n" +
     "  <udb-event-form-step2></udb-event-form-step2>\n" +
     "  <udb-event-form-step3></udb-event-form-step3>\n" +
@@ -13102,7 +13102,7 @@ $templateCache.put('templates/time-autocomplete.html',
 
 
   $templateCache.put('templates/event-form-step1.html',
-    "<div ng-controller=\"EventFormStep1Ctrl as EventFormStep1\">\n" +
+    "<div ng-controller=\"EventFormStep1Controller as EventFormStep1\">\n" +
     "  <a name=\"wat\"></a>\n" +
     "  <section id=\"wat\">\n" +
     "    <section class=\"row\">\n" +
@@ -13164,12 +13164,12 @@ $templateCache.put('templates/time-autocomplete.html',
     "\n" +
     "  </section>\n" +
     "\n" +
-    "</div>"
+    "</div>\n"
   );
 
 
   $templateCache.put('templates/event-form-step2.html',
-    "<div ng-controller=\"EventFormStep2Ctrl as EventFormStep2\">\n" +
+    "<div ng-controller=\"EventFormStep2Controller as EventFormStep2\">\n" +
     "  <a name=\"wanneer\"></a>\n" +
     "  <section id=\"wanneer\" ng-show=\"eventFormData.showStep2\">\n" +
     "    <h2 class=\"title-border\">\n" +
@@ -13215,7 +13215,7 @@ $templateCache.put('templates/time-autocomplete.html',
 
 
   $templateCache.put('templates/event-form-step3.html',
-    "<div ng-controller=\"EventFormStep3Ctrl as EventFormStep3\">\n" +
+    "<div ng-controller=\"EventFormStep3Controller as EventFormStep3\">\n" +
     "\n" +
     "<section id=\"waar\" ng-show=\"eventFormData.showStep3\">\n" +
     "  <form name=\"step3Form\" class=\"css-form\">\n" +
@@ -13322,7 +13322,7 @@ $templateCache.put('templates/time-autocomplete.html',
 
 
   $templateCache.put('templates/event-form-step4.html',
-    "<div ng-controller=\"EventFormStep4Ctrl as EventFormStep4\">\n" +
+    "<div ng-controller=\"EventFormStep4Controller as EventFormStep4\">\n" +
     "\n" +
     "  <a name=\"titel\"></a>\n" +
     "  <section id=\"titel\" ng-show=\"eventFormData.showStep4\">\n" +
@@ -13504,7 +13504,7 @@ $templateCache.put('templates/time-autocomplete.html',
 
 
   $templateCache.put('templates/event-form-step5.html',
-    "<div ng-controller=\"EventFormStep5Ctrl as EventFormStep5\">\n" +
+    "<div ng-controller=\"EventFormStep5Controller as EventFormStep5\">\n" +
     "  <a name=\"extra\"></a>\n" +
     "  <section id=\"extra\" ng-show=\"eventFormData.showStep5\">\n" +
     "\n" +
@@ -13899,7 +13899,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "    </div>\n" +
     "\n" +
     "  </section>\n" +
-    "</div>"
+    "</div>\n"
   );
 
 

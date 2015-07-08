@@ -2,14 +2,14 @@
 
 /**
  * @ngdoc function
- * @name udbApp.controller:EventFormCtrl
+ * @name udbApp.controller:EventFormController
  * @description
- * # EventFormCtrl
+ * # EventFormController
  * Init the event form
  */
 angular
   .module('udb.event-form')
-  .controller('EventFormCtrl', EventFormController);
+  .controller('EventFormController', EventFormController);
 
 /* @ngInject */
 function EventFormController($scope, eventId, placeId, offerType, EventFormData, udbApi, moment) {

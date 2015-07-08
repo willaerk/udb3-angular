@@ -2,14 +2,14 @@
 
 /**
  * @ngdoc function
- * @name udbApp.controller:EventFormImageUploadCtrl
+ * @name udbApp.controller:EventFormImageUploadController
  * @description
- * # EventFormImageUploadCtrl
+ * # EventFormImageUploadController
  * Modal for uploading images.
  */
 angular
   .module('udb.event-form')
-  .controller('EventFormImageUploadCtrl', EventFormImageUploadController);
+  .controller('EventFormImageUploadController', EventFormImageUploadController);
 
 /* @ngInject */
 function EventFormImageUploadController($scope, $modalInstance, EventFormData, eventCrud, indexToEdit,

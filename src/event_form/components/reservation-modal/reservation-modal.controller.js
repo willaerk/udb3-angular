@@ -2,14 +2,14 @@
 
 /**
  * @ngdoc function
- * @name udbApp.controller:EventFormReservationModalCtrl
+ * @name udbApp.controller:EventFormReservationModalController
  * @description
- * # EventFormImageUploadCtrl
+ * # EventFormImageUploadController
  * Modal for setting the reservation period.
  */
 angular
   .module('udb.event-form')
-  .controller('EventFormReservationModalCtrl', EventFormReservationModalController);
+  .controller('EventFormReservationModalController', EventFormReservationModalController);
 
 /* @ngInject */
 function EventFormReservationModalController($scope, $modalInstance, EventFormData, eventCrud) {

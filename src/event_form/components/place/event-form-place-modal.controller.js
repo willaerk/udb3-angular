@@ -3,14 +3,14 @@
 
   /**
    * @ngdoc function
-   * @name udbApp.controller:EventFormPlaceModalCtrl
+   * @name udbApp.controller:EventFormPlaceModalController
    * @description
-   * # EventFormPlaceModalCtrl
+   * # EventFormPlaceModalController
    * Modal for adding an place.
    */
   angular
     .module('udb.event-form')
-    .controller('EventFormPlaceModalCtrl', EventFormPlaceModalController);
+    .controller('EventFormPlaceModalController', EventFormPlaceModalController);
 
   /* @ngInject */
   function EventFormPlaceModalController($scope, $modalInstance, eventCrud, UdbPlace, location, categories) {

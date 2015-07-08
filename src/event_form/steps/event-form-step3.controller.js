@@ -2,14 +2,14 @@
 
 /**
  * @ngdoc function
- * @name udbApp.controller:EventFormStep3Ctrl
+ * @name udbApp.controller:EventFormStep3Controller
  * @description
- * # EventFormStep3Ctrl
+ * # EventFormStep3Controller
  * Step 3 of the event form
  */
 angular
   .module('udb.event-form')
-  .controller('EventFormStep3Ctrl', EventFormStep3Controller);
+  .controller('EventFormStep3Controller', EventFormStep3Controller);
 
 /* @ngInject */
 function EventFormStep3Controller(
@@ -229,7 +229,7 @@ function EventFormStep3Controller(
 
     var modalInstance = $modal.open({
       templateUrl: 'templates/event-form-place-modal.html',
-      controller: 'EventFormPlaceModalCtrl',
+      controller: 'EventFormPlaceModalController',
       resolve: {
         location: function () {
           return $scope.eventFormData.location;

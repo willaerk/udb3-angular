@@ -12407,7 +12407,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "                      Geef hier een wervende omschrijving van de route. Vermeld in deze tekst <strong>hoe</strong> de route wordt afgelegd (per fiets, per boot, ...), de mogelijke tussenstops, de <strong>duur</strong>, <strong>afstand</strong> en hoe de route <strong>begeleid</strong> is (met gids, brochure of wegwijzers).\n" +
     "                    </p>\n" +
     "                    <p ng-switch-when=\"0.7.0.0.0\">\n" +
-    "                      Geef hier een wervende omschrijving van de route rondleiding. Vermeld het <strong>max. aantal personen</strong> per groepje, <strong>hoe</strong> de rondleiding wordt georganiseerd (doorlopend, met intervallen of op vaste tijdstippen) en of er <strong>speciale aandachtspunten</strong> zijn (vb. laarzen aangewezen).\n" +
+    "                      Geef hier een wervende omschrijving van de rondleiding. Vermeld het <strong>max. aantal personen</strong> per groepje, <strong>hoe</strong> de rondleiding wordt georganiseerd (doorlopend, met intervallen of op vaste tijdstippen) en of er <strong>speciale aandachtspunten</strong> zijn (vb. laarzen aangewezen).\n" +
     "                    </p>\n" +
     "                    <p ng-switch-when=\"0.14.0.0.0\">\n" +
     "                      Geef hier een wervende omschrijving van het monument. Geef ook aan indien het monument slechts beperkt opengesteld is (vb. enkel salons).\n" +
@@ -12752,7 +12752,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "    </div>\n" +
     "\n" +
     "  </section>\n" +
-    "</div>"
+    "</div>\n"
   );
 
 

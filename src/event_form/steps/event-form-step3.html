@@ -44,7 +44,7 @@
                      placeholder="Locatie"
                      class="form-control typeahead"
                      ng-model="locationAutocompleteTextField"
-                     typeahead="location.id as location.name for location in filteredLocations = (locationsForCity | filter:filterCityLocations($viewValue))"
+                     typeahead="location.id as location.name for location in filteredLocations = (locationsForCity | filter:filterCityLocations($viewValue)) | orderBy:orderCityLocations($viewValue) | limitTo:50"
                      typeahead-on-select="selectLocation($item, $model, $label)"
                      typeahead-min-length="3"
                      typeahead-template-url="templates/place-suggestion.html"/>

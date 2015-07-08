@@ -7914,6 +7914,13 @@ function EventFormStep3Controller(
   };
   $scope.filterCityLocations = controller.filterCityLocations;
 
+  controller.orderCityLocations = function (filterValue) {
+    return function (location) {
+      return new Levenshtein(location, location.name + '' + location.address.streetAddress);
+    };
+  };
+  $scope.orderCityLocations = controller.orderCityLocations;
+
   /**
    * Open the organizer modal.
    */
@@ -13261,7 +13268,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "                     placeholder=\"Locatie\"\n" +
     "                     class=\"form-control typeahead\"\n" +
     "                     ng-model=\"locationAutocompleteTextField\"\n" +
-    "                     typeahead=\"location.id as location.name for location in filteredLocations = (locationsForCity | filter:filterCityLocations($viewValue))\"\n" +
+    "                     typeahead=\"location.id as location.name for location in filteredLocations = (locationsForCity | filter:filterCityLocations($viewValue)) | orderBy:orderCityLocations($viewValue) | limitTo:50\"\n" +
     "                     typeahead-on-select=\"selectLocation($item, $model, $label)\"\n" +
     "                     typeahead-min-length=\"3\"\n" +
     "                     typeahead-template-url=\"templates/place-suggestion.html\"/>\n" +

@@ -222,6 +222,13 @@ function EventFormStep3Controller(
   };
   $scope.filterCityLocations = controller.filterCityLocations;
 
+  controller.orderCityLocations = function (filterValue) {
+    return function (location) {
+      return new Levenshtein(location, location.name + '' + location.address.streetAddress);
+    };
+  };
+  $scope.orderCityLocations = controller.orderCityLocations;
+
   /**
    * Open the organizer modal.
    */

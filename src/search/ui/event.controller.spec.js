@@ -148,8 +148,8 @@ describe('Controller: Event', function() {
 
     $scope.event = {};
     deferredEvent = $q.defer(); deferredVariation = $q.defer();
-    spyOn(udbApi, 'getEventByLDId').andReturn(deferredEvent.promise);
-    spyOn(variationRepository, 'getPersonalVariation').andReturn(deferredVariation.promise);
+    spyOn(udbApi, 'getEventByLDId').and.returnValue(deferredEvent.promise);
+    spyOn(variationRepository, 'getPersonalVariation').and.returnValue(deferredVariation.promise);
 
     eventController = $controller(
       'EventController', {
@@ -189,7 +189,7 @@ describe('Controller: Event', function() {
       deferredVariation.resolve(variation);
       $scope.$digest();
       var deferredDeletion = $q.defer();
-      spyOn(eventEditor, 'deleteVariation').andReturn(deferredDeletion.promise);
+      spyOn(eventEditor, 'deleteVariation').and.returnValue(deferredDeletion.promise);
       eventController.updateDescription('');
 
       deferredDeletion.resolve();

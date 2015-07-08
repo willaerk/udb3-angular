@@ -29,7 +29,7 @@ describe('Controller: Job Logo', function () {
   });
 
   it('sets the logo state to WARNING when there are failed jobs', function () {
-    jobLogger.getFailedJobs = jasmine.createSpy('getFailedJobs').andCallFake(function() {
+    jobLogger.getFailedJobs = jasmine.createSpy('getFailedJobs').and.callFake(function() {
       return ['some', 'failed', 'jobs'];
     });
     jobLogoController.updateCurrentState();
@@ -38,7 +38,7 @@ describe('Controller: Job Logo', function () {
 
   it('sets the logo state to COMPLETE when there are finished export jobs', function () {
     jobLogger.getFinishedExportJobs = jasmine.createSpy('getFinishedExportJobs')
-      .andCallFake(function() {
+      .and.callFake(function() {
         return ['some', 'finished', 'exports'];
       });
     jobLogoController.updateCurrentState();
@@ -47,7 +47,7 @@ describe('Controller: Job Logo', function () {
 
   it('sets the logo state to BUSY when there are active jobs', function () {
     jobLogger.hasActiveJobs = jasmine.createSpy('hasActiveJobs')
-      .andCallFake(function() {
+      .and.callFake(function() {
          return true
        });
     jobLogoController.updateCurrentState();

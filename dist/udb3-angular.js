@@ -1886,15 +1886,14 @@ angular
 
 /* @ngInject */
 function CityAutocomplete($q, $http, appConfig, UdbPlace) {
-
   /**
    *
    * Get the places for a city
    *
-   * @param {type} zipcode
+   * @param {string} zipcode
    * @returns {$q@call;defer.promise}
    */
-  this.getPlacesForCity = function(zipcode) {
+  this.getPlacesByZipcode = function(zipcode) {
 
     var deferredPlaces = $q.defer();
 
@@ -1909,7 +1908,7 @@ function CityAutocomplete($q, $http, appConfig, UdbPlace) {
         return new UdbPlace(placeJson);
       });
 
-      deferredPlaces.resolve(response.data.member);
+      deferredPlaces.resolve(locations);
     };
 
     var failed = function () {
@@ -7881,7 +7880,7 @@ function EventFormStep3Controller(
     $scope.searchingLocation = true;
     $scope.locationAutoCompleteError = false;
 
-    var promise = cityAutocomplete.getPlacesForCity(zipcode);
+    var promise = cityAutocomplete.getPlacesByZipcode(zipcode);
     return promise.then(function (cities) {
       $scope.locationsForCity = cities;
       $scope.locationsSearched = false;

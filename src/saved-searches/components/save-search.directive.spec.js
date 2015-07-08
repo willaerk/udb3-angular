@@ -19,7 +19,7 @@ describe('Directive: udbSaveSearch', function () {
 
     var original = modal.open;
 
-    spyOn(modal, 'open').andCallFake(function () {
+    spyOn(modal, 'open').and.callFake(function () {
        modalInstance = original.apply(null, arguments);
        return modalInstance;
     });
@@ -30,7 +30,7 @@ describe('Directive: udbSaveSearch', function () {
     var element = $compile('<udb-save-search udb-query-string="queryString"></udb-save-search>')($rootScope);
     $rootScope.$digest();
     element.find('a').triggerHandler('click');
-    spyOn(savedSearchesService, 'createSavedSearch').andCallFake(function() {
+    spyOn(savedSearchesService, 'createSavedSearch').and.callFake(function() {
       apiRequest = $q.defer();
       return apiRequest.promise;
     });
@@ -58,6 +58,6 @@ describe('Directive: udbSaveSearch', function () {
     $rootScope.$digest();
     apiRequest.reject();
     $rootScope.$digest();
-    expect(modal.open.calls.length).toEqual(2);
+    expect(modal.open.calls.count()).toEqual(2);
   })
 });

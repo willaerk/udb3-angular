@@ -17,17 +17,17 @@ describe('Controller: Saved Searches List', function () {
     savedSearchesService = _savedSearchesService_;
 
     var original = $modal.open;
-    spyOn($modal, 'open').andCallFake(function () {
+    spyOn($modal, 'open').and.callFake(function () {
       modalInstance = original.apply(null, arguments);
       return modalInstance;
     });
 
-    spyOn(savedSearchesService, 'deleteSavedSearch').andCallFake(function() {
+    spyOn(savedSearchesService, 'deleteSavedSearch').and.callFake(function() {
       apiRequest = $q.defer();
       return apiRequest.promise;
     });
 
-    spyOn(savedSearchesService, 'getSavedSearches').andCallFake(function() {
+    spyOn(savedSearchesService, 'getSavedSearches').and.callFake(function() {
       savedSearchesRequest = $q.defer();
       return savedSearchesRequest.promise;
     });
@@ -78,7 +78,7 @@ describe('Controller: Saved Searches List', function () {
       $scope.$digest();
       apiRequest.reject();
       $scope.$digest();
-      expect($modal.open.calls.length).toEqual(2);
+      expect($modal.open.calls.count()).toEqual(2);
     });
   });
 });

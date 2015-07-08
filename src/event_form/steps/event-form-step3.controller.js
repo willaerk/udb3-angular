@@ -186,7 +186,7 @@ function EventFormStep3Controller(
     $scope.searchingLocation = true;
     $scope.locationAutoCompleteError = false;
 
-    var promise = cityAutocomplete.getPlacesForCity(zipcode);
+    var promise = cityAutocomplete.getPlacesByZipcode(zipcode);
     return promise.then(function (cities) {
       $scope.locationsForCity = cities;
       $scope.locationsSearched = false;

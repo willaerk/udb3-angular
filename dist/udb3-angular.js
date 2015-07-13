@@ -5334,7 +5334,9 @@ angular
     .controller('EventDetailController', EventDetail);
 
 /* @ngInject */
-function EventDetail($scope, $location, eventId, udbApi, jsonLDLangFilter, locationTypes) {
+function EventDetail($scope, eventId, udbApi, jsonLDLangFilter, locationTypes) {
+
+  var activeTabId = 'data';
 
   $scope.eventId = eventId;
   $scope.eventIdIsInvalid = false;
@@ -5380,27 +5382,8 @@ function EventDetail($scope, $location, eventId, udbApi, jsonLDLangFilter, locat
   );
 
   var getActiveTabId = function() {
-
-    var hash = $location.hash();
-    if (hash) {
-      return hash;
-    }
-    else {
-      return 'data';
-    }
+    return activeTabId;
   };
-
-  var activeTabId = getActiveTabId();
-
-  $scope.classForTab = function (tab) {
-    if (tab.id === activeTabId) {
-      return 'active';
-    }
-  };
-
-  $scope.$on('$locationChangeSuccess', function () {
-    activeTabId = getActiveTabId();
-  });
 
   $scope.eventLocation = function (event) {
     var eventLocation = [
@@ -5435,8 +5418,11 @@ function EventDetail($scope, $location, eventId, udbApi, jsonLDLangFilter, locat
     return tabId === activeTabId;
   };
 
+  $scope.makeTabActive = function (tabId) {
+    activeTabId = tabId;
+  }
 }
-EventDetail.$inject = ["$scope", "$location", "eventId", "udbApi", "jsonLDLangFilter", "locationTypes"];
+EventDetail.$inject = ["$scope", "eventId", "udbApi", "jsonLDLangFilter", "locationTypes"];
 
 // Source: src/event_form/components/calendartypes/event-form-period.directive.js
 /**
@@ -11322,8 +11308,8 @@ $templateCache.put('templates/time-autocomplete.html',
     "  <div class=\"row\">\n" +
     "    <div class=\"col-xs-3\">\n" +
     "      <ul class=\"nav nav-pills nav-stacked\">\n" +
-    "        <li ng-repeat=\"tab in tabs\" class=\"{{classForTab(tab)}}\" role=\"tab\">\n" +
-    "          <a href=\"#{{tab.id}}\" role=\"tab\" ng-bind=\"tab.header\"></a>\n" +
+    "        <li ng-repeat=\"tab in tabs\" ng-class=\"{active: isTabActive(tab.id)}\" role=\"tab\">\n" +
+    "          <a ng-click=\"makeTabActive(tab.id)\" role=\"tab\" ng-bind=\"tab.header\"></a>\n" +
     "        </li>\n" +
     "      </ul>\n" +
     "    </div>\n" +

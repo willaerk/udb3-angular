@@ -12874,7 +12874,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "  <div class=\"row\">\n" +
     "    <div class=\"col-xs-3\">\n" +
     "      <ul class=\"nav nav-pills nav-stacked\">\n" +
-    "        <li ng-repeat=\"tab in tabs\" ng-class=\"{active: isTabActive(tab)}\" role=\"tab\">\n" +
+    "        <li ng-repeat=\"tab in tabs\" ng-class=\"{active: isTabActive(tab.id)}\" role=\"tab\">\n" +
     "          <a ng-click=\"makeTabActive(tab.id)\" role=\"tab\" ng-bind=\"tab.header\"></a>\n" +
     "        </li>\n" +
     "      </ul>\n" +

@@ -98,5 +98,5 @@ function EventDetail($scope, eventId, udbApi, jsonLDLangFilter, locationTypes) {
 
   $scope.makeTabActive = function (tabId) {
     activeTabId = tabId;
-  }
+  };
 }

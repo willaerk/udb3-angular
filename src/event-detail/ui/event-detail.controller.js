@@ -14,7 +14,6 @@ angular
 /* @ngInject */
 function EventDetail(
   $scope,
-  $location,
   eventId,
   udbApi,
   jsonLDLangFilter,
@@ -22,6 +21,8 @@ function EventDetail(
   variationRepository,
   eventEditor
 ) {
+  var activeTabId = 'data';
+
   $scope.eventId = eventId;
   $scope.eventIdIsInvalid = false;
   $scope.hasEditPermissions = false;
@@ -79,27 +80,8 @@ function EventDetail(
   );
 
   var getActiveTabId = function() {
-
-    var hash = $location.hash();
-    if (hash) {
-      return hash;
-    }
-    else {
-      return 'data';
-    }
+    return activeTabId;
   };
-
-  var activeTabId = getActiveTabId();
-
-  $scope.classForTab = function (tab) {
-    if (tab.id === activeTabId) {
-      return 'active';
-    }
-  };
-
-  $scope.$on('$locationChangeSuccess', function () {
-    activeTabId = getActiveTabId();
-  });
 
   $scope.eventLocation = function (event) {
     var eventLocation = [
@@ -146,5 +128,9 @@ function EventDetail(
 
       return updatePromise;
     }
+  };
+
+  $scope.makeTabActive = function (tabId) {
+    activeTabId = tabId;
   };
 }

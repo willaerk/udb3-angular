@@ -18,8 +18,8 @@
   <div class="row">
     <div class="col-xs-3">
       <ul class="nav nav-pills nav-stacked">
-        <li ng-repeat="tab in tabs" class="{{classForTab(tab)}}" role="tab">
-          <a href="#{{tab.id}}" role="tab" ng-bind="tab.header"></a>
+        <li ng-repeat="tab in tabs" ng-class="{active: isTabActive(tab.id)}" role="tab">
+          <a ng-click="makeTabActive(tab.id)" role="tab" ng-bind="tab.header"></a>
         </li>
       </ul>
     </div>

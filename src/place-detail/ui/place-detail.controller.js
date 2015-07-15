@@ -12,7 +12,8 @@ angular
     .controller('PlaceDetailController', PlaceDetail);
 
 /* @ngInject */
-function PlaceDetail($scope, $location, placeId, udbApi) {
+function PlaceDetail($scope, placeId, udbApi) {
+  var activeTabId = 'data';
 
   $scope.placeId = placeId;
   $scope.placeIdIsInvalid = false;
@@ -56,29 +57,6 @@ function PlaceDetail($scope, $location, placeId, udbApi) {
       }
   );
 
-  var getActiveTabId = function() {
-    var hash = $location.hash();
-
-    if (hash) {
-      return hash;
-    }
-    else {
-      return 'data';
-    }
-  };
-
-  var activeTabId = getActiveTabId();
-
-  $scope.classForTab = function (tab) {
-    if (tab.id === activeTabId) {
-      return 'active';
-    }
-  };
-
-  $scope.$on('$locationChangeSuccess', function () {
-    activeTabId = getActiveTabId();
-  });
-
   $scope.placeLocation = function (place) {
 
     if (place.address.addressLocality) {
@@ -98,5 +76,9 @@ function PlaceDetail($scope, $location, placeId, udbApi) {
 
   $scope.isTabActive = function (tabId) {
     return tabId === activeTabId;
+  };
+
+  $scope.makeTabActive = function (tabId) {
+    activeTabId = tabId;
   };
 }

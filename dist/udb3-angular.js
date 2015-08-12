@@ -6442,7 +6442,8 @@ function EventController(
   eventEditor,
   EventTranslationState,
   $scope,
-  variationRepository
+  variationRepository,
+  $window
 ) {
   var controller = this;
   /* @type {UdbEvent} */
@@ -6496,7 +6497,7 @@ function EventController(
       $scope.$watch(function () {
         return cachedEvent.labels;
       }, function (labels) {
-        $scope.event.labels = labels;
+        $scope.event.labels = angular.copy(labels);
       });
     }
   }
@@ -6581,8 +6582,18 @@ function EventController(
   }
 
   // Labelling
-  controller.labelAdded = function (label) {
-    eventLabeller.label(cachedEvent, label);
+  controller.labelAdded = function (newLabel) {
+    var similarLabel = _.find(cachedEvent.labels, function (label) {
+      return newLabel.toUpperCase() === label.toUpperCase();
+    });
+    if (similarLabel) {
+      $scope.$apply(function () {
+        $scope.event.labels = angular.copy(cachedEvent.labels);
+      });
+      $window.alert('Het label "' + newLabel + '" is reeds toegevoegd als "' + similarLabel + '".');
+    } else {
+      eventLabeller.label(cachedEvent, newLabel);
+    }
   };
 
   controller.labelRemoved = function (label) {
@@ -6605,7 +6616,7 @@ function EventController(
   };
 
 }
-EventController.$inject = ["udbApi", "jsonLDLangFilter", "eventTranslator", "eventLabeller", "eventEditor", "EventTranslationState", "$scope", "variationRepository"];
+EventController.$inject = ["udbApi", "jsonLDLangFilter", "eventTranslator", "eventLabeller", "eventEditor", "EventTranslationState", "$scope", "variationRepository", "$window"];
 
 // Source: src/search/ui/event.directive.js
 /**

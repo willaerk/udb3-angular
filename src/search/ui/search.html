@@ -10,7 +10,10 @@
                       </li>
                       <li>
                           <p class="rv-item-counter">
-                              <span ng-bind="resultViewer.totalItems"></span> resultaten
+                              <ng-pluralize count="resultViewer.totalItems"
+                                            when="{'1': '1 resultaat',
+                                                    'other': '{} resultaten'}">
+                              </ng-pluralize>
                           </p>
                       </li>
                       <li>
@@ -57,7 +60,10 @@
 
             <div class="row" ng-show="resultViewer.selectedIds.length">
                 <div class="col-sm-12 rv-first-column">
-                    <span ng-bind="resultViewer.querySelected ? resultViewer.totalItems : resultViewer.selectedIds.length"></span> items geselecteerd
+                    <ng-pluralize count="resultViewer.querySelected ? resultViewer.totalItems : resultViewer.selectedIds.length"
+                                  when="{'1': '1 item geselecteerd',
+                                         'other': '{} items geselecteerd'}">
+                    </ng-pluralize>
 
                     <button class="btn btn-default rv-action" ng-click="label()">
                         <i class="fa fa-tag"></i> Labelen

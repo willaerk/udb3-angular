@@ -112,6 +112,26 @@
     min-height: 32px;
     line-height: 32px;
   }
+  
+  // behavior pre float bp
+  .col-sm-2 {
+    display: none;
+    @media (min-width: @grid-float-breakpoint) {
+      display: block;
+    }
+  }
+
+  .col-sm-5 {
+    float: left;
+    max-width: 30%;
+  }
+  .col-sm-3 {
+    float: right;
+    max-width: 70%;
+    @media (min-width: @grid-float-breakpoint) {
+      float: left;
+    }
+  }
 
   .rv-item-sidebar {
     padding: @rv-item-info-padding 0;
@@ -142,7 +162,6 @@
   }
 
   .udb-category {
-
   }
 
   .udb-theme {
@@ -158,11 +177,60 @@
 
   .udb-place-name {
     .keep-tight();
+    padding-left: 20px;
+    position: relative;
+    &:before {
+      .fa();
+      content: @fa-var-map-marker;
+      position: absolute;
+      top: 3px;
+      left: 0;
+    }
+    @media (min-width: @grid-float-breakpoint) {
+      padding-left: 0;
+      &:before {
+        content: none;
+        display: none;
+      }
+    }
   }
 
   .udb-place-city {
     .keep-tight();
     font-weight: bold;
+    padding-left: 20px;
+    @media (min-width: @grid-float-breakpoint) {
+      padding-left: 0;
+    }
+  }
+
+  [ng-switch-when="permanent"],
+  [ng-switch-when="single"],
+  [ng-switch-when="multiple"],
+  [ng-switch-when="periodic"] {
+    padding-left: 20px;
+    position: relative;
+    &:before {
+      .fa();
+      content: @fa-var-calendar;
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+    @media (min-width: @grid-float-breakpoint) {
+      padding-left: 0;
+      &:before {
+        content: none;
+        display: none;
+      }
+    }
+  }
+
+  .rv-specific-event-info .fa {
+    min-width: 15px;
+    @media (min-width: @grid-float-breakpoint) {
+      min-width: none;
+    }
   }
 
   .udb-details {

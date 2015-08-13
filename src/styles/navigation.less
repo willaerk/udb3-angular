@@ -42,8 +42,7 @@
   color: white;
   background: desaturate(@brand-primary, 20%);
   position: relative;
-  overflow: hidden;
-  padding: 10px 60px 10px 10px;
+  padding: 7px 45px 7px 7px;
   input {
     background: desaturate(@brand-primary, 20%);
     box-shadow: none !important;
@@ -53,13 +52,19 @@
     color: white;
   }
   input.form-control {
-    padding-left: 12px;
+    padding-left: 5px;
     padding-right: 36px;
+    height: 36px;
+    width: 100%;
   }
   button {
     position: absolute;
-    right: 10px;
-    top: 10px;
+    right: 7px;
+    top: 7px;
+  }
+  .dropdown-menu {
+    left: auto;
+    right: 0;
   }
   @media(min-width: @screen-sm-min) {
     margin-top: 0;
@@ -69,8 +74,12 @@
   @media(min-width: @screen-md-min) {
     max-width: 45%;
     display: inline-block;
-    margin-top: 18px;
-    margin-bottom: 18px;
+    margin-top: 15px;
+    margin-bottom: 15px;
+    .dropdown-menu {
+      left: 0;
+      right: auto;
+    }
   }
 }
 

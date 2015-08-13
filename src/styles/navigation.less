@@ -25,6 +25,7 @@
 }
 
 .navbar-nav {
+  margin: 0;
   span.udb-user {
     display: inline-block;
     overflow: hidden;
@@ -36,13 +37,24 @@
       float: left;
     }
   }
+  > li > a {
+    padding-top: (@navbar-padding-vertical / 2);
+    padding-bottom: (@navbar-padding-vertical / 2);
+    @media(min-width: @screen-md-min) {
+      padding-top: @navbar-padding-vertical;
+      padding-bottom: @navbar-padding-vertical;
+    }
+  }
 }
 
 .udb-header-search {
   color: white;
   background: desaturate(@brand-primary, 20%);
-  position: relative;
+  border-left: 1px solid transparent;
+  border-right: 1px solid transparent;
   padding: 7px 45px 7px 7px;
+  position: relative;
+  margin: 0;
   input {
     background: desaturate(@brand-primary, 20%);
     box-shadow: none !important;
@@ -52,7 +64,7 @@
     color: white;
   }
   input.form-control {
-    padding-left: 5px;
+    padding-left: 7px;
     padding-right: 36px;
     height: 36px;
     width: 100%;
@@ -67,13 +79,13 @@
     right: 0;
   }
   @media(min-width: @screen-sm-min) {
-    margin-top: 0;
-    margin-bottom: 0;
     width: 100%;
   }
   @media(min-width: @screen-md-min) {
     max-width: 45%;
     display: inline-block;
+    border-left: none;
+    border-right: none;
     margin-top: 15px;
     margin-bottom: 15px;
     .dropdown-menu {
@@ -86,9 +98,6 @@
 .udb-header-search .form-group {
   position: relative;
   display: block;
-  @media(min-width: @screen-md-min) {
-    //display: inline-block;
-  }
 }
 
 .udb-header-search .saved-search-icon,
@@ -138,5 +147,11 @@
 }
 
 body {
-  padding-top: @navbar-height;
+  padding-top: 155px;
+  @media(min-width: @screen-sm-min) {
+    padding-top: 175px;
+  }
+  @media(min-width: @screen-md-min) {
+    padding-top: @navbar-height;
+  }
 }

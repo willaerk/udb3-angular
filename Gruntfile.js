@@ -85,7 +85,7 @@ module.exports = function (grunt) {
       styles: {
         files: [
           '<%= yeoman.app %>/styles/{,*/}*.less',
-          'bower_components/udb3-angular/src/styles/{,*/}*.less'
+          'bower_components/components-font-awesome/{,*/}*.less'
         ],
         tasks: ['less', 'newer:copy:styles', 'autoprefixer']
       },
@@ -181,6 +181,7 @@ module.exports = function (grunt) {
         options: {
           paths: [
             'bower_components/bootstrap/less',
+            'bower_components/components-font-awesome/less',
           ],
           strictMath: true
         },

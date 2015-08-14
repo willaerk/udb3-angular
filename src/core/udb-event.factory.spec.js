@@ -91,4 +91,12 @@ describe('Factory: UdbEvent', function () {
 
     expect(event.labels).toContain('new label');
   });
+
+  it('Does add any similar labels that only have a different letter casing', function (){
+    event.label('Foo Bar');
+    event.label('foo bar');
+
+    expect(event.labels).toContain('Foo Bar');
+    expect(event.labels).toNotContain('foo bar');
+  });
 });

@@ -12,23 +12,44 @@ angular
     .controller('EventDetailController', EventDetail);
 
 /* @ngInject */
-function EventDetail($scope, $location, eventId, udbApi, jsonLDLangFilter, locationTypes) {
+function EventDetail(
+  $scope,
+  $location,
+  eventId,
+  udbApi,
+  jsonLDLangFilter,
+  locationTypes,
+  variationRepository,
+  eventEditor
+) {
   $scope.eventId = eventId;
   $scope.eventIdIsInvalid = false;
   $scope.eventHistory = [];
 
   var eventLoaded = udbApi.getEventById($scope.eventId);
+  var language = 'nl';
+  var cachedEvent;
 
   eventLoaded.then(
       function (event) {
+        cachedEvent = event;
         var eventHistoryLoaded = udbApi.getEventHistoryById($scope.eventId);
+        var personalVariationLoaded = variationRepository.getPersonalVariation(event);
 
         eventHistoryLoaded.then(function(eventHistory) {
           $scope.eventHistory = eventHistory;
         });
-        $scope.event = jsonLDLangFilter(event, 'nl');
+        $scope.event = jsonLDLangFilter(event, language);
 
         $scope.eventIdIsInvalid = false;
+
+        personalVariationLoaded
+          .then(function (variation) {
+            $scope.event.description = variation.description[language];
+          })
+          .finally(function () {
+            $scope.eventIsEditable = true;
+          });
       },
       function (reason) {
         $scope.eventIdIsInvalid = true;
@@ -104,5 +125,19 @@ function EventDetail($scope, $location, eventId, udbApi, jsonLDLangFilter, locat
 
   $scope.isTabActive = function (tabId) {
     return tabId === activeTabId;
+  };
+
+  $scope.updateDescription = function(description) {
+    if ($scope.event.description !== description) {
+      var updatePromise = eventEditor.editDescription(cachedEvent, description);
+
+      updatePromise.finally(function () {
+        if (!description) {
+          $scope.event.description = cachedEvent.description[language];
+        }
+      });
+
+      return updatePromise;
+    }
   };
 }

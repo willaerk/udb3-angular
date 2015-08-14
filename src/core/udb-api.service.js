@@ -25,7 +25,7 @@ function UdbApi($q, $http, appConfig, $cookieStore, uitidAuth, $cacheFactory, Ud
   /**
    * @param {string} queryString - The query used to find events.
    * @param {?number} start - From which event offset the result set should start.
-   * @returns {Promise} A promise that signals a succesful retrieval of
+   * @returns {Promise} A promise that signals a successful retrieval of
    *  search results or a failure.
    */
   this.findEvents = function (queryString, start) {
@@ -231,5 +231,80 @@ function UdbApi($q, $http, appConfig, $cookieStore, uitidAuth, $cacheFactory, Ud
       appConfig.baseUrl + 'event/' + eventId + '/labels/' + label,
       defaultApiConfig
     );
+  };
+
+  this.createVariation = function (eventId, description, purpose) {
+    var activeUser = uitidAuth.getUser(),
+        requestData = {
+          'owner': activeUser.id,
+          'purpose': purpose,
+          'same_as': appConfig.baseUrl + 'event/' + eventId,
+          'description': description
+        };
+
+    return $http.post(
+      appConfig.baseUrl + 'variations/',
+      requestData,
+      defaultApiConfig
+    );
+  };
+
+  this.editDescription = function (variationId, description) {
+    return $http.patch(
+      appConfig.baseUrl + 'variations/' + variationId,
+      {'description': description},
+      defaultApiConfig
+    );
+  };
+
+  this.deleteVariation = function (variationId) {
+    return $http.delete(
+      appConfig.baseUrl + 'variations/' + variationId,
+      defaultApiConfig
+    );
+  };
+
+  this.getEventVariations = function (ownerId, purpose, eventUrl) {
+    var parameters = {
+      'owner': ownerId,
+      'purpose': purpose,
+      'same_as': eventUrl
+    };
+
+    var config = {
+      withCredentials: true,
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      params: _.pick(parameters, _.isString)
+    };
+
+    return $http.get(
+      appConfig.baseUrl + 'variations/',
+      config
+    );
+  };
+
+  this.getVariation = function (variationId) {
+    var deferredVariation = $q.defer();
+
+    var variationRequest = $http.get(
+      appConfig.baseUrl + 'variations/' + variationId,
+      {
+        headers: {
+          'Accept': 'application/ld+json'
+        }
+      });
+
+    variationRequest.success(function (jsonEvent) {
+      var event = new UdbEvent(jsonEvent);
+      deferredVariation.resolve(event);
+    });
+
+    variationRequest.error(function () {
+      deferredVariation.reject();
+    });
+
+    return deferredVariation.promise;
   };
 }

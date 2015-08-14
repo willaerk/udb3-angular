@@ -12,8 +12,10 @@ angular
     'ngSanitize',
     'ui.bootstrap',
     'peg',
+    'udb.core',
     'udb.config',
     'udb.search',
     'btford.socket-io',
-    'pascalprecht.translate'
+    'pascalprecht.translate',
+    'xeditable'
   ]);

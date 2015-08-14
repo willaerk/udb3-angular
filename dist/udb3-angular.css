@@ -305,6 +305,11 @@ textarea.resize-vertical {
   background-color: #337ab7;
   color: white;
 }
+.event-description-loading-indicator {
+  text-align: center;
+  color: grey;
+  font-size: 1.5em;
+}
 .udb-translation-info {
   font-size: 30px;
   font-weight: bold;
@@ -633,6 +638,9 @@ body {
   height: 9px;
   z-index: 99;
   content: "";
+}
+.event-detail-description {
+  color: black;
 }
 #logo .letter,
 #logo #deur {

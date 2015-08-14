@@ -43,10 +43,12 @@ angular
     'ngSanitize',
     'ui.bootstrap',
     'peg',
+    'udb.core',
     'udb.config',
     'udb.search',
     'btford.socket-io',
-    'pascalprecht.translate'
+    'pascalprecht.translate',
+    'xeditable'
   ]);
 
 /**
@@ -2197,7 +2199,7 @@ function UdbApi($q, $http, appConfig, $cookieStore, uitidAuth, $cacheFactory, Ud
   /**
    * @param {string} queryString - The query used to find events.
    * @param {?number} start - From which event offset the result set should start.
-   * @returns {Promise} A promise that signals a succesful retrieval of
+   * @returns {Promise} A promise that signals a successful retrieval of
    *  search results or a failure.
    */
   this.findEvents = function (queryString, start) {
@@ -2404,6 +2406,81 @@ function UdbApi($q, $http, appConfig, $cookieStore, uitidAuth, $cacheFactory, Ud
       defaultApiConfig
     );
   };
+
+  this.createVariation = function (eventId, description, purpose) {
+    var activeUser = uitidAuth.getUser(),
+        requestData = {
+          'owner': activeUser.id,
+          'purpose': purpose,
+          'same_as': appConfig.baseUrl + 'event/' + eventId,
+          'description': description
+        };
+
+    return $http.post(
+      appConfig.baseUrl + 'variations/',
+      requestData,
+      defaultApiConfig
+    );
+  };
+
+  this.editDescription = function (variationId, description) {
+    return $http.patch(
+      appConfig.baseUrl + 'variations/' + variationId,
+      {'description': description},
+      defaultApiConfig
+    );
+  };
+
+  this.deleteVariation = function (variationId) {
+    return $http.delete(
+      appConfig.baseUrl + 'variations/' + variationId,
+      defaultApiConfig
+    );
+  };
+
+  this.getEventVariations = function (ownerId, purpose, eventUrl) {
+    var parameters = {
+      'owner': ownerId,
+      'purpose': purpose,
+      'same_as': eventUrl
+    };
+
+    var config = {
+      withCredentials: true,
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      params: _.pick(parameters, _.isString)
+    };
+
+    return $http.get(
+      appConfig.baseUrl + 'variations/',
+      config
+    );
+  };
+
+  this.getVariation = function (variationId) {
+    var deferredVariation = $q.defer();
+
+    var variationRequest = $http.get(
+      appConfig.baseUrl + 'variations/' + variationId,
+      {
+        headers: {
+          'Accept': 'application/ld+json'
+        }
+      });
+
+    variationRequest.success(function (jsonEvent) {
+      var event = new UdbEvent(jsonEvent);
+      deferredVariation.resolve(event);
+    });
+
+    variationRequest.error(function () {
+      deferredVariation.reject();
+    });
+
+    return deferredVariation.promise;
+  };
 }
 UdbApi.$inject = ["$q", "$http", "appConfig", "$cookieStore", "uitidAuth", "$cacheFactory", "UdbEvent"];
 
@@ -2420,7 +2497,7 @@ angular
   .factory('UdbEvent', UdbEventFactory);
 
 /* @ngInject */
-function UdbEventFactory() {
+function UdbEventFactory(EventTranslationState) {
 
   var EventPricing = {
     FREE: 'free',
@@ -2456,6 +2533,36 @@ function UdbEventFactory() {
     return pricing;
   }
 
+  function updateTranslationState(event) {
+    var languages = {'en': false, 'fr': false, 'de': false},
+        properties = ['name', 'description'];
+
+    _.forEach(languages, function (language, languageKey) {
+      var translationCount = 0,
+          state;
+
+      _.forEach(properties, function (property) {
+        if (event[property] && event[property][languageKey]) {
+          ++translationCount;
+        }
+      });
+
+      if (translationCount) {
+        if (translationCount === properties.length) {
+          state = EventTranslationState.ALL;
+        } else {
+          state = EventTranslationState.SOME;
+        }
+      } else {
+        state = EventTranslationState.NONE;
+      }
+
+      languages[languageKey] = state;
+    });
+
+    event.translationState = languages;
+  }
+
   /**
    * @class UdbEvent
    * @constructor
@@ -2468,8 +2575,9 @@ function UdbEventFactory() {
   UdbEvent.prototype = {
     parseJson: function (jsonEvent) {
       this.id = jsonEvent['@id'].split('/').pop();
+      this.apiUrl = jsonEvent['@id'];
       this.name = jsonEvent.name || {};
-      this.description = jsonEvent.description || {};
+      this.description = angular.copy(jsonEvent.description) || {};
       this.calendarSummary = jsonEvent.calendarSummary;
       this.location = jsonEvent.location;
       this.image = jsonEvent.image;
@@ -2511,6 +2619,7 @@ function UdbEventFactory() {
      */
     label: function (label) {
       var newLabels = [];
+      var existingLabels = this.labels;
 
       if (_.isArray(label)) {
         newLabels = label;
@@ -2519,6 +2628,14 @@ function UdbEventFactory() {
       if (_.isString(label)) {
         newLabels = [label];
       }
+
+      newLabels = _.filter(newLabels, function (newLabel) {
+        var similarLabel = _.find(existingLabels, function (existingLabel) {
+          return existingLabel.toUpperCase() === newLabel.toUpperCase();
+        });
+
+        return !similarLabel;
+      });
 
       this.labels = _.union(this.labels, newLabels);
     },
@@ -2530,11 +2647,15 @@ function UdbEventFactory() {
       _.remove(this.labels, function (label) {
         return label === labelName;
       });
+    },
+    updateTranslationState: function () {
+      updateTranslationState(this);
     }
   };
 
   return (UdbEvent);
 }
+UdbEventFactory.$inject = ["EventTranslationState"];
 
 // Source: src/core/uitid-auth.service.js
 /**
@@ -2697,6 +2818,154 @@ function udbJobLogo() {
   function link(scope, element, attrs) {
   }
 }
+
+// Source: src/entry/editing/event-editor.service.js
+/**
+ * @ngdoc service
+ * @name udb.entry.eventEditor
+ * @description
+ * # eventEditor
+ * Service in the udb.entry.
+ */
+angular
+  .module('udb.entry')
+  .service('eventEditor', EventEditor);
+
+/* @ngInject */
+function EventEditor(jobLogger, udbApi, VariationCreationJob, BaseJob, $q, variationRepository) {
+  var editor = this;
+  /**
+   * Edit the description of an event. We never edit the original event but use a variation instead.
+   *
+   * @param {UdbEvent} event                 The original event
+   * @param {string}   description           The new description text
+   * @param {string}   [purpose=personal]    The purpose of the variation that will be edited
+   */
+  this.editDescription = function (event, description, purpose) {
+    var deferredUpdate = $q.defer();
+    var variationPromise = variationRepository.getPersonalVariation(event);
+
+    var removeDescription = function (variation) {
+      var deletePromise = editor.deleteVariation(event, variation.id);
+      deletePromise.then(function () {
+        deferredUpdate.resolve(false);
+      }, rejectUpdate);
+    };
+
+    var rejectUpdate = function (reason) {
+      deferredUpdate.reject(reason);
+    };
+
+    var createVariation = function () {
+      purpose = purpose || 'personal';
+      var creationRequest = udbApi.createVariation(event.id, description, purpose);
+      creationRequest.success(handleCreationJob);
+      creationRequest.error(rejectUpdate);
+    };
+
+    var handleCreationJob = function (jobData) {
+      var variation = angular.copy(event);
+      variation.description.nl = description;
+      var variationCreationJob = new VariationCreationJob(jobData.commandId, event.id);
+      jobLogger.addJob(variationCreationJob);
+
+      variationCreationJob.task.promise.then(function (jobInfo) {
+        variation.id = jobInfo['event_variation_id']; // jshint ignore:line
+        variationRepository.save(event.id, variation);
+        deferredUpdate.resolve();
+      }, rejectUpdate);
+    };
+
+    var editDescription = function (variation) {
+      var editRequest = udbApi.editDescription(variation.id, description);
+
+      editRequest.success(function (jobData) {
+        variation.description.nl = description;
+        jobLogger.addJob(new BaseJob(jobData.commandId));
+        deferredUpdate.resolve();
+      });
+
+      editRequest.error(rejectUpdate);
+    };
+
+    var revertToOriginal = function () {
+      deferredUpdate.resolve(false);
+    };
+
+    if (description) {
+      variationPromise.then(editDescription, createVariation);
+    } else {
+      variationPromise.then(removeDescription, revertToOriginal);
+    }
+
+    return deferredUpdate.promise;
+  };
+
+  this.deleteVariation = function (event, variationId) {
+    var deletePromise = udbApi.deleteVariation(variationId);
+
+    deletePromise.success(function (jobData) {
+      jobLogger.addJob(new BaseJob(jobData.commandId));
+      variationRepository.remove(event.id);
+    });
+
+    return deletePromise;
+  };
+}
+EventEditor.$inject = ["jobLogger", "udbApi", "VariationCreationJob", "BaseJob", "$q", "variationRepository"];
+
+// Source: src/entry/editing/variation-creation-job.factory.js
+/**
+ * @ngdoc service
+ * @name udb.entry.VariationCreationJob
+ * @description
+ * # Variation Creation Job
+ * This Is the factory that creates a variation creation job
+ */
+angular
+  .module('udb.entry')
+  .factory('VariationCreationJob', VariationCreationJobFactory);
+
+/* @ngInject */
+function VariationCreationJobFactory(BaseJob, JobStates, $q) {
+
+  /**
+   * @class VariationCreationJob
+   * @constructor
+   * @param {string} commandId
+   * @param {string} eventId
+   */
+  var VariationCreationJob = function (commandId, eventId) {
+    BaseJob.call(this, commandId);
+    this.task = $q.defer();
+    this.eventId = eventId;
+  };
+
+  VariationCreationJob.prototype = Object.create(BaseJob.prototype);
+  VariationCreationJob.prototype.constructor = VariationCreationJob;
+
+  VariationCreationJob.prototype.finish = function () {
+    if (this.state !== JobStates.FAILED) {
+      this.state = JobStates.FINISHED;
+      this.finished = new Date();
+    }
+    this.progress = 100;
+  };
+
+  VariationCreationJob.prototype.info = function (jobInfo) {
+    this.task.resolve(jobInfo);
+  };
+
+  VariationCreationJob.prototype.fail = function () {
+    this.finished = new Date();
+    this.state = JobStates.FAILED;
+    this.progress = 100;
+    this.task.reject('Failed to create a variation for event with id: ' + this.eventId);
+  };
+
+  return (VariationCreationJob);
+}
+VariationCreationJobFactory.$inject = ["BaseJob", "JobStates", "$q"];
 
 // Source: src/entry/labelling/event-label-batch-job.factory.js
 /**
@@ -3592,23 +3861,44 @@ angular
     .controller('EventDetailController', EventDetail);
 
 /* @ngInject */
-function EventDetail($scope, $location, eventId, udbApi, jsonLDLangFilter, locationTypes) {
+function EventDetail(
+  $scope,
+  $location,
+  eventId,
+  udbApi,
+  jsonLDLangFilter,
+  locationTypes,
+  variationRepository,
+  eventEditor
+) {
   $scope.eventId = eventId;
   $scope.eventIdIsInvalid = false;
   $scope.eventHistory = [];
 
   var eventLoaded = udbApi.getEventById($scope.eventId);
+  var language = 'nl';
+  var cachedEvent;
 
   eventLoaded.then(
       function (event) {
+        cachedEvent = event;
         var eventHistoryLoaded = udbApi.getEventHistoryById($scope.eventId);
+        var personalVariationLoaded = variationRepository.getPersonalVariation(event);
 
         eventHistoryLoaded.then(function(eventHistory) {
           $scope.eventHistory = eventHistory;
         });
-        $scope.event = jsonLDLangFilter(event, 'nl');
+        $scope.event = jsonLDLangFilter(event, language);
 
         $scope.eventIdIsInvalid = false;
+
+        personalVariationLoaded
+          .then(function (variation) {
+            $scope.event.description = variation.description[language];
+          })
+          .finally(function () {
+            $scope.eventIsEditable = true;
+          });
       },
       function (reason) {
         $scope.eventIdIsInvalid = true;
@@ -3685,8 +3975,22 @@ function EventDetail($scope, $location, eventId, udbApi, jsonLDLangFilter, locat
   $scope.isTabActive = function (tabId) {
     return tabId === activeTabId;
   };
+
+  $scope.updateDescription = function(description) {
+    if ($scope.event.description !== description) {
+      var updatePromise = eventEditor.editDescription(cachedEvent, description);
+
+      updatePromise.finally(function () {
+        if (!description) {
+          $scope.event.description = cachedEvent.description[language];
+        }
+      });
+
+      return updatePromise;
+    }
+  };
 }
-EventDetail.$inject = ["$scope", "$location", "eventId", "udbApi", "jsonLDLangFilter", "locationTypes"];
+EventDetail.$inject = ["$scope", "$location", "eventId", "udbApi", "jsonLDLangFilter", "locationTypes", "variationRepository", "eventEditor"];
 
 // Source: src/export/event-export-job.factory.js
 /**
@@ -6001,6 +6305,319 @@ angular.module('udb.search')
     return (SearchResultViewer);
   });
 
+// Source: src/search/services/variation-repository.service.js
+/**
+ * @ngdoc service
+ * @name udb.search.variationRepository
+ * @description
+ * # variationRepository
+ * Service in the udb.search.
+ */
+angular
+  .module('udb.search')
+  .service('variationRepository', VariationRepository);
+
+/* @ngInject */
+function VariationRepository(udbApi, $cacheFactory, $q, UdbEvent, $rootScope) {
+
+  var requestChain = $q.when();
+  var interruptRequestChain = false;
+  var personalVariationCache = $cacheFactory('personalVariationCache');
+
+  this.getPersonalVariation = function (event) {
+    var deferredVariation =  $q.defer(),
+        personalVariation = personalVariationCache.get(event.id);
+
+    if (personalVariation) {
+      if (personalVariation === 'no-personal-variation') {
+        deferredVariation.reject('there is no personal variation for event with id: ' + event.id);
+      } else {
+        deferredVariation.resolve(personalVariation);
+      }
+    } else {
+      var userPromise = udbApi.getMe();
+
+      userPromise
+        .then(function(user) {
+          requestChain = requestChain.then(
+            requestVariation(user.id, 'personal', event.apiUrl, deferredVariation)
+          );
+        });
+    }
+
+    return deferredVariation.promise;
+  };
+
+  function requestVariation(userId, purpose, eventUrl, deferredVariation) {
+    return function () {
+      var eventId = eventUrl.split('/').pop();
+
+      if (interruptRequestChain) {
+        deferredVariation.reject('navigating away, interrupting request for variation for event with id: ' + eventId);
+        return deferredVariation;
+      }
+
+      var personalVariationRequest = udbApi.getEventVariations(userId, purpose, eventUrl, deferredVariation);
+
+      personalVariationRequest.success(function (variations) {
+        var jsonPersonalVariation = _.first(variations.member);
+        if (jsonPersonalVariation) {
+          var variation = new UdbEvent(jsonPersonalVariation);
+          personalVariationCache.put(eventId, variation);
+          deferredVariation.resolve(variation);
+        } else {
+          personalVariationCache.put(eventId, 'no-personal-variation');
+          deferredVariation.reject('there is no personal variation for event with id: ' + eventId);
+        }
+      });
+
+      personalVariationRequest.error(function () {
+        deferredVariation.reject('no variations found for event with id: ' + eventId);
+      });
+
+      return personalVariationRequest.then();
+    };
+  }
+
+  this.save = function (eventId, variation) {
+    personalVariationCache.put(eventId, variation);
+  };
+
+  this.remove = function (eventId) {
+    personalVariationCache.remove(eventId);
+  };
+
+  $rootScope.$on('$locationChangeStart', function() {
+    interruptRequestChain = true;
+    requestChain = requestChain.finally(function () {
+      interruptRequestChain = false;
+    });
+  });
+}
+VariationRepository.$inject = ["udbApi", "$cacheFactory", "$q", "UdbEvent", "$rootScope"];
+
+// Source: src/search/ui/event-translation-state.constant.js
+/* jshint sub: true */
+
+/**
+ * @ngdoc constant
+ * @name udb.search.EventTranslationState
+ * @description
+ * # EventTranslationState
+ * Event translation state
+ */
+angular
+  .module('udb.search')
+  .constant(
+  'EventTranslationState',
+  /**
+   * Enum for event translation states
+   * @readonly
+   * @enum {string}
+   */
+  {
+    ALL: {'name': 'all', 'icon': 'fa-circle'},
+    NONE: {'name': 'none', 'icon': 'fa-circle-o'},
+    SOME: {'name': 'some', 'icon': 'fa-dot-circle-o'}
+  }
+);
+
+// Source: src/search/ui/event.controller.js
+/**
+ * @ngdoc directive
+ * @name udb.search.controller:EventController
+ * @description
+ * # EventController
+ */
+angular
+  .module('udb.search')
+  .controller('EventController', EventController);
+
+/* @ngInject */
+function EventController(
+  udbApi,
+  jsonLDLangFilter,
+  eventTranslator,
+  eventLabeller,
+  eventEditor,
+  EventTranslationState,
+  $scope,
+  variationRepository,
+  $window
+) {
+  var controller = this;
+  /* @type {UdbEvent} */
+  var cachedEvent;
+
+  // Translation
+  var defaultLanguage = 'nl';
+  controller.eventTranslation = false;
+  controller.activeLanguage = defaultLanguage;
+  controller.languageSelector = [
+    {'lang': 'fr'},
+    {'lang': 'en'},
+    {'lang': 'de'}
+  ];
+  controller.availableLabels = eventLabeller.recentLabels;
+  initController();
+
+  function initController() {
+    if (!$scope.event.title) {
+      controller.fetching = true;
+      var eventPromise = udbApi.getEventByLDId($scope.event['@id']);
+
+      eventPromise.then(function (eventObject) {
+        cachedEvent = eventObject;
+        cachedEvent.updateTranslationState();
+        controller.availableLabels = _.union(cachedEvent.labels, eventLabeller.recentLabels);
+
+        $scope.event = jsonLDLangFilter(cachedEvent, defaultLanguage);
+        controller.fetching = false;
+        watchLabels();
+
+        // Try to fetch a personal variation for the event
+        fetchPersonalVariation();
+      });
+    } else {
+      controller.fetching = false;
+    }
+
+    function fetchPersonalVariation() {
+      var personalVariationPromise = variationRepository.getPersonalVariation(cachedEvent);
+      personalVariationPromise
+        .then(function (personalVariation) {
+          $scope.event.description = personalVariation.description[defaultLanguage];
+        })
+        .finally(function () {
+          controller.editable = true;
+        });
+    }
+
+    function watchLabels() {
+      $scope.$watch(function () {
+        return cachedEvent.labels;
+      }, function (labels) {
+        $scope.event.labels = angular.copy(labels);
+      });
+    }
+  }
+
+  controller.hasActiveTranslation = function () {
+    return cachedEvent && cachedEvent.translationState[controller.activeLanguage] !== EventTranslationState.NONE;
+  };
+
+  controller.getLanguageTranslationIcon = function (lang) {
+    var icon = EventTranslationState.NONE.icon;
+
+    if (cachedEvent && lang) {
+      icon = cachedEvent.translationState[lang].icon;
+    }
+
+    return icon;
+  };
+
+  controller.translate = function () {
+    controller.applyPropertyChanges('name');
+    controller.applyPropertyChanges('description');
+  };
+
+  /**
+   * Sets the provided language as active or toggles it off when already active
+   *
+   * @param {String} lang
+   */
+  controller.toggleLanguage = function (lang) {
+    if (lang === controller.activeLanguage) {
+      controller.stopTranslating();
+    } else {
+      controller.activeLanguage = lang;
+      controller.eventTranslation = jsonLDLangFilter(cachedEvent, controller.activeLanguage);
+    }
+  };
+
+  controller.hasPropertyChanged = function (propertyName) {
+    var lang = controller.activeLanguage,
+        translation = controller.eventTranslation;
+
+    return controller.eventTranslation && cachedEvent[propertyName][lang] !== translation[propertyName];
+  };
+
+  controller.undoPropertyChanges = function (propertyName) {
+    var lang = controller.activeLanguage,
+        translation = controller.eventTranslation;
+
+    if (translation) {
+      translation[propertyName] = cachedEvent[propertyName][lang];
+    }
+  };
+
+  controller.applyPropertyChanges = function (propertyName) {
+    var translation = controller.eventTranslation[propertyName],
+        apiProperty;
+
+    // TODO: this is hacky, should decide on consistent name for this property
+    if (propertyName === 'name') {
+      apiProperty = 'title';
+    }
+
+    translateEventProperty(propertyName, translation, apiProperty);
+  };
+
+  controller.stopTranslating = function () {
+    controller.eventTranslation = undefined;
+    controller.activeLanguage = defaultLanguage;
+  };
+
+  function translateEventProperty(property, translation, apiProperty) {
+    var language = controller.activeLanguage,
+        udbProperty = apiProperty || property;
+
+    if (translation && translation !== cachedEvent[property][language]) {
+      var translationPromise = eventTranslator.translateProperty(cachedEvent, udbProperty, language, translation);
+
+      translationPromise.then(function () {
+        cachedEvent.updateTranslationState();
+      });
+    }
+  }
+
+  // Labelling
+  controller.labelAdded = function (newLabel) {
+    var similarLabel = _.find(cachedEvent.labels, function (label) {
+      return newLabel.toUpperCase() === label.toUpperCase();
+    });
+    if (similarLabel) {
+      $scope.$apply(function () {
+        $scope.event.labels = angular.copy(cachedEvent.labels);
+      });
+      $window.alert('Het label "' + newLabel + '" is reeds toegevoegd als "' + similarLabel + '".');
+    } else {
+      eventLabeller.label(cachedEvent, newLabel);
+    }
+  };
+
+  controller.labelRemoved = function (label) {
+    eventLabeller.unlabel(cachedEvent, label);
+  };
+
+  // Editing
+  controller.updateDescription = function (description) {
+    if ($scope.event.description !== description) {
+      var updatePromise = eventEditor.editDescription(cachedEvent, description);
+
+      updatePromise.finally(function () {
+        if (!description) {
+          $scope.event.description = cachedEvent.description[defaultLanguage];
+        }
+      });
+
+      return updatePromise;
+    }
+  };
+
+}
+EventController.$inject = ["udbApi", "jsonLDLangFilter", "eventTranslator", "eventLabeller", "eventEditor", "EventTranslationState", "$scope", "variationRepository", "$window"];
+
 // Source: src/search/ui/event.directive.js
 /**
  * @ngdoc directive
@@ -6013,179 +6630,16 @@ angular
   .directive('udbEvent', udbEvent);
 
 /* @ngInject */
-function udbEvent(udbApi, jsonLDLangFilter, eventTranslator, eventLabeller) {
-  var event = {
-    restrict: 'A',
-    link: function postLink(scope, iElement, iAttrs) {
-
-      var TranslationState = {
-        ALL: {'name': 'all', 'icon': 'fa-circle'},
-        NONE: {'name': 'none', 'icon': 'fa-circle-o'},
-        SOME: {'name': 'some', 'icon': 'fa-dot-circle-o'}
-      };
-
-      function updateTranslationState(event) {
-        var languages = {'en': false, 'fr': false, 'de': false},
-            properties = ['name', 'description'];
-
-        _.forEach(languages, function (language, languageKey) {
-          var translationCount = 0,
-              state;
-
-          _.forEach(properties, function (property) {
-            if (event[property] && event[property][languageKey]) {
-              ++translationCount;
-            }
-          });
-
-          if (translationCount) {
-            if (translationCount === properties.length) {
-              state = TranslationState.ALL;
-            } else {
-              state = TranslationState.SOME;
-            }
-          } else {
-            state = TranslationState.NONE;
-          }
-
-          languages[languageKey] = state;
-        });
-
-        event.translationState = languages;
-      }
-
-      scope.hasActiveTranslation = function () {
-        return event && event.translationState[scope.activeLanguage] !== TranslationState.NONE;
-      };
-
-      scope.getLanguageTranslationIcon = function (lang) {
-        var icon = TranslationState.NONE.icon;
-
-        if (event && lang) {
-          icon = event.translationState[lang].icon;
-        }
-
-        return icon;
-      };
-
-      scope.translate = function () {
-        scope.applyPropertyChanges('name');
-        scope.applyPropertyChanges('description');
-      };
-
-      scope.activeLanguage = 'nl';
-      scope.languageSelector = [
-        {'lang': 'fr'},
-        {'lang': 'en'},
-        {'lang': 'de'}
-      ];
-      scope.availableLabels = eventLabeller.recentLabels;
-
-      // The event object that's returned from the server
-      var event;
-
-      if (!scope.event.title) {
-        scope.fetching = true;
-        var eventPromise = udbApi.getEventByLDId(scope.event['@id']);
-
-        eventPromise.then(function (eventObject) {
-          event = eventObject;
-          updateTranslationState(event);
-          scope.availableLabels = _.union(event.labels, eventLabeller.recentLabels);
-          scope.event = jsonLDLangFilter(event, 'nl');
-          scope.fetching = false;
-          watchLabels();
-        });
-      } else {
-        scope.fetching = false;
-      }
-
-      function watchLabels() {
-        scope.$watch(function () {
-          return event.labels;
-        }, function (labels) {
-          scope.event.labels = labels;
-        });
-      }
-
-      scope.eventTranslation = false;
-      /**
-       * Sets the provided language as active or toggles it off when already active
-       *
-       * @param {String} lang
-       */
-      function toggleLanguage(lang) {
-
-        if (lang === scope.activeLanguage) {
-          scope.stopTranslating();
-        } else {
-          scope.activeLanguage = lang;
-          scope.eventTranslation = jsonLDLangFilter(event, scope.activeLanguage);
-        }
-
-      }
-
-      scope.toggleLanguage = toggleLanguage;
-
-      scope.hasPropertyChanged = function (propertyName) {
-        var lang = scope.activeLanguage,
-            translation = scope.eventTranslation;
-
-        return scope.eventTranslation && event[propertyName][lang] !== translation[propertyName];
-      };
-
-      scope.undoPropertyChanges = function (propertyName) {
-        var lang = scope.activeLanguage,
-            translation = scope.eventTranslation;
-
-        if (translation) {
-          translation[propertyName] = event[propertyName][lang];
-        }
-      };
-
-      scope.applyPropertyChanges = function (propertyName) {
-        var translation = scope.eventTranslation[propertyName],
-            apiProperty;
-
-        // TODO: this is hacky, should decide on consistent name for this property
-        if (propertyName === 'name') {
-          apiProperty = 'title';
-        }
-
-        translateEventProperty(propertyName, translation, apiProperty);
-      };
-
-      scope.stopTranslating = function () {
-        scope.eventTranslation = undefined;
-        scope.activeLanguage = 'nl';
-      };
-
-      function translateEventProperty(property, translation, apiProperty) {
-        var language = scope.activeLanguage,
-            udbProperty = apiProperty || property;
-
-        if (translation && translation !== event[property][language]) {
-          var translationPromise = eventTranslator.translateProperty(event, udbProperty, language, translation);
-
-          translationPromise.then(function () {
-            updateTranslationState(event);
-          });
-        }
-      }
-
-      scope.labelAdded = function (label) {
-        eventLabeller.label(event, label);
-      };
-
-      scope.labelRemoved = function (label) {
-        eventLabeller.unlabel(event, label);
-      };
-    }
+function udbEvent() {
+  var eventDirective = {
+    restrict: 'AE',
+    controller: 'EventController',
+    controllerAs: 'eventCtrl',
+    templateUrl: 'templates/event.directive.html'
   };
 
-  return event;
+  return eventDirective;
 }
-udbEvent.$inject = ["udbApi", "jsonLDLangFilter", "eventTranslator", "eventLabeller"];
 
 // Source: src/search/ui/search.controller.js
 /**
@@ -6709,7 +7163,13 @@ $templateCache.put('templates/unexpected-error-modal.html',
     "            </tr>\n" +
     "            <tr>\n" +
     "              <td><strong>Beschrijving</strong></td>\n" +
-    "              <td ng-bind-html=\"event.description\"></td>\n" +
+    "              <td>\n" +
+    "                <div ng-if=\"eventIsEditable\">\n" +
+    "                  <div ng-bind-html=\"event.description\" onbeforesave=\"updateDescription($data)\" class=\"event-detail-description\"\n" +
+    "                       editable-textarea=\"event.description\" e-rows=\"6\" e-cols=\"33\"></div>\n" +
+    "                </div>\n" +
+    "                <i ng-if=\"!eventIsEditable\" class=\"fa fa-circle-o-notch fa-spin\"></i>\n" +
+    "              </td>\n" +
     "            </tr>\n" +
     "            <tr>\n" +
     "              <td><strong>Waar</strong></td>\n" +
@@ -7309,6 +7769,185 @@ $templateCache.put('templates/unexpected-error-modal.html',
   );
 
 
+  $templateCache.put('templates/event.directive.html',
+    "<div class=\"event-content\">\n" +
+    "  <div class=\"col-sm-5 rv-first-column\">\n" +
+    "    <div class=\"rv-item-sidebar\">\n" +
+    "      <div class=\"rv-selection-state\" ng-class=\"{'disabled': resultViewer.querySelected}\"\n" +
+    "           ng-click=\"resultViewer.toggleSelectId(event.id)\">\n" +
+    "        <span class=\"fa\" ng-class=\"resultViewer.isIdSelected(event.id) ? 'fa-check-square' : 'fa-square-o'\"></span>\n" +
+    "      </div>\n" +
+    "    </div>\n" +
+    "\n" +
+    "    <div class=\"udb-short-info\">\n" +
+    "      <span class=\"udb-category\" ng-bind=\"event.type\"></span>\n" +
+    "      <span class=\"udb-short-info-seperator\" ng-show=\"event.type && event.theme\"> • </span>\n" +
+    "      <span class=\"udb-theme\" ng-bind=\"event.theme\"></span>\n" +
+    "    </div>\n" +
+    "    <div class=\"udb-title\">\n" +
+    "      <a ng-href=\"{{ event.url }}\" ng-bind=\"event.name\"></a>\n" +
+    "    </div>\n" +
+    "  </div>\n" +
+    "\n" +
+    "  <div class=\"col-sm-2\">\n" +
+    "    <div class=\"udb-place-name\" ng-bind=\"event.location.name\"></div>\n" +
+    "    <div class=\"udb-place-city\" ng-bind=\"event.location.address.addressLocality\"></div>\n" +
+    "  </div>\n" +
+    "\n" +
+    "  <div class=\"col-sm-2\" ng-switch=\"event.calendarType\">\n" +
+    "    <span ng-switch-when=\"permanent\">permanent</span>\n" +
+    "    <span ng-switch-when=\"single\">\n" +
+    "        <span class=\"udb-start-date\" ng-bind=\"event.startDate | date: 'dd/MM/yyyy'\"></span>\n" +
+    "    </span>\n" +
+    "    <span ng-switch-when=\"periodic\" class=\"udb-date-range\">\n" +
+    "      <span class=\"udb-start-date\" ng-bind=\"event.startDate | date: 'dd/MM/yyyy'\"></span>\n" +
+    "        <i class=\"fa fa-long-arrow-right\"></i>\n" +
+    "        <span class=\"udb-end-date\" ng-bind=\"event.endDate | date: 'dd/MM/yyyy'\"></span>\n" +
+    "    </span>\n" +
+    "    <span ng-switch-when=\"multiple\" class=\"udb-date-range\">\n" +
+    "        <span class=\"udb-start-date\" ng-bind=\"event.startDate | date: 'dd/MM/yyyy'\"></span>\n" +
+    "        ,…,\n" +
+    "        <span class=\"udb-end-date\" ng-bind=\"event.endDate | date: 'dd/MM/yyyy'\"></span>\n" +
+    "    </span>\n" +
+    "  </div>\n" +
+    "\n" +
+    "  <div class=\"col-sm-3 rv-specific-event-info\">\n" +
+    "    <div class=\"rv-event-info-input udb-organizer\"\n" +
+    "         ng-show=\"resultViewer.activeSpecific.id === 'input'\">\n" +
+    "      <div>\n" +
+    "        <span class=\"fa fa-clock-o\"></span>&nbsp;\n" +
+    "        <span ng-bind=\"event.modified | date : 'dd/MM/yyyy • HH:mm'\"></span>\n" +
+    "      </div>\n" +
+    "      <div class=\"udb-email\">\n" +
+    "        <span class=\"fa fa-user\"></span>&nbsp;\n" +
+    "        <span ng-bind=\"event.creator\"></span>\n" +
+    "      </div>\n" +
+    "      <div class=\"udb-organizer-name\">\n" +
+    "        <span class=\"fa fa-building-o\"></span>&nbsp;\n" +
+    "        <span ng-bind=\"event.organizer ? event.organizer.name : '-'\"></span>\n" +
+    "      </div>\n" +
+    "    </div>\n" +
+    "\n" +
+    "    <div class=\"rv-event-info-price\"\n" +
+    "         ng-show=\"resultViewer.activeSpecific.id === 'price'\" ng-switch=\"event.pricing\">\n" +
+    "      <span ng-switch-when=\"free\">gratis</span>\n" +
+    "      <span ng-switch-when=\"payed\">\n" +
+    "          <i class=\"fa fa-eur meta icon\"></i><span ng-if=\"event.price\" ng-bind=\"event.price | currency\"></span>\n" +
+    "      </span>\n" +
+    "      <span ng-switch-when=\"unknown\">niet ingevoerd</span>\n" +
+    "    </div>\n" +
+    "\n" +
+    "    <div class=\"rv-event-info-translation btn-toolbar\"\n" +
+    "         ng-show=\"resultViewer.activeSpecific.id === 'translation'\">\n" +
+    "      <button type=\"button\" ng-repeat=\"language in ::eventCtrl.languageSelector\"\n" +
+    "              ng-class=\"{active: eventCtrl.activeLanguage === language.lang}\"\n" +
+    "              class=\"btn btn-default\" ng-click=\"eventCtrl.toggleLanguage(language.lang)\">\n" +
+    "        <span class=\"fa {{eventCtrl.getLanguageTranslationIcon(language.lang)}}\"></span>\n" +
+    "        {{language.lang}}\n" +
+    "      </button>\n" +
+    "    </div>\n" +
+    "  </div>\n" +
+    "\n" +
+    "  <div class=\"col-sm-12\" ng-show=\"eventCtrl.eventTranslation\">\n" +
+    "    <div class=\"udb-details row\">\n" +
+    "\n" +
+    "      <button type=\"button\" class=\"close\" ng-click=\"eventCtrl.stopTranslating()\">\n" +
+    "        <span aria-hidden=\"true\">&times;</span><span class=\"sr-only\">Close</span>\n" +
+    "      </button>\n" +
+    "\n" +
+    "      <div class=\"col-sm-12\">\n" +
+    "        <div ng-switch=\"eventCtrl.hasActiveTranslation()\">\n" +
+    "          <div ng-switch-when=\"false\" class=\"udb-translation-info\">\n" +
+    "            Voer een {{ eventCtrl.activeLanguage.toUpperCase()+'_ADJECTIVE' | translate }} vertaling in\n" +
+    "          </div>\n" +
+    "\n" +
+    "          <div ng-switch-default class=\"udb-translation-info\">\n" +
+    "            Wijzig de {{ eventCtrl.activeLanguage.toUpperCase()+'_ADJECTIVE'  | translate }} vertaling\n" +
+    "          </div>\n" +
+    "        </div>\n" +
+    "\n" +
+    "        <div class=\"row udb-property-translation\">\n" +
+    "          <div class=\"col-sm-6\">\n" +
+    "            <div class=\"form-group\">\n" +
+    "              <label>Titel</label>\n" +
+    "              <input type=\"text\" class=\"form-control\" ng-model=\"eventCtrl.eventTranslation.name\"/>\n" +
+    "            </div>\n" +
+    "            <div ng-show=\"eventCtrl.hasPropertyChanged('name') && eventCtrl.hasActiveTranslation()\">\n" +
+    "              <button ng-disabled=\"!eventCtrl.eventTranslation.name\" class=\"btn btn-danger\" ng-click=\"eventCtrl.applyPropertyChanges('name')\">\n" +
+    "                Opslaan\n" +
+    "              </button>\n" +
+    "              <button class=\"btn btn-default\" ng-click=\"eventCtrl.undoPropertyChanges('name')\">Annuleren</button>\n" +
+    "            </div>\n" +
+    "          </div>\n" +
+    "          <div class=\"col-sm-6\">\n" +
+    "            <strong>Basis-titel</strong>\n" +
+    "            <div ng-bind-html=\"::event.name\"></div>\n" +
+    "          </div>\n" +
+    "        </div>\n" +
+    "\n" +
+    "\n" +
+    "        <div class=\"row udb-property-translation\">\n" +
+    "          <div class=\"col-sm-6\">\n" +
+    "            <div class=\"form-group\">\n" +
+    "              <label>Beschrijving</label>\n" +
+    "              <textarea class=\"form-control resize-vertical\" rows=\"3\" ng-model=\"eventCtrl.eventTranslation.description\"></textarea>\n" +
+    "            </div>\n" +
+    "            <div ng-show=\"eventCtrl.hasPropertyChanged('description') && eventCtrl.hasActiveTranslation()\">\n" +
+    "              <button ng-disabled=\"!eventCtrl.eventTranslation.description\" class=\"btn btn-danger\" ng-click=\"eventCtrl.applyPropertyChanges('description')\">\n" +
+    "                Opslaan\n" +
+    "              </button>\n" +
+    "              <button class=\"btn btn-default\" ng-click=\"eventCtrl.undoPropertyChanges('description')\">Annuleren</button>\n" +
+    "            </div>\n" +
+    "          </div>\n" +
+    "          <div class=\"col-sm-6\">\n" +
+    "            <strong>Basis-beschrijving</strong>\n" +
+    "            <div ng-bind-html=\"event.description\"></div>\n" +
+    "          </div>\n" +
+    "        </div>\n" +
+    "\n" +
+    "        <div ng-hide=\"eventCtrl.hasActiveTranslation()\">\n" +
+    "          <button ng-disabled=\"!eventCtrl.eventTranslation.name\" class=\"btn btn-danger\" ng-click=\"eventCtrl.translate()\">Opslaan</button>\n" +
+    "          <button class=\"btn btn-default\" ng-click=\"eventCtrl.stopTranslating()\">Annuleren</button>\n" +
+    "        </div>\n" +
+    "      </div>\n" +
+    "\n" +
+    "\n" +
+    "    </div>\n" +
+    "  </div>\n" +
+    "\n" +
+    "  <div class=\"col-sm-12\" ng-show=\"resultViewer.isShowingProperties()\">\n" +
+    "    <div class=\"udb-details row\">\n" +
+    "      <div class=\"col-sm-2\" ng-if=\"resultViewer.eventProperties.image.visible\">\n" +
+    "        <img ng-src=\"{{event.image}}\" alt=\"{{event.name}}\" class=\"img-responsive\">\n" +
+    "      </div>\n" +
+    "      <div ng-class=\"resultViewer.eventProperties.image.visible ? 'col-sm-10' : 'col-sm-12'\">\n" +
+    "        <div ng-if=\"resultViewer.eventProperties.description.visible && eventCtrl.editable\">\n" +
+    "          <div ng-bind-html=\"event.description\" class=\"udb-description\" onbeforesave=\"eventCtrl.updateDescription($data)\"\n" +
+    "               editable-textarea=\"event.description\" e-rows=\"6\" e-cols=\"66\"></div>\n" +
+    "        </div>\n" +
+    "        <div ng-if=\"resultViewer.eventProperties.description.visible && !eventCtrl.editable\"\n" +
+    "             class=\"event-description-loading-indicator\">\n" +
+    "          <i class=\"fa fa-circle-o-notch fa-spin\"></i>\n" +
+    "        </div>\n" +
+    "\n" +
+    "        <div ng-if=\"resultViewer.eventProperties.labels.visible\" class=\"udb-labels\">\n" +
+    "          <span ng-hide=\"event.labels.length\">Dit evenement is nog niet gelabeld.</span>\n" +
+    "          <ui-select multiple tagging tagging-label=\"(label toevoegen)\" ng-model=\"event.labels\"\n" +
+    "                     reset-search-input=\"true\" tagging-tokens=\"ENTER|;\"\n" +
+    "                     on-select=\"eventCtrl.labelAdded($item)\" on-remove=\"eventCtrl.labelRemoved($item)\">\n" +
+    "            <ui-select-match placeholder=\"Voeg een label toe...\">{{$item}}</ui-select-match>\n" +
+    "            <ui-select-choices repeat=\"label in availableLabels\">\n" +
+    "              <div ng-bind-html=\"label | highlight: $select.search\"></div>\n" +
+    "            </ui-select-choices>\n" +
+    "          </ui-select>\n" +
+    "        </div>\n" +
+    "      </div>\n" +
+    "    </div>\n" +
+    "  </div>\n" +
+    "</div>\n"
+  );
+
+
   $templateCache.put('templates/search.html',
     "<div class=\"row rv-result-viewer\">\n" +
     "  <div class=\"col-sm-12 rv-search-results\" ng-class=\"{loading: resultViewer.loading}\">\n" +
@@ -7322,7 +7961,10 @@ $templateCache.put('templates/unexpected-error-modal.html',
     "                      </li>\n" +
     "                      <li>\n" +
     "                          <p class=\"rv-item-counter\">\n" +
-    "                              <span ng-bind=\"resultViewer.totalItems\"></span> resultaten\n" +
+    "                              <ng-pluralize count=\"resultViewer.totalItems\"\n" +
+    "                                            when=\"{'1': '1 resultaat',\n" +
+    "                                                    'other': '{} resultaten'}\">\n" +
+    "                              </ng-pluralize>\n" +
     "                          </p>\n" +
     "                      </li>\n" +
     "                      <li>\n" +
@@ -7369,7 +8011,10 @@ $templateCache.put('templates/unexpected-error-modal.html',
     "\n" +
     "            <div class=\"row\" ng-show=\"resultViewer.selectedIds.length\">\n" +
     "                <div class=\"col-sm-12 rv-first-column\">\n" +
-    "                    <span ng-bind=\"resultViewer.querySelected ? resultViewer.totalItems : resultViewer.selectedIds.length\"></span> items geselecteerd\n" +
+    "                    <ng-pluralize count=\"resultViewer.querySelected ? resultViewer.totalItems : resultViewer.selectedIds.length\"\n" +
+    "                                  when=\"{'1': '1 item geselecteerd',\n" +
+    "                                         'other': '{} items geselecteerd'}\">\n" +
+    "                    </ng-pluralize>\n" +
     "\n" +
     "                    <button class=\"btn btn-default rv-action\" ng-click=\"label()\">\n" +
     "                        <i class=\"fa fa-tag\"></i> Labelen\n" +
@@ -7403,178 +8048,9 @@ $templateCache.put('templates/unexpected-error-modal.html',
     "            </div>\n" +
     "        </div>\n" +
     "\n" +
-    "      <div class=\"row rv-item\" ng-repeat=\"event in resultViewer.events\"\n" +
-    "              ng-class=\"{selected: resultViewer.isIdSelected(event.id)}\"\n" +
-    "              udb-event=\"event\"\n" +
-    "              ng-hide=\"fetching\">\n" +
-    "          <div class=\"event-content\">\n" +
-    "              <div class=\"col-sm-5 rv-first-column\">\n" +
-    "                  <div class=\"rv-item-sidebar\">\n" +
-    "                      <div class=\"rv-selection-state\" ng-class=\"{'disabled': resultViewer.querySelected}\"\n" +
-    "                           ng-click=\"resultViewer.toggleSelectId(event.id)\">\n" +
-    "                          <span class=\"fa\"\n" +
-    "                                ng-class=\"resultViewer.isIdSelected(event.id) ? 'fa-check-square' : 'fa-square-o'\"></span>\n" +
-    "                      </div>\n" +
-    "                  </div>\n" +
-    "\n" +
-    "                  <div class=\"udb-short-info\">\n" +
-    "                      <span class=\"udb-category\" ng-bind=\"event.type\"></span>\n" +
-    "                      <span class=\"udb-short-info-seperator\" ng-show=\"event.type && event.theme\"> • </span>\n" +
-    "                      <span class=\"udb-theme\" ng-bind=\"event.theme\"></span>\n" +
-    "                  </div>\n" +
-    "                  <div class=\"udb-title\">\n" +
-    "                      <a ng-href=\"{{ event.url }}\" ng-bind=\"event.name\"></a>\n" +
-    "                  </div>\n" +
-    "              </div>\n" +
-    "\n" +
-    "              <div class=\"col-sm-2\">\n" +
-    "                  <div class=\"udb-place-name\" ng-bind=\"event.location.name\"></div>\n" +
-    "                  <div class=\"udb-place-city\" ng-bind=\"event.location.address.addressLocality\"></div>\n" +
-    "              </div>\n" +
-    "\n" +
-    "              <div class=\"col-sm-2\" ng-switch=\"event.calendarType\">\n" +
-    "                  <span ng-switch-when=\"permanent\">permanent</span>\n" +
-    "                  <span ng-switch-when=\"single\">\n" +
-    "                      <span class=\"udb-start-date\" ng-bind=\"event.startDate | date: 'dd/MM/yyyy'\"></span>\n" +
-    "                  </span>\n" +
-    "                  <span ng-switch-when=\"periodic\" class=\"udb-date-range\">\n" +
-    "                    <span class=\"udb-start-date\" ng-bind=\"event.startDate | date: 'dd/MM/yyyy'\"></span>\n" +
-    "                      <i class=\"fa fa-long-arrow-right\"></i>\n" +
-    "                      <span class=\"udb-end-date\" ng-bind=\"event.endDate | date: 'dd/MM/yyyy'\"></span>\n" +
-    "                  </span>\n" +
-    "                  <span ng-switch-when=\"multiple\" class=\"udb-date-range\">\n" +
-    "                      <span class=\"udb-start-date\" ng-bind=\"event.startDate | date: 'dd/MM/yyyy'\"></span>\n" +
-    "                      ,…,\n" +
-    "                      <span class=\"udb-end-date\" ng-bind=\"event.endDate | date: 'dd/MM/yyyy'\"></span>\n" +
-    "                  </span>\n" +
-    "              </div>\n" +
-    "\n" +
-    "              <div class=\"col-sm-3 rv-specific-event-info\">\n" +
-    "                  <div class=\"rv-event-info-input udb-organizer\"\n" +
-    "                       ng-show=\"resultViewer.activeSpecific.id === 'input'\">\n" +
-    "                      <div>\n" +
-    "                          <span class=\"fa fa-clock-o\"></span>&nbsp;\n" +
-    "                          <span ng-bind=\"event.modified | date : 'dd/MM/yyyy • HH:mm'\"></span>\n" +
-    "                      </div>\n" +
-    "                      <div class=\"udb-email\">\n" +
-    "                          <span class=\"fa fa-user\"></span>&nbsp;\n" +
-    "                          <span ng-bind=\"event.creator\"></span>\n" +
-    "                      </div>\n" +
-    "                      <div class=\"udb-organizer-name\">\n" +
-    "                          <span class=\"fa fa-building-o\"></span>&nbsp;\n" +
-    "                          <span ng-bind=\"event.organizer ? event.organizer.name : '-'\"></span>\n" +
-    "                      </div>\n" +
-    "                  </div>\n" +
-    "\n" +
-    "                  <div class=\"rv-event-info-price\"\n" +
-    "                       ng-show=\"resultViewer.activeSpecific.id === 'price'\" ng-switch=\"event.pricing\">\n" +
-    "                      <span ng-switch-when=\"free\">gratis</span>\n" +
-    "                      <span ng-switch-when=\"payed\">\n" +
-    "                          <i class=\"fa fa-eur meta icon\"></i><span ng-if=\"event.price\" ng-bind=\"event.price | currency\"></span>\n" +
-    "                      </span>\n" +
-    "                      <span ng-switch-when=\"unknown\">niet ingevoerd</span>\n" +
-    "                  </div>\n" +
-    "\n" +
-    "                  <div class=\"rv-event-info-translation btn-toolbar\"\n" +
-    "                       ng-show=\"resultViewer.activeSpecific.id === 'translation'\">\n" +
-    "                      <button type=\"button\" ng-repeat=\"language in ::languageSelector\"\n" +
-    "                              ng-class=\"{active: activeLanguage === language.lang}\"\n" +
-    "                              class=\"btn btn-default\" ng-click=\"toggleLanguage(language.lang)\">\n" +
-    "                          <span class=\"fa {{getLanguageTranslationIcon(language.lang)}}\"></span>\n" +
-    "                          {{language.lang}}\n" +
-    "                      </button>\n" +
-    "                  </div>\n" +
-    "              </div>\n" +
-    "\n" +
-    "              <div class=\"col-sm-12\" ng-show=\"eventTranslation\">\n" +
-    "                  <div class=\"udb-details row\">\n" +
-    "\n" +
-    "                      <button type=\"button\" class=\"close\" ng-click=\"stopTranslating()\">\n" +
-    "                          <span aria-hidden=\"true\">&times;</span><span class=\"sr-only\">Close</span>\n" +
-    "                      </button>\n" +
-    "\n" +
-    "                      <div class=\"col-sm-12\">\n" +
-    "                          <div ng-switch=\"hasActiveTranslation()\">\n" +
-    "                              <div ng-switch-when=\"false\" class=\"udb-translation-info\">\n" +
-    "                                  Voer een {{ activeLanguage.toUpperCase()+'_ADJECTIVE' | translate }} vertaling in\n" +
-    "                              </div>\n" +
-    "\n" +
-    "                              <div ng-switch-default class=\"udb-translation-info\">\n" +
-    "                                  Wijzig de {{ activeLanguage.toUpperCase()+'_ADJECTIVE'  | translate }} vertaling\n" +
-    "                              </div>\n" +
-    "                          </div>\n" +
-    "\n" +
-    "                          <div class=\"row udb-property-translation\">\n" +
-    "                              <div class=\"col-sm-6\">\n" +
-    "                                  <div class=\"form-group\">\n" +
-    "                                      <label>Titel</label>\n" +
-    "                                      <input type=\"text\" class=\"form-control\" ng-model=\"eventTranslation.name\"/>\n" +
-    "                                  </div>\n" +
-    "                                  <div ng-show=\"hasPropertyChanged('name') && hasActiveTranslation()\">\n" +
-    "                                      <button ng-disabled=\"!eventTranslation.name\" class=\"btn btn-danger\" ng-click=\"applyPropertyChanges('name')\">Opslaan</button>\n" +
-    "                                      <button class=\"btn btn-default\" ng-click=\"undoPropertyChanges('name')\">Annuleren</button>\n" +
-    "                                  </div>\n" +
-    "                              </div>\n" +
-    "                              <div class=\"col-sm-6\">\n" +
-    "                                  <strong>Basis-titel</strong>\n" +
-    "                                  <div ng-bind-html=\"::event.name\"></div>\n" +
-    "                              </div>\n" +
-    "                          </div>\n" +
-    "\n" +
-    "\n" +
-    "                          <div class=\"row udb-property-translation\">\n" +
-    "                              <div class=\"col-sm-6\">\n" +
-    "                                  <div class=\"form-group\">\n" +
-    "                                      <label>Beschrijving</label>\n" +
-    "                                      <textarea class=\"form-control resize-vertical\" rows=\"3\" ng-model=\"eventTranslation.description\"></textarea>\n" +
-    "                                  </div>\n" +
-    "                                  <div ng-show=\"hasPropertyChanged('description') && hasActiveTranslation()\">\n" +
-    "                                      <button ng-disabled=\"!eventTranslation.description\" class=\"btn btn-danger\" ng-click=\"applyPropertyChanges('description')\">Opslaan</button>\n" +
-    "                                      <button class=\"btn btn-default\" ng-click=\"undoPropertyChanges('description')\">Annuleren</button>\n" +
-    "                                  </div>\n" +
-    "                              </div>\n" +
-    "                              <div class=\"col-sm-6\">\n" +
-    "                                  <strong>Basis-beschrijving</strong>\n" +
-    "                                  <div ng-bind-html=\"event.description\"></div>\n" +
-    "                              </div>\n" +
-    "                          </div>\n" +
-    "\n" +
-    "                          <div ng-hide=\"hasActiveTranslation()\">\n" +
-    "                              <button ng-disabled=\"!eventTranslation.name\" class=\"btn btn-danger\" ng-click=\"translate()\">Opslaan</button>\n" +
-    "                              <button class=\"btn btn-default\" ng-click=\"stopTranslating()\">Annuleren</button>\n" +
-    "                          </div>\n" +
-    "                      </div>\n" +
-    "\n" +
-    "\n" +
-    "                  </div>\n" +
-    "              </div>\n" +
-    "\n" +
-    "              <div class=\"col-sm-12\" ng-show=\"resultViewer.isShowingProperties()\">\n" +
-    "                  <div class=\"udb-details row\">\n" +
-    "                      <div class=\"col-sm-2\" ng-if=\"resultViewer.eventProperties.image.visible\">\n" +
-    "                          <img ng-src=\"{{event.image}}\" alt=\"{{event.name}}\" class=\"img-responsive\">\n" +
-    "                      </div>\n" +
-    "                      <div ng-class=\"resultViewer.eventProperties.image.visible ? 'col-sm-10' : 'col-sm-12'\">\n" +
-    "                          <div ng-if=\"resultViewer.eventProperties.description.visible\">\n" +
-    "                              <div ng-bind-html=\"event.description\" class=\"udb-description\"></div>\n" +
-    "                          </div>\n" +
-    "\n" +
-    "                          <div ng-if=\"resultViewer.eventProperties.labels.visible\" class=\"udb-labels\">\n" +
-    "                              <span ng-hide=\"event.labels.length\">Dit evenement is nog niet gelabeld.</span>\n" +
-    "                              <ui-select multiple tagging tagging-label=\"(label toevoegen)\" ng-model=\"event.labels\"\n" +
-    "                                         reset-search-input=\"true\" tagging-tokens=\"ENTER|;\"\n" +
-    "                                         on-select=\"labelAdded($item)\" on-remove=\"labelRemoved($item)\">\n" +
-    "                                  <ui-select-match placeholder=\"Voeg een label toe...\">{{$item}}</ui-select-match>\n" +
-    "                                  <ui-select-choices repeat=\"label in availableLabels\">\n" +
-    "                                      <div ng-bind-html=\"label | highlight: $select.search\"></div>\n" +
-    "                                  </ui-select-choices>\n" +
-    "                              </ui-select>\n" +
-    "                          </div>\n" +
-    "                      </div>\n" +
-    "                  </div>\n" +
-    "              </div>\n" +
-    "          </div>\n" +
-    "      </div>\n" +
+    "      <udb-event class=\"row rv-item\" ng-repeat=\"event in resultViewer.events\" ng-hide=\"eventCtrl.fetching\"\n" +
+    "                 ng-class=\"{selected: resultViewer.isIdSelected(event.id)}\">\n" +
+    "      </udb-event>\n" +
     "\n" +
     "      <pagination total-items=\"resultViewer.totalItems\" ng-model=\"resultViewer.currentPage\" items-per-page=\"resultViewer.pageSize\" ng-show=\"resultViewer.totalItems > 0\"\n" +
     "        ng-change=\"resultViewer.pageChanged()\" max-size=\"10\"></pagination>\n" +

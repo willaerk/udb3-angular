@@ -44,7 +44,7 @@ function EventFormStep3Controller(
   $scope.locationsSearched = false;
 
   $scope.selectedCity = '';
-  $scope.selectedLocation = '';
+  $scope.selectedLocation = undefined;
   $scope.placeStreetAddress = '';
   $scope.openPlaceModal = openPlaceModal;
 
@@ -88,11 +88,11 @@ function EventFormStep3Controller(
 
     // Location has a name => an event.
     if (EventFormData.location.name) {
-      $scope.selectedLocation = EventFormData.location.name;
+      $scope.selectedLocation = EventFormData.location;
     }
     else {
       $scope.placeStreetAddress = EventFormData.location.address.streetAddress;
-      $scope.selectedLocation = EventFormData.location.address.streetAddress;
+      $scope.selectedLocation = EventFormData.location;
     }
 
   }
@@ -113,7 +113,7 @@ function EventFormStep3Controller(
 
     $scope.cityAutocompleteTextField = '';
     $scope.selectedCity = $label;
-    $scope.selectedLocation = '';
+    $scope.selectedLocation = undefined;
 
     controller.getLocations(zipcode);
   };
@@ -126,7 +126,7 @@ function EventFormStep3Controller(
 
     EventFormData.resetLocation();
     $scope.selectedCity = '';
-    $scope.selectedLocation = '';
+    $scope.selectedLocation = undefined;
     $scope.cityAutocompleteTextField = '';
     $scope.locationsSearched = false;
     $scope.locationAutocompleteTextField = '';
@@ -140,8 +140,12 @@ function EventFormStep3Controller(
    */
   controller.selectLocation = function ($item, $model, $label) {
 
+    var selectedLocation = _.find($scope.locationsForCity, function (location) {
+      return location.id === $model;
+    });
+
     // Assign selection, hide the location field and show the selection.
-    $scope.selectedLocation = $label;
+    $scope.selectedLocation = selectedLocation;
     $scope.locationAutocompleteTextField = '';
 
     var location = EventFormData.getLocation();
@@ -168,7 +172,7 @@ function EventFormStep3Controller(
     EventFormData.setLocation(location);
 
     //$scope.selectedCity = '';
-    $scope.selectedLocation = '';
+    $scope.selectedLocation = false;
     $scope.locationAutocompleteTextField = '';
     $scope.locationsSearched = false;
 
@@ -187,8 +191,8 @@ function EventFormStep3Controller(
     $scope.locationAutoCompleteError = false;
 
     var promise = cityAutocomplete.getPlacesByZipcode(zipcode);
-    return promise.then(function (cities) {
-      $scope.locationsForCity = cities;
+    return promise.then(function (locations) {
+      $scope.locationsForCity = locations;
       $scope.locationsSearched = false;
       $scope.loadingPlaces = false;
       return $scope.locationsForCity;
@@ -291,7 +295,7 @@ function EventFormStep3Controller(
     location.address.streetAddress = $scope.placeStreetAddress;
     EventFormData.setLocation(location);
 
-    $scope.selectedLocation = location.address.streetAddress;
+    $scope.selectedLocation = location;
 
     EventFormData.showStep4 = true;
 
@@ -308,7 +312,7 @@ function EventFormStep3Controller(
     location.address.streetAddress = '';
     EventFormData.setLocation(location);
 
-    $scope.selectedLocation = '';
+    $scope.selectedLocation = undefined;
 
     EventFormData.showStep4 = false;
 

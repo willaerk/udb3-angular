@@ -35,10 +35,10 @@
     <div id="waar-evenement" ng-show="eventFormData.isEvent && selectedCity !== ''">
       <div class="row">
         <div class="col-xs-12">
-          <label id="locatie-label" ng-show="selectedLocation === ''">
+          <label id="locatie-label" ng-show="!selectedLocation">
             Kies een locatie <i class="fa fa-circle-o-notch fa-spin" ng-show="loadingPlaces"></i>
           </label>
-          <div id="locatie-kiezer" ng-show="selectedLocation === ''" ng-hide="loadingPlaces">
+          <div id="locatie-kiezer" ng-show="!selectedLocation" ng-hide="loadingPlaces">
             <span style="position: relative; display: inline-block; direction: ltr;" class="twitter-typeahead">
               <input type="text"
                      placeholder="Locatie"
@@ -63,8 +63,8 @@
               <span class="help-block">Er was een probleem tijdens het ophalen van de locaties</span>
             </div>
           </div>
-          <div id="locatie-gekozen" ng-show="selectedLocation !== ''" >
-            <span class=" btn-chosen" id="locatie-gekozen-button" ng-bind="selectedLocation"></span>
+          <div id="locatie-gekozen" ng-show="selectedLocation" >
+            <span ng-bind="selectedLocation.name"></span> <span ng-bind="selectedLocation.address.streetAddress"></span>
             <button type="button" class="btn btn-default btn-link" data-toggle="modal"
                     data-target="#waar-locatie-toevoegen"ng-click="changeLocationSelection()">Wijzigen</button>
           </div>
@@ -75,7 +75,7 @@
     </div>
 
     <div id="waar-plaats" ng-show="eventFormData.isPlace && selectedCity !== ''">
-      <div class="plaats-adres-ingeven col-sm-6" ng-hide="selectedLocation !== ''" >
+      <div class="plaats-adres-ingeven col-sm-6" ng-hide="selectedLocation" >
         <div class="row">
           <div class="col-xs-12">
             <div class="form-group" ng-class="{'has-error' : showValidation && step3Form.street.$error.required }">
@@ -88,9 +88,9 @@
         <a class="btn btn-primary plaats-ok" ng-click="validatePlace()">OK</a>
       </div>
 
-      <div class="plaats-adres-resultaat" ng-show="selectedLocation !== ''">
+      <div class="plaats-adres-resultaat" ng-show="selectedLocation">
         <p>
-          <span class="btn-chosen" ng-bind="selectedLocation"></span>
+          <span class="btn-chosen" ng-bind="selectedLocation.name"></span>
           <a class="btn btn-link plaats-adres-wijzigen" ng-click="changeStreetAddress()">Wijzigen</a>
         </p>
       </div>

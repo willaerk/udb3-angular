@@ -7722,7 +7722,7 @@ function EventFormStep3Controller(
   $scope.locationsSearched = false;
 
   $scope.selectedCity = '';
-  $scope.selectedLocation = '';
+  $scope.selectedLocation = undefined;
   $scope.placeStreetAddress = '';
   $scope.openPlaceModal = openPlaceModal;
 
@@ -7766,11 +7766,11 @@ function EventFormStep3Controller(
 
     // Location has a name => an event.
     if (EventFormData.location.name) {
-      $scope.selectedLocation = EventFormData.location.name;
+      $scope.selectedLocation = EventFormData.location;
     }
     else {
       $scope.placeStreetAddress = EventFormData.location.address.streetAddress;
-      $scope.selectedLocation = EventFormData.location.address.streetAddress;
+      $scope.selectedLocation = EventFormData.location;
     }
 
   }
@@ -7791,7 +7791,7 @@ function EventFormStep3Controller(
 
     $scope.cityAutocompleteTextField = '';
     $scope.selectedCity = $label;
-    $scope.selectedLocation = '';
+    $scope.selectedLocation = undefined;
 
     controller.getLocations(zipcode);
   };
@@ -7804,7 +7804,7 @@ function EventFormStep3Controller(
 
     EventFormData.resetLocation();
     $scope.selectedCity = '';
-    $scope.selectedLocation = '';
+    $scope.selectedLocation = undefined;
     $scope.cityAutocompleteTextField = '';
     $scope.locationsSearched = false;
     $scope.locationAutocompleteTextField = '';
@@ -7818,8 +7818,12 @@ function EventFormStep3Controller(
    */
   controller.selectLocation = function ($item, $model, $label) {
 
+    var selectedLocation = _.find($scope.locationsForCity, function (location) {
+      return location.id === $model;
+    });
+
     // Assign selection, hide the location field and show the selection.
-    $scope.selectedLocation = $label;
+    $scope.selectedLocation = selectedLocation;
     $scope.locationAutocompleteTextField = '';
 
     var location = EventFormData.getLocation();
@@ -7846,7 +7850,7 @@ function EventFormStep3Controller(
     EventFormData.setLocation(location);
 
     //$scope.selectedCity = '';
-    $scope.selectedLocation = '';
+    $scope.selectedLocation = false;
     $scope.locationAutocompleteTextField = '';
     $scope.locationsSearched = false;
 
@@ -7865,8 +7869,8 @@ function EventFormStep3Controller(
     $scope.locationAutoCompleteError = false;
 
     var promise = cityAutocomplete.getPlacesByZipcode(zipcode);
-    return promise.then(function (cities) {
-      $scope.locationsForCity = cities;
+    return promise.then(function (locations) {
+      $scope.locationsForCity = locations;
       $scope.locationsSearched = false;
       $scope.loadingPlaces = false;
       return $scope.locationsForCity;
@@ -7969,7 +7973,7 @@ function EventFormStep3Controller(
     location.address.streetAddress = $scope.placeStreetAddress;
     EventFormData.setLocation(location);
 
-    $scope.selectedLocation = location.address.streetAddress;
+    $scope.selectedLocation = location;
 
     EventFormData.showStep4 = true;
 
@@ -7986,7 +7990,7 @@ function EventFormStep3Controller(
     location.address.streetAddress = '';
     EventFormData.setLocation(location);
 
-    $scope.selectedLocation = '';
+    $scope.selectedLocation = undefined;
 
     EventFormData.showStep4 = false;
 
@@ -13226,10 +13230,10 @@ $templateCache.put('templates/time-autocomplete.html',
     "    <div id=\"waar-evenement\" ng-show=\"eventFormData.isEvent && selectedCity !== ''\">\n" +
     "      <div class=\"row\">\n" +
     "        <div class=\"col-xs-12\">\n" +
-    "          <label id=\"locatie-label\" ng-show=\"selectedLocation === ''\">\n" +
+    "          <label id=\"locatie-label\" ng-show=\"!selectedLocation\">\n" +
     "            Kies een locatie <i class=\"fa fa-circle-o-notch fa-spin\" ng-show=\"loadingPlaces\"></i>\n" +
     "          </label>\n" +
-    "          <div id=\"locatie-kiezer\" ng-show=\"selectedLocation === ''\" ng-hide=\"loadingPlaces\">\n" +
+    "          <div id=\"locatie-kiezer\" ng-show=\"!selectedLocation\" ng-hide=\"loadingPlaces\">\n" +
     "            <span style=\"position: relative; display: inline-block; direction: ltr;\" class=\"twitter-typeahead\">\n" +
     "              <input type=\"text\"\n" +
     "                     placeholder=\"Locatie\"\n" +
@@ -13254,8 +13258,8 @@ $templateCache.put('templates/time-autocomplete.html',
     "              <span class=\"help-block\">Er was een probleem tijdens het ophalen van de locaties</span>\n" +
     "            </div>\n" +
     "          </div>\n" +
-    "          <div id=\"locatie-gekozen\" ng-show=\"selectedLocation !== ''\" >\n" +
-    "            <span class=\" btn-chosen\" id=\"locatie-gekozen-button\" ng-bind=\"selectedLocation\"></span>\n" +
+    "          <div id=\"locatie-gekozen\" ng-show=\"selectedLocation\" >\n" +
+    "            <span ng-bind=\"selectedLocation.name\"></span> <span ng-bind=\"selectedLocation.address.streetAddress\"></span>\n" +
     "            <button type=\"button\" class=\"btn btn-default btn-link\" data-toggle=\"modal\"\n" +
     "                    data-target=\"#waar-locatie-toevoegen\"ng-click=\"changeLocationSelection()\">Wijzigen</button>\n" +
     "          </div>\n" +
@@ -13266,7 +13270,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "    </div>\n" +
     "\n" +
     "    <div id=\"waar-plaats\" ng-show=\"eventFormData.isPlace && selectedCity !== ''\">\n" +
-    "      <div class=\"plaats-adres-ingeven col-sm-6\" ng-hide=\"selectedLocation !== ''\" >\n" +
+    "      <div class=\"plaats-adres-ingeven col-sm-6\" ng-hide=\"selectedLocation\" >\n" +
     "        <div class=\"row\">\n" +
     "          <div class=\"col-xs-12\">\n" +
     "            <div class=\"form-group\" ng-class=\"{'has-error' : showValidation && step3Form.street.$error.required }\">\n" +
@@ -13279,9 +13283,9 @@ $templateCache.put('templates/time-autocomplete.html',
     "        <a class=\"btn btn-primary plaats-ok\" ng-click=\"validatePlace()\">OK</a>\n" +
     "      </div>\n" +
     "\n" +
-    "      <div class=\"plaats-adres-resultaat\" ng-show=\"selectedLocation !== ''\">\n" +
+    "      <div class=\"plaats-adres-resultaat\" ng-show=\"selectedLocation\">\n" +
     "        <p>\n" +
-    "          <span class=\"btn-chosen\" ng-bind=\"selectedLocation\"></span>\n" +
+    "          <span class=\"btn-chosen\" ng-bind=\"selectedLocation.name\"></span>\n" +
     "          <a class=\"btn btn-link plaats-adres-wijzigen\" ng-click=\"changeStreetAddress()\">Wijzigen</a>\n" +
     "        </p>\n" +
     "      </div>\n" +

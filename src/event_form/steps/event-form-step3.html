@@ -38,7 +38,7 @@
           <label id="locatie-label" ng-show="selectedLocation === ''">
             Kies een locatie <i class="fa fa-circle-o-notch fa-spin" ng-show="loadingPlaces"></i>
           </label>
-          <div id="locatie-kiezer" ng-show="selectedLocation === ''">
+          <div id="locatie-kiezer" ng-show="selectedLocation === ''" ng-hide="loadingPlaces">
             <span style="position: relative; display: inline-block; direction: ltr;" class="twitter-typeahead">
               <input type="text"
                      placeholder="Locatie"

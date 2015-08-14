@@ -12651,6 +12651,11 @@ $templateCache.put('templates/time-autocomplete.html',
   );
 
 
+  $templateCache.put('templates/city-suggestion.html',
+    "<a href tabindex=\"-1\" ng-bind-html=\"match.label | typeaheadHighlight:query\"></a>"
+  );
+
+
   $templateCache.put('templates/event-form-facilities-modal.html',
     "<div class=\"modal-header\">\n" +
     "  <h4 class=\"modal-title\">Toegankelijkheidsinformatie</h4>\n" +
@@ -13214,7 +13219,8 @@ $templateCache.put('templates/time-autocomplete.html',
     "                   ng-model=\"cityAutocompleteTextField\"\n" +
     "                   typeahead=\"city as city.zip + ' ' + city.name for city in cities | filter:filterCities($viewValue) | orderBy:orderByLevenshteinDistance($viewValue)\"\n" +
     "                   typeahead-on-select=\"selectCity($item, $label)\"\n" +
-    "                   typeahead-min-length=\"3\">\n" +
+    "                   typeahead-min-length=\"3\"\n" +
+    "                   typeahead-template-url=\"templates/city-suggestion.html\">\n" +
     "          </span>\n" +
     "          <div class=\"alert alert-danger\" ng-show=\"cityAutoCompleteError\">\n" +
     "            <span class=\"help-block\">Er was een probleem tijdens het ophalen van de steden</span>\n" +
@@ -13259,9 +13265,11 @@ $templateCache.put('templates/time-autocomplete.html',
     "            </div>\n" +
     "          </div>\n" +
     "          <div id=\"locatie-gekozen\" ng-show=\"selectedLocation\" >\n" +
-    "            <span ng-bind=\"selectedLocation.name\"></span> <span ng-bind=\"selectedLocation.address.streetAddress\"></span>\n" +
+    "            <span ng-bind=\"selectedLocation.name\"></span>\n" +
     "            <button type=\"button\" class=\"btn btn-default btn-link\" data-toggle=\"modal\"\n" +
     "                    data-target=\"#waar-locatie-toevoegen\"ng-click=\"changeLocationSelection()\">Wijzigen</button>\n" +
+    "            <br>\n" +
+    "            <span ng-bind=\"selectedLocation.address.streetAddress\"></span>\n" +
     "          </div>\n" +
     "        </div>\n" +
     "      </div>\n" +

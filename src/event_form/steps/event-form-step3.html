@@ -19,7 +19,8 @@
                    ng-model="cityAutocompleteTextField"
                    typeahead="city as city.zip + ' ' + city.name for city in cities | filter:filterCities($viewValue) | orderBy:orderByLevenshteinDistance($viewValue)"
                    typeahead-on-select="selectCity($item, $label)"
-                   typeahead-min-length="3">
+                   typeahead-min-length="3"
+                   typeahead-template-url="templates/city-suggestion.html">
           </span>
           <div class="alert alert-danger" ng-show="cityAutoCompleteError">
             <span class="help-block">Er was een probleem tijdens het ophalen van de steden</span>
@@ -64,9 +65,11 @@
             </div>
           </div>
           <div id="locatie-gekozen" ng-show="selectedLocation" >
-            <span ng-bind="selectedLocation.name"></span> <span ng-bind="selectedLocation.address.streetAddress"></span>
+            <span ng-bind="selectedLocation.name"></span>
             <button type="button" class="btn btn-default btn-link" data-toggle="modal"
                     data-target="#waar-locatie-toevoegen"ng-click="changeLocationSelection()">Wijzigen</button>
+            <br>
+            <span ng-bind="selectedLocation.address.streetAddress"></span>
           </div>
         </div>
       </div>

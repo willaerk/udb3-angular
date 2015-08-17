@@ -45,7 +45,8 @@ function EventExportController($modalInstance, udbApi, eventExporter, ExportForm
   exporter.brands = [
     {name: 'vlieg', label: 'Vlieg'},
     {name: 'uit', label: 'UiT'},
-    {name: 'uitpas', label: 'UiTPAS'}
+    {name: 'uitpas', label: 'UiTPAS'},
+    {name: 'paspartoe', label: 'Paspartoe'}
   ];
 
   exporter.customizations = {

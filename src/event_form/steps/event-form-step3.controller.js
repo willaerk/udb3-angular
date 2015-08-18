@@ -241,6 +241,7 @@ function EventFormStep3Controller(
     var modalInstance = $modal.open({
       templateUrl: 'templates/event-form-place-modal.html',
       controller: 'EventFormPlaceModalController',
+      controllerAs: 'modalCtrl',
       resolve: {
         location: function () {
           return $scope.eventFormData.location;

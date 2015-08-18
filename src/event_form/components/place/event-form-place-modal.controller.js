@@ -15,51 +15,33 @@
   /* @ngInject */
   function EventFormPlaceModalController($scope, $modalInstance, eventCrud, UdbPlace, location, categories) {
 
-    $scope.categories = categories;
-    $scope.location = location;
+    var controller = this;
+
+    controller.categories = categories;
+    controller.location = location;
 
     // Scope vars.
-    $scope.newPlace = getDefaultPlace();
-    $scope.showValidation = false;
-    $scope.saving = false;
-    $scope.error = false;
+    controller.newPlace = getDefaultPlace();
+    controller.showValidation = false;
+    controller.saving = false;
+    controller.error = false;
 
     // Scope functions.
-    $scope.addLocation = addLocation;
-    $scope.resetAddLocation = resetAddLocation;
+    controller.addLocation = addLocation;
 
     /**
      * Get the default Place data
-     * @returns {undefined}
+     * @returns {UdbPlace}
      */
     function getDefaultPlace() {
-      return {
-        name: '',
-        eventType : '',
-        address: {
-          addressCountry: 'BE',
-          addressLocality: $scope.location.address.addressLocality,
-          postalCode: $scope.location.address.postalCode,
-          streetAddress: '',
-          locationNumber : '',
-          country : 'BE'
-        }
-      };
+      var place = new UdbPlace();
+
+      place.setLocality(controller.location.address.addressLocality);
+      place.setPostalCode(controller.location.address.postalCode);
+
+      return place;
     }
 
-    /**
-     * Reset the location field(s).
-     * @returns {undefined}
-     */
-    function resetAddLocation() {
-
-      // Clear the current place data.
-      $scope.newPlace = getDefaultPlace();
-
-      // Close the modal.
-      $modalInstance.dismiss();
-
-    }
     /**
      * Adds a location.
      * @returns {undefined}
@@ -67,69 +49,42 @@
     function addLocation() {
 
       // Forms are automatically known in scope.
-      $scope.showValidation = true;
+      controller.showValidation = true;
       if (!$scope.placeForm.$valid) {
         return;
       }
 
-      savePlace();
+      controller.savePlace();
 
     }
 
     /**
      * Save the new place in db.
      */
-    function savePlace() {
+    controller.savePlace = function() {
 
-      $scope.saving = true;
-      $scope.error = false;
+      controller.saving = true;
+      controller.error = false;
 
-      // Convert this place data to a Udb-place.
-      var eventTypeLabel = '';
-      for (var i = 0; i < $scope.categories.length; i++) {
-        if ($scope.categories[i].id === $scope.newPlace.eventType) {
-          eventTypeLabel = $scope.categories[i].label;
-          break;
-        }
+      var place = controller.newPlace;
+
+      function selectPlace() {
+        $modalInstance.close(place);
+        controller.saving = true;
+        controller.error = false;
       }
 
-      var udbPlace = new UdbPlace();
-      udbPlace.name = {nl : $scope.newPlace.name};
-      udbPlace.calendarType = 'permanent';
-      udbPlace.type = {
-        id : $scope.newPlace.eventType,
-        label : eventTypeLabel,
-        domain : 'eventtype'
-      };
-      udbPlace.address = {
-        addressCountry : 'BE',
-        addressLocality : $scope.newPlace.address.addressLocality,
-        postalCode : $scope.newPlace.address.postalCode,
-        streetAddress : $scope.newPlace.address.streetAddress
-      };
+      function displayError() {
+        controller.saving = false;
+        controller.error = true;
+      }
 
-      var promise = eventCrud.createPlace(udbPlace);
-      promise.then(function(jsonResponse) {
-        udbPlace.id = jsonResponse.data.placeId;
-        selectPlace(udbPlace);
-        $scope.saving = true;
-        $scope.error = false;
-      }, function() {
-        $scope.saving = false;
-        $scope.error = true;
-      });
-    }
+      eventCrud.createPlace(place)
+        .then(selectPlace, displayError);
+    };
 
-    /**
-     * Select the place that should be used.
-     *
-     * @param {string} place
-     *   Name of the place
-     */
-    function selectPlace(place) {
-      $modalInstance.close(place);
-    }
-
+    controller.cancel = function () {
+      $modalInstance.dismiss('creation aborted');
+    };
   }
-
 })();

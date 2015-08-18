@@ -2819,10 +2819,14 @@ function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth,
     );
   };
 
-  this.createPlace = function (event) {
+  /**
+   * @param {UdbPlace} place
+   * @return {HttpPromise}
+   */
+  this.createPlace = function (place) {
     return $http.post(
       appConfig.baseApiUrl + 'place',
-      event,
+      place,
       defaultApiConfig
     );
   };
@@ -3611,7 +3615,6 @@ function UdbPlaceFactory() {
     }
 
     return images;
-
   }
 
   /**
@@ -3626,7 +3629,7 @@ function UdbPlaceFactory() {
     this.calendarType = '';
     this.openinghours = [];
     this.address = {
-      'addressCountry' : '',
+      'addressCountry' : 'BE',
       'addressLocality' : '',
       'postalCode' : '',
       'streetAddress' : '',
@@ -3682,7 +3685,7 @@ function UdbPlaceFactory() {
     /**
      * Get the event type for this event.
      */
-    getEventType: function() {
+    getType: function() {
       return this.type;
     },
 
@@ -3690,7 +3693,7 @@ function UdbPlaceFactory() {
      * Get the label for the event type.
      */
     getEventTypeLabel: function() {
-      return this.type.label ? this.type.label : '';
+      return (this.type && this.type.label) ? this.type.label : '';
     },
 
     /**
@@ -3732,15 +3735,25 @@ function UdbPlaceFactory() {
       return this.openinghours;
     },
 
+    /**
+     * Set the country of this place.
+     * Follows this schema: https://schema.org/addressCountry and expects a two-letter ISO 3166-1 alpha-2 country code.
+     *
+     * @param {string} country
+     */
     setCountry: function(country) {
-      this.address.country = country;
+      if (_.isString(country) && country.length === 2) {
+        this.address.addressCountry = country;
+      } else {
+        throw country + ' is not a valid ISO 3166-1 alpha-2 country code';
+      }
     },
 
     setLocality: function(locality) {
       this.address.addressLocality = locality;
     },
 
-    setPostal: function(postalCode) {
+    setPostalCode: function(postalCode) {
       this.address.postalCode = postalCode;
     },
 
@@ -3749,14 +3762,14 @@ function UdbPlaceFactory() {
     },
 
     getCountry: function() {
-      return this.address.country;
+      return this.address.addressCountry;
     },
 
     getLocality: function() {
       return this.address.addressLocality;
     },
 
-    getPostal: function() {
+    getPostalCode: function() {
       return this.address.postalCode;
     },
 
@@ -4341,7 +4354,7 @@ angular
   .service('eventCrud', EventCrud);
 
 /* @ngInject */
-function EventCrud(jobLogger, udbApi, EventCrudJob) {
+function EventCrud(jobLogger, udbApi, EventCrudJob, $q) {
 
   /**
    * Creates a new event and add the job to the logger.
@@ -4387,10 +4400,26 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
   };
 
   /**
+   * @param {UdbPlace} place
    * Creates a new place.
    */
   this.createPlace = function(place) {
-    return udbApi.createPlace(place);
+    var deferredPlace = $q.defer();
+    var serializedPlaceData = place;
+
+    function placeCreated(placeCreatedInfo) {
+      deferredPlace.resolve(placeCreatedInfo);
+    }
+
+    function creationFailed(error) {
+      deferredPlace.reject(error);
+    }
+
+    udbApi.createPlace(serializedPlaceData)
+      .success(placeCreated)
+      .error(creationFailed);
+
+    return deferredPlace.promise;
   };
 
   /**
@@ -4680,7 +4709,7 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
   };
 
 }
-EventCrud.$inject = ["jobLogger", "udbApi", "EventCrudJob"];
+EventCrud.$inject = ["jobLogger", "udbApi", "EventCrudJob", "$q"];
 
 // Source: src/entry/editing/event-editor.service.js
 /**
@@ -6340,51 +6369,33 @@ EventFormOrganizerModalController.$inject = ["$scope", "$modalInstance", "udbOrg
   /* @ngInject */
   function EventFormPlaceModalController($scope, $modalInstance, eventCrud, UdbPlace, location, categories) {
 
-    $scope.categories = categories;
-    $scope.location = location;
+    var controller = this;
+
+    controller.categories = categories;
+    controller.location = location;
 
     // Scope vars.
-    $scope.newPlace = getDefaultPlace();
-    $scope.showValidation = false;
-    $scope.saving = false;
-    $scope.error = false;
+    controller.newPlace = getDefaultPlace();
+    controller.showValidation = false;
+    controller.saving = false;
+    controller.error = false;
 
     // Scope functions.
-    $scope.addLocation = addLocation;
-    $scope.resetAddLocation = resetAddLocation;
+    controller.addLocation = addLocation;
 
     /**
      * Get the default Place data
-     * @returns {undefined}
+     * @returns {UdbPlace}
      */
     function getDefaultPlace() {
-      return {
-        name: '',
-        eventType : '',
-        address: {
-          addressCountry: 'BE',
-          addressLocality: $scope.location.address.addressLocality,
-          postalCode: $scope.location.address.postalCode,
-          streetAddress: '',
-          locationNumber : '',
-          country : 'BE'
-        }
-      };
+      var place = new UdbPlace();
+
+      place.setLocality(controller.location.address.addressLocality);
+      place.setPostalCode(controller.location.address.postalCode);
+
+      return place;
     }
 
-    /**
-     * Reset the location field(s).
-     * @returns {undefined}
-     */
-    function resetAddLocation() {
-
-      // Clear the current place data.
-      $scope.newPlace = getDefaultPlace();
-
-      // Close the modal.
-      $modalInstance.dismiss();
-
-    }
     /**
      * Adds a location.
      * @returns {undefined}
@@ -6392,72 +6403,45 @@ EventFormOrganizerModalController.$inject = ["$scope", "$modalInstance", "udbOrg
     function addLocation() {
 
       // Forms are automatically known in scope.
-      $scope.showValidation = true;
+      controller.showValidation = true;
       if (!$scope.placeForm.$valid) {
         return;
       }
 
-      savePlace();
+      controller.savePlace();
 
     }
 
     /**
      * Save the new place in db.
      */
-    function savePlace() {
+    controller.savePlace = function() {
 
-      $scope.saving = true;
-      $scope.error = false;
+      controller.saving = true;
+      controller.error = false;
 
-      // Convert this place data to a Udb-place.
-      var eventTypeLabel = '';
-      for (var i = 0; i < $scope.categories.length; i++) {
-        if ($scope.categories[i].id === $scope.newPlace.eventType) {
-          eventTypeLabel = $scope.categories[i].label;
-          break;
-        }
+      var place = controller.newPlace;
+
+      function selectPlace() {
+        $modalInstance.close(place);
+        controller.saving = true;
+        controller.error = false;
       }
 
-      var udbPlace = new UdbPlace();
-      udbPlace.name = {nl : $scope.newPlace.name};
-      udbPlace.calendarType = 'permanent';
-      udbPlace.type = {
-        id : $scope.newPlace.eventType,
-        label : eventTypeLabel,
-        domain : 'eventtype'
-      };
-      udbPlace.address = {
-        addressCountry : 'BE',
-        addressLocality : $scope.newPlace.address.addressLocality,
-        postalCode : $scope.newPlace.address.postalCode,
-        streetAddress : $scope.newPlace.address.streetAddress
-      };
+      function displayError() {
+        controller.saving = false;
+        controller.error = true;
+      }
 
-      var promise = eventCrud.createPlace(udbPlace);
-      promise.then(function(jsonResponse) {
-        udbPlace.id = jsonResponse.data.placeId;
-        selectPlace(udbPlace);
-        $scope.saving = true;
-        $scope.error = false;
-      }, function() {
-        $scope.saving = false;
-        $scope.error = true;
-      });
-    }
+      eventCrud.createPlace(place)
+        .then(selectPlace, displayError);
+    };
 
-    /**
-     * Select the place that should be used.
-     *
-     * @param {string} place
-     *   Name of the place
-     */
-    function selectPlace(place) {
-      $modalInstance.close(place);
-    }
-
+    controller.cancel = function () {
+      $modalInstance.dismiss('creation aborted');
+    };
   }
   EventFormPlaceModalController.$inject = ["$scope", "$modalInstance", "eventCrud", "UdbPlace", "location", "categories"];
-
 })();
 
 // Source: src/event_form/components/reservation-modal/reservation-modal.controller.js
@@ -7919,6 +7903,7 @@ function EventFormStep3Controller(
     var modalInstance = $modal.open({
       templateUrl: 'templates/event-form-place-modal.html',
       controller: 'EventFormPlaceModalController',
+      controllerAs: 'modalCtrl',
       resolve: {
         location: function () {
           return $scope.eventFormData.location;
@@ -12980,33 +12965,33 @@ $templateCache.put('templates/time-autocomplete.html',
     "</div>\n" +
     "<div class=\"modal-body\">\n" +
     "  <form name=\"placeForm\" class=\"css-form\">\n" +
-    "    <div class=\"form-group\" ng-class=\"{'has-error' : showValidation && placeForm.name.$error.required }\">\n" +
+    "    <div class=\"form-group\" ng-class=\"{'has-error' : modalCtrl.showValidation && placeForm.name.$error.required }\">\n" +
     "      <label>Titel</label>\n" +
-    "      <input class=\"form-control\" type=\"text\" ng-model=\"newPlace.name\" name=\"name\" required>\n" +
-    "      <span class=\"help-block\" ng-show=\"showValidation && placeForm.name.$error.required\">Titel is een verplicht veld.</span>\n" +
+    "      <input class=\"form-control\" type=\"text\" ng-model=\"modalCtrl.newPlace.name\" name=\"name\" required>\n" +
+    "      <span class=\"help-block\" ng-show=\"modalCtrl.showValidation && placeForm.name.$error.required\">Titel is een verplicht veld.</span>\n" +
     "    </div>\n" +
     "\n" +
-    "    <div class=\"form-group\" ng-class=\"{'has-error' : showValidation && placeForm.eventType.$error.required }\">\n" +
+    "    <div class=\"form-group\" ng-class=\"{'has-error' : modalCtrl.showValidation && placeForm.eventType.$error.required }\">\n" +
     "      <label>Categorie</label>\n" +
-    "      <select class=\"form-control\" size=\"4\" name=\"eventType\" id=\"locatie-toevoegen-types\" ng-model=\"newPlace.eventType\" required>\n" +
-    "        <option ng-repeat=\"category in categories\" value=\"{{ category.id }}\">{{ category.label }}</option>\n" +
+    "      <select class=\"form-control\" size=\"4\" name=\"eventType\" id=\"locatie-toevoegen-types\" ng-model=\"modalCtrl.newPlace.eventType\" required>\n" +
+    "        <option ng-repeat=\"category in modalCtrl.categories\" value=\"{{ category.id }}\">{{ category.label }}</option>\n" +
     "      </select>\n" +
-    "      <span class=\"help-block\" ng-show=\"showValidation && placeForm.eventType.$error.required\">Categorie is een verplicht veld.</span>\n" +
+    "      <span class=\"help-block\" ng-show=\"modalCtrl.showValidation && placeForm.eventType.$error.required\">Categorie is een verplicht veld.</span>\n" +
     "    </div>\n" +
     "\n" +
     "    <div class=\"row\">\n" +
     "\n" +
     "      <div class=\"col-xs-12\">\n" +
-    "        <div class=\"form-group\" ng-class=\"{'has-error' : showValidation && placeForm.address_streetAddress.$error.required }\">\n" +
+    "        <div class=\"form-group\" ng-class=\"{'has-error' : modalCtrl.showValidation && placeForm.address_streetAddress.$error.required }\">\n" +
     "          <label>Straat en nummer</label>\n" +
-    "          <input class=\"form-control\" id=\"locatie-straat\" placeholder=\"Straat en nummer\" name=\"address_streetAddress\" type=\"text\" ng-model=\"newPlace.address.streetAddress\" required>\n" +
-    "          <span class=\"help-block\" ng-show=\"showValidation && placeForm.address_streetAddress.$error.required\">Straat is een verplicht veld.</span>\n" +
+    "          <input class=\"form-control\" id=\"locatie-straat\" placeholder=\"Straat en nummer\" name=\"address_streetAddress\" type=\"text\" ng-model=\"modalCtrl.newPlace.address.streetAddress\" required>\n" +
+    "          <span class=\"help-block\" ng-show=\"modalCtrl.showValidation && placeForm.address_streetAddress.$error.required\">Straat is een verplicht veld.</span>\n" +
     "        </div>\n" +
     "      </div>\n" +
     "      <div class=\"col-xs-12\">\n" +
     "        <div class=\"form-group\">\n" +
     "          <label>Gemeente</label>\n" +
-    "          <p id=\"waar-locatie-toevoegen-gemeente\" ng-bind=\"newPlace.address.addressLocality\"></p>\n" +
+    "          <p id=\"waar-locatie-toevoegen-gemeente\" ng-bind=\"modalCtrl.newPlace.address.addressLocality\"></p>\n" +
     "        </div>\n" +
     "\n" +
     "        <div class=\"alert alert-danger\" ng-show=\"error\">\n" +
@@ -13019,8 +13004,8 @@ $templateCache.put('templates/time-autocomplete.html',
     "  </form>\n" +
     "</div>\n" +
     "<div class=\"modal-footer\">\n" +
-    "  <button type=\"button\" class=\"btn btn-default\" data-dismiss=\"modal\" ng-click=\"resetAddLocation()\">Annuleren</button>\n" +
-    "  <button type=\"button\" class=\"btn btn-primary\" ng-click=\"addLocation()\">Toevoegen <i class=\"fa fa-circle-o-notch fa-spin\" ng-show=\"saving\"></i></button>\n" +
+    "  <button type=\"button\" class=\"btn btn-default\" ng-click=\"modalCtrl.cancel()\">Annuleren</button>\n" +
+    "  <button type=\"button\" class=\"btn btn-primary\" ng-click=\"modalCtrl.addLocation()\">Toevoegen <i class=\"fa fa-circle-o-notch fa-spin\" ng-show=\"saving\"></i></button>\n" +
     "</div>"
   );
 

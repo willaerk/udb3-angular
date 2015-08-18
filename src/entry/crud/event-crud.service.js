@@ -11,7 +11,7 @@ angular
   .service('eventCrud', EventCrud);
 
 /* @ngInject */
-function EventCrud(jobLogger, udbApi, EventCrudJob) {
+function EventCrud(jobLogger, udbApi, EventCrudJob, $q) {
 
   /**
    * Creates a new event and add the job to the logger.
@@ -57,10 +57,26 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
   };
 
   /**
+   * @param {UdbPlace} place
    * Creates a new place.
    */
   this.createPlace = function(place) {
-    return udbApi.createPlace(place);
+    var deferredPlace = $q.defer();
+    var serializedPlaceData = place;
+
+    function placeCreated(placeCreatedInfo) {
+      deferredPlace.resolve(placeCreatedInfo);
+    }
+
+    function creationFailed(error) {
+      deferredPlace.reject(error);
+    }
+
+    udbApi.createPlace(serializedPlaceData)
+      .success(placeCreated)
+      .error(creationFailed);
+
+    return deferredPlace.promise;
   };
 
   /**

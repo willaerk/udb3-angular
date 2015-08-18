@@ -56,7 +56,6 @@ function UdbPlaceFactory() {
     }
 
     return images;
-
   }
 
   /**
@@ -71,7 +70,7 @@ function UdbPlaceFactory() {
     this.calendarType = '';
     this.openinghours = [];
     this.address = {
-      'addressCountry' : '',
+      'addressCountry' : 'BE',
       'addressLocality' : '',
       'postalCode' : '',
       'streetAddress' : '',
@@ -127,7 +126,7 @@ function UdbPlaceFactory() {
     /**
      * Get the event type for this event.
      */
-    getEventType: function() {
+    getType: function() {
       return this.type;
     },
 
@@ -135,7 +134,7 @@ function UdbPlaceFactory() {
      * Get the label for the event type.
      */
     getEventTypeLabel: function() {
-      return this.type.label ? this.type.label : '';
+      return (this.type && this.type.label) ? this.type.label : '';
     },
 
     /**
@@ -177,15 +176,25 @@ function UdbPlaceFactory() {
       return this.openinghours;
     },
 
+    /**
+     * Set the country of this place.
+     * Follows this schema: https://schema.org/addressCountry and expects a two-letter ISO 3166-1 alpha-2 country code.
+     *
+     * @param {string} country
+     */
     setCountry: function(country) {
-      this.address.country = country;
+      if (_.isString(country) && country.length === 2) {
+        this.address.addressCountry = country;
+      } else {
+        throw country + ' is not a valid ISO 3166-1 alpha-2 country code';
+      }
     },
 
     setLocality: function(locality) {
       this.address.addressLocality = locality;
     },
 
-    setPostal: function(postalCode) {
+    setPostalCode: function(postalCode) {
       this.address.postalCode = postalCode;
     },
 
@@ -194,14 +203,14 @@ function UdbPlaceFactory() {
     },
 
     getCountry: function() {
-      return this.address.country;
+      return this.address.addressCountry;
     },
 
     getLocality: function() {
       return this.address.addressLocality;
     },
 
-    getPostal: function() {
+    getPostalCode: function() {
       return this.address.postalCode;
     },
 

@@ -363,10 +363,14 @@ function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth,
     );
   };
 
-  this.createPlace = function (event) {
+  /**
+   * @param {UdbPlace} place
+   * @return {HttpPromise}
+   */
+  this.createPlace = function (place) {
     return $http.post(
       appConfig.baseApiUrl + 'place',
-      event,
+      place,
       defaultApiConfig
     );
   };

@@ -26,7 +26,7 @@ describe('Service: City autocomplete', function () {
     var zipcode = '3000';
 
     $httpBackend
-      .expectGET(baseUrl + 'places?q=zipcode:' + zipcode)
+      .expectGET(baseUrl + 'places?zipcode=' + zipcode)
       .respond(200, JSON.stringify(pagedPlaceCollection));
 
     var assertPlaces = function (places) {

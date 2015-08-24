@@ -25,7 +25,7 @@ function CityAutocomplete($q, $http, appConfig, UdbPlace) {
 
     var config = {
       params: {
-        q: 'zipcode:' +  zipcode
+        'zipcode': zipcode
       }
     };
 

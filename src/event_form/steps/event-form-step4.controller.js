@@ -79,32 +79,7 @@ function EventFormStep4Controller($scope, EventFormData, udbApi, appConfig, Sear
       $scope.saving = true;
       $scope.error = false;
 
-      //// is Event
-      // http://search-prod.lodgon.com/search/rest/search?q=*&fq=type:event&fq=location_cdbid:81E9C76C-BA61-0F30-45F5CD2279ACEBFC
-      // http://search-prod.lodgon.com/search/rest/detail/event/86E40542-B934-58DD-69AF85AC7FCEC934
-      // http://search-prod.lodgon.com/search/rest/search?q=*&fq=type:event&fq=street:Dr.%20Mathijsenstraat
-      //
-      // IsPlace
-      // location_contactinfo_zipcode
-      //http://search-prod.lodgon.com/search/rest/search?q=*&fq=type:event&fq=zipcode:9000
-      var params = {};
-      var location = EventFormData.getLocation();
-
-      if (EventFormData.isEvent) {
-        params = {locationCdbId : location.id};
-      }
-      else {
-        params = {
-          locationZip : location.address.postalCode,
-          place : true
-        };
-      }
-
-      // Load the candidate duplicates asynchronously.
-      // Duplicates are found on existing identical properties:
-      // - title is the same
-      // - on the same location.
-      var promise = udbApi.findEvents(EventFormData.name.nl, 0, params);
+      var promise = findDuplicates(EventFormData);
 
       $scope.resultViewer.loading = true;
       $scope.duplicatesSearched = true;
@@ -131,6 +106,46 @@ function EventFormStep4Controller($scope, EventFormData, udbApi, appConfig, Sear
       saveEvent();
     }
 
+  }
+
+  function findDuplicates(data) {
+    var conditions = duplicateSearchConditions(data);
+
+    var expressions = [];
+    angular.forEach(conditions, function (value, key) {
+      expressions.push(key + ':"' + value + '"');
+    });
+
+    var queryString = expressions.join(' AND ');
+
+    return udbApi.findEvents(queryString);
+  }
+
+  /**
+   * Duplicates are searched for by identical properties:
+   * - title is the same
+   * - on the same location
+   */
+  function duplicateSearchConditions(data) {
+
+    var location = data.getLocation();
+
+    if (EventFormData.isEvent) {
+      /*jshint camelcase: false*/
+      /*jscs:disable requireCamelCaseOrUpperCaseIdentifiers */
+      return {
+        text: EventFormData.name.nl,
+        location_cdbid : location.id
+      };
+    }
+    else {
+      /*jshint camelcase: false */
+      return {
+        text: EventFormData.name.nl,
+        zipcode: location.address.postalCode,
+        keywords: 'UDB3 place'
+      };
+    }
   }
 
   /**

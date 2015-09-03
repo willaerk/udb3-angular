@@ -8344,22 +8344,25 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
 
     var saveNeeded = false;
     if ($scope.bookingModel.url && !$scope.viaWebsite) {
-       $scope.bookingModel.url = '';
+      $scope.bookingModel.url = '';
+      $scope.editBookingUrl = true;
       saveNeeded = true;
     }
 
     if ($scope.bookingModel.phone && !$scope.viaPhone) {
       $scope.bookingModel.phone = '';
+      $scope.editBookingPhone = true;
       saveNeeded = true;
     }
 
     if ($scope.bookingModel.email && !$scope.viaEmail) {
       $scope.bookingModel.email = '';
+      $scope.editBookingEmail = true;
       saveNeeded = true;
     }
 
     if (saveNeeded) {
-      saveBookingType(type);
+      saveBookingType();
     }
 
   }

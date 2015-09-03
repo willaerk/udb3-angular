@@ -536,7 +536,7 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
     }
 
     if (saveNeeded) {
-      saveBookingType();
+      saveBookingType(type);
     }
 
   }

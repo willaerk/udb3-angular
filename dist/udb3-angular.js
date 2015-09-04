@@ -2484,12 +2484,10 @@ function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth,
   /**
    * @param {string} queryString - The query used to find events.
    * @param {?number} start - From which event offset the result set should start.
-   * @param {object} conditions
-   *   Extra conditions. E.g. location_zip or location_id.
    * @returns {Promise} A promise that signals a successful retrieval of
    *  search results or a failure.
    */
-  this.findEvents = function (queryString, start, conditions) {
+  this.findEvents = function (queryString, start) {
     var deferredEvents = $q.defer(),
         offset = start || 0,
         searchParams = {
@@ -2498,11 +2496,6 @@ function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth,
 
     if (queryString.length) {
       searchParams.query = queryString;
-    }
-    if (conditions !== undefined) {
-      for (var condition in conditions) {
-        searchParams[condition] = conditions[condition];
-      }
     }
 
     var request = $http.get(apiUrl + 'search', {
@@ -8088,32 +8081,7 @@ function EventFormStep4Controller($scope, EventFormData, udbApi, appConfig, Sear
       $scope.saving = true;
       $scope.error = false;
 
-      //// is Event
-      // http://search-prod.lodgon.com/search/rest/search?q=*&fq=type:event&fq=location_cdbid:81E9C76C-BA61-0F30-45F5CD2279ACEBFC
-      // http://search-prod.lodgon.com/search/rest/detail/event/86E40542-B934-58DD-69AF85AC7FCEC934
-      // http://search-prod.lodgon.com/search/rest/search?q=*&fq=type:event&fq=street:Dr.%20Mathijsenstraat
-      //
-      // IsPlace
-      // location_contactinfo_zipcode
-      //http://search-prod.lodgon.com/search/rest/search?q=*&fq=type:event&fq=zipcode:9000
-      var params = {};
-      var location = EventFormData.getLocation();
-
-      if (EventFormData.isEvent) {
-        params = {locationCdbId : location.id};
-      }
-      else {
-        params = {
-          locationZip : location.address.postalCode,
-          place : true
-        };
-      }
-
-      // Load the candidate duplicates asynchronously.
-      // Duplicates are found on existing identical properties:
-      // - title is the same
-      // - on the same location.
-      var promise = udbApi.findEvents(EventFormData.name.nl, 0, params);
+      var promise = findDuplicates(EventFormData);
 
       $scope.resultViewer.loading = true;
       $scope.duplicatesSearched = true;
@@ -8140,6 +8108,46 @@ function EventFormStep4Controller($scope, EventFormData, udbApi, appConfig, Sear
       saveEvent();
     }
 
+  }
+
+  function findDuplicates(data) {
+    var conditions = duplicateSearchConditions(data);
+
+    var expressions = [];
+    angular.forEach(conditions, function (value, key) {
+      expressions.push(key + ':"' + value + '"');
+    });
+
+    var queryString = expressions.join(' AND ');
+
+    return udbApi.findEvents(queryString);
+  }
+
+  /**
+   * Duplicates are searched for by identical properties:
+   * - title is the same
+   * - on the same location
+   */
+  function duplicateSearchConditions(data) {
+
+    var location = data.getLocation();
+
+    if (EventFormData.isEvent) {
+      /*jshint camelcase: false*/
+      /*jscs:disable requireCamelCaseOrUpperCaseIdentifiers */
+      return {
+        text: EventFormData.name.nl,
+        location_cdbid : location.id
+      };
+    }
+    else {
+      /*jshint camelcase: false */
+      return {
+        text: EventFormData.name.nl,
+        zipcode: location.address.postalCode,
+        keywords: 'UDB3 place'
+      };
+    }
   }
 
   /**
@@ -8768,18 +8776,21 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
   function toggleBookingType(type) {
 
     var saveNeeded = false;
-    if (EventFormData.bookingInfo.url && !$scope.viaWebsite) {
-      EventFormData.bookingInfo.url = '';
+    if ($scope.bookingModel.url && !$scope.viaWebsite) {
+      $scope.bookingModel.url = '';
+      $scope.editBookingUrl = true;
       saveNeeded = true;
     }
 
-    if (EventFormData.bookingInfo.phone && !$scope.viaPhone) {
-      EventFormData.bookingInfo.phone = '';
+    if ($scope.bookingModel.phone && !$scope.viaPhone) {
+      $scope.bookingModel.phone = '';
+      $scope.editBookingPhone = true;
       saveNeeded = true;
     }
 
-    if (EventFormData.bookingInfo.email && !$scope.viaEmail) {
-      EventFormData.bookingInfo.email = '';
+    if ($scope.bookingModel.email && !$scope.viaEmail) {
+      $scope.bookingModel.email = '';
+      $scope.editBookingEmail = true;
       saveNeeded = true;
     }
 
@@ -13313,7 +13324,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "  <a name=\"titel\"></a>\n" +
     "  <section id=\"titel\" ng-show=\"eventFormData.showStep4\">\n" +
     "\n" +
-    "    <h2 class=\"title-border\"><span class=\"number\">4</span>Basisgegevens</h2>\n" +
+    "    <h2 class=\"title-border\"><span class=\"number\">4</span> <span>Basisgegevens</span></h2>\n" +
     "    <label>Vul een titel in</label>\n" +
     "    <div class=\"row\">\n" +
     "      <div class=\"col-xs-12 col-md-4\">\n" +
@@ -13540,7 +13551,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "                      Geef hier een wervende omschrijving van de route. Vermeld in deze tekst <strong>hoe</strong> de route wordt afgelegd (per fiets, per boot, ...), de mogelijke tussenstops, de <strong>duur</strong>, <strong>afstand</strong> en hoe de route <strong>begeleid</strong> is (met gids, brochure of wegwijzers).\n" +
     "                    </p>\n" +
     "                    <p ng-switch-when=\"0.7.0.0.0\">\n" +
-    "                      Geef hier een wervende omschrijving van de route rondleiding. Vermeld het <strong>max. aantal personen</strong> per groepje, <strong>hoe</strong> de rondleiding wordt georganiseerd (doorlopend, met intervallen of op vaste tijdstippen) en of er <strong>speciale aandachtspunten</strong> zijn (vb. laarzen aangewezen).\n" +
+    "                      Geef hier een wervende omschrijving van de rondleiding. Vermeld het <strong>max. aantal personen</strong> per groepje, <strong>hoe</strong> de rondleiding wordt georganiseerd (doorlopend, met intervallen of op vaste tijdstippen) en of er <strong>speciale aandachtspunten</strong> zijn (vb. laarzen aangewezen).\n" +
     "                    </p>\n" +
     "                    <p ng-switch-when=\"0.14.0.0.0\">\n" +
     "                      Geef hier een wervende omschrijving van het monument. Geef ook aan indien het monument slechts beperkt opengesteld is (vb. enkel salons).\n" +

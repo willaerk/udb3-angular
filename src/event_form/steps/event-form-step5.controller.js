@@ -520,18 +520,21 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
   function toggleBookingType(type) {
 
     var saveNeeded = false;
-    if (EventFormData.bookingInfo.url && !$scope.viaWebsite) {
-      EventFormData.bookingInfo.url = '';
+    if ($scope.bookingModel.url && !$scope.viaWebsite) {
+      $scope.bookingModel.url = '';
+      $scope.editBookingUrl = true;
       saveNeeded = true;
     }
 
-    if (EventFormData.bookingInfo.phone && !$scope.viaPhone) {
-      EventFormData.bookingInfo.phone = '';
+    if ($scope.bookingModel.phone && !$scope.viaPhone) {
+      $scope.bookingModel.phone = '';
+      $scope.editBookingPhone = true;
       saveNeeded = true;
     }
 
-    if (EventFormData.bookingInfo.email && !$scope.viaEmail) {
-      EventFormData.bookingInfo.email = '';
+    if ($scope.bookingModel.email && !$scope.viaEmail) {
+      $scope.bookingModel.email = '';
+      $scope.editBookingEmail = true;
       saveNeeded = true;
     }
 

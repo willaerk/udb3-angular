@@ -83,7 +83,7 @@ describe('Factory: UdbEvent', function () {
   it('Can be unlabelled',function () {
     event.unlabel('remove me');
 
-    expect(event.labels).toNotContain('remove me');
+    expect(event.labels).not.toContain('remove me');
   });
 
   it('Can be labelled',function () {
@@ -97,6 +97,6 @@ describe('Factory: UdbEvent', function () {
     event.label('foo bar');
 
     expect(event.labels).toContain('Foo Bar');
-    expect(event.labels).toNotContain('foo bar');
+    expect(event.labels).not.toContain('foo bar');
   });
 });

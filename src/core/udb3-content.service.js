@@ -18,9 +18,17 @@ function Udb3Content($q, $http, appConfig) {
    */
 
   this.getUdb3ContentForCurrentUser = function() {
+    var deferred = $q.defer();
+    var request = $http.get(appConfig.baseApiUrl + 'udb3_content_current_user');
+    request.
+      success(function (data) {
+        deferred.resolve(data);
+      }).
+      error(function () {
+        deferred.reject();
+      });
 
-    return $http.get(appConfig.baseApiUrl + 'udb3_content_current_user');
-
+    return deferred.promise;
   };
 
 }

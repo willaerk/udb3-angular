@@ -3652,9 +3652,17 @@ function Udb3Content($q, $http, appConfig) {
    */
 
   this.getUdb3ContentForCurrentUser = function() {
+    var deferred = $q.defer();
+    var request = $http.get(appConfig.baseApiUrl + 'udb3_content_current_user');
+    request.
+      success(function (data) {
+        deferred.resolve(data);
+      }).
+      error(function () {
+        deferred.reject();
+      });
 
-    return $http.get(appConfig.baseApiUrl + 'udb3_content_current_user');
-
+    return deferred.promise;
   };
 
 }
@@ -3839,7 +3847,7 @@ PlaceDeleteConfirmModalController.$inject = ["$scope", "$modalInstance", "eventC
 
     // Scope variables.
     $scope.loaded = false;
-    $scope.userContent = null;
+    $scope.userContent = [];
     $scope.noContent = true;
 
     // Scope functions.
@@ -3853,49 +3861,40 @@ PlaceDeleteConfirmModalController.$inject = ["$scope", "$modalInstance", "eventC
      * function to get udb3 content for the current user.
      */
     function getUdb3ContentForCurrentUser() {
+      udb3Content.getUdb3ContentForCurrentUser().then(function (content) {
+        $scope.userContent = [];
 
-      $scope.userContent = [];
-
-      var promise = udb3Content.getUdb3ContentForCurrentUser();
-      return promise.then(function (content) {
-
-        if (content.data.content && content.data.content.length > 0) {
-
-          // Loop through content to prepare data for html.
-          for (var key in content.data.content) {
-
-            var type = content.data.content[key].type;
+        if (content.member && content.member.length > 0) {
+          angular.forEach(content.member, function (jsonld) {
+            var type = jsonld.type;
             var item = {
               type : type
             };
-            if (type === 'event') {
-              item.details = new UdbEvent();
-              item.details.parseJson(content.data.content[key]);
-              item.details = jsonLDLangFilter(item.details, 'nl');
-            }
-            else if (content.data.content[key].type === 'place') {
-              item.details = new UdbPlace();
-              item.details.parseJson(content.data.content[key]);
+
+            switch (type) {
+              case 'event':
+                item.details = new UdbEvent();
+                item.details.parseJson(jsonld);
+                item.details = jsonLDLangFilter(item.details, 'nl');
+                break;
+
+              case 'place':
+                item.details = new UdbPlace();
+                item.details.parseJson(jsonld);
+                break;
+
+              default:
+                return;
             }
 
-            if (!item.details) {
-              continue;
-            }
-
-            // set urls
             item.editUrl = '/udb3/' + type + '/' + item.details.id + '/edit';
             item.exampleUrl = '/udb3/' + type + '/' + item.details.id;
 
-            $scope.userContent[key] = item;
-          }
-
-          $scope.loaded = true;
-
-        }
-        else {
-          $scope.loaded = true;
+            $scope.userContent.push(item);
+          });
         }
 
+        $scope.loaded = true;
       });
     }
 

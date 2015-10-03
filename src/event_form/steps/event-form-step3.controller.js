@@ -106,6 +106,7 @@ function EventFormStep3Controller($scope, EventFormData, cityAutocomplete, event
     $scope.selectedCity = $label;
     $scope.selectedLocation = '';
 
+    setMajorInfoChanged();
   }
 
   /**
@@ -284,6 +285,7 @@ function EventFormStep3Controller($scope, EventFormData, cityAutocomplete, event
 
     EventFormData.showStep4 = false;
 
+    setMajorInfoChanged();
   }
 
   /**

@@ -115,6 +115,8 @@ function EventFormStep3Controller(
     $scope.selectedCity = $label;
     $scope.selectedLocation = undefined;
 
+    setMajorInfoChanged();
+
     controller.getLocations(zipcode);
   };
   $scope.selectCity = controller.selectCity;
@@ -316,6 +318,7 @@ function EventFormStep3Controller(
 
     EventFormData.showStep4 = false;
 
+    setMajorInfoChanged();
   }
 
   /**

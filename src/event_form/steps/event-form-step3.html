@@ -77,8 +77,8 @@
 
     </div>
 
-    <div id="waar-plaats" ng-show="eventFormData.isPlace && selectedCity !== ''">
-      <div class="plaats-adres-ingeven col-sm-6" ng-hide="selectedLocation" >
+    <div id="waar-plaats" ng-if="eventFormData.isPlace && selectedCity !== ''">
+      <div class="plaats-adres-ingeven col-sm-6" ng-hide="selectedLocation">
         <div class="row">
           <div class="col-xs-12">
             <div class="form-group" ng-class="{'has-error' : showValidation && step3Form.street.$error.required }">
@@ -93,7 +93,7 @@
 
       <div class="plaats-adres-resultaat" ng-show="selectedLocation">
         <p>
-          <span class="btn-chosen" ng-bind="selectedLocation.name"></span>
+          <span class="btn-chosen" ng-bind="placeStreetAddress"></span>
           <a class="btn btn-link plaats-adres-wijzigen" ng-click="changeStreetAddress()">Wijzigen</a>
         </p>
       </div>

@@ -7729,7 +7729,7 @@ function EventFormStep3Controller(
   $scope.cities = cities;
   $scope.changeCitySelection = changeCitySelection;
   $scope.changeLocationSelection = changeLocationSelection;
-  $scope.validatePlace = validatePlace;
+  $scope.setStreetAddress = setStreetAddress;
   $scope.changeStreetAddress = changeStreetAddress;
   $scope.setMajorInfoChanged = setMajorInfoChanged;
   $scope.filterCities = function(value) {
@@ -7951,12 +7951,7 @@ function EventFormStep3Controller(
 
   }
 
-  /**
-   * Validate Place
-   * @returns {undefined}
-   */
-  function validatePlace() {
-
+  function setStreetAddress() {
     // Forms are automatically known in scope.
     $scope.showValidation = true;
     if (!$scope.step3Form.$valid) {
@@ -7971,7 +7966,6 @@ function EventFormStep3Controller(
     $scope.selectedLocation = location;
 
     EventFormData.showStep4 = true;
-
   }
 
   /**
@@ -13292,22 +13286,22 @@ $templateCache.put('templates/time-autocomplete.html',
     "    </div>\n" +
     "\n" +
     "    <div id=\"waar-plaats\" ng-show=\"eventFormData.isPlace && selectedCity !== ''\">\n" +
-    "      <div class=\"plaats-adres-ingeven col-sm-6\" ng-hide=\"selectedLocation\" >\n" +
+    "      <div class=\"plaats-adres-ingeven col-sm-6\" ng-hide=\"selectedLocation.address.streetAddress\">\n" +
     "        <div class=\"row\">\n" +
     "          <div class=\"col-xs-12\">\n" +
     "            <div class=\"form-group\" ng-class=\"{'has-error' : showValidation && step3Form.street.$error.required }\">\n" +
     "              <label>Straat en nummer</label>\n" +
-    "              <input class=\"form-control\" id=\"straat\" name=\"street\" placeholder=\"\" type=\"text\" ng-model=\"placeStreetAddress\" required>\n" +
+    "              <input class=\"form-control\" id=\"straat\" name=\"street\" ng-model=\"placeStreetAddress\" placeholder=\"\" type=\"text\" required>\n" +
     "              <span class=\"help-block\" ng-show=\"showValidation && step3Form.street.$error.required\">Straat en nummer is een verplicht veld.</span>\n" +
     "            </div>\n" +
     "          </div>\n" +
     "        </div>\n" +
-    "        <a class=\"btn btn-primary plaats-ok\" ng-click=\"validatePlace()\">OK</a>\n" +
+    "        <a class=\"btn btn-primary plaats-ok\" ng-click=\"setStreetAddress()\">OK</a>\n" +
     "      </div>\n" +
     "\n" +
-    "      <div class=\"plaats-adres-resultaat\" ng-show=\"selectedLocation\">\n" +
+    "      <div class=\"plaats-adres-resultaat\" ng-show=\"selectedLocation.address.streetAddress\">\n" +
     "        <p>\n" +
-    "          <span class=\"btn-chosen\" ng-bind=\"selectedLocation.name\"></span>\n" +
+    "          <span class=\"btn-chosen\" ng-bind=\"selectedLocation.address.streetAddress\"></span>\n" +
     "          <a class=\"btn btn-link plaats-adres-wijzigen\" ng-click=\"changeStreetAddress()\">Wijzigen</a>\n" +
     "        </p>\n" +
     "      </div>\n" +

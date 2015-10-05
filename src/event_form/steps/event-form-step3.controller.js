@@ -58,7 +58,7 @@ function EventFormStep3Controller(
   $scope.cities = cities;
   $scope.changeCitySelection = changeCitySelection;
   $scope.changeLocationSelection = changeLocationSelection;
-  $scope.validatePlace = validatePlace;
+  $scope.setStreetAddress = setStreetAddress;
   $scope.changeStreetAddress = changeStreetAddress;
   $scope.setMajorInfoChanged = setMajorInfoChanged;
   $scope.filterCities = function(value) {
@@ -280,12 +280,7 @@ function EventFormStep3Controller(
 
   }
 
-  /**
-   * Validate Place
-   * @returns {undefined}
-   */
-  function validatePlace() {
-
+  function setStreetAddress() {
     // Forms are automatically known in scope.
     $scope.showValidation = true;
     if (!$scope.step3Form.$valid) {
@@ -300,7 +295,6 @@ function EventFormStep3Controller(
     $scope.selectedLocation = location;
 
     EventFormData.showStep4 = true;
-
   }
 
   /**

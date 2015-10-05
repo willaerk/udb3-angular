@@ -77,23 +77,23 @@
 
     </div>
 
-    <div id="waar-plaats" ng-if="eventFormData.isPlace && selectedCity !== ''">
-      <div class="plaats-adres-ingeven col-sm-6" ng-hide="selectedLocation">
+    <div id="waar-plaats" ng-show="eventFormData.isPlace && selectedCity !== ''">
+      <div class="plaats-adres-ingeven col-sm-6" ng-hide="selectedLocation.address.streetAddress">
         <div class="row">
           <div class="col-xs-12">
             <div class="form-group" ng-class="{'has-error' : showValidation && step3Form.street.$error.required }">
               <label>Straat en nummer</label>
-              <input class="form-control" id="straat" name="street" placeholder="" type="text" ng-model="placeStreetAddress" required>
+              <input class="form-control" id="straat" name="street" ng-model="placeStreetAddress" placeholder="" type="text" required>
               <span class="help-block" ng-show="showValidation && step3Form.street.$error.required">Straat en nummer is een verplicht veld.</span>
             </div>
           </div>
         </div>
-        <a class="btn btn-primary plaats-ok" ng-click="validatePlace()">OK</a>
+        <a class="btn btn-primary plaats-ok" ng-click="setStreetAddress()">OK</a>
       </div>
 
-      <div class="plaats-adres-resultaat" ng-show="selectedLocation">
+      <div class="plaats-adres-resultaat" ng-show="selectedLocation.address.streetAddress">
         <p>
-          <span class="btn-chosen" ng-bind="placeStreetAddress"></span>
+          <span class="btn-chosen" ng-bind="selectedLocation.address.streetAddress"></span>
           <a class="btn btn-link plaats-adres-wijzigen" ng-click="changeStreetAddress()">Wijzigen</a>
         </p>
       </div>

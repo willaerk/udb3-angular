@@ -334,7 +334,7 @@ function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth,
   };
 
   this.unlabelEvent = function (eventId, label) {
-    return $http.delete(
+    return $http['delete'](
       appConfig.baseUrl + 'event/' + eventId + '/labels/' + label,
       defaultApiConfig
     );
@@ -349,9 +349,8 @@ function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth,
   };
 
   this.removeEvent = function (id, event) {
-    return $http.delete(
+    return $http['delete'](
       appConfig.baseApiUrl + 'event/' + id + '/delete',
-      {},
       defaultApiConfig
     );
   };
@@ -365,9 +364,8 @@ function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth,
   };
 
   this.removePlace = function (id, event) {
-    return $http.delete(
+    return $http['delete'](
         appConfig.baseApiUrl + 'place/' + id + '/delete',
-        {},
         defaultApiConfig
     );
   };
@@ -437,9 +435,8 @@ function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth,
    */
   this.deleteTypicalAgeRange = function(id, type) {
 
-    return $http.delete(
+    return $http['delete'](
       appConfig.baseApiUrl + type + '/' + id + '/typicalAgeRange',
-      {},
       defaultApiConfig
     );
   };
@@ -449,15 +446,14 @@ function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth,
    */
   this.deleteOfferOrganizer = function(id, type, organizerId) {
 
-    return $http.delete(
+    return $http['delete'](
         appConfig.baseApiUrl + type + '/' + id + '/organizer/' + organizerId,
-        {},
         defaultApiConfig
     );
   };
 
   this.deleteVariation = function (variationId) {
-    return $http.delete(
+    return $http['delete'](
       appConfig.baseUrl + 'variations/' + variationId,
       defaultApiConfig
     );
@@ -525,9 +521,8 @@ function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth,
    */
   this.deleteImage = function(id, type, indexToDelete) {
 
-    return $http.delete(
+    return $http['delete'](
       appConfig.baseApiUrl + type + '/' + id + '/image/' + indexToDelete,
-      {},
       defaultApiConfig
     );
 

@@ -260,7 +260,6 @@ function EventFormStep3Controller(
 
       // Assign selection, hide the location field and show the selection.
       $scope.selectedCity = place.address.postalCode + ' ' + place.address.addressLocality;
-      $scope.selectedLocation = place.name.nl;
 
       var location = {
         'id' : place.id,
@@ -273,6 +272,7 @@ function EventFormStep3Controller(
         }
       };
       EventFormData.setLocation(location);
+      $scope.selectedLocation = location;
 
       EventFormData.showStep4 = true;
 

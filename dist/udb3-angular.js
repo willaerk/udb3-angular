@@ -2790,7 +2790,7 @@ function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth,
   };
 
   this.unlabelEvent = function (eventId, label) {
-    return $http.delete(
+    return $http['delete'](
       appConfig.baseUrl + 'event/' + eventId + '/labels/' + label,
       defaultApiConfig
     );
@@ -2805,9 +2805,8 @@ function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth,
   };
 
   this.removeEvent = function (id, event) {
-    return $http.delete(
+    return $http['delete'](
       appConfig.baseApiUrl + 'event/' + id + '/delete',
-      {},
       defaultApiConfig
     );
   };
@@ -2821,9 +2820,8 @@ function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth,
   };
 
   this.removePlace = function (id, event) {
-    return $http.delete(
+    return $http['delete'](
         appConfig.baseApiUrl + 'place/' + id + '/delete',
-        {},
         defaultApiConfig
     );
   };
@@ -2893,9 +2891,8 @@ function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth,
    */
   this.deleteTypicalAgeRange = function(id, type) {
 
-    return $http.delete(
+    return $http['delete'](
       appConfig.baseApiUrl + type + '/' + id + '/typicalAgeRange',
-      {},
       defaultApiConfig
     );
   };
@@ -2905,15 +2902,14 @@ function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth,
    */
   this.deleteOfferOrganizer = function(id, type, organizerId) {
 
-    return $http.delete(
+    return $http['delete'](
         appConfig.baseApiUrl + type + '/' + id + '/organizer/' + organizerId,
-        {},
         defaultApiConfig
     );
   };
 
   this.deleteVariation = function (variationId) {
-    return $http.delete(
+    return $http['delete'](
       appConfig.baseUrl + 'variations/' + variationId,
       defaultApiConfig
     );
@@ -2981,9 +2977,8 @@ function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth,
    */
   this.deleteImage = function(id, type, indexToDelete) {
 
-    return $http.delete(
+    return $http['delete'](
       appConfig.baseApiUrl + type + '/' + id + '/image/' + indexToDelete,
-      {},
       defaultApiConfig
     );
 
@@ -7931,7 +7926,6 @@ function EventFormStep3Controller(
 
       // Assign selection, hide the location field and show the selection.
       $scope.selectedCity = place.address.postalCode + ' ' + place.address.addressLocality;
-      $scope.selectedLocation = place.name.nl;
 
       var location = {
         'id' : place.id,
@@ -7944,6 +7938,7 @@ function EventFormStep3Controller(
         }
       };
       EventFormData.setLocation(location);
+      $scope.selectedLocation = location;
 
       EventFormData.showStep4 = true;
 
@@ -9197,7 +9192,8 @@ function EventExportController($modalInstance, udbApi, eventExporter, ExportForm
   exporter.brands = [
     {name: 'vlieg', label: 'Vlieg'},
     {name: 'uit', label: 'UiT'},
-    {name: 'uitpas', label: 'UiTPAS'}
+    {name: 'uitpas', label: 'UiTPAS'},
+    {name: 'paspartoe', label: 'Paspartoe'}
   ];
 
   exporter.customizations = {
@@ -11630,7 +11626,8 @@ function EventController(
   eventEditor,
   EventTranslationState,
   $scope,
-  variationRepository
+  variationRepository,
+  $window
 ) {
   var controller = this;
   /* @type {UdbEvent} */
@@ -11684,7 +11681,7 @@ function EventController(
       $scope.$watch(function () {
         return cachedEvent.labels;
       }, function (labels) {
-        $scope.event.labels = labels;
+        $scope.event.labels = angular.copy(labels);
       });
     }
   }
@@ -11769,8 +11766,18 @@ function EventController(
   }
 
   // Labelling
-  controller.labelAdded = function (label) {
-    eventLabeller.label(cachedEvent, label);
+  controller.labelAdded = function (newLabel) {
+    var similarLabel = _.find(cachedEvent.labels, function (label) {
+      return newLabel.toUpperCase() === label.toUpperCase();
+    });
+    if (similarLabel) {
+      $scope.$apply(function () {
+        $scope.event.labels = angular.copy(cachedEvent.labels);
+      });
+      $window.alert('Het label "' + newLabel + '" is reeds toegevoegd als "' + similarLabel + '".');
+    } else {
+      eventLabeller.label(cachedEvent, newLabel);
+    }
   };
 
   controller.labelRemoved = function (label) {
@@ -11793,7 +11800,7 @@ function EventController(
   };
 
 }
-EventController.$inject = ["udbApi", "jsonLDLangFilter", "eventTranslator", "eventLabeller", "eventEditor", "EventTranslationState", "$scope", "variationRepository"];
+EventController.$inject = ["udbApi", "jsonLDLangFilter", "eventTranslator", "eventLabeller", "eventEditor", "EventTranslationState", "$scope", "variationRepository", "$window"];
 
 // Source: src/search/ui/event.directive.js
 /**
@@ -13081,17 +13088,6 @@ $templateCache.put('templates/time-autocomplete.html',
   );
 
 
-  $templateCache.put('templates/event-form.html',
-    "<div ng-controller=\"EventFormController as eventForm\" data-type=\"{{your_type_variable}}\" data-itemid=\"{{your_item_id_variable}}\">\n" +
-    "  <udb-event-form-step1></udb-event-form-step1>\n" +
-    "  <udb-event-form-step2></udb-event-form-step2>\n" +
-    "  <udb-event-form-step3></udb-event-form-step3>\n" +
-    "  <udb-event-form-step4></udb-event-form-step4>\n" +
-    "  <udb-event-form-step5></udb-event-form-step5>\n" +
-    "</div>\n"
-  );
-
-
   $templateCache.put('templates/event-form-step1.html',
     "<div ng-controller=\"EventFormStep1Controller as EventFormStep1\">\n" +
     "  <a name=\"wat\"></a>\n" +
@@ -13898,14 +13894,16 @@ $templateCache.put('templates/time-autocomplete.html',
 
 
   $templateCache.put('templates/event-form.html',
-    "<udb-event-form-step1></udb-event-form-step1>\n" +
-    "<udb-event-form-step2></udb-event-form-step2>\n" +
-    "<udb-event-form-step3></udb-event-form-step3>\n" +
-    "<udb-event-form-step4></udb-event-form-step4>\n" +
-    "<udb-event-form-step5></udb-event-form-step5>\n" +
+    "<div class=\"offer-form\">\n" +
+    "  <udb-event-form-step1></udb-event-form-step1>\n" +
+    "  <udb-event-form-step2></udb-event-form-step2>\n" +
+    "  <udb-event-form-step3></udb-event-form-step3>\n" +
+    "  <udb-event-form-step4></udb-event-form-step4>\n" +
+    "  <udb-event-form-step5></udb-event-form-step5>\n" +
     "\n" +
-    "<div id=\"last-updated\" style=\"display: none;\">\n" +
-    "  Automatisch bewaard om <span></span> uur\n" +
+    "  <div id=\"last-updated\" style=\"display: none;\">\n" +
+    "    Automatisch bewaard om <span></span> uur\n" +
+    "  </div>\n" +
     "</div>\n"
   );
 
@@ -14584,7 +14582,12 @@ $templateCache.put('templates/time-autocomplete.html',
     "    <i class=\"fa fa-search\"></i>\n" +
     "  </button>\n" +
     "</form>\n" +
-    "<a href=\"#\" ng-click=\"sb.editQuery()\" class=\"advanced-search\" ng-class=\"{'is-editing': sb.isEditing}\">Geavanceerd</a>\n"
+    "\n" +
+    "<ul class=\"nav navbar-nav\">\n" +
+    "  <li>\n" +
+    "    <a href=\"#\" ng-click=\"sb.editQuery()\" class=\"advanced-search\" ng-class=\"{'is-editing': sb.isEditing}\">Geavanceerd</a>\n" +
+    "  </li>\n" +
+    "</ul>\n"
   );
 
 
@@ -14780,7 +14783,10 @@ $templateCache.put('templates/time-autocomplete.html',
     "                      </li>\n" +
     "                      <li>\n" +
     "                          <p class=\"rv-item-counter\">\n" +
-    "                              <span ng-bind=\"resultViewer.totalItems\"></span> resultaten\n" +
+    "                              <ng-pluralize count=\"resultViewer.totalItems\"\n" +
+    "                                            when=\"{'1': '1 resultaat',\n" +
+    "                                                    'other': '{} resultaten'}\">\n" +
+    "                              </ng-pluralize>\n" +
     "                          </p>\n" +
     "                      </li>\n" +
     "                      <li>\n" +
@@ -14827,7 +14833,10 @@ $templateCache.put('templates/time-autocomplete.html',
     "\n" +
     "            <div class=\"row\" ng-show=\"resultViewer.selectedIds.length\">\n" +
     "                <div class=\"col-sm-12 rv-first-column\">\n" +
-    "                    <span ng-bind=\"resultViewer.querySelected ? resultViewer.totalItems : resultViewer.selectedIds.length\"></span> items geselecteerd\n" +
+    "                    <ng-pluralize count=\"resultViewer.querySelected ? resultViewer.totalItems : resultViewer.selectedIds.length\"\n" +
+    "                                  when=\"{'1': '1 item geselecteerd',\n" +
+    "                                         'other': '{} items geselecteerd'}\">\n" +
+    "                    </ng-pluralize>\n" +
     "\n" +
     "                    <button class=\"btn btn-default rv-action\" ng-click=\"label()\">\n" +
     "                        <i class=\"fa fa-tag\"></i> Labelen\n" +

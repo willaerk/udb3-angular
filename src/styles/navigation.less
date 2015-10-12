@@ -15,7 +15,7 @@
   animation: rotating 1s linear infinite;
   opacity: 1;
 }
-
+  
 .navbar-brand {
   padding: 15px;
 }
@@ -24,48 +24,85 @@
   position: relative;
 }
 
-.udb-header-search input,
+.navbar-inverse .navbar-toggle {
+  border-color: darken(@navbar-inverse-bg, 7%);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.1), 0 1px 0 rgba(255,255,255,.1);
+}
+
+.navbar-nav {
+  margin: 0;
+  span.udb-user {
+    display: inline-block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: bottom;
+    @media(min-width: @screen-md-min) {
+      max-width: 136px;
+      max-height: 2em;
+      float: left;
+    }
+  }
+  > li > a {
+    padding-top: (@navbar-padding-vertical / 3);
+    padding-bottom: (@navbar-padding-vertical / 3);
+    @media(min-width: @screen-md-min) {
+      padding-top: @navbar-padding-vertical;
+      padding-bottom: @navbar-padding-vertical;
+    }
+  }
+}
+
 .udb-header-search {
-  background: desaturate(@brand-primary, 20%);
   color: white;
-}
-
-.udb-header-search {
-  margin-top: 18px;
-  margin-bottom: 18px;
-  padding: 5px;
-}
-
-.udb-header-search .form-group{
+  background: desaturate(@brand-primary, 20%);
+  border-left: 1px solid transparent;
+  border-right: 1px solid transparent;
+  padding: 7px 45px 7px 7px;
   position: relative;
-
-  @media(min-width: @screen-lg-min) {
-    width: 610px;
-  }
-}
-
-.udb-header-search input.form-control {
-  border: none;
-  box-shadow: none !important;
-  outline: none;
-  padding-left: 12px;
-  padding-right: 36px;
-  line-height: 100%;
-  width: 100% !important;
-}
-//
-//.udb-header-search.has-errors input.form-control {
-//  padding-right: 72px;
-//}
-
-udb-search-bar {
-  position: relative;
-  .advanced-search {
-    position: absolute;
+  margin: 0;
+  input {
+    background: desaturate(@brand-primary, 20%);
+    box-shadow: none !important;
+    border: none;
+    outline: none;
+    width: 100%;
     color: white;
-    top: 30px;
-    left: 20px;
   }
+  input.form-control {
+    padding-left: 7px;
+    padding-right: 36px;
+    height: 36px;
+    width: 100%;
+  }
+  button {
+    position: absolute;
+    right: 7px;
+    top: 7px;
+  }
+  .dropdown-menu {
+    left: auto;
+    right: 0;
+  }
+  @media(min-width: @screen-sm-min) {
+    width: 100%;
+  }
+  @media(min-width: @screen-md-min) {
+    max-width: 45%;
+    display: inline-block;
+    border-left: none;
+    border-right: none;
+    margin-top: 15px;
+    margin-bottom: 15px;
+    .dropdown-menu {
+      left: 0;
+      right: auto;
+    }
+  }
+}
+
+.udb-header-search .form-group {
+  position: relative;
+  display: block;
 }
 
 .udb-header-search .saved-search-icon,
@@ -115,5 +152,11 @@ udb-search-bar {
 }
 
 body {
-  padding-top: @navbar-height;
+  padding-top: 155px;
+  @media(min-width: @screen-sm-min) {
+    padding-top: 175px;
+  }
+  @media(min-width: @screen-md-min) {
+    padding-top: @navbar-height;
+  }
 }

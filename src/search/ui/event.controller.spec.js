@@ -12,6 +12,7 @@ describe('Controller: Event', function() {
       UdbEvent,
       $q,
       variationRepository,
+      $window,
       exampleEventJson = {
         "@id": "http://culudb-silex.dev:8080/event/1111be8c-a412-488d-9ecc-8fdf9e52edbc",
         "@context": "/api/1.0/event.jsonld",
@@ -20,6 +21,7 @@ describe('Controller: Event', function() {
         "available": "2015-06-05T00:00:00+02:00",
         "image": "//media.uitdatabank.be/20150605/0ffd9034-033f-4619-b053-4ef3dd1956e0.png",
         "calendarSummary": "vrij 19/06/15 om 19:00 ",
+        "labels": ['some label'],
         "location": {
           "@type": "Place",
           "@id": "http://culudb-silex.dev:8080/place/4D6DD711-CB4F-168D-C8B1DB1D1F8335B4",
@@ -139,12 +141,13 @@ describe('Controller: Event', function() {
     udbApi = $injector.get('udbApi');
     jsonLDLangFilter = $injector.get('jsonLDLangFilter');
     eventTranslator = $injector.get('eventTranslator');
-    eventLabeller = jasmine.createSpyObj('eventLabeller', ['recentLabels']);
+    eventLabeller = jasmine.createSpyObj('eventLabeller', ['recentLabels', 'label']);
     eventEditor = $injector.get('eventEditor');
     EventTranslationState = $injector.get('EventTranslationState');
     UdbEvent = $injector.get('UdbEvent');
     variationRepository = $injector.get('variationRepository');
     $q = _$q_;
+    $window = $injector.get('$window');
 
     $scope.event = {};
     deferredEvent = $q.defer(); deferredVariation = $q.defer();
@@ -163,6 +166,30 @@ describe('Controller: Event', function() {
       }
     );
   }));
+
+  it('should trigger an API label action when adding a label', function () {
+    var label = 'some other label';
+    deferredEvent.resolve(new UdbEvent(exampleEventJson));
+    $scope.$digest();
+
+    eventController.labelAdded(label);
+    expect(eventLabeller.label).toHaveBeenCalled();
+  });
+
+  it('should prevent any duplicate labels and warn the user when trying to add one', function () {
+    var label = 'Some Label';
+    deferredEvent.resolve(new UdbEvent(exampleEventJson));
+    $scope.$digest();
+
+    spyOn($window, 'alert');
+
+    eventController.labelAdded(label);
+
+    var expectedLabels = ['some label'];
+    expect($scope.event.labels).toEqual(expectedLabels);
+    expect($window.alert).toHaveBeenCalledWith('Het label "Some Label" is reeds toegevoegd als "some label".');
+    expect(eventLabeller.label).not.toHaveBeenCalled();
+  });
 
   describe('variations: ', function () {
     beforeEach(function () {

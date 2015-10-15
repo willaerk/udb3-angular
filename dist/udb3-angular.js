@@ -2396,7 +2396,7 @@ angular.module('udb.core')
       'CH': 'Zwitserland'
     },
     property: {
-      'name': 'Naam',
+      'name': 'Titel',
       'description': 'Beschrijving',
       'labels': 'Labels',
       'calendarSummary': 'Kalendersamenvatting',

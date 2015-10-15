@@ -78,7 +78,7 @@
             <div class="rv-item-sidebar">
                 <div class="rv-selection-state">
                     <span class="dropdown" dropdown ng-hide="resultViewer.selectedIds.length">
-                      <span class="dropdown-toggle fa {{resultViewer.selectionState.icon}}" dropdown-toggle>
+                      <span class="dropdown-toggle fa {{resultViewer.selectionState.icon}}" uib-dropdown-toggle>
                       </span>
                       <ul class="dropdown-menu">
                           <li role="presentation" class="dropdown-header">Selecteer</li>
@@ -101,8 +101,8 @@
                  ng-class="{selected: resultViewer.isIdSelected(event.id)}">
       </udb-event>
 
-      <pagination total-items="resultViewer.totalItems" ng-model="resultViewer.currentPage" items-per-page="resultViewer.pageSize" ng-show="resultViewer.totalItems > 0"
-        ng-change="resultViewer.pageChanged()" max-size="10"></pagination>
+      <uib-pagination total-items="resultViewer.totalItems" ng-model="currentPage" items-per-page="resultViewer.pageSize"
+                  ng-show="resultViewer.totalItems > 0" max-size="10" ng-change="pageChanged()"></uib-pagination>
 
     <div class="col-sm-12" ng-show="realQuery">
         <span class="help-block">

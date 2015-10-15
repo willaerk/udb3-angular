@@ -17,7 +17,7 @@ function EventFormStep3Controller(
     EventFormData,
     cityAutocomplete,
     placeCategories,
-    $modal,
+    $uibModal,
     cities,
     Levenshtein
 ) {
@@ -240,7 +240,7 @@ function EventFormStep3Controller(
    */
   function openPlaceModal() {
 
-    var modalInstance = $modal.open({
+    var modalInstance = $uibModal.open({
       templateUrl: 'templates/event-form-place-modal.html',
       controller: 'EventFormPlaceModalController',
       resolve: {

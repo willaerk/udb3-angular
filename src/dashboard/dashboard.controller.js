@@ -13,7 +13,7 @@
     .controller('DashboardCtrl', DashboardController);
 
   /* @ngInject */
-  function DashboardController($scope, $modal, udb3Content, eventCrud, UdbEvent, UdbPlace, jsonLDLangFilter) {
+  function DashboardController($scope, $uibModal, udb3Content, eventCrud, UdbEvent, UdbPlace, jsonLDLangFilter) {
 
     // Scope variables.
     $scope.loaded = false;
@@ -86,7 +86,7 @@
 
       if (item.type === 'event') {
 
-        modalInstance = $modal.open({
+        modalInstance = $uibModal.open({
           templateUrl: 'templates/event-delete-confirm-modal.html',
           controller: 'EventDeleteConfirmModalCtrl',
           resolve: {
@@ -106,7 +106,7 @@
         var promise = eventCrud.findEventsForLocation(item.details.id);
         promise.then(function(jsonResponse) {
 
-          modalInstance = $modal.open({
+          modalInstance = $uibModal.open({
             templateUrl: 'templates/place-delete-confirm-modal.html',
             controller: 'PlaceDeleteConfirmModalCtrl',
             resolve: {

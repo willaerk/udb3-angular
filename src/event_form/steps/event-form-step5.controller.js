@@ -12,7 +12,7 @@ angular
   .controller('EventFormStep5Controller', EventFormStep5Controller);
 
 /* @ngInject */
-function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizers, $modal) {
+function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizers, $uibModal) {
 
   // Scope vars.
   $scope.eventFormData = EventFormData; // main storage for event form.
@@ -351,7 +351,7 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
    */
   function openOrganizerModal() {
 
-    var modalInstance = $modal.open({
+    var modalInstance = $uibModal.open({
       templateUrl: 'templates/event-form-organizer-modal.html',
       controller: 'EventFormOrganizerModalController',
     });
@@ -458,7 +458,7 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
    */
   function openFacilitiesModal() {
 
-    var modalInstance = $modal.open({
+    var modalInstance = $uibModal.open({
       templateUrl: 'templates/event-form-facilities-modal.html',
       controller: 'EventFormFacilitiesModalController',
     });
@@ -627,7 +627,7 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
    */
   function openBookingPeriodModal() {
 
-    var modalInstance = $modal.open({
+    var modalInstance = $uibModal.open({
       templateUrl: 'templates/reservation-modal.html',
       controller: 'EventFormReservationModalController',
     });
@@ -681,7 +681,7 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
    */
   function openUploadImageModal(indexToEdit) {
 
-    var modalInstance = $modal.open({
+    var modalInstance = $uibModal.open({
       templateUrl: 'templates/event-form-image-upload.html',
       controller: 'EventFormImageUploadController',
       resolve: {
@@ -710,7 +710,7 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
    */
   function openDeleteImageModal(indexToDelete) {
 
-    var modalInstance = $modal.open({
+    var modalInstance = $uibModal.open({
       templateUrl: 'templates/event-form-image-delete.html',
       controller: 'EventFormImageDeleteController',
       resolve: {

@@ -1,7 +1,7 @@
 'use strict';
 
 describe('Controller: Search', function() {
-  var $scope, $window, udbApi, $controller, eventLabeller = null;
+  var $scope, $window, udbApi, $controller, eventLabeller = null, $location, $q;
 
   beforeEach(module('udb.core', function ($translateProvider) {
     $translateProvider.translations('en', {
@@ -16,9 +16,10 @@ describe('Controller: Search', function() {
 
   beforeEach(module('udb.search'));
 
-  beforeEach(inject(function($rootScope, _$controller_) {
+  beforeEach(inject(function($rootScope, _$controller_, _$q_) {
     $controller = _$controller_;
     $scope = $rootScope.$new();
+    $q = _$q_;
   }));
 
   beforeEach(function () {
@@ -26,17 +27,26 @@ describe('Controller: Search', function() {
       alert: jasmine.createSpy('alert')
     };
     udbApi = jasmine.createSpyObj('udbApi', ['findEvents', 'getEventById']);
+    udbApi.findEvents.and.returnValue($q.reject('nope'));
+
+    $location = jasmine.createSpyObj('$location', ['search']);
+    $location.search.and.returnValue({});
   });
 
-  it('alerts if there is no query when trying to export events', function() {
-    var controller = $controller(
-        'Search', {
-          $scope: $scope,
-          $window: $window,
-          udbApi: udbApi,
-          eventLabeller: eventLabeller
-        }
+  function getController() {
+    return $controller(
+      'Search', {
+        $scope: $scope,
+        $window: $window,
+        udbApi: udbApi,
+        eventLabeller: eventLabeller,
+        $location: $location
+      }
     );
+  }
+
+  it('alerts if there is no query when trying to export events', function() {
+    getController();
 
     expect($scope.activeQuery).toEqual(false);
 
@@ -48,5 +58,15 @@ describe('Controller: Search', function() {
     $scope.$digest();
 
     expect($window.alert).toHaveBeenCalledWith('An export is only possible after you have launched a search query');
+  });
+
+  it('should silence the initial pageChanged call because ui bootstrap pagination is f*cked', function () {
+    $location.search.and.returnValue({page: 5});
+    var controller = getController();
+
+    $scope.currentPage = 1;
+    $scope.pageChanged();
+
+    expect($scope.currentPage).toEqual(5);
   });
 });

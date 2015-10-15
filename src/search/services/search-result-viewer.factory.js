@@ -35,12 +35,13 @@ angular.module('udb.search')
      * @property {array}      eventSpecifics  A list of specific event info that can be shown exclusively
      * @property {SelectionState} selectionState Enum that keeps the state of selected results
      */
-    var SearchResultViewer = function (pageSize) {
+    var SearchResultViewer = function (pageSize, activePage) {
       this.pageSize = pageSize || 30;
       this.events = [];
       this.totalItems = 0;
-      this.currentPage = 1;
+      this.currentPage = activePage || 1;
       this.loading = true;
+      this.lastQuery = null;
       this.eventProperties = {
         description: {name: 'Beschrijving', visible: false},
         labels: {name: 'Labels', visible: false},
@@ -153,9 +154,15 @@ angular.module('udb.search')
       },
       queryChanged: function (query) {
         this.loading = true;
-        this.currentPage = 1;
         this.selectedIds = [];
         this.querySelected = false;
+
+        // prevent the initial search from resetting the active page
+        if (this.lastQuery && this.lastQuery !== query) {
+          this.currentPage = 1;
+        }
+
+        this.lastQuery = query;
       },
       activateSpecific: function (specific) {
         this.activeSpecific = specific;

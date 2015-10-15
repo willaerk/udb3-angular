@@ -1,7 +1,7 @@
 'use strict';
 
 describe('Controller: Saved Searches List', function () {
-  var savedSearchesService, savedSearchesListController, $scope, $modal, modalInstance, $q;
+  var savedSearchesService, savedSearchesListController, $scope, $uibModal, modalInstance, $q;
 
   var savedSearchId = 'some-saved-search-id';
   var aSavedSearch = {id:savedSearchId, name: 'some query name', query: 'q:uery'};
@@ -10,14 +10,14 @@ describe('Controller: Saved Searches List', function () {
   beforeEach(module('udb.saved-searches'));
   beforeEach(module('udb.templates'));
 
-  beforeEach(inject(function($controller, $rootScope, _$modal_, _savedSearchesService_, _$q_){
+  beforeEach(inject(function($controller, $rootScope, _$uibModal_, _savedSearchesService_, _$q_){
     $q = _$q_;
     $scope = $rootScope.$new();
-    $modal = _$modal_;
+    $uibModal = _$uibModal_;
     savedSearchesService = _savedSearchesService_;
 
-    var original = $modal.open;
-    spyOn($modal, 'open').and.callFake(function () {
+    var original = $uibModal.open;
+    spyOn($uibModal, 'open').and.callFake(function () {
       modalInstance = original.apply(null, arguments);
       return modalInstance;
     });
@@ -35,7 +35,7 @@ describe('Controller: Saved Searches List', function () {
     savedSearchesListController = $controller('SavedSearchesListController', {
       $scope: $scope,
       savedSearchesService: savedSearchesService,
-      $modal: $modal,
+      $uibModal: $uibModal,
       $rootScope: $scope
     });
   }));
@@ -57,7 +57,7 @@ describe('Controller: Saved Searches List', function () {
     });
 
     it('show a confirmation modal when trying to delete a saved search', function () {
-      expect($modal.open).toHaveBeenCalled();
+      expect($uibModal.open).toHaveBeenCalled();
     });
 
     it('does not delete the search when the modal is dismissed', function () {
@@ -78,7 +78,7 @@ describe('Controller: Saved Searches List', function () {
       $scope.$digest();
       apiRequest.reject();
       $scope.$digest();
-      expect($modal.open.calls.count()).toEqual(2);
+      expect($uibModal.open.calls.count()).toEqual(2);
     });
   });
 });

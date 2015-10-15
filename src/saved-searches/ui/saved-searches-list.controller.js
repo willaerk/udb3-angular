@@ -12,7 +12,7 @@ angular
   .controller('SavedSearchesListController', SavedSearchesList);
 
 /* @ngInject */
-function SavedSearchesList($scope, savedSearchesService, $modal, $rootScope) {
+function SavedSearchesList($scope, savedSearchesService, $uibModal, $rootScope) {
 
   $scope.savedSearches = [];
 
@@ -42,7 +42,7 @@ function SavedSearchesList($scope, savedSearchesService, $modal, $rootScope) {
   });
 
   this.deleteSavedSearch = function(searchId) {
-    var modal = $modal.open({
+    var modal = $uibModal.open({
       templateUrl: 'templates/delete-search-modal.html',
       controller: 'DeleteSearchModalController'
     });
@@ -52,7 +52,7 @@ function SavedSearchesList($scope, savedSearchesService, $modal, $rootScope) {
 
       savedSearchPromise
         .catch(function() {
-          var modalInstance = $modal.open({
+          var modalInstance = $uibModal.open({
             templateUrl: 'templates/unexpected-error-modal.html',
             controller: 'UnexpectedErrorModalController',
             size: 'lg',

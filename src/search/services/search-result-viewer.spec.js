@@ -34,4 +34,16 @@ describe('Service: SearchResultViewer', function () {
     expect(viewer.totalItems).toBe(100);
   });
 
+  it('should not reset the active page on the initial search', function () {
+    var viewer = new SearchResultViewer(10, 3);
+    expect(viewer.currentPage).toEqual(3);
+
+    viewer.queryChanged('city:leuven');
+    expect(viewer.currentPage).toEqual(3);
+
+    // a subsequent search should trigger a page reset
+    viewer.queryChanged('city:tienen');
+    expect(viewer.currentPage).toEqual(1);
+  });
+
 });

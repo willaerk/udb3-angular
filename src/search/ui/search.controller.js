@@ -18,7 +18,7 @@ function Search(
   LuceneQueryBuilder,
   $window,
   $location,
-  $modal,
+  $uibModal,
   SearchResultViewer,
   eventLabeller,
   searchHelper,
@@ -32,33 +32,29 @@ function Search(
     return searchHelper.getQuery();
   }
 
-  $scope.resultViewer = new SearchResultViewer();
+  function getCurrentPage() {
+    var currentPage = 1;
+    var searchParams = $location.search();
+
+    if (searchParams.page) {
+      currentPage = parseInt(searchParams.page);
+    }
+
+    return currentPage;
+  }
+
+  $scope.resultViewer = new SearchResultViewer(30, getCurrentPage());
   $scope.queryErrors = [];
   $scope.realQuery = false;
   $scope.activeQuery = false;
   $scope.queryEditorShown = false;
+  $scope.currentPage = getCurrentPage();
 
-  $scope.$watch(function () {
-    return $location.search();
-  }, function (searchParams) {
-
-    if (searchParams.page) {
-      $scope.resultViewer.currentPage = parseInt(searchParams.page);
-    }
-
-    if (searchParams.query) {
-      var queryString = String(searchParams.query) || '';
-      searchHelper.setQueryString(queryString);
-    }
-  }, true);
-
-  /**
-   * This debounce function can be used to delay searching when an input field changes.
-   * @param {String} queryString A query string used to find events.
-   */
-  var debouncedFindEvents = _.debounce(function (queryString) {
-    findEvents(queryString);
-  }, 1000);
+  var searchParams = $location.search();
+  if (searchParams.query) {
+    var queryString = String(searchParams.query) || '';
+    searchHelper.setQueryString(queryString);
+  }
 
   /**
    *
@@ -67,7 +63,7 @@ function Search(
   var updateQuery = function (query) {
     var realQuery = queryBuilder.unparse(query);
     $scope.resultViewer.queryChanged(realQuery);
-    debouncedFindEvents(realQuery);
+    findEvents(realQuery);
 
     if (realQuery !== query.originalQueryString) {
       $scope.realQuery = realQuery;
@@ -85,18 +81,12 @@ function Search(
     var queryString = typeof query === 'string' ? query : query.queryString;
     var eventPromise = udbApi.findEvents(queryString, offset);
 
-    // Check if a query string is defined else clear the relevant search parameters.
-    if (queryString) {
-      $location.search({
-        'query': getSearchQuery().queryString,
-        'page': String($scope.resultViewer.currentPage)
-      });
-    } else {
-      $location.search({
-        'query': null,
-        'page': null
-      });
-    }
+    var pageSearchParameter = $scope.resultViewer.currentPage > 1 ? String($scope.resultViewer.currentPage) : null;
+
+    $location.search({
+      'query': getSearchQuery().queryString || null,
+      'page': pageSearchParameter
+    });
 
     $scope.resultViewer.loading = true;
 
@@ -124,7 +114,7 @@ function Search(
       return;
     }
 
-    var modal = $modal.open({
+    var modal = $uibModal.open({
       templateUrl: 'templates/event-label-modal.html',
       controller: 'EventLabelModalCtrl'
     });
@@ -154,7 +144,7 @@ function Search(
         eventCount = $scope.resultViewer.totalItems;
 
     if (queryBuilder.isValid(query)) {
-      var modal = $modal.open({
+      var modal = $uibModal.open({
         templateUrl: 'templates/event-label-modal.html',
         controller: 'EventLabelModalCtrl'
       });
@@ -203,7 +193,7 @@ function Search(
     eventExporter.activeExport.selection = selectedIds;
 
     if (query && query.queryString.length && queryBuilder.isValid(query)) {
-      var modal = $modal.open({
+      var modal = $uibModal.open({
         templateUrl: 'templates/event-export-modal.html',
         controller: 'EventExportController',
         controllerAs: 'exporter',
@@ -247,11 +237,21 @@ function Search(
 
   });
 
-  $scope.$watch('resultViewer.currentPage', function (newPageNr, oldPageNr) {
-    if (newPageNr !== oldPageNr) {
+  // Because the uib pagination directive is messed up and overrides the initial page to 1,
+  // you have to silence and revert it.
+  var initialChangeSilenced = false;
+  $scope.pageChanged = function () {
+    var newPageNumber = $scope.currentPage;
+
+    if (!initialChangeSilenced) {
+      $scope.currentPage = $scope.resultViewer.currentPage;
+      initialChangeSilenced = true;
+    } else {
+      $scope.resultViewer.currentPage = newPageNumber;
+
       findEvents($scope.activeQuery);
       $window.scroll(0, 0);
     }
-  });
+  };
 
 }

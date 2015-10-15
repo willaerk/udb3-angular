@@ -3959,7 +3959,7 @@ PlaceDeleteConfirmModalController.$inject = ["$scope", "$modalInstance", "eventC
     .controller('DashboardCtrl', DashboardController);
 
   /* @ngInject */
-  function DashboardController($scope, $modal, udb3Content, eventCrud, UdbEvent, UdbPlace, jsonLDLangFilter) {
+  function DashboardController($scope, $uibModal, udb3Content, eventCrud, UdbEvent, UdbPlace, jsonLDLangFilter) {
 
     // Scope variables.
     $scope.loaded = false;
@@ -4032,7 +4032,7 @@ PlaceDeleteConfirmModalController.$inject = ["$scope", "$modalInstance", "eventC
 
       if (item.type === 'event') {
 
-        modalInstance = $modal.open({
+        modalInstance = $uibModal.open({
           templateUrl: 'templates/event-delete-confirm-modal.html',
           controller: 'EventDeleteConfirmModalCtrl',
           resolve: {
@@ -4052,7 +4052,7 @@ PlaceDeleteConfirmModalController.$inject = ["$scope", "$modalInstance", "eventC
         var promise = eventCrud.findEventsForLocation(item.details.id);
         promise.then(function(jsonResponse) {
 
-          modalInstance = $modal.open({
+          modalInstance = $uibModal.open({
             templateUrl: 'templates/place-delete-confirm-modal.html',
             controller: 'PlaceDeleteConfirmModalCtrl',
             resolve: {
@@ -4088,7 +4088,7 @@ PlaceDeleteConfirmModalController.$inject = ["$scope", "$modalInstance", "eventC
     }
 
   }
-  DashboardController.$inject = ["$scope", "$modal", "udb3Content", "eventCrud", "UdbEvent", "UdbPlace", "jsonLDLangFilter"];
+  DashboardController.$inject = ["$scope", "$uibModal", "udb3Content", "eventCrud", "UdbEvent", "UdbPlace", "jsonLDLangFilter"];
 
 })();
 
@@ -7683,7 +7683,7 @@ function EventFormStep3Controller(
     EventFormData,
     cityAutocomplete,
     placeCategories,
-    $modal,
+    $uibModal,
     cities,
     Levenshtein
 ) {
@@ -7906,7 +7906,7 @@ function EventFormStep3Controller(
    */
   function openPlaceModal() {
 
-    var modalInstance = $modal.open({
+    var modalInstance = $uibModal.open({
       templateUrl: 'templates/event-form-place-modal.html',
       controller: 'EventFormPlaceModalController',
       resolve: {
@@ -7991,7 +7991,7 @@ function EventFormStep3Controller(
   }
 
 }
-EventFormStep3Controller.$inject = ["$scope", "EventFormData", "cityAutocomplete", "placeCategories", "$modal", "cities", "Levenshtein"];
+EventFormStep3Controller.$inject = ["$scope", "EventFormData", "cityAutocomplete", "placeCategories", "$uibModal", "cities", "Levenshtein"];
 
 // Source: src/event_form/steps/event-form-step4.controller.js
 /**
@@ -8006,7 +8006,7 @@ angular
   .controller('EventFormStep4Controller', EventFormStep4Controller);
 
 /* @ngInject */
-function EventFormStep4Controller($scope, EventFormData, udbApi, appConfig, SearchResultViewer, eventCrud, $modal) {
+function EventFormStep4Controller($scope, EventFormData, udbApi, appConfig, SearchResultViewer, eventCrud) {
 
   // Scope vars.
   // main storage for event form.
@@ -8245,7 +8245,7 @@ function EventFormStep4Controller($scope, EventFormData, udbApi, appConfig, Sear
   }
 
 }
-EventFormStep4Controller.$inject = ["$scope", "EventFormData", "udbApi", "appConfig", "SearchResultViewer", "eventCrud", "$modal"];
+EventFormStep4Controller.$inject = ["$scope", "EventFormData", "udbApi", "appConfig", "SearchResultViewer", "eventCrud"];
 
 // Source: src/event_form/steps/event-form-step5.controller.js
 /**
@@ -8260,7 +8260,7 @@ angular
   .controller('EventFormStep5Controller', EventFormStep5Controller);
 
 /* @ngInject */
-function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizers, $modal) {
+function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizers, $uibModal) {
 
   // Scope vars.
   $scope.eventFormData = EventFormData; // main storage for event form.
@@ -8599,7 +8599,7 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
    */
   function openOrganizerModal() {
 
-    var modalInstance = $modal.open({
+    var modalInstance = $uibModal.open({
       templateUrl: 'templates/event-form-organizer-modal.html',
       controller: 'EventFormOrganizerModalController',
     });
@@ -8706,7 +8706,7 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
    */
   function openFacilitiesModal() {
 
-    var modalInstance = $modal.open({
+    var modalInstance = $uibModal.open({
       templateUrl: 'templates/event-form-facilities-modal.html',
       controller: 'EventFormFacilitiesModalController',
     });
@@ -8875,7 +8875,7 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
    */
   function openBookingPeriodModal() {
 
-    var modalInstance = $modal.open({
+    var modalInstance = $uibModal.open({
       templateUrl: 'templates/reservation-modal.html',
       controller: 'EventFormReservationModalController',
     });
@@ -8929,7 +8929,7 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
    */
   function openUploadImageModal(indexToEdit) {
 
-    var modalInstance = $modal.open({
+    var modalInstance = $uibModal.open({
       templateUrl: 'templates/event-form-image-upload.html',
       controller: 'EventFormImageUploadController',
       resolve: {
@@ -8958,7 +8958,7 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
    */
   function openDeleteImageModal(indexToDelete) {
 
-    var modalInstance = $modal.open({
+    var modalInstance = $uibModal.open({
       templateUrl: 'templates/event-form-image-delete.html',
       controller: 'EventFormImageDeleteController',
       resolve: {
@@ -9068,7 +9068,7 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
   }
 
 }
-EventFormStep5Controller.$inject = ["$scope", "EventFormData", "eventCrud", "udbOrganizers", "$modal"];
+EventFormStep5Controller.$inject = ["$scope", "EventFormData", "eventCrud", "udbOrganizers", "$uibModal"];
 
 // Source: src/export/event-export-job.factory.js
 /**
@@ -9636,7 +9636,7 @@ angular
   .directive('udbSaveSearch', udbSaveSearch);
 
 /* @ngInject */
-function udbSaveSearch(savedSearchesService, $modal) {
+function udbSaveSearch(savedSearchesService, $uibModal) {
   var directive = {
     link: link,
     templateUrl: 'templates/save-search.directive.html',
@@ -9649,7 +9649,7 @@ function udbSaveSearch(savedSearchesService, $modal) {
 
   function link(scope, element, attrs, controllers) {
     scope.saveSearch = function () {
-      var modal = $modal.open({
+      var modal = $uibModal.open({
         templateUrl: 'templates/save-search-modal.html',
         controller: 'SaveSearchModalController'
       });
@@ -9658,7 +9658,7 @@ function udbSaveSearch(savedSearchesService, $modal) {
         var savedSearchPromise = savedSearchesService.createSavedSearch(name, scope.queryString);
 
         savedSearchPromise.catch(function() {
-          var modalInstance = $modal.open(
+          var modalInstance = $uibModal.open(
             {
               templateUrl: 'templates/unexpected-error-modal.html',
               controller: 'UnexpectedErrorModalController',
@@ -9675,7 +9675,7 @@ function udbSaveSearch(savedSearchesService, $modal) {
     };
   }
 }
-udbSaveSearch.$inject = ["savedSearchesService", "$modal"];
+udbSaveSearch.$inject = ["savedSearchesService", "$uibModal"];
 
 // Source: src/saved-searches/udb.saved-searches.service.js
 /**
@@ -9759,7 +9759,7 @@ angular
   .controller('SavedSearchesListController', SavedSearchesList);
 
 /* @ngInject */
-function SavedSearchesList($scope, savedSearchesService, $modal, $rootScope) {
+function SavedSearchesList($scope, savedSearchesService, $uibModal, $rootScope) {
 
   $scope.savedSearches = [];
 
@@ -9789,7 +9789,7 @@ function SavedSearchesList($scope, savedSearchesService, $modal, $rootScope) {
   });
 
   this.deleteSavedSearch = function(searchId) {
-    var modal = $modal.open({
+    var modal = $uibModal.open({
       templateUrl: 'templates/delete-search-modal.html',
       controller: 'DeleteSearchModalController'
     });
@@ -9799,7 +9799,7 @@ function SavedSearchesList($scope, savedSearchesService, $modal, $rootScope) {
 
       savedSearchPromise
         .catch(function() {
-          var modalInstance = $modal.open({
+          var modalInstance = $uibModal.open({
             templateUrl: 'templates/unexpected-error-modal.html',
             controller: 'UnexpectedErrorModalController',
             size: 'lg',
@@ -9815,7 +9815,7 @@ function SavedSearchesList($scope, savedSearchesService, $modal, $rootScope) {
 
   $scope.deleteSavedSearch = this.deleteSavedSearch;
 }
-SavedSearchesList.$inject = ["$scope", "savedSearchesService", "$modal", "$rootScope"];
+SavedSearchesList.$inject = ["$scope", "savedSearchesService", "$uibModal", "$rootScope"];
 
 // Source: src/search/components/query-editor-daterangepicker.directive.js
 /**
@@ -10265,7 +10265,7 @@ angular
   .directive('udbSearchBar', udbSearchBar);
 
 /* @ngInject */
-function udbSearchBar(searchHelper, $rootScope, $modal, savedSearchesService) {
+function udbSearchBar(searchHelper, $rootScope, $uibModal, savedSearchesService) {
   return {
     templateUrl: 'templates/search-bar.directive.html',
     restrict: 'E',
@@ -10285,7 +10285,7 @@ function udbSearchBar(searchHelper, $rootScope, $modal, savedSearchesService) {
         $rootScope.$emit('startEditingQuery');
         searchBar.isEditing = true;
 
-        editorModal = $modal.open({
+        editorModal = $uibModal.open({
           templateUrl: 'templates/query-editor-modal.html',
           controller: 'QueryEditorController',
           controllerAs: 'qe',
@@ -10349,7 +10349,7 @@ function udbSearchBar(searchHelper, $rootScope, $modal, savedSearchesService) {
     }
   };
 }
-udbSearchBar.$inject = ["searchHelper", "$rootScope", "$modal", "savedSearchesService"];
+udbSearchBar.$inject = ["searchHelper", "$rootScope", "$uibModal", "savedSearchesService"];
 
 // Source: src/search/filters/currency.filter.js
 /**
@@ -11348,12 +11348,13 @@ angular.module('udb.search')
      * @property {array}      eventSpecifics  A list of specific event info that can be shown exclusively
      * @property {SelectionState} selectionState Enum that keeps the state of selected results
      */
-    var SearchResultViewer = function (pageSize) {
+    var SearchResultViewer = function (pageSize, activePage) {
       this.pageSize = pageSize || 30;
       this.events = [];
       this.totalItems = 0;
-      this.currentPage = 1;
+      this.currentPage = activePage || 1;
       this.loading = true;
+      this.lastQuery = null;
       this.eventProperties = {
         description: {name: 'Beschrijving', visible: false},
         labels: {name: 'Labels', visible: false},
@@ -11466,9 +11467,15 @@ angular.module('udb.search')
       },
       queryChanged: function (query) {
         this.loading = true;
-        this.currentPage = 1;
         this.selectedIds = [];
         this.querySelected = false;
+
+        // prevent the initial search from resetting the active page
+        if (this.lastQuery && this.lastQuery !== query) {
+          this.currentPage = 1;
+        }
+
+        this.lastQuery = query;
       },
       activateSpecific: function (specific) {
         this.activeSpecific = specific;
@@ -11844,7 +11851,7 @@ function Search(
   LuceneQueryBuilder,
   $window,
   $location,
-  $modal,
+  $uibModal,
   SearchResultViewer,
   eventLabeller,
   searchHelper,
@@ -11858,33 +11865,29 @@ function Search(
     return searchHelper.getQuery();
   }
 
-  $scope.resultViewer = new SearchResultViewer();
+  function getCurrentPage() {
+    var currentPage = 1;
+    var searchParams = $location.search();
+
+    if (searchParams.page) {
+      currentPage = parseInt(searchParams.page);
+    }
+
+    return currentPage;
+  }
+
+  $scope.resultViewer = new SearchResultViewer(30, getCurrentPage());
   $scope.queryErrors = [];
   $scope.realQuery = false;
   $scope.activeQuery = false;
   $scope.queryEditorShown = false;
+  $scope.currentPage = getCurrentPage();
 
-  $scope.$watch(function () {
-    return $location.search();
-  }, function (searchParams) {
-
-    if (searchParams.page) {
-      $scope.resultViewer.currentPage = parseInt(searchParams.page);
-    }
-
-    if (searchParams.query) {
-      var queryString = String(searchParams.query) || '';
-      searchHelper.setQueryString(queryString);
-    }
-  }, true);
-
-  /**
-   * This debounce function can be used to delay searching when an input field changes.
-   * @param {String} queryString A query string used to find events.
-   */
-  var debouncedFindEvents = _.debounce(function (queryString) {
-    findEvents(queryString);
-  }, 1000);
+  var searchParams = $location.search();
+  if (searchParams.query) {
+    var queryString = String(searchParams.query) || '';
+    searchHelper.setQueryString(queryString);
+  }
 
   /**
    *
@@ -11893,7 +11896,7 @@ function Search(
   var updateQuery = function (query) {
     var realQuery = queryBuilder.unparse(query);
     $scope.resultViewer.queryChanged(realQuery);
-    debouncedFindEvents(realQuery);
+    findEvents(realQuery);
 
     if (realQuery !== query.originalQueryString) {
       $scope.realQuery = realQuery;
@@ -11911,18 +11914,12 @@ function Search(
     var queryString = typeof query === 'string' ? query : query.queryString;
     var eventPromise = udbApi.findEvents(queryString, offset);
 
-    // Check if a query string is defined else clear the relevant search parameters.
-    if (queryString) {
-      $location.search({
-        'query': getSearchQuery().queryString,
-        'page': String($scope.resultViewer.currentPage)
-      });
-    } else {
-      $location.search({
-        'query': null,
-        'page': null
-      });
-    }
+    var pageSearchParameter = $scope.resultViewer.currentPage > 1 ? String($scope.resultViewer.currentPage) : null;
+
+    $location.search({
+      'query': getSearchQuery().queryString || null,
+      'page': pageSearchParameter
+    });
 
     $scope.resultViewer.loading = true;
 
@@ -11950,7 +11947,7 @@ function Search(
       return;
     }
 
-    var modal = $modal.open({
+    var modal = $uibModal.open({
       templateUrl: 'templates/event-label-modal.html',
       controller: 'EventLabelModalCtrl'
     });
@@ -11980,7 +11977,7 @@ function Search(
         eventCount = $scope.resultViewer.totalItems;
 
     if (queryBuilder.isValid(query)) {
-      var modal = $modal.open({
+      var modal = $uibModal.open({
         templateUrl: 'templates/event-label-modal.html',
         controller: 'EventLabelModalCtrl'
       });
@@ -12029,7 +12026,7 @@ function Search(
     eventExporter.activeExport.selection = selectedIds;
 
     if (query && query.queryString.length && queryBuilder.isValid(query)) {
-      var modal = $modal.open({
+      var modal = $uibModal.open({
         templateUrl: 'templates/event-export-modal.html',
         controller: 'EventExportController',
         controllerAs: 'exporter',
@@ -12073,15 +12070,25 @@ function Search(
 
   });
 
-  $scope.$watch('resultViewer.currentPage', function (newPageNr, oldPageNr) {
-    if (newPageNr !== oldPageNr) {
+  // Because the uib pagination directive is messed up and overrides the initial page to 1,
+  // you have to silence and revert it.
+  var initialChangeSilenced = false;
+  $scope.pageChanged = function () {
+    var newPageNumber = $scope.currentPage;
+
+    if (!initialChangeSilenced) {
+      $scope.currentPage = $scope.resultViewer.currentPage;
+      initialChangeSilenced = true;
+    } else {
+      $scope.resultViewer.currentPage = newPageNumber;
+
       findEvents($scope.activeQuery);
       $window.scroll(0, 0);
     }
-  });
+  };
 
 }
-Search.$inject = ["$scope", "udbApi", "LuceneQueryBuilder", "$window", "$location", "$modal", "SearchResultViewer", "eventLabeller", "searchHelper", "$rootScope", "eventExporter", "$translate"];
+Search.$inject = ["$scope", "udbApi", "LuceneQueryBuilder", "$window", "$location", "$uibModal", "SearchResultViewer", "eventLabeller", "searchHelper", "$rootScope", "eventExporter", "$translate"];
 
 // Source: src/search/ui/search.directive.js
 /**
@@ -12221,9 +12228,9 @@ $templateCache.put('templates/time-autocomplete.html',
     "          </td>\n" +
     "\n" +
     "          <td>\n" +
-    "            <div class=\"pull-right btn-group\" dropdown>\n" +
+    "            <div class=\"pull-right btn-group\" uib-dropdown>\n" +
     "              <a class=\"btn btn-default\" href=\"{{ userContentItem.editUrl }}\">Bewerken</a>\n" +
-    "              <button type=\"button\" class=\"btn btn-default\" dropdown-toggle><span class=\"caret\"></span></button>\n" +
+    "              <button type=\"button\" class=\"btn btn-default\" uib-dropdown-toggle><span class=\"caret\"></span></button>\n" +
     "              <ul class=\"dropdown-menu\" role=\"menu\">\n" +
     "                <li>\n" +
     "                  <a href=\"{{ userContentItem.exampleUrl }}\">Voorbeeld</a>\n" +
@@ -14565,7 +14572,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "  <div class=\"form-group has-warning has-feedback\">\n" +
     "    <input type=\"text\" class=\"form-control\" ng-model=\"sb.query\" ng-change=\"sb.searchChange()\">\n" +
     "    <span class=\"dropdown saved-search-icon\" dropdown>\n" +
-    "      <i class=\"fa fa-bookmark\" class=\"dropdown-toggle\" dropdown-toggle></i>\n" +
+    "      <i class=\"fa fa-bookmark\" class=\"dropdown-toggle\" uib-dropdown-toggle></i>\n" +
     "      <ul class=\"dropdown-menu\" role=\"menu\">\n" +
     "        <li role=\"presentation\" class=\"dropdown-header\">Bewaarde zoekopdrachten</li>\n" +
     "        <li ng-repeat=\"savedSearch in sb.savedSearches\">\n" +
@@ -14851,7 +14858,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "            <div class=\"rv-item-sidebar\">\n" +
     "                <div class=\"rv-selection-state\">\n" +
     "                    <span class=\"dropdown\" dropdown ng-hide=\"resultViewer.selectedIds.length\">\n" +
-    "                      <span class=\"dropdown-toggle fa {{resultViewer.selectionState.icon}}\" dropdown-toggle>\n" +
+    "                      <span class=\"dropdown-toggle fa {{resultViewer.selectionState.icon}}\" uib-dropdown-toggle>\n" +
     "                      </span>\n" +
     "                      <ul class=\"dropdown-menu\">\n" +
     "                          <li role=\"presentation\" class=\"dropdown-header\">Selecteer</li>\n" +
@@ -14874,8 +14881,8 @@ $templateCache.put('templates/time-autocomplete.html',
     "                 ng-class=\"{selected: resultViewer.isIdSelected(event.id)}\">\n" +
     "      </udb-event>\n" +
     "\n" +
-    "      <pagination total-items=\"resultViewer.totalItems\" ng-model=\"resultViewer.currentPage\" items-per-page=\"resultViewer.pageSize\" ng-show=\"resultViewer.totalItems > 0\"\n" +
-    "        ng-change=\"resultViewer.pageChanged()\" max-size=\"10\"></pagination>\n" +
+    "      <uib-pagination total-items=\"resultViewer.totalItems\" ng-model=\"currentPage\" items-per-page=\"resultViewer.pageSize\"\n" +
+    "                  ng-show=\"resultViewer.totalItems > 0\" max-size=\"10\" ng-change=\"pageChanged()\"></uib-pagination>\n" +
     "\n" +
     "    <div class=\"col-sm-12\" ng-show=\"realQuery\">\n" +
     "        <span class=\"help-block\">\n" +

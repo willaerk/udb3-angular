@@ -12,7 +12,7 @@ angular
   .controller('EventFormStep4Controller', EventFormStep4Controller);
 
 /* @ngInject */
-function EventFormStep4Controller($scope, EventFormData, udbApi, appConfig, SearchResultViewer, eventCrud, $modal) {
+function EventFormStep4Controller($scope, EventFormData, udbApi, appConfig, SearchResultViewer, eventCrud) {
 
   // Scope vars.
   // main storage for event form.

@@ -3,7 +3,7 @@
   <div class="form-group has-warning has-feedback">
     <input type="text" class="form-control" ng-model="sb.query" ng-change="sb.searchChange()">
     <span class="dropdown saved-search-icon" dropdown>
-      <i class="fa fa-bookmark" class="dropdown-toggle" dropdown-toggle></i>
+      <i class="fa fa-bookmark" class="dropdown-toggle" uib-dropdown-toggle></i>
       <ul class="dropdown-menu" role="menu">
         <li role="presentation" class="dropdown-header">Bewaarde zoekopdrachten</li>
         <li ng-repeat="savedSearch in sb.savedSearches">

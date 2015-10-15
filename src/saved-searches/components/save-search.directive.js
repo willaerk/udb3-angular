@@ -11,7 +11,7 @@ angular
   .directive('udbSaveSearch', udbSaveSearch);
 
 /* @ngInject */
-function udbSaveSearch(savedSearchesService, $modal) {
+function udbSaveSearch(savedSearchesService, $uibModal) {
   var directive = {
     link: link,
     templateUrl: 'templates/save-search.directive.html',
@@ -24,7 +24,7 @@ function udbSaveSearch(savedSearchesService, $modal) {
 
   function link(scope, element, attrs, controllers) {
     scope.saveSearch = function () {
-      var modal = $modal.open({
+      var modal = $uibModal.open({
         templateUrl: 'templates/save-search-modal.html',
         controller: 'SaveSearchModalController'
       });
@@ -33,7 +33,7 @@ function udbSaveSearch(savedSearchesService, $modal) {
         var savedSearchPromise = savedSearchesService.createSavedSearch(name, scope.queryString);
 
         savedSearchPromise.catch(function() {
-          var modalInstance = $modal.open(
+          var modalInstance = $uibModal.open(
             {
               templateUrl: 'templates/unexpected-error-modal.html',
               controller: 'UnexpectedErrorModalController',

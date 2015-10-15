@@ -10,8 +10,8 @@ describe('Directive: udbSaveSearch', function () {
   beforeEach(module('udb.core'));
   beforeEach(module('udb.templates'));
 
-  beforeEach(inject(function(_$rootScope_, _$compile_, _$modal_, _$q_, _savedSearchesService_) {
-    modal = _$modal_;
+  beforeEach(inject(function(_$rootScope_, _$compile_, $uibModal, _$q_, _savedSearchesService_) {
+    modal = $uibModal;
     $rootScope = _$rootScope_;
     $compile = _$compile_;
     $q = _$q_;

@@ -2450,3 +2450,533 @@ body {
 .fa-meanpath:before {
   content: "\f20c";
 }
+.offer-form #or-label {
+  font-style: italic;
+  color: #777;
+  position: relative;
+  background-color: #ffffff;
+  text-align: center;
+  display: block;
+}
+.offer-form #step1 {
+  position: relative;
+}
+.offer-form #step1-events,
+.offer-form #step1-places,
+.offer-form #step2-list,
+.offer-form #step3-list {
+  line-height: 2.7em;
+  margin-bottom: 1em;
+}
+.offer-form .title-border {
+  border-bottom: 1px solid #555555;
+  padding-bottom: 1em;
+  text-transform: uppercase;
+  font-weight: bold;
+  color: #333333;
+}
+.offer-form .btn-chosen {
+  color: #333333;
+  padding: 7px 0;
+  display: inline-block;
+  line-height: 1.42857;
+  font-style: italic;
+}
+.offer-form .btn-chosen:before {
+  content: "\f058 ";
+  font-family: "FontAwesome";
+  color: #5cb85c;
+  margin-right: 6px;
+  font-style: normal;
+  font-size: 17px;
+}
+.offer-form .number {
+  background-color: #555555;
+  border-radius: 99px;
+  color: #fff;
+  display: inline-block;
+  font-size: 14px;
+  font-weight: normal;
+  margin-right: 1em;
+  text-align: center;
+  width: 21px;
+  height: 21px;
+  line-height: 21px;
+}
+.offer-form .add-date {
+  padding: 5px;
+  border: 1px solid #dddddd;
+  min-height: 354px;
+  width: 100%;
+  margin-bottom: 1em;
+  background-color: #fff;
+}
+.offer-form .add-date-teaser {
+  color: #777;
+}
+.offer-form .datepicker-cpo {
+  margin-bottom: 1em;
+}
+.offer-form .datepicker .table-condensed > thead > tr > th,
+.offer-form .datepicker .table-condensed > tbody > tr > th,
+.offer-form .datepicker .table-condensed > tfoot > tr > th,
+.offer-form .datepicker .table-condensed > thead > tr > td,
+.offer-form .datepicker .table-condensed > tbody > tr > td,
+.offer-form .datepicker .table-condensed > tfoot > tr > td {
+  padding: 0;
+}
+.offer-form .datepicker-inline {
+  margin-bottom: 5px;
+}
+.offer-form #add-date-plus {
+  display: block;
+  margin: 0 auto;
+  text-align: center;
+  padding-top: 60px;
+  font-size: 7em;
+  text-decoration: none !important;
+}
+.offer-form .add-date-link:hover,
+.offer-form .add-date-link:focus {
+  text-decoration: none !important;
+}
+.offer-form #add-date-label {
+  display: block;
+  margin: 0 auto;
+  text-align: center;
+  text-decoration: underline;
+}
+.offer-form .add-date-link,
+.offer-form .add-date-link:focus *,
+.offer-form .add-date-link:active * {
+  text-decoration: none;
+}
+.offer-form .add-date-link {
+  display: inline-block;
+  height: 336px;
+  margin: 0;
+  overflow: hidden;
+  padding: 0;
+  width: 100%;
+}
+.offer-form .day {
+  height: 30px;
+  line-height: 30px;
+  text-align: center;
+  vertical-align: top;
+}
+.offer-form .datepicker th,
+.offer-form .datepicker td {
+  font-weight: normal;
+}
+.offer-form .dow {
+  color: #999;
+  border-bottom: 1px solid #dddddd;
+}
+.offer-form .datepicker td {
+  border-bottom: 1px solid #dddddd;
+}
+.offer-form .datepicker_icon:after {
+  font-family: "FontAwesome";
+  color: #777;
+  content: "\f073";
+  position: absolute;
+  right: 6px;
+  top: 6px;
+  z-index: 9;
+  display: block;
+}
+.offer-form .datepicker-group {
+  position: relative;
+}
+.offer-form .day-prefix {
+  color: #777;
+  margin-bottom: 0;
+  font-style: italic;
+  text-align: center;
+}
+.offer-form .openingsuren-toevoegen-section {
+  background-color: #fff;
+  padding: 0.5em;
+  border: 1px solid #dddddd;
+}
+.offer-form .openingsuren th a {
+  font-weight: normal;
+}
+.offer-form .openingsuren {
+  margin: 0;
+}
+.offer-form .extra-row {
+  padding-bottom: 0.5em;
+}
+.offer-form .form-group .form-group {
+  padding-left: 20px;
+}
+.offer-form .tt-dataset-locaties em {
+  font-style: normal;
+  color: #004f94;
+}
+.offer-form .tt-suggestion {
+  border-bottom: 1px solid #dddddd;
+}
+.offer-form .tt-suggestion:hover {
+  border-bottom: 1px solid #dddddd;
+}
+.offer-form .extra-task-label {
+  line-height: 30px;
+  /* align with buttons */
+}
+.offer-form .state-nvt .extra-task-label:before,
+.offer-form .state-complete .extra-task-label:before {
+  content: "\f058";
+  color: #5cb85c;
+  font-family: "FontAwesome";
+  transition: opacity 0.5s ease;
+  -webkit-font-smoothing: subpixel-antialiased;
+  -moz-osx-font-smoothing: auto;
+  font-style: normal;
+  line-height: 30px;
+  font-size: 17px;
+  margin-right: 6px;
+}
+.offer-form .btn-nvt {
+  color: #777;
+}
+.offer-form .extra-titel,
+.offer-form .extra-beschrijving,
+.offer-form .extra-leeftijd,
+.offer-form .extra-organisator,
+.offer-form .extra-prijs,
+.offer-form .extra-contact {
+  margin-bottom: 0.5em;
+}
+.offer-form .udb3-data-table {
+  table-layout: fixed;
+}
+.offer-form .extra-task p,
+.offer-form .udb3-data-table td {
+  line-height: 30px;
+  margin: 0;
+  white-space: -moz-pre-wrap;
+  /* Firefox */
+  white-space: -pre-wrap;
+  /* ancient Opera */
+  white-space: -o-pre-wrap;
+  /* newer Opera */
+  white-space: pre-wrap;
+  /* Chrome; W3C standard */
+  word-wrap: break-word;
+  /* IE */
+}
+.offer-form .extra-tickets-telefoon .checkbox,
+.offer-form .extra-tickets-website .checkbox,
+.offer-form .extra-tickets-email .checkbox {
+  margin: 0;
+}
+.offer-form .extra-tickets-website .checkbox {
+  margin-top: 0.5em;
+}
+.offer-form .extra-tickets .checkbox:first-child {
+  margin-top: 1em;
+}
+.offer-form .state {
+  display: none;
+}
+.offer-form .state-incomplete .incomplete {
+  display: block;
+}
+.offer-form .state-complete .complete {
+  display: block;
+}
+.offer-form .state-filling .filling {
+  display: block;
+}
+.offer-form .state-nvt .nvt {
+  display: block;
+}
+.offer-form .image-upload {
+  border: 2px dotted #dddddd;
+  display: block;
+  width: 100%;
+}
+.offer-form .image-upload-list {
+  display: none;
+}
+.offer-form .image-upload-icon:before {
+  color: #777;
+  text-align: center;
+  font-family: "FontAwesome";
+  content: "\f03e";
+  font-size: 50px;
+}
+.offer-form .image-upload-none {
+  text-align: center;
+  color: #777;
+}
+.offer-form .tip {
+  color: #626262;
+  margin-bottom: 10px;
+  margin-top: 5px;
+}
+.offer-form .tip p {
+  line-height: 1.6;
+}
+.offer-form .incomplete .btn-default {
+  text-align: left;
+}
+.offer-form .btn-plus {
+  position: relative;
+  margin-left: 1em;
+  padding-left: 0.25em;
+}
+.offer-form .btn-plus:before {
+  content: "\f055";
+  font-family: "FontAwesome";
+  color: #ccc;
+  margin-right: 0.5em;
+  text-decoration: none;
+  position: absolute;
+  left: -1em;
+  top: 6px;
+}
+.offer-form .incomplete .btn-default:hover:before {
+  color: #333;
+}
+.offer-form .extra-task .fa {
+  color: #777;
+  margin-left: 0.85em;
+  margin-right: 0.25em;
+}
+.offer-form .highlight {
+  background-color: #EEE;
+}
+.offer-form .highlight:after {
+  color: #006c7a;
+  content: "OMD";
+  display: block;
+  font-size: 11px;
+  font-weight: bold;
+  line-height: 18px;
+  text-transform: uppercase;
+}
+.offer-form .image-upload {
+  background-color: #fff;
+  padding: 1em;
+}
+.offer-form .image-upload-list {
+  margin-bottom: 1em;
+}
+.offer-form .image-upload-list .media {
+  border-bottom: 1px solid #dddddd;
+}
+.offer-form #publiceren {
+  margin-top: 2em;
+  border-top: 1px solid #dddddd;
+  padding-top: 1em;
+}
+.offer-form .reservatie-info {
+  margin: 0.5em 0 1em 1.5em;
+}
+.offer-form .extra-tickets-email .checkbox {
+  margin-bottom: 1em;
+}
+.offer-form .reservatie-periode-toevoegen {
+  margin-bottom: 1em;
+  display: block;
+}
+.offer-form .btn-reservatie {
+  background-color: #e67e22;
+  margin-bottom: 1em;
+}
+.offer-form .btn-ready span:before {
+  content: "\f058";
+  position: absolute;
+  left: 0;
+  color: #5cb85c;
+  font-family: "FontAwesome";
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  -webkit-font-smoothing: subpixel-antialiased;
+  -moz-osx-font-smoothing: auto;
+  font-style: normal;
+  line-height: 30px;
+  font-size: 17px;
+}
+.offer-form .recently-added td {
+  -webkit-transition: background-color 500ms linear;
+  -moz-transition: background-color 500ms linear;
+  -o-transition: background-color 500ms linear;
+  -ms-transition: background-color 500ms linear;
+  transition: background-color 500ms linear;
+}
+.offer-form .btn-reservatieperiode-toevoegen {
+  margin: 0.25em 0 0.5em;
+}
+.offer-form .module-title {
+  line-height: 1.42857;
+  font-size: 15px;
+  font-weight: bold;
+  border-bottom: 2px solid #dddddd;
+  padding: 5px;
+}
+.offer-form .multiselect-container {
+  position: absolute;
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+.offer-form .multiselect-container .input-group {
+  margin: 5px;
+}
+.offer-form .multiselect-container > li {
+  padding: 0;
+}
+.offer-form .multiselect-container > li > a.multiselect-all label {
+  font-weight: 700;
+}
+.offer-form .multiselect-container > li.multiselect-group label {
+  margin: 0;
+  padding: 3px 20px;
+  height: 100%;
+  font-weight: 700;
+}
+.offer-form .multiselect-container > li.multiselect-group-clickable label {
+  cursor: pointer;
+}
+.offer-form .multiselect-container > li > a {
+  padding: 0;
+}
+.offer-form .multiselect-container > li > a > label {
+  margin: 0;
+  height: 100%;
+  cursor: pointer;
+  font-weight: 400;
+  padding: 3px 20px 3px 40px;
+}
+.offer-form .multiselect-container > li > a > label.radio,
+.offer-form .multiselect-container > li > a > label.checkbox {
+  margin: 0;
+}
+.offer-form .multiselect-container > li > a > label > input[type=checkbox] {
+  margin-bottom: 5px;
+}
+.offer-form .filter .btn {
+  padding: 6px 3px;
+}
+.offer-form .btn-group > .btn-group:nth-child(2) > .multiselect.btn {
+  border-top-left-radius: 4px;
+  border-bottom-left-radius: 4px;
+}
+.offer-form .form-inline .multiselect-container label.checkbox,
+.offer-form .form-inline .multiselect-container label.radio {
+  padding: 3px 20px 3px 40px;
+}
+.offer-form .form-inline .multiselect-container li a label.checkbox input[type=checkbox],
+.offer-form .form-inline .multiselect-container li a label.radio input[type=radio] {
+  margin-left: -20px;
+  margin-right: 0;
+}
+.offer-form .plaats-adres-ingeven {
+  padding: 1em;
+  margin-left: 1.5em;
+  background-color: #FFF;
+  border: 1px solid #dddddd;
+}
+.offer-form .checkbox small {
+  color: #555555;
+}
+.offer-form .block-divider {
+  border-bottom: 1px solid #dddddd;
+  padding: 0.5em 0;
+}
+.offer-form .show-only-places {
+  display: none;
+}
+.offer-form .only-places .show-only-places {
+  display: initial;
+}
+.offer-form .only-places .hide-only-places {
+  display: none;
+}
+.offer-form .btn-tile {
+  display: inline-block;
+  text-align: left;
+  background-color: #fff;
+  margin-bottom: 1em;
+  min-height: 10em;
+  padding: 1em;
+  width: 100%;
+  position: relative;
+}
+.offer-form .btn-tile .preview-corner {
+  display: none;
+}
+.offer-form .btn-tile .preview-icon {
+  display: none;
+}
+.offer-form .btn-tile:hover {
+  background-color: #337ab7;
+  color: #fff;
+}
+.offer-form .btn-tile:hover .title {
+  text-decoration: underline;
+}
+.offer-form .btn-tile:hover .preview-corner {
+  display: block;
+  position: absolute;
+  right: -1px;
+  bottom: -1px;
+  width: 0px;
+  height: 0px;
+  border-style: solid;
+  border-width: 0 0 50px 50px;
+  border-color: transparent transparent #FFF transparent;
+}
+.offer-form .btn-tile:hover .preview-icon {
+  display: block;
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+  color: #337ab7;
+}
+.offer-form .preview .panel-heading {
+  background-color: #333;
+  background-size: cover;
+  position: relative;
+  background-position: center center;
+}
+.offer-form .preview .panel-heading:before {
+  position: absolute;
+  top: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  background-color: #000;
+  opacity: 0.5;
+  bottom: 0;
+  left: 0;
+  content: " ";
+  z-index: 0;
+}
+.offer-form .preview .title {
+  color: #FFF;
+  position: relative;
+  margin-top: 12px;
+  text-shadow: 1px 1px #000;
+  font-size: 30px;
+  font-weight: 700;
+}
+.offer-form .preview .list-inline {
+  color: #FFF;
+  position: relative;
+}
+.offer-form .preview table {
+  margin-bottom: 0;
+}
+.offer-form #dubbeldetectie-voorbeeld .modal-body {
+  background-color: #EEE;
+}
+.offer-form #dubbeldetectie-voorbeeld .close {
+  padding: 4px 12px;
+  line-height: initial;
+}

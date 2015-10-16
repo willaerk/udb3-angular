@@ -44,10 +44,6 @@ function QueryEditorController(
     });
   });
 
-  $rootScope.$on('searchBarChanged', function () {
-    qe.resetGroups();
-  });
-
   qe.getDefaultQueryTree = function () {
     return {
       type: 'root',

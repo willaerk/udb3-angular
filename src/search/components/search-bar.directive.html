@@ -7,7 +7,9 @@
       <ul class="uib-dropdown-menu" role="menu">
         <li role="presentation" class="dropdown-header">Bewaarde zoekopdrachten</li>
         <li ng-repeat="savedSearch in sb.savedSearches">
-          <a ng-href="/search?query={{::savedSearch.query}}" ng-bind="::savedSearch.name"></a>
+          <a ng-bind="::savedSearch.name"
+             ng-click="sb.setQueryAndSearch(savedSearch.query)">
+          </a>
         </li>
         <li class="divider"></li>
         <li><a href="/saved-searches">Beheren</a></li>

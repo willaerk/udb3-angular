@@ -39,6 +39,12 @@ function udbSearchBar(searchHelper, $rootScope, $uibModal, savedSearchesService)
         });
       };
 
+      searchBar.setQueryAndSearch = function (queryString) {
+        searchBar.query = queryString;
+        this.searchChange();
+        this.search();
+      };
+
       searchBar.searchChange = function() {
         $rootScope.$emit('searchBarChanged');
         $rootScope.$emit('stopEditingQuery');

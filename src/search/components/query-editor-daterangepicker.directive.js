@@ -11,7 +11,7 @@ angular
   .directive('udbQueryEditorDaterangepicker', udbQueryEditorDaterangepicker);
 
 /* @ngInject */
-function udbQueryEditorDaterangepicker($translate, datepickerPopupConfig) {
+function udbQueryEditorDaterangepicker($translate, uibDatepickerPopupConfig) {
   return {
     templateUrl: 'templates/query-editor-daterangepicker.directive.html',
     restrict: 'E',
@@ -24,9 +24,9 @@ function udbQueryEditorDaterangepicker($translate, datepickerPopupConfig) {
       };
 
       $translate(['datepicker.CURRENT', 'datepicker.CLEAR', 'datepicker.CLOSE']).then(function (translations) {
-        datepickerPopupConfig.currentText = translations['datepicker.CURRENT'];
-        datepickerPopupConfig.clearText = translations['datepicker.CLEAR'];
-        datepickerPopupConfig.closeText = translations['datepicker.CLOSE'];
+        uibDatepickerPopupConfig.currentText = translations['datepicker.CURRENT'];
+        uibDatepickerPopupConfig.clearText = translations['datepicker.CLEAR'];
+        uibDatepickerPopupConfig.closeText = translations['datepicker.CLOSE'];
       });
 
       dateRangePicker.openStart = function ($event) {

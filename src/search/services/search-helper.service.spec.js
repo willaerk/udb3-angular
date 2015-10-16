@@ -54,4 +54,14 @@ describe('Service: Search Helper', function () {
     expect(queryBuilder.createQuery.calls.count()).toEqual(1);
     expect(queryBuilder.isValid.calls.count()).toEqual(1);
   });
+
+  it('can be asked to reset the query tree', function () {
+    var tree = getQueryTree();
+
+    searchHelper.setQueryTree(tree);
+    expect(searchHelper.getQueryTree()).toEqual(tree);
+
+    searchHelper.resetQueryTree();
+    expect(searchHelper.getQueryTree()).toBeNull();
+  });
 });

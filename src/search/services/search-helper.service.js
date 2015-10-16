@@ -18,7 +18,7 @@ function SearchHelper(LuceneQueryBuilder) {
   };
   var queryTree = null;
 
-  this.resetQueryTree = function () {
+  this.clearQueryTree = function () {
     queryTree = null;
   };
 

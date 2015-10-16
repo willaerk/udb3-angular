@@ -55,13 +55,13 @@ describe('Service: Search Helper', function () {
     expect(queryBuilder.isValid.calls.count()).toEqual(1);
   });
 
-  it('can be asked to reset the query tree', function () {
+  it('can be asked to clear the query tree', function () {
     var tree = getQueryTree();
 
     searchHelper.setQueryTree(tree);
     expect(searchHelper.getQueryTree()).toEqual(tree);
 
-    searchHelper.resetQueryTree();
+    searchHelper.clearQueryTree();
     expect(searchHelper.getQueryTree()).toBeNull();
   });
 });

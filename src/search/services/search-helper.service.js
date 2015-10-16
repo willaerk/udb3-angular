@@ -18,6 +18,10 @@ function SearchHelper(LuceneQueryBuilder) {
   };
   var queryTree = null;
 
+  this.resetQueryTree = function () {
+    queryTree = null;
+  };
+
   this.setQueryString = function (queryString) {
     if (query.queryString !== queryString) {
       query = LuceneQueryBuilder.createQuery(queryString);

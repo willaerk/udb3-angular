@@ -16,12 +16,24 @@ function SearchHelper(LuceneQueryBuilder) {
   var query = {
     queryString: ''
   };
+  var queryTree = null;
 
   this.setQueryString = function (queryString) {
+    if (query.queryString !== queryString) {
+      query = LuceneQueryBuilder.createQuery(queryString);
+      LuceneQueryBuilder.isValid(query);
+      queryTree = null;
+    }
+
+    return query;
+  };
+
+  this.setQueryTree = function (groupedQueryTree) {
+    var queryString = LuceneQueryBuilder.unparseGroupedTree(groupedQueryTree);
     query = LuceneQueryBuilder.createQuery(queryString);
     LuceneQueryBuilder.isValid(query);
 
-    return query;
+    queryTree = groupedQueryTree;
   };
 
   this.setQuery = function (searchQuery) {
@@ -30,5 +42,9 @@ function SearchHelper(LuceneQueryBuilder) {
 
   this.getQuery = function () {
     return query;
+  };
+
+  this.getQueryTree = function () {
+    return angular.copy(queryTree);
   };
 }

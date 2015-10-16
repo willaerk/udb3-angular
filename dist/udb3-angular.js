@@ -9829,7 +9829,7 @@ angular
   .directive('udbQueryEditorDaterangepicker', udbQueryEditorDaterangepicker);
 
 /* @ngInject */
-function udbQueryEditorDaterangepicker($translate, datepickerPopupConfig) {
+function udbQueryEditorDaterangepicker($translate, uibDatepickerPopupConfig) {
   return {
     templateUrl: 'templates/query-editor-daterangepicker.directive.html',
     restrict: 'E',
@@ -9842,9 +9842,9 @@ function udbQueryEditorDaterangepicker($translate, datepickerPopupConfig) {
       };
 
       $translate(['datepicker.CURRENT', 'datepicker.CLEAR', 'datepicker.CLOSE']).then(function (translations) {
-        datepickerPopupConfig.currentText = translations['datepicker.CURRENT'];
-        datepickerPopupConfig.clearText = translations['datepicker.CLEAR'];
-        datepickerPopupConfig.closeText = translations['datepicker.CLOSE'];
+        uibDatepickerPopupConfig.currentText = translations['datepicker.CURRENT'];
+        uibDatepickerPopupConfig.clearText = translations['datepicker.CLEAR'];
+        uibDatepickerPopupConfig.closeText = translations['datepicker.CLOSE'];
       });
 
       dateRangePicker.openStart = function ($event) {
@@ -9867,7 +9867,7 @@ function udbQueryEditorDaterangepicker($translate, datepickerPopupConfig) {
     }
   };
 }
-udbQueryEditorDaterangepicker.$inject = ["$translate", "datepickerPopupConfig"];
+udbQueryEditorDaterangepicker.$inject = ["$translate", "uibDatepickerPopupConfig"];
 
 angular
   .module('udb.search')
@@ -14323,7 +14323,7 @@ $templateCache.put('templates/time-autocomplete.html',
   $templateCache.put('templates/query-editor-daterangepicker.directive.html',
     "<div>\n" +
     "  <p class=\"input-group\" ng-hide=\"field.transformer === '<'\">\n" +
-    "    <input type=\"text\" class=\"form-control\" datepicker-popup=\"{{drp.dateFormat}}\" ng-model=\"field.lowerBound\"\n" +
+    "    <input type=\"text\" class=\"form-control\" uib-datepicker-popup=\"{{drp.dateFormat}}\" ng-model=\"field.lowerBound\"\n" +
     "           is-open=\"drp.startOpened\" ng-required=\"true\" datepicker-options=\"drp.options\"/>\n" +
     "    <span class=\"input-group-btn\">\n" +
     "        <button type=\"button\" class=\"btn btn-default\" ng-click=\"drp.openStart($event)\">\n" +
@@ -14335,7 +14335,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "  <span ng-hide=\"field.transformer === '<' || field.transformer === '>' || field.transformer === '='\">tot</span>\n" +
     "\n" +
     "  <p class=\"input-group\" ng-hide=\"field.transformer === '>' || field.transformer === '='\">\n" +
-    "    <input type=\"text\" class=\"form-control\" datepicker-popup=\"{{drp.dateFormat}}\" ng-model=\"field.upperBound\"\n" +
+    "    <input type=\"text\" class=\"form-control\" uib-datepicker-popup=\"{{drp.dateFormat}}\" ng-model=\"field.upperBound\"\n" +
     "           is-open=\"drp.endOpened\" ng-required=\"true\" datepicker-options=\"drp.options\"/>\n" +
     "    <span class=\"input-group-btn\">\n" +
     "        <button type=\"button\" class=\"btn btn-default\" ng-click=\"drp.openEnd($event)\">\n" +

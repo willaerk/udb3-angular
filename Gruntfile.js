@@ -29,7 +29,6 @@ module.exports = function (grunt) {
     var xmlBuffer = grunt.file.read('taxonomy-terms.xml');
     var terms = [];
     parser.parseString(xmlBuffer, function (err, result) {
-      console.dir(result);
       terms = result.cdbxml.categorisation.term;
     });
 
@@ -61,7 +60,6 @@ module.exports = function (grunt) {
     var xmlBuffer = grunt.file.read('actor-types.xml');
     var terms = [];
     parser.parseString(xmlBuffer, function (err, result) {
-      console.dir(result);
       terms = result.cdbxml.categorisation.term;
     });
 
@@ -75,7 +73,6 @@ module.exports = function (grunt) {
         }
       }
     }
-    console.log(locationTypes);
     return locationTypes;
   };
 

@@ -14376,7 +14376,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "             class=\"form-control\"/>\n" +
     "    </div>\n" +
     "    <div ng-switch-when=\"term\">\n" +
-    "      <select ng-options=\"term.label as term.label for term in qe.termOptions[field.field]\"\n" +
+    "      <select ng-options=\"term.label as term.label for term in qe.termOptions[field.field] | orderBy:'label' track by term.id\"\n" +
     "              ng-model=\"field.term\" class=\"form-control\">\n" +
     "        <option value=\"\">-- maak een keuze --</option>\n" +
     "      </select>\n" +

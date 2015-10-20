@@ -2409,7 +2409,9 @@ angular.module('udb.core')
       'terms.theme': 'Thema',
       'terms.eventtype': 'Soort aanbod',
       'created': 'Datum aangemaakt',
+      'modified': 'Datum laatste aanpassing',
       'publisher': 'Auteur',
+      'available': 'Embargodatum',
       'endDate': 'Einddatum',
       'startDate': 'Begindatum',
       'calendarType': 'Tijd type',
@@ -9179,6 +9181,8 @@ function EventExportController($modalInstance, udbApi, eventExporter, ExportForm
     {name: 'terms.theme', include: true, sortable: false, excludable: true},
     {name: 'terms.eventtype', include: true, sortable: false, excludable: true},
     {name: 'created', include: false, sortable: false, excludable: true},
+    {name: 'modified', include: false, sortable: false, excludable: true},
+    {name: 'available', include: false, sortable: false, excludable: true},
     {name: 'endDate', include: false, sortable: false, excludable: true},
     {name: 'startDate', include: false, sortable: false, excludable: true},
     {name: 'calendarType', include: false, sortable: false, excludable: true},
@@ -10012,10 +10016,6 @@ function QueryEditorController(
     });
   });
 
-  $rootScope.$on('searchBarChanged', function () {
-    qe.resetGroups();
-  });
-
   qe.getDefaultQueryTree = function () {
     return {
       type: 'root',
@@ -10294,6 +10294,7 @@ function udbSearchBar(searchHelper, $rootScope, $uibModal, savedSearchesService)
       };
 
       searchBar.searchChange = function() {
+        searchHelper.clearQueryTree();
         $rootScope.$emit('searchBarChanged');
         $rootScope.$emit('stopEditingQuery');
       };
@@ -11295,6 +11296,10 @@ function SearchHelper(LuceneQueryBuilder) {
     queryString: ''
   };
   var queryTree = null;
+
+  this.clearQueryTree = function () {
+    queryTree = null;
+  };
 
   this.setQueryString = function (queryString) {
     if (query.queryString !== queryString) {
@@ -14392,7 +14397,6 @@ $templateCache.put('templates/time-autocomplete.html',
     "             class=\"form-control\"/>\n" +
     "    </div>\n" +
     "    <div ng-switch-when=\"term\">\n" +
-    "      {{field.term}}\n" +
     "      <select ng-options=\"term.label as term.label for term in qe.termOptions[field.field] | orderBy:'label'\"\n" +
     "              ng-model=\"field.term\" class=\"form-control\">\n" +
     "        <option value=\"\">-- maak een keuze --</option>\n" +
@@ -14588,9 +14592,9 @@ $templateCache.put('templates/time-autocomplete.html',
     "      ng-class=\"{'has-errors': sb.hasErrors, 'is-editing': sb.isEditing}\">\n" +
     "  <div class=\"form-group has-warning has-feedback\">\n" +
     "    <input type=\"text\" class=\"form-control\" ng-model=\"sb.query\" ng-change=\"sb.searchChange()\">\n" +
-    "    <span class=\"dropdown saved-search-icon\" dropdown>\n" +
+    "    <span class=\"dropdown saved-search-icon\" uib-dropdown>\n" +
     "      <i class=\"fa fa-bookmark\" class=\"dropdown-toggle\" uib-dropdown-toggle></i>\n" +
-    "      <ul class=\"dropdown-menu\" role=\"menu\">\n" +
+    "      <ul class=\"uib-dropdown-menu\" role=\"menu\">\n" +
     "        <li role=\"presentation\" class=\"dropdown-header\">Bewaarde zoekopdrachten</li>\n" +
     "        <li ng-repeat=\"savedSearch in sb.savedSearches\">\n" +
     "          <a ng-href=\"/search?query={{::savedSearch.query}}\" ng-bind=\"::savedSearch.name\"></a>\n" +

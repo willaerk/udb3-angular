@@ -28,7 +28,7 @@ function EventExportController($modalInstance, udbApi, eventExporter, ExportForm
     {name: 'address', include: true, sortable: false, excludable: true},
     {name: 'organizer', include: false, sortable: false, excludable: true},
     {name: 'bookingInfo', include: true, sortable: false, excludable: true},
-    {name: 'contactInfo', include: true, sortable: false, excludable: true},
+    {name: 'contactPoint', include: true, sortable: false, excludable: true},
     {name: 'creator', include: false, sortable: false, excludable: true},
     {name: 'terms.theme', include: true, sortable: false, excludable: true},
     {name: 'terms.eventtype', include: true, sortable: false, excludable: true},

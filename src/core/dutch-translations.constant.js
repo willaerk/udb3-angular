@@ -310,7 +310,7 @@ angular.module('udb.core')
       'address': 'Adres',
       'organizer': 'Organisator',
       'bookingInfo': 'Prijsinformatie',
-      'contactInfo': 'Contactinformatie',
+      'contactPoint': 'Contactinformatie',
       'creator': 'Auteur',
       'terms.theme': 'Thema',
       'terms.eventtype': 'Soort aanbod',

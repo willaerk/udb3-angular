@@ -44,10 +44,6 @@ function QueryEditorController(
     });
   });
 
-  $rootScope.$on('searchBarChanged', function () {
-    qe.resetGroups();
-  });
-
   qe.getDefaultQueryTree = function () {
     return {
       type: 'root',
@@ -67,7 +63,7 @@ function QueryEditorController(
       ]
     };
   };
-  qe.groupedQueryTree = qe.getDefaultQueryTree();
+  qe.groupedQueryTree = searchHelper.getQueryTree() || qe.getDefaultQueryTree();
 
   // Holds options for both term and choice query-field types
   qe.transformers = {};
@@ -85,8 +81,8 @@ function QueryEditorController(
    * Update the search input field with the data from the query editor
    */
   qe.updateQueryString = function () {
-    searchHelper.setQueryString(queryBuilder.unparseGroupedTree(qe.groupedQueryTree));
-    $rootScope.$emit('stopEditingQuery');
+    searchHelper.setQueryTree(qe.groupedQueryTree);
+    qe.stopEditing();
   };
 
   qe.stopEditing = function () {

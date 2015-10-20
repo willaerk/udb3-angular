@@ -10016,10 +10016,6 @@ function QueryEditorController(
     });
   });
 
-  $rootScope.$on('searchBarChanged', function () {
-    qe.resetGroups();
-  });
-
   qe.getDefaultQueryTree = function () {
     return {
       type: 'root',
@@ -10039,7 +10035,7 @@ function QueryEditorController(
       ]
     };
   };
-  qe.groupedQueryTree = qe.getDefaultQueryTree();
+  qe.groupedQueryTree = searchHelper.getQueryTree() || qe.getDefaultQueryTree();
 
   // Holds options for both term and choice query-field types
   qe.transformers = {};
@@ -10057,8 +10053,8 @@ function QueryEditorController(
    * Update the search input field with the data from the query editor
    */
   qe.updateQueryString = function () {
-    searchHelper.setQueryString(queryBuilder.unparseGroupedTree(qe.groupedQueryTree));
-    $rootScope.$emit('stopEditingQuery');
+    searchHelper.setQueryTree(qe.groupedQueryTree);
+    qe.stopEditing();
   };
 
   qe.stopEditing = function () {
@@ -10298,6 +10294,7 @@ function udbSearchBar(searchHelper, $rootScope, $uibModal, savedSearchesService)
       };
 
       searchBar.searchChange = function() {
+        searchHelper.clearQueryTree();
         $rootScope.$emit('searchBarChanged');
         $rootScope.$emit('stopEditingQuery');
       };
@@ -11298,12 +11295,28 @@ function SearchHelper(LuceneQueryBuilder) {
   var query = {
     queryString: ''
   };
+  var queryTree = null;
+
+  this.clearQueryTree = function () {
+    queryTree = null;
+  };
 
   this.setQueryString = function (queryString) {
+    if (query.queryString !== queryString) {
+      query = LuceneQueryBuilder.createQuery(queryString);
+      LuceneQueryBuilder.isValid(query);
+      queryTree = null;
+    }
+
+    return query;
+  };
+
+  this.setQueryTree = function (groupedQueryTree) {
+    var queryString = LuceneQueryBuilder.unparseGroupedTree(groupedQueryTree);
     query = LuceneQueryBuilder.createQuery(queryString);
     LuceneQueryBuilder.isValid(query);
 
-    return query;
+    queryTree = groupedQueryTree;
   };
 
   this.setQuery = function (searchQuery) {
@@ -11312,6 +11325,10 @@ function SearchHelper(LuceneQueryBuilder) {
 
   this.getQuery = function () {
     return query;
+  };
+
+  this.getQueryTree = function () {
+    return angular.copy(queryTree);
   };
 }
 SearchHelper.$inject = ["LuceneQueryBuilder"];
@@ -14380,7 +14397,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "             class=\"form-control\"/>\n" +
     "    </div>\n" +
     "    <div ng-switch-when=\"term\">\n" +
-    "      <select ng-options=\"term.label as term.label for term in qe.termOptions[field.field] | orderBy:'label' track by term.id\"\n" +
+    "      <select ng-options=\"term.label as term.label for term in qe.termOptions[field.field] | orderBy:'label'\"\n" +
     "              ng-model=\"field.term\" class=\"form-control\">\n" +
     "        <option value=\"\">-- maak een keuze --</option>\n" +
     "      </select>\n" +
@@ -14442,7 +14459,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "      <span aria-hidden=\"true\">×</span>\n" +
     "    </button>\n" +
     "  </div>\n" +
-    "</div>"
+    "</div>\n"
   );
 
 

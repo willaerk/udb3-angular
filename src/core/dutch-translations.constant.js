@@ -314,7 +314,7 @@ angular.module('udb.core')
       'terms.theme': 'Thema',
       'terms.eventtype': 'Soort aanbod',
       'created': 'Datum aangemaakt',
-      'modified': 'Datum aangepast',
+      'modified': 'Datum laatste aanpassing',
       'publisher': 'Auteur',
       'available': 'Embargodatum',
       'endDate': 'Einddatum',

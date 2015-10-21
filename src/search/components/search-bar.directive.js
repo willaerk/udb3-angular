@@ -40,6 +40,7 @@ function udbSearchBar(searchHelper, $rootScope, $uibModal, savedSearchesService)
       };
 
       searchBar.searchChange = function() {
+        searchHelper.clearQueryTree();
         $rootScope.$emit('searchBarChanged');
         $rootScope.$emit('stopEditingQuery');
       };

@@ -33,6 +33,8 @@ function EventExportController($modalInstance, udbApi, eventExporter, ExportForm
     {name: 'terms.theme', include: true, sortable: false, excludable: true},
     {name: 'terms.eventtype', include: true, sortable: false, excludable: true},
     {name: 'created', include: false, sortable: false, excludable: true},
+    {name: 'modified', include: false, sortable: false, excludable: true},
+    {name: 'available', include: false, sortable: false, excludable: true},
     {name: 'endDate', include: false, sortable: false, excludable: true},
     {name: 'startDate', include: false, sortable: false, excludable: true},
     {name: 'calendarType', include: false, sortable: false, excludable: true},

@@ -12499,7 +12499,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "            </tr>\n" +
     "            <tr>\n" +
     "              <td><strong>Type</strong></td>\n" +
-    "              <td>{{event.type.label}}</td>\n" +
+    "              <td>{{event.type}}</td>\n" +
     "            </tr>\n" +
     "            <tr>\n" +
     "              <td><strong>Beschrijving</strong></td>\n" +

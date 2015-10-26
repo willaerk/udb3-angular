@@ -14784,16 +14784,16 @@ $templateCache.put('templates/time-autocomplete.html',
     "          <i class=\"fa fa-circle-o-notch fa-spin\"></i>\n" +
     "        </div>\n" +
     "\n" +
-    "        <div ng-if=\"resultViewer.eventProperties.labels.visible\" class=\"udb-labels\">\n" +
+    "        <div ng-if=\"resultViewer.eventProperties.labels.visible && event.labels\" class=\"udb-labels\">\n" +
     "          <span ng-hide=\"event.labels.length\">Dit evenement is nog niet gelabeld.</span>\n" +
-    "          <ui-select multiple tagging tagging-label=\"(label toevoegen)\" ng-model=\"event.labels\"\n" +
-    "                     reset-search-input=\"true\" tagging-tokens=\"ENTER|;\"\n" +
-    "                     on-select=\"eventCtrl.labelAdded($item)\" on-remove=\"eventCtrl.labelRemoved($item)\">\n" +
-    "            <ui-select-match placeholder=\"Voeg een label toe...\">{{$item}}</ui-select-match>\n" +
-    "            <ui-select-choices repeat=\"label in availableLabels\">\n" +
-    "              <div ng-bind-html=\"label | highlight: $select.search\"></div>\n" +
-    "            </ui-select-choices>\n" +
-    "          </ui-select>\n" +
+    "            <ui-select multiple tagging tagging-label=\"(label toevoegen)\" ng-model=\"event.labels\"\n" +
+    "                       reset-search-input=\"true\" tagging-tokens=\"ENTER|;\"\n" +
+    "                       on-select=\"eventCtrl.labelAdded($item)\" on-remove=\"eventCtrl.labelRemoved($item)\">\n" +
+    "              <ui-select-match placeholder=\"Voeg een label toe...\">{{$item}}</ui-select-match>\n" +
+    "              <ui-select-choices repeat=\"label in availableLabels\">\n" +
+    "                <div ng-bind-html=\"label | highlight: $select.search\"></div>\n" +
+    "              </ui-select-choices>\n" +
+    "            </ui-select>\n" +
     "        </div>\n" +
     "      </div>\n" +
     "    </div>\n" +

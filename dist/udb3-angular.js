@@ -14882,7 +14882,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "\n" +
     "            <div class=\"rv-item-sidebar\">\n" +
     "                <div class=\"rv-selection-state\">\n" +
-    "                    <span class=\"dropdown\" dropdown ng-hide=\"resultViewer.selectedIds.length\">\n" +
+    "                    <span class=\"dropdown\" uib-dropdown ng-hide=\"resultViewer.selectedIds.length\">\n" +
     "                      <span class=\"dropdown-toggle fa {{resultViewer.selectionState.icon}}\" uib-dropdown-toggle>\n" +
     "                      </span>\n" +
     "                      <ul class=\"dropdown-menu\">\n" +

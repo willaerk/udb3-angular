@@ -61,11 +61,12 @@ function udbSearchBar(searchHelper, $rootScope, $uibModal, savedSearchesService)
       savedSearchesPromise.then(function (savedSearches) {
         searchBar.savedSearches = _.take(savedSearches, 5);
       });
-      $rootScope.$on('savedSearchesChanged', function (event, savedSearches) {
+
+      var savedSearchesChangedListener = $rootScope.$on('savedSearchesChanged', function (event, savedSearches) {
         searchBar.savedSearches = _.take(savedSearches, 5);
       });
 
-      $rootScope.$on('stopEditingQuery', function () {
+      var stopEditingQueryListener = $rootScope.$on('stopEditingQuery', function () {
         scope.sb.isEditing = false;
         if (editorModal) {
           editorModal.dismiss();
@@ -98,6 +99,9 @@ function udbSearchBar(searchHelper, $rootScope, $uibModal, savedSearchesService)
 
         return formattedErrors;
       }
+
+      scope.$on('$destroy', savedSearchesChangedListener);
+      scope.$on('$destroy', stopEditingQueryListener);
     }
   };
 }

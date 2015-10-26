@@ -10293,6 +10293,12 @@ function udbSearchBar(searchHelper, $rootScope, $uibModal, savedSearchesService)
         });
       };
 
+      searchBar.setQueryAndSearch = function (queryString) {
+        searchBar.query = queryString;
+        this.searchChange();
+        this.search();
+      };
+
       searchBar.searchChange = function() {
         $rootScope.$emit('searchBarChanged');
         $rootScope.$emit('stopEditingQuery');
@@ -10309,11 +10315,12 @@ function udbSearchBar(searchHelper, $rootScope, $uibModal, savedSearchesService)
       savedSearchesPromise.then(function (savedSearches) {
         searchBar.savedSearches = _.take(savedSearches, 5);
       });
-      $rootScope.$on('savedSearchesChanged', function (event, savedSearches) {
+
+      var savedSearchesChangedListener = $rootScope.$on('savedSearchesChanged', function (event, savedSearches) {
         searchBar.savedSearches = _.take(savedSearches, 5);
       });
 
-      $rootScope.$on('stopEditingQuery', function () {
+      var stopEditingQueryListener = $rootScope.$on('stopEditingQuery', function () {
         scope.sb.isEditing = false;
         if (editorModal) {
           editorModal.dismiss();
@@ -10346,6 +10353,9 @@ function udbSearchBar(searchHelper, $rootScope, $uibModal, savedSearchesService)
 
         return formattedErrors;
       }
+
+      scope.$on('$destroy', savedSearchesChangedListener);
+      scope.$on('$destroy', stopEditingQueryListener);
     }
   };
 }
@@ -14571,12 +14581,14 @@ $templateCache.put('templates/time-autocomplete.html',
     "      ng-class=\"{'has-errors': sb.hasErrors, 'is-editing': sb.isEditing}\">\n" +
     "  <div class=\"form-group has-warning has-feedback\">\n" +
     "    <input type=\"text\" class=\"form-control\" ng-model=\"sb.query\" ng-change=\"sb.searchChange()\">\n" +
-    "    <span class=\"dropdown saved-search-icon\" dropdown>\n" +
+    "    <span class=\"dropdown saved-search-icon\" uib-dropdown>\n" +
     "      <i class=\"fa fa-bookmark\" class=\"dropdown-toggle\" uib-dropdown-toggle></i>\n" +
-    "      <ul class=\"dropdown-menu\" role=\"menu\">\n" +
+    "      <ul class=\"uib-dropdown-menu\" role=\"menu\">\n" +
     "        <li role=\"presentation\" class=\"dropdown-header\">Bewaarde zoekopdrachten</li>\n" +
     "        <li ng-repeat=\"savedSearch in sb.savedSearches\">\n" +
-    "          <a ng-href=\"/search?query={{::savedSearch.query}}\" ng-bind=\"::savedSearch.name\"></a>\n" +
+    "          <a ng-bind=\"::savedSearch.name\"\n" +
+    "             ng-click=\"sb.setQueryAndSearch(savedSearch.query)\">\n" +
+    "          </a>\n" +
     "        </li>\n" +
     "        <li class=\"divider\"></li>\n" +
     "        <li><a href=\"/saved-searches\">Beheren</a></li>\n" +

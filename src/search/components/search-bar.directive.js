@@ -18,7 +18,7 @@ function udbSearchBar(searchHelper, $rootScope, $uibModal, savedSearchesService)
     link: function postLink(scope, element, attrs) {
 
       var searchBar = {
-        query: '',
+        queryString: '',
         hasErrors: false,
         errors: '',
         isEditing: false,
@@ -45,38 +45,39 @@ function udbSearchBar(searchHelper, $rootScope, $uibModal, savedSearchesService)
        * @param {String} [queryString]
        */
       searchBar.find = function (queryString) {
-        searchBar.query = typeof queryString !== 'undefined' ? queryString : searchBar.query;
+        var query = typeof queryString !== 'undefined' ? queryString : searchBar.queryString;
 
-        searchHelper.setQueryString(searchBar.query);
+        searchBar.queryString = query;
+        searchHelper.setQueryString(query);
         $rootScope.$emit('searchSubmitted');
-        searchBar.queryChanged();
       };
 
       /**
-       * Notify other components that the search bar has changed and editing has stopped
+       * When the user manually changes the query field the current query tree should be cleared
        */
       searchBar.queryChanged = function() {
-        $rootScope.$emit('searchBarChanged');
-        $rootScope.$emit('stopEditingQuery');
+        searchHelper.clearQueryTree();
       };
 
       scope.sb = searchBar;
 
-      scope.$watch(function () {
-        return searchHelper.getQuery();
-      }, function (query, oldQuery) {
-        if (oldQuery && oldQuery.queryString !== query.queryString) {
-          scope.sb.find(query.queryString);
+      /**
+       * Update the search bar with the info from a query object.
+       *
+       * @param {Object} event
+       * @param {Object} query
+       */
+      searchBar.updateQuery = function(event, query) {
+        searchBar.queryString = query.queryString;
 
-          if (query.errors && query.errors.length) {
-            scope.sb.hasErrors = true;
-            scope.sb.errors = formatErrors(query.errors);
-          } else {
-            scope.sb.hasErrors = false;
-            scope.sb.errors = '';
-          }
+        if (query.errors && query.errors.length) {
+          scope.sb.hasErrors = true;
+          scope.sb.errors = formatErrors(query.errors);
+        } else {
+          scope.sb.hasErrors = false;
+          scope.sb.errors = '';
         }
-      }, true);
+      };
 
       function formatErrors(errors) {
         var formattedErrors = '';
@@ -112,8 +113,11 @@ function udbSearchBar(searchHelper, $rootScope, $uibModal, savedSearchesService)
         }
       });
 
+      var searchQueryChangedListener = $rootScope.$on('searchQueryChanged', searchBar.updateQuery);
+
       scope.$on('$destroy', savedSearchesChangedListener);
       scope.$on('$destroy', stopEditingQueryListener);
+      scope.$on('$destroy', searchQueryChangedListener);
     }
   };
 }

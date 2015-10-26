@@ -2404,12 +2404,16 @@ angular.module('udb.core')
       'location': 'Locatie',
       'address': 'Adres',
       'organizer': 'Organisator',
-      'bookingInfo': 'Prijsinformatie',
+      'bookingInfo.price': 'Prijsinformatie',
+      'bookingInfo.url': 'Ticket link',
+      'contactPoint': 'Contactinformatie',
       'creator': 'Auteur',
       'terms.theme': 'Thema',
       'terms.eventtype': 'Soort aanbod',
       'created': 'Datum aangemaakt',
+      'modified': 'Datum laatste aanpassing',
       'publisher': 'Auteur',
+      'available': 'Embargodatum',
       'endDate': 'Einddatum',
       'startDate': 'Begindatum',
       'calendarType': 'Tijd type',
@@ -9174,11 +9178,15 @@ function EventExportController($modalInstance, udbApi, eventExporter, ExportForm
     {name: 'location', include: true, sortable: false, excludable: false},
     {name: 'address', include: true, sortable: false, excludable: true},
     {name: 'organizer', include: false, sortable: false, excludable: true},
-    {name: 'bookingInfo', include: true, sortable: false, excludable: true},
+    {name: 'bookingInfo.price', include: true, sortable: false, excludable: true},
+    {name: 'bookingInfo.url', include: false, sortable: false, excludable: true},
+    {name: 'contactPoint', include: false, sortable: false, excludable: true},
     {name: 'creator', include: false, sortable: false, excludable: true},
     {name: 'terms.theme', include: true, sortable: false, excludable: true},
     {name: 'terms.eventtype', include: true, sortable: false, excludable: true},
     {name: 'created', include: false, sortable: false, excludable: true},
+    {name: 'modified', include: false, sortable: false, excludable: true},
+    {name: 'available', include: false, sortable: false, excludable: true},
     {name: 'endDate', include: false, sortable: false, excludable: true},
     {name: 'startDate', include: false, sortable: false, excludable: true},
     {name: 'calendarType', include: false, sortable: false, excludable: true},
@@ -10012,10 +10020,6 @@ function QueryEditorController(
     });
   });
 
-  $rootScope.$on('searchBarChanged', function () {
-    qe.resetGroups();
-  });
-
   qe.getDefaultQueryTree = function () {
     return {
       type: 'root',
@@ -10035,7 +10039,7 @@ function QueryEditorController(
       ]
     };
   };
-  qe.groupedQueryTree = qe.getDefaultQueryTree();
+  qe.groupedQueryTree = searchHelper.getQueryTree() || qe.getDefaultQueryTree();
 
   // Holds options for both term and choice query-field types
   qe.transformers = {};
@@ -10053,8 +10057,8 @@ function QueryEditorController(
    * Update the search input field with the data from the query editor
    */
   qe.updateQueryString = function () {
-    searchHelper.setQueryString(queryBuilder.unparseGroupedTree(qe.groupedQueryTree));
-    $rootScope.$emit('stopEditingQuery');
+    searchHelper.setQueryTree(qe.groupedQueryTree);
+    qe.stopEditing();
   };
 
   qe.stopEditing = function () {
@@ -10272,7 +10276,7 @@ function udbSearchBar(searchHelper, $rootScope, $uibModal, savedSearchesService)
     link: function postLink(scope, element, attrs) {
 
       var searchBar = {
-        query: '',
+        queryString: '',
         hasErrors: false,
         errors: '',
         isEditing: false,
@@ -10299,38 +10303,39 @@ function udbSearchBar(searchHelper, $rootScope, $uibModal, savedSearchesService)
        * @param {String} [queryString]
        */
       searchBar.find = function (queryString) {
-        searchBar.query = typeof queryString !== 'undefined' ? queryString : searchBar.query;
+        var query = typeof queryString !== 'undefined' ? queryString : searchBar.queryString;
 
-        searchHelper.setQueryString(searchBar.query);
+        searchBar.queryString = query;
+        searchHelper.setQueryString(query);
         $rootScope.$emit('searchSubmitted');
-        searchBar.queryChanged();
       };
 
       /**
-       * Notify other components that the search bar has changed and editing has stopped
+       * When the user manually changes the query field the current query tree should be cleared
        */
       searchBar.queryChanged = function() {
-        $rootScope.$emit('searchBarChanged');
-        $rootScope.$emit('stopEditingQuery');
+        searchHelper.clearQueryTree();
       };
 
       scope.sb = searchBar;
 
-      scope.$watch(function () {
-        return searchHelper.getQuery();
-      }, function (query, oldQuery) {
-        if (oldQuery && oldQuery.queryString !== query.queryString) {
-          scope.sb.find(query.queryString);
+      /**
+       * Update the search bar with the info from a query object.
+       *
+       * @param {Object} event
+       * @param {Object} query
+       */
+      searchBar.updateQuery = function(event, query) {
+        searchBar.queryString = query.queryString;
 
-          if (query.errors && query.errors.length) {
-            scope.sb.hasErrors = true;
-            scope.sb.errors = formatErrors(query.errors);
-          } else {
-            scope.sb.hasErrors = false;
-            scope.sb.errors = '';
-          }
+        if (query.errors && query.errors.length) {
+          scope.sb.hasErrors = true;
+          scope.sb.errors = formatErrors(query.errors);
+        } else {
+          scope.sb.hasErrors = false;
+          scope.sb.errors = '';
         }
-      }, true);
+      };
 
       function formatErrors(errors) {
         var formattedErrors = '';
@@ -10366,8 +10371,11 @@ function udbSearchBar(searchHelper, $rootScope, $uibModal, savedSearchesService)
         }
       });
 
+      var searchQueryChangedListener = $rootScope.$on('searchQueryChanged', searchBar.updateQuery);
+
       scope.$on('$destroy', savedSearchesChangedListener);
       scope.$on('$destroy', stopEditingQueryListener);
+      scope.$on('$destroy', searchQueryChangedListener);
     }
   };
 }
@@ -11312,27 +11320,48 @@ angular
   .service('searchHelper', SearchHelper);
 
 /* @ngInject */
-function SearchHelper(LuceneQueryBuilder) {
+function SearchHelper(LuceneQueryBuilder, $rootScope) {
   var query = {
     queryString: ''
   };
+  var queryTree = null;
+
+  this.clearQueryTree = function () {
+    queryTree = null;
+  };
 
   this.setQueryString = function (queryString) {
-    query = LuceneQueryBuilder.createQuery(queryString);
-    LuceneQueryBuilder.isValid(query);
+    if (query.queryString !== queryString) {
+      var newQuery = LuceneQueryBuilder.createQuery(queryString);
+      LuceneQueryBuilder.isValid(newQuery);
+      this.setQuery(newQuery);
+      queryTree = null;
+    }
+  };
 
-    return query;
+  this.setQueryTree = function (groupedQueryTree) {
+    var queryString = LuceneQueryBuilder.unparseGroupedTree(groupedQueryTree);
+    var newQuery = LuceneQueryBuilder.createQuery(queryString);
+    LuceneQueryBuilder.isValid(newQuery);
+    this.setQuery(newQuery);
+
+    queryTree = groupedQueryTree;
   };
 
   this.setQuery = function (searchQuery) {
     query = searchQuery;
+    $rootScope.$emit('searchQueryChanged', searchQuery);
   };
 
   this.getQuery = function () {
     return query;
   };
+
+  this.getQueryTree = function () {
+    return angular.copy(queryTree);
+  };
 }
-SearchHelper.$inject = ["LuceneQueryBuilder"];
+SearchHelper.$inject = ["LuceneQueryBuilder", "$rootScope"];
 
 // Source: src/search/services/search-result-viewer.factory.js
 /**
@@ -12500,7 +12529,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "            </tr>\n" +
     "            <tr>\n" +
     "              <td><strong>Type</strong></td>\n" +
-    "              <td>{{event.type.label}}</td>\n" +
+    "              <td>{{event.type}}</td>\n" +
     "            </tr>\n" +
     "            <tr>\n" +
     "              <td><strong>Beschrijving</strong></td>\n" +
@@ -14398,7 +14427,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "             class=\"form-control\"/>\n" +
     "    </div>\n" +
     "    <div ng-switch-when=\"term\">\n" +
-    "      <select ng-options=\"term.label as term.label for term in qe.termOptions[field.field] | orderBy:'label' track by term.id\"\n" +
+    "      <select ng-options=\"term.label as term.label for term in qe.termOptions[field.field] | orderBy:'label'\"\n" +
     "              ng-model=\"field.term\" class=\"form-control\">\n" +
     "        <option value=\"\">-- maak een keuze --</option>\n" +
     "      </select>\n" +
@@ -14460,7 +14489,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "      <span aria-hidden=\"true\">×</span>\n" +
     "    </button>\n" +
     "  </div>\n" +
-    "</div>"
+    "</div>\n"
   );
 
 
@@ -14592,7 +14621,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "<form class=\"navbar-form navbar-left udb-header-search\" role=\"search\"\n" +
     "      ng-class=\"{'has-errors': sb.hasErrors, 'is-editing': sb.isEditing}\">\n" +
     "  <div class=\"form-group has-warning has-feedback\">\n" +
-    "    <input type=\"text\" class=\"form-control\" ng-model=\"sb.query\" ng-change=\"sb.searchChange()\">\n" +
+    "    <input type=\"text\" class=\"form-control\" ng-model=\"sb.query\" ng-change=\"sb.queryChanged()\">\n" +
     "    <span class=\"dropdown saved-search-icon\" uib-dropdown>\n" +
     "      <i class=\"fa fa-bookmark\" class=\"dropdown-toggle\" uib-dropdown-toggle></i>\n" +
     "      <ul class=\"uib-dropdown-menu\" role=\"menu\">\n" +

@@ -13,9 +13,7 @@ angular
 
 /* @ngInject */
 function SearchHelper(LuceneQueryBuilder, $rootScope) {
-  var query = {
-    queryString: ''
-  };
+  var query = LuceneQueryBuilder.createQuery('');
   var queryTree = null;
 
   this.clearQueryTree = function () {

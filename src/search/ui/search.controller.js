@@ -44,31 +44,27 @@ function Search(
   }
 
   $scope.resultViewer = new SearchResultViewer(30, getCurrentPage());
-  $scope.queryErrors = [];
   $scope.realQuery = false;
   $scope.activeQuery = false;
   $scope.queryEditorShown = false;
   $scope.currentPage = getCurrentPage();
 
-  var searchParams = $location.search();
-  if (searchParams.query) {
-    var queryString = String(searchParams.query) || '';
-    searchHelper.setQueryString(queryString);
-  }
-
   /**
-   *
    * @param {Query} query A query object used to update the interface and result viewer.
    */
   var updateQuery = function (query) {
-    var realQuery = queryBuilder.unparse(query);
-    $scope.resultViewer.queryChanged(realQuery);
-    findEvents(realQuery);
+    $scope.activeQuery = query;
 
-    if (realQuery !== query.originalQueryString) {
-      $scope.realQuery = realQuery;
-    } else {
-      $scope.realQuery = false;
+    if (queryBuilder.isValid(query)) {
+      var realQuery = queryBuilder.unparse(query);
+      $scope.resultViewer.queryChanged(realQuery);
+      findEvents(realQuery);
+
+      if (realQuery !== query.originalQueryString) {
+        $scope.realQuery = realQuery;
+      } else {
+        $scope.realQuery = false;
+      }
     }
   };
 
@@ -217,25 +213,9 @@ function Search(
     $scope.queryEditorShown = false;
   };
 
-  $rootScope.$on('startEditingQuery', $scope.startEditing);
-  $rootScope.$on('stopEditingQuery', $scope.stopEditing);
-
-  $scope.$watch(function () {
-    var query = getSearchQuery();
-    return query.queryString;
-  }, function (queryString) {
-    var query = queryBuilder.createQuery(queryString);
-
-    $scope.activeQuery = query;
-
-    if (queryBuilder.isValid(query)) {
-      updateQuery(query);
-      $scope.queryErrors = [];
-    } else {
-      $scope.queryErrors = query.errors;
-    }
-
-  });
+  function queryChanged(event, newQuery) {
+    updateQuery(newQuery);
+  }
 
   // Because the uib pagination directive is messed up and overrides the initial page to 1,
   // you have to silence and revert it.
@@ -253,5 +233,15 @@ function Search(
       $window.scroll(0, 0);
     }
   };
+
+  updateQuery(searchHelper.getQuery());
+
+  var searchQueryChangedListener = $rootScope.$on('searchQueryChanged', queryChanged);
+  var startEditingQueryListener = $rootScope.$on('startEditingQuery', $scope.startEditing);
+  var stopEditingQueryListener = $rootScope.$on('stopEditingQuery', $scope.stopEditing);
+
+  $scope.$on('$destroy', startEditingQueryListener);
+  $scope.$on('$destroy', searchQueryChangedListener);
+  $scope.$on('$destroy', stopEditingQueryListener);
 
 }

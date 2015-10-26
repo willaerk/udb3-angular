@@ -8,7 +8,7 @@
         <li role="presentation" class="dropdown-header">Bewaarde zoekopdrachten</li>
         <li ng-repeat="savedSearch in sb.savedSearches">
           <a ng-bind="::savedSearch.name"
-             ng-click="sb.setQueryAndSearch(savedSearch.query)">
+             ng-click="sb.find(savedSearch.query)">
           </a>
         </li>
         <li class="divider"></li>
@@ -16,9 +16,9 @@
       </ul>
     </span>
     <i ng-show="sb.hasErrors" class="fa fa-warning warning-icon" tooltip-append-to-body="true"
-       tooltip-placement="bottom" tooltip="{{sb.errors}}"></i>
+       tooltip-placement="bottom" uib-tooltip="{{sb.errors}}"></i>
   </div>
-  <button type="submit" class="btn udb-search-button" ng-click="sb.search()">
+  <button type="submit" class="btn udb-search-button" ng-click="sb.find()">
     <i class="fa fa-search"></i>
   </button>
 </form>

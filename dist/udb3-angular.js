@@ -10293,46 +10293,34 @@ function udbSearchBar(searchHelper, $rootScope, $uibModal, savedSearchesService)
         });
       };
 
-      searchBar.setQueryAndSearch = function (queryString) {
-        searchBar.query = queryString;
-        this.searchChange();
-        this.search();
+      /**
+       * Search with a given query string and update the search bar or use the one currently displayed in the search bar
+       *
+       * @param {String} [queryString]
+       */
+      searchBar.find = function (queryString) {
+        searchBar.query = typeof queryString !== 'undefined' ? queryString : searchBar.query;
+
+        searchHelper.setQueryString(searchBar.query);
+        $rootScope.$emit('searchSubmitted');
+        searchBar.queryChanged();
       };
 
-      searchBar.searchChange = function() {
+      /**
+       * Notify other components that the search bar has changed and editing has stopped
+       */
+      searchBar.queryChanged = function() {
         $rootScope.$emit('searchBarChanged');
         $rootScope.$emit('stopEditingQuery');
       };
 
-      searchBar.search = function () {
-        searchHelper.setQueryString(searchBar.query);
-        $rootScope.$emit('searchSubmitted');
-      };
-
       scope.sb = searchBar;
-
-      var savedSearchesPromise = savedSearchesService.getSavedSearches();
-      savedSearchesPromise.then(function (savedSearches) {
-        searchBar.savedSearches = _.take(savedSearches, 5);
-      });
-
-      var savedSearchesChangedListener = $rootScope.$on('savedSearchesChanged', function (event, savedSearches) {
-        searchBar.savedSearches = _.take(savedSearches, 5);
-      });
-
-      var stopEditingQueryListener = $rootScope.$on('stopEditingQuery', function () {
-        scope.sb.isEditing = false;
-        if (editorModal) {
-          editorModal.dismiss();
-        }
-      });
 
       scope.$watch(function () {
         return searchHelper.getQuery();
       }, function (query, oldQuery) {
         if (oldQuery && oldQuery.queryString !== query.queryString) {
-          scope.sb.query = query.queryString;
-          scope.sb.search();
+          scope.sb.find(query.queryString);
 
           if (query.errors && query.errors.length) {
             scope.sb.hasErrors = true;
@@ -10353,6 +10341,30 @@ function udbSearchBar(searchHelper, $rootScope, $uibModal, savedSearchesService)
 
         return formattedErrors;
       }
+
+      /**
+       * Show the first 5 items from a list of saved searches.
+       *
+       * @param {Object[]} savedSearches
+       */
+      function showSavedSearches(savedSearches) {
+        searchBar.savedSearches = _.take(savedSearches, 5);
+      }
+
+      savedSearchesService
+        .getSavedSearches()
+        .then(showSavedSearches);
+
+      var savedSearchesChangedListener = $rootScope.$on('savedSearchesChanged', function (event, savedSearches) {
+        showSavedSearches(savedSearches);
+      });
+
+      var stopEditingQueryListener = $rootScope.$on('stopEditingQuery', function () {
+        scope.sb.isEditing = false;
+        if (editorModal) {
+          editorModal.dismiss();
+        }
+      });
 
       scope.$on('$destroy', savedSearchesChangedListener);
       scope.$on('$destroy', stopEditingQueryListener);
@@ -14587,7 +14599,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "        <li role=\"presentation\" class=\"dropdown-header\">Bewaarde zoekopdrachten</li>\n" +
     "        <li ng-repeat=\"savedSearch in sb.savedSearches\">\n" +
     "          <a ng-bind=\"::savedSearch.name\"\n" +
-    "             ng-click=\"sb.setQueryAndSearch(savedSearch.query)\">\n" +
+    "             ng-click=\"sb.find(savedSearch.query)\">\n" +
     "          </a>\n" +
     "        </li>\n" +
     "        <li class=\"divider\"></li>\n" +
@@ -14595,9 +14607,9 @@ $templateCache.put('templates/time-autocomplete.html',
     "      </ul>\n" +
     "    </span>\n" +
     "    <i ng-show=\"sb.hasErrors\" class=\"fa fa-warning warning-icon\" tooltip-append-to-body=\"true\"\n" +
-    "       tooltip-placement=\"bottom\" tooltip=\"{{sb.errors}}\"></i>\n" +
+    "       tooltip-placement=\"bottom\" uib-tooltip=\"{{sb.errors}}\"></i>\n" +
     "  </div>\n" +
-    "  <button type=\"submit\" class=\"btn udb-search-button\" ng-click=\"sb.search()\">\n" +
+    "  <button type=\"submit\" class=\"btn udb-search-button\" ng-click=\"sb.find()\">\n" +
     "    <i class=\"fa fa-search\"></i>\n" +
     "  </button>\n" +
     "</form>\n" +

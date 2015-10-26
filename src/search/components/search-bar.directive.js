@@ -39,46 +39,34 @@ function udbSearchBar(searchHelper, $rootScope, $uibModal, savedSearchesService)
         });
       };
 
-      searchBar.setQueryAndSearch = function (queryString) {
-        searchBar.query = queryString;
-        this.searchChange();
-        this.search();
+      /**
+       * Search with a given query string and update the search bar or use the one currently displayed in the search bar
+       *
+       * @param {String} [queryString]
+       */
+      searchBar.find = function (queryString) {
+        searchBar.query = typeof queryString !== 'undefined' ? queryString : searchBar.query;
+
+        searchHelper.setQueryString(searchBar.query);
+        $rootScope.$emit('searchSubmitted');
+        searchBar.queryChanged();
       };
 
-      searchBar.searchChange = function() {
+      /**
+       * Notify other components that the search bar has changed and editing has stopped
+       */
+      searchBar.queryChanged = function() {
         $rootScope.$emit('searchBarChanged');
         $rootScope.$emit('stopEditingQuery');
       };
 
-      searchBar.search = function () {
-        searchHelper.setQueryString(searchBar.query);
-        $rootScope.$emit('searchSubmitted');
-      };
-
       scope.sb = searchBar;
-
-      var savedSearchesPromise = savedSearchesService.getSavedSearches();
-      savedSearchesPromise.then(function (savedSearches) {
-        searchBar.savedSearches = _.take(savedSearches, 5);
-      });
-
-      var savedSearchesChangedListener = $rootScope.$on('savedSearchesChanged', function (event, savedSearches) {
-        searchBar.savedSearches = _.take(savedSearches, 5);
-      });
-
-      var stopEditingQueryListener = $rootScope.$on('stopEditingQuery', function () {
-        scope.sb.isEditing = false;
-        if (editorModal) {
-          editorModal.dismiss();
-        }
-      });
 
       scope.$watch(function () {
         return searchHelper.getQuery();
       }, function (query, oldQuery) {
         if (oldQuery && oldQuery.queryString !== query.queryString) {
-          scope.sb.query = query.queryString;
-          scope.sb.search();
+          scope.sb.find(query.queryString);
 
           if (query.errors && query.errors.length) {
             scope.sb.hasErrors = true;
@@ -99,6 +87,30 @@ function udbSearchBar(searchHelper, $rootScope, $uibModal, savedSearchesService)
 
         return formattedErrors;
       }
+
+      /**
+       * Show the first 5 items from a list of saved searches.
+       *
+       * @param {Object[]} savedSearches
+       */
+      function showSavedSearches(savedSearches) {
+        searchBar.savedSearches = _.take(savedSearches, 5);
+      }
+
+      savedSearchesService
+        .getSavedSearches()
+        .then(showSavedSearches);
+
+      var savedSearchesChangedListener = $rootScope.$on('savedSearchesChanged', function (event, savedSearches) {
+        showSavedSearches(savedSearches);
+      });
+
+      var stopEditingQueryListener = $rootScope.$on('stopEditingQuery', function () {
+        scope.sb.isEditing = false;
+        if (editorModal) {
+          editorModal.dismiss();
+        }
+      });
 
       scope.$on('$destroy', savedSearchesChangedListener);
       scope.$on('$destroy', stopEditingQueryListener);

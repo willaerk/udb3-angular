@@ -14801,16 +14801,16 @@ $templateCache.put('templates/time-autocomplete.html',
     "          <i class=\"fa fa-circle-o-notch fa-spin\"></i>\n" +
     "        </div>\n" +
     "\n" +
-    "        <div ng-if=\"resultViewer.eventProperties.labels.visible\" class=\"udb-labels\">\n" +
+    "        <div ng-if=\"resultViewer.eventProperties.labels.visible && event.labels\" class=\"udb-labels\">\n" +
     "          <span ng-hide=\"event.labels.length\">Dit evenement is nog niet gelabeld.</span>\n" +
-    "          <ui-select multiple tagging tagging-label=\"(label toevoegen)\" ng-model=\"event.labels\"\n" +
-    "                     reset-search-input=\"true\" tagging-tokens=\"ENTER|;\"\n" +
-    "                     on-select=\"eventCtrl.labelAdded($item)\" on-remove=\"eventCtrl.labelRemoved($item)\">\n" +
-    "            <ui-select-match placeholder=\"Voeg een label toe...\">{{$item}}</ui-select-match>\n" +
-    "            <ui-select-choices repeat=\"label in availableLabels\">\n" +
-    "              <div ng-bind-html=\"label | highlight: $select.search\"></div>\n" +
-    "            </ui-select-choices>\n" +
-    "          </ui-select>\n" +
+    "            <ui-select multiple tagging tagging-label=\"(label toevoegen)\" ng-model=\"event.labels\"\n" +
+    "                       reset-search-input=\"true\" tagging-tokens=\"ENTER|;\"\n" +
+    "                       on-select=\"eventCtrl.labelAdded($item)\" on-remove=\"eventCtrl.labelRemoved($item)\">\n" +
+    "              <ui-select-match placeholder=\"Voeg een label toe...\">{{$item}}</ui-select-match>\n" +
+    "              <ui-select-choices repeat=\"label in availableLabels\">\n" +
+    "                <div ng-bind-html=\"label | highlight: $select.search\"></div>\n" +
+    "              </ui-select-choices>\n" +
+    "            </ui-select>\n" +
     "        </div>\n" +
     "      </div>\n" +
     "    </div>\n" +
@@ -14899,7 +14899,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "\n" +
     "            <div class=\"rv-item-sidebar\">\n" +
     "                <div class=\"rv-selection-state\">\n" +
-    "                    <span class=\"dropdown\" dropdown ng-hide=\"resultViewer.selectedIds.length\">\n" +
+    "                    <span class=\"dropdown\" uib-dropdown ng-hide=\"resultViewer.selectedIds.length\">\n" +
     "                      <span class=\"dropdown-toggle fa {{resultViewer.selectionState.icon}}\" uib-dropdown-toggle>\n" +
     "                      </span>\n" +
     "                      <ul class=\"dropdown-menu\">\n" +

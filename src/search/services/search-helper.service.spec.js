@@ -5,6 +5,7 @@ describe('Service: Search Helper', function () {
   // load the service's module
   beforeEach(module('udb.search', function ($provide) {
     queryBuilder = jasmine.createSpyObj('LuceneQueryBuilder', ['createQuery', 'unparseGroupedTree', 'isValid']);
+    queryBuilder.createQuery.and.returnValue({ queryString: ''});
     $provide.value('LuceneQueryBuilder', queryBuilder);
   }));
 
@@ -45,6 +46,7 @@ describe('Service: Search Helper', function () {
   });
 
   it('should only rebuild and validate the query when a new query string gets set', function () {
+    queryBuilder.createQuery.calls.reset();
     queryBuilder.createQuery.and.returnValue({ queryString: 'genre:"wood-like"'});
 
     searchHelper.setQueryString('genre:"wood-like"');

@@ -10058,6 +10058,7 @@ function QueryEditorController(
    */
   qe.updateQueryString = function () {
     searchHelper.setQueryTree(qe.groupedQueryTree);
+    $rootScope.$emit('searchSubmitted');
     qe.stopEditing();
   };
 
@@ -10276,7 +10277,7 @@ function udbSearchBar(searchHelper, $rootScope, $uibModal, savedSearchesService)
     link: function postLink(scope, element, attrs) {
 
       var searchBar = {
-        query: '',
+        queryString: '',
         hasErrors: false,
         errors: '',
         isEditing: false,
@@ -10297,50 +10298,45 @@ function udbSearchBar(searchHelper, $rootScope, $uibModal, savedSearchesService)
         });
       };
 
-      searchBar.searchChange = function() {
-        searchHelper.clearQueryTree();
-        $rootScope.$emit('searchBarChanged');
-        $rootScope.$emit('stopEditingQuery');
+      /**
+       * Search with a given query string and update the search bar or use the one currently displayed in the search bar
+       *
+       * @param {String} [queryString]
+       */
+      searchBar.find = function (queryString) {
+        var query = typeof queryString !== 'undefined' ? queryString : searchBar.queryString;
+
+        searchBar.queryString = query;
+        searchHelper.setQueryString(query);
+        $rootScope.$emit('searchSubmitted');
       };
 
-      searchBar.search = function () {
-        searchHelper.setQueryString(searchBar.query);
-        $rootScope.$emit('searchSubmitted');
+      /**
+       * When the user manually changes the query field the current query tree should be cleared
+       */
+      searchBar.queryChanged = function() {
+        searchHelper.clearQueryTree();
       };
 
       scope.sb = searchBar;
 
-      var savedSearchesPromise = savedSearchesService.getSavedSearches();
-      savedSearchesPromise.then(function (savedSearches) {
-        searchBar.savedSearches = _.take(savedSearches, 5);
-      });
-      $rootScope.$on('savedSearchesChanged', function (event, savedSearches) {
-        searchBar.savedSearches = _.take(savedSearches, 5);
-      });
+      /**
+       * Update the search bar with the info from a query object.
+       *
+       * @param {Object} event
+       * @param {Object} query
+       */
+      searchBar.updateQuery = function(event, query) {
+        searchBar.queryString = query.queryString;
 
-      $rootScope.$on('stopEditingQuery', function () {
-        scope.sb.isEditing = false;
-        if (editorModal) {
-          editorModal.dismiss();
+        if (query.errors && query.errors.length) {
+          scope.sb.hasErrors = true;
+          scope.sb.errors = formatErrors(query.errors);
+        } else {
+          scope.sb.hasErrors = false;
+          scope.sb.errors = '';
         }
-      });
-
-      scope.$watch(function () {
-        return searchHelper.getQuery();
-      }, function (query, oldQuery) {
-        if (oldQuery && oldQuery.queryString !== query.queryString) {
-          scope.sb.query = query.queryString;
-          scope.sb.search();
-
-          if (query.errors && query.errors.length) {
-            scope.sb.hasErrors = true;
-            scope.sb.errors = formatErrors(query.errors);
-          } else {
-            scope.sb.hasErrors = false;
-            scope.sb.errors = '';
-          }
-        }
-      }, true);
+      };
 
       function formatErrors(errors) {
         var formattedErrors = '';
@@ -10351,6 +10347,36 @@ function udbSearchBar(searchHelper, $rootScope, $uibModal, savedSearchesService)
 
         return formattedErrors;
       }
+
+      /**
+       * Show the first 5 items from a list of saved searches.
+       *
+       * @param {Object[]} savedSearches
+       */
+      function showSavedSearches(savedSearches) {
+        searchBar.savedSearches = _.take(savedSearches, 5);
+      }
+
+      savedSearchesService
+        .getSavedSearches()
+        .then(showSavedSearches);
+
+      var savedSearchesChangedListener = $rootScope.$on('savedSearchesChanged', function (event, savedSearches) {
+        showSavedSearches(savedSearches);
+      });
+
+      var stopEditingQueryListener = $rootScope.$on('stopEditingQuery', function () {
+        scope.sb.isEditing = false;
+        if (editorModal) {
+          editorModal.dismiss();
+        }
+      });
+
+      var searchQueryChangedListener = $rootScope.$on('searchQueryChanged', searchBar.updateQuery);
+
+      scope.$on('$destroy', savedSearchesChangedListener);
+      scope.$on('$destroy', stopEditingQueryListener);
+      scope.$on('$destroy', searchQueryChangedListener);
     }
   };
 }
@@ -11295,10 +11321,8 @@ angular
   .service('searchHelper', SearchHelper);
 
 /* @ngInject */
-function SearchHelper(LuceneQueryBuilder) {
-  var query = {
-    queryString: ''
-  };
+function SearchHelper(LuceneQueryBuilder, $rootScope) {
+  var query = LuceneQueryBuilder.createQuery('');
   var queryTree = null;
 
   this.clearQueryTree = function () {
@@ -11307,24 +11331,25 @@ function SearchHelper(LuceneQueryBuilder) {
 
   this.setQueryString = function (queryString) {
     if (query.queryString !== queryString) {
-      query = LuceneQueryBuilder.createQuery(queryString);
-      LuceneQueryBuilder.isValid(query);
+      var newQuery = LuceneQueryBuilder.createQuery(queryString);
+      LuceneQueryBuilder.isValid(newQuery);
+      this.setQuery(newQuery);
       queryTree = null;
     }
-
-    return query;
   };
 
   this.setQueryTree = function (groupedQueryTree) {
     var queryString = LuceneQueryBuilder.unparseGroupedTree(groupedQueryTree);
-    query = LuceneQueryBuilder.createQuery(queryString);
-    LuceneQueryBuilder.isValid(query);
+    var newQuery = LuceneQueryBuilder.createQuery(queryString);
+    LuceneQueryBuilder.isValid(newQuery);
+    this.setQuery(newQuery);
 
     queryTree = groupedQueryTree;
   };
 
   this.setQuery = function (searchQuery) {
     query = searchQuery;
+    $rootScope.$emit('searchQueryChanged', searchQuery);
   };
 
   this.getQuery = function () {
@@ -11335,7 +11360,7 @@ function SearchHelper(LuceneQueryBuilder) {
     return angular.copy(queryTree);
   };
 }
-SearchHelper.$inject = ["LuceneQueryBuilder"];
+SearchHelper.$inject = ["LuceneQueryBuilder", "$rootScope"];
 
 // Source: src/search/services/search-result-viewer.factory.js
 /**
@@ -11902,31 +11927,27 @@ function Search(
   }
 
   $scope.resultViewer = new SearchResultViewer(30, getCurrentPage());
-  $scope.queryErrors = [];
   $scope.realQuery = false;
   $scope.activeQuery = false;
   $scope.queryEditorShown = false;
   $scope.currentPage = getCurrentPage();
 
-  var searchParams = $location.search();
-  if (searchParams.query) {
-    var queryString = String(searchParams.query) || '';
-    searchHelper.setQueryString(queryString);
-  }
-
   /**
-   *
    * @param {Query} query A query object used to update the interface and result viewer.
    */
   var updateQuery = function (query) {
-    var realQuery = queryBuilder.unparse(query);
-    $scope.resultViewer.queryChanged(realQuery);
-    findEvents(realQuery);
+    $scope.activeQuery = query;
 
-    if (realQuery !== query.originalQueryString) {
-      $scope.realQuery = realQuery;
-    } else {
-      $scope.realQuery = false;
+    if (queryBuilder.isValid(query)) {
+      var realQuery = queryBuilder.unparse(query);
+      $scope.resultViewer.queryChanged(realQuery);
+      findEvents(realQuery);
+
+      if (realQuery !== query.originalQueryString) {
+        $scope.realQuery = realQuery;
+      } else {
+        $scope.realQuery = false;
+      }
     }
   };
 
@@ -12075,25 +12096,9 @@ function Search(
     $scope.queryEditorShown = false;
   };
 
-  $rootScope.$on('startEditingQuery', $scope.startEditing);
-  $rootScope.$on('stopEditingQuery', $scope.stopEditing);
-
-  $scope.$watch(function () {
-    var query = getSearchQuery();
-    return query.queryString;
-  }, function (queryString) {
-    var query = queryBuilder.createQuery(queryString);
-
-    $scope.activeQuery = query;
-
-    if (queryBuilder.isValid(query)) {
-      updateQuery(query);
-      $scope.queryErrors = [];
-    } else {
-      $scope.queryErrors = query.errors;
-    }
-
-  });
+  function queryChanged(event, newQuery) {
+    updateQuery(newQuery);
+  }
 
   // Because the uib pagination directive is messed up and overrides the initial page to 1,
   // you have to silence and revert it.
@@ -12111,6 +12116,16 @@ function Search(
       $window.scroll(0, 0);
     }
   };
+
+  updateQuery(searchHelper.getQuery());
+
+  var searchQueryChangedListener = $rootScope.$on('searchQueryChanged', queryChanged);
+  var startEditingQueryListener = $rootScope.$on('startEditingQuery', $scope.startEditing);
+  var stopEditingQueryListener = $rootScope.$on('stopEditingQuery', $scope.stopEditing);
+
+  $scope.$on('$destroy', startEditingQueryListener);
+  $scope.$on('$destroy', searchQueryChangedListener);
+  $scope.$on('$destroy', stopEditingQueryListener);
 
 }
 Search.$inject = ["$scope", "udbApi", "LuceneQueryBuilder", "$window", "$location", "$uibModal", "SearchResultViewer", "eventLabeller", "searchHelper", "$rootScope", "eventExporter", "$translate"];
@@ -14595,22 +14610,24 @@ $templateCache.put('templates/time-autocomplete.html',
     "<form class=\"navbar-form navbar-left udb-header-search\" role=\"search\"\n" +
     "      ng-class=\"{'has-errors': sb.hasErrors, 'is-editing': sb.isEditing}\">\n" +
     "  <div class=\"form-group has-warning has-feedback\">\n" +
-    "    <input type=\"text\" class=\"form-control\" ng-model=\"sb.query\" ng-change=\"sb.searchChange()\">\n" +
+    "    <input type=\"text\" class=\"form-control\" ng-model=\"sb.queryString\" ng-change=\"sb.queryChanged()\">\n" +
     "    <span class=\"dropdown saved-search-icon\" uib-dropdown>\n" +
     "      <i class=\"fa fa-bookmark\" class=\"dropdown-toggle\" uib-dropdown-toggle></i>\n" +
     "      <ul class=\"uib-dropdown-menu\" role=\"menu\">\n" +
     "        <li role=\"presentation\" class=\"dropdown-header\">Bewaarde zoekopdrachten</li>\n" +
     "        <li ng-repeat=\"savedSearch in sb.savedSearches\">\n" +
-    "          <a ng-href=\"/search?query={{::savedSearch.query}}\" ng-bind=\"::savedSearch.name\"></a>\n" +
+    "          <a ng-bind=\"::savedSearch.name\"\n" +
+    "             ng-click=\"sb.find(savedSearch.query)\">\n" +
+    "          </a>\n" +
     "        </li>\n" +
     "        <li class=\"divider\"></li>\n" +
     "        <li><a href=\"/saved-searches\">Beheren</a></li>\n" +
     "      </ul>\n" +
     "    </span>\n" +
     "    <i ng-show=\"sb.hasErrors\" class=\"fa fa-warning warning-icon\" tooltip-append-to-body=\"true\"\n" +
-    "       tooltip-placement=\"bottom\" tooltip=\"{{sb.errors}}\"></i>\n" +
+    "       tooltip-placement=\"bottom\" uib-tooltip=\"{{sb.errors}}\"></i>\n" +
     "  </div>\n" +
-    "  <button type=\"submit\" class=\"btn udb-search-button\" ng-click=\"sb.search()\">\n" +
+    "  <button type=\"submit\" class=\"btn udb-search-button\" ng-click=\"sb.find()\">\n" +
     "    <i class=\"fa fa-search\"></i>\n" +
     "  </button>\n" +
     "</form>\n" +

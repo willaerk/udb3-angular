@@ -82,6 +82,7 @@ function QueryEditorController(
    */
   qe.updateQueryString = function () {
     searchHelper.setQueryTree(qe.groupedQueryTree);
+    $rootScope.$emit('searchSubmitted');
     qe.stopEditing();
   };
 

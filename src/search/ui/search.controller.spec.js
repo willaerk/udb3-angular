@@ -47,14 +47,10 @@ describe('Controller: Search', function() {
 
   it('alerts if there is no query when trying to export events', function() {
     getController();
-
-    expect($scope.activeQuery).toEqual(false);
-
     $scope.resultViewer.selectedIds = ['foo', 'bar'];
     $scope.exportEvents();
 
-    // Explicitly start the digest cycle in order to let $translate's promises
-    // to be resolved.
+    // Explicitly start the digest cycle in order to let $translate's promises resolve.
     $scope.$digest();
 
     expect($window.alert).toHaveBeenCalledWith('An export is only possible after you have launched a search query');

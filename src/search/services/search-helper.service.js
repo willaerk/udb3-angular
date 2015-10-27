@@ -12,10 +12,8 @@ angular
   .service('searchHelper', SearchHelper);
 
 /* @ngInject */
-function SearchHelper(LuceneQueryBuilder) {
-  var query = {
-    queryString: ''
-  };
+function SearchHelper(LuceneQueryBuilder, $rootScope) {
+  var query = LuceneQueryBuilder.createQuery('');
   var queryTree = null;
 
   this.clearQueryTree = function () {
@@ -24,24 +22,25 @@ function SearchHelper(LuceneQueryBuilder) {
 
   this.setQueryString = function (queryString) {
     if (query.queryString !== queryString) {
-      query = LuceneQueryBuilder.createQuery(queryString);
-      LuceneQueryBuilder.isValid(query);
+      var newQuery = LuceneQueryBuilder.createQuery(queryString);
+      LuceneQueryBuilder.isValid(newQuery);
+      this.setQuery(newQuery);
       queryTree = null;
     }
-
-    return query;
   };
 
   this.setQueryTree = function (groupedQueryTree) {
     var queryString = LuceneQueryBuilder.unparseGroupedTree(groupedQueryTree);
-    query = LuceneQueryBuilder.createQuery(queryString);
-    LuceneQueryBuilder.isValid(query);
+    var newQuery = LuceneQueryBuilder.createQuery(queryString);
+    LuceneQueryBuilder.isValid(newQuery);
+    this.setQuery(newQuery);
 
     queryTree = groupedQueryTree;
   };
 
   this.setQuery = function (searchQuery) {
     query = searchQuery;
+    $rootScope.$emit('searchQueryChanged', searchQuery);
   };
 
   this.getQuery = function () {

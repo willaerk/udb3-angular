@@ -122,7 +122,8 @@ function UdbEventFactory(EventTranslationState) {
       this.description = angular.copy(jsonEvent.description) || {};
       this.calendarSummary = jsonEvent.calendarSummary;
       this.location = jsonEvent.location;
-      this.image = getImages(jsonEvent);
+      // @todo Use getImages() later on.
+      this.image = jsonEvent.image;
       this.labels = _.map(jsonEvent.labels, function (label) {
         return label;
       });

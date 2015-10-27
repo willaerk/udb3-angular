@@ -3157,7 +3157,8 @@ function UdbEventFactory(EventTranslationState) {
       this.description = angular.copy(jsonEvent.description) || {};
       this.calendarSummary = jsonEvent.calendarSummary;
       this.location = jsonEvent.location;
-      this.image = getImages(jsonEvent);
+      // @todo Use getImages() later on.
+      this.image = jsonEvent.image;
       this.labels = _.map(jsonEvent.labels, function (label) {
         return label;
       });
@@ -12560,13 +12561,11 @@ $templateCache.put('templates/time-autocomplete.html',
     "                <span ng-if=\"!event.typicalAgeRange\">Geen leeftijdsinformatie</span>\n" +
     "              </td>\n" +
     "            </tr>\n" +
-    "            <tr ng-class=\"{muted: event.image.length === 0}\">\n" +
+    "            <tr ng-class=\"{muted: !event.image}\">\n" +
     "              <td><strong>Afbeelding</strong></td>\n" +
     "              <td>\n" +
-    "                <div ng-if=\"event.image.length > 0\" class=\"image-list\">\n" +
-    "                  <img ng-repeat=\"image in event.image\" src=\"{{image.thumbnailUrl}}\" class=\"img-thumbnail\"/>\n" +
-    "                </div>\n" +
-    "                <span ng-if=\"event.image.length === 0\">Geen afbeelding</span>\n" +
+    "                <img ng-if=\"event.image\" src=\"{{event.image}}?maxwidth=400&maxheight=300\"/>\n" +
+    "                <span ng-if=\"!event.image\">Geen afbeelding</span>\n" +
     "              </td>\n" +
     "            </tr>\n" +
     "            </tbody>\n" +
@@ -14772,7 +14771,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "  <div class=\"col-sm-12\" ng-show=\"resultViewer.isShowingProperties()\">\n" +
     "    <div class=\"udb-details row\">\n" +
     "      <div class=\"col-sm-2\" ng-if=\"resultViewer.eventProperties.image.visible\">\n" +
-    "        <img ng-src=\"{{event.image}}\" alt=\"{{event.name}}\" class=\"img-responsive\">\n" +
+    "        <img ng-if=\"event.image\" ng-src=\"{{event.image}}\" alt=\"{{event.name}}\" class=\"img-responsive\">\n" +
     "      </div>\n" +
     "      <div ng-class=\"resultViewer.eventProperties.image.visible ? 'col-sm-10' : 'col-sm-12'\">\n" +
     "        <div ng-if=\"resultViewer.eventProperties.description.visible && eventCtrl.editable\">\n" +

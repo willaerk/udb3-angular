@@ -2682,7 +2682,7 @@ function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth,
       deferredUser.resolve(activeUser);
     } else {
 
-      var request = $http.get(apiUrl + 'user', {
+      var request = $http.get(appConfig.baseUrl + 'uitid/user', {
         withCredentials: true
       });
 
@@ -3831,6 +3831,7 @@ function UitidAuth($window, $location, $http, appConfig, $cookieStore) {
     $window.location.href = authUrl;
   };
 
+  // TODO: Have this method return a promise, an event can be broadcast to keep other components updated.
   /**
    * Returns the currently logged in user
    */

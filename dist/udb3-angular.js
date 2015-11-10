@@ -3807,7 +3807,7 @@ function UitidAuth($window, $location, $http, appConfig, $cookieStore) {
    * Log the active user out.
    */
   this.logout = function () {
-    var logoutUrl = appConfig.baseUrl + 'logout',
+    var logoutUrl = appConfig.baseUrl + 'uitid/logout',
       request = $http.get(logoutUrl, {
         withCredentials: true
       });
@@ -3825,7 +3825,7 @@ function UitidAuth($window, $location, $http, appConfig, $cookieStore) {
    */
   this.login = function () {
     var currentLocation = $location.absUrl(),
-      authUrl = appConfig.authUrl;
+        authUrl = appConfig.authUrl;
 
     authUrl += '?destination=' + currentLocation;
     $window.location.href = authUrl;

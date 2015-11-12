@@ -12133,13 +12133,23 @@ function Search(
   var startEditingQueryListener = $rootScope.$on('startEditingQuery', $scope.startEditing);
   var stopEditingQueryListener = $rootScope.$on('stopEditingQuery', $scope.stopEditing);
 
+  function init() {
+    // If the search helper holds an existing query it won't react to the setQueryString below so we force an update.
+    var existingQuery = searchHelper.getQuery();
+    if (existingQuery.queryString !== '') {
+      updateQuery(existingQuery);
+    }
+
+    // If the user loads the search page with a query URI param it should be parsed and set for the initial search.
+    // Make sure the queryChanged listener is hooked up else the initial search will not trigger an update.
+    searchHelper.setQueryString(getQueryStringFromParams());
+  }
+
+  init();
+
   $scope.$on('$destroy', startEditingQueryListener);
   $scope.$on('$destroy', searchQueryChangedListener);
   $scope.$on('$destroy', stopEditingQueryListener);
-
-  // If the user loads the search page with a query URI param it should be parsed and set for the initial search.
-  // Make sure the queryChanged listener is hooked up else the initial search will not trigger an update.
-  searchHelper.setQueryString(getQueryStringFromParams());
 }
 Search.$inject = ["$scope", "udbApi", "LuceneQueryBuilder", "$window", "$location", "$uibModal", "SearchResultViewer", "eventLabeller", "searchHelper", "$rootScope", "eventExporter", "$translate"];
 

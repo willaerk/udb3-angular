@@ -251,7 +251,7 @@ function Search(
 
   function init() {
     var existingQuery = searchHelper.getQuery();
-    if (existingQuery.queryString !== '') {
+    if (existingQuery) {
       // If the search helper holds an existing query it won't react to the setQueryString below so we force an update.
       updateQuery(existingQuery);
     } else {

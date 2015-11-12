@@ -82,7 +82,6 @@ describe('Controller: Search', function() {
     searchHelper.setQueryString('city:"Brussel"');
 
     var controller = getController();
-    console.log(searchHelper.getQuery());
 
     expect($scope.activeQuery.queryString).toEqual('city:"Brussel"');
   });

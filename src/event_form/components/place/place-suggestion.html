@@ -1,5 +1,5 @@
 <div class="place-suggestion">
-  <span class="place-suggestion-name" ng-bind-html="match.model.name | typeaheadHighlight:query"></span>
-  <span class="place-suggestion-address" ng-bind-html="match.model.address.streetAddress | typeaheadHighlight:query">
+  <span class="place-suggestion-name" ng-bind-html="match.model.name | uibTypeaheadHighlight:query"></span>
+  <span class="place-suggestion-address" ng-bind-html="match.model.address.streetAddress | uibTypeaheadHighlight:query">
   </span>
 </div>

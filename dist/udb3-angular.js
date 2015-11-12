@@ -12156,7 +12156,7 @@ function searchDirective() {
 // Source: .tmp/udb3-angular.templates.js
 angular.module('udb.core').run(['$templateCache', function($templateCache) {
 $templateCache.put('templates/time-autocomplete.html',
-    "<input type=\"text\" ng-model=\"ngModel\" class=\"{{cssClass}}\" placeholder=\"{{inputPlaceholder}}\" typeahead=\"time for time in times | filter:$viewValue | limitTo:8\" />"
+    "<input type=\"text\" ng-model=\"ngModel\" class=\"{{cssClass}}\" placeholder=\"{{inputPlaceholder}}\" uib-typeahead=\"time for time in times | filter:$viewValue | limitTo:8\" />"
   );
 
 
@@ -12713,7 +12713,7 @@ $templateCache.put('templates/time-autocomplete.html',
 
 
   $templateCache.put('templates/city-suggestion.html',
-    "<a href tabindex=\"-1\" ng-bind-html=\"match.label | typeaheadHighlight:query\"></a>"
+    "<a href tabindex=\"-1\" ng-bind-html=\"match.label | uibTypeaheadHighlight:query\"></a>"
   );
 
 
@@ -13088,8 +13088,8 @@ $templateCache.put('templates/time-autocomplete.html',
 
   $templateCache.put('templates/place-suggestion.html',
     "<div class=\"place-suggestion\">\n" +
-    "  <span class=\"place-suggestion-name\" ng-bind-html=\"match.model.name | typeaheadHighlight:query\"></span>\n" +
-    "  <span class=\"place-suggestion-address\" ng-bind-html=\"match.model.address.streetAddress | typeaheadHighlight:query\">\n" +
+    "  <span class=\"place-suggestion-name\" ng-bind-html=\"match.model.name | uibTypeaheadHighlight:query\"></span>\n" +
+    "  <span class=\"place-suggestion-address\" ng-bind-html=\"match.model.address.streetAddress | uibTypeaheadHighlight:query\">\n" +
     "  </span>\n" +
     "</div>\n"
   );
@@ -13264,10 +13264,10 @@ $templateCache.put('templates/time-autocomplete.html',
     "        <div id=\"gemeente-kiezer\" ng-hide=\"selectedCity !== ''\">\n" +
     "          <span style=\"position: relative; display: inline-block; direction: ltr;\" class=\"twitter-typeahead\">\n" +
     "            <input type=\"text\"\n" +
-    "                   class=\"form-control typeahead\"\n" +
+    "                   class=\"form-control uib-typeahead\"\n" +
     "                   placeholder=\"Gemeente of postcode\"\n" +
     "                   ng-model=\"cityAutocompleteTextField\"\n" +
-    "                   typeahead=\"city as city.zip + ' ' + city.name for city in cities | filter:filterCities($viewValue) | orderBy:orderByLevenshteinDistance($viewValue)\"\n" +
+    "                   uib-typeahead=\"city as city.zip + ' ' + city.name for city in cities | filter:filterCities($viewValue) | orderBy:orderByLevenshteinDistance($viewValue)\"\n" +
     "                   typeahead-on-select=\"selectCity($item, $label)\"\n" +
     "                   typeahead-min-length=\"3\"\n" +
     "                   typeahead-template-url=\"templates/city-suggestion.html\">\n" +
@@ -13295,7 +13295,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "                     placeholder=\"Locatie\"\n" +
     "                     class=\"form-control typeahead\"\n" +
     "                     ng-model=\"locationAutocompleteTextField\"\n" +
-    "                     typeahead=\"location.id as location.name for location in filteredLocations = (locationsForCity | filter:filterCityLocations($viewValue)) | orderBy:orderCityLocations($viewValue) | limitTo:50\"\n" +
+    "                     uib-typeahead=\"location.id as location.name for location in filteredLocations = (locationsForCity | filter:filterCityLocations($viewValue)) | orderBy:orderCityLocations($viewValue) | limitTo:50\"\n" +
     "                     typeahead-on-select=\"selectLocation($item, $model, $label)\"\n" +
     "                     typeahead-min-length=\"3\"\n" +
     "                     typeahead-template-url=\"templates/place-suggestion.html\"/>\n" +
@@ -13667,9 +13667,9 @@ $templateCache.put('templates/time-autocomplete.html',
     "                  <label>Kies een organisatie <i class=\"fa fa-circle-o-notch fa-spin\" ng-show=\"loadingOrganizers\"></i></label>\n" +
     "                  <div id=\"organisator-kiezer\">\n" +
     "                    <span class=\"twitter-typeahead\" style=\"position: relative; display: inline-block; direction: ltr;\">\n" +
-    "                      <input type=\"text\" class=\"form-control typeahead\" id=\"organisator-autocomplete\"\n" +
+    "                      <input type=\"text\" class=\"form-control uib-typeahead\" id=\"organisator-autocomplete\"\n" +
     "                             ng-model=\"organizer\"\n" +
-    "                             typeahead=\"organizer for organizer in getOrganizers($viewValue)\"\n" +
+    "                             uib-typeahead=\"organizer for organizer in getOrganizers($viewValue)\"\n" +
     "                             typeahead-on-select=\"selectOrganizer()\"\n" +
     "                             typeahead-min-length=\"3\"\n" +
     "                             typeahead-template-url=\"templates/organizer-typeahead-template.html\"/>\n" +

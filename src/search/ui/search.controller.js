@@ -234,7 +234,16 @@ function Search(
     }
   };
 
-  updateQuery(searchHelper.getQuery());
+  function getQueryStringFromParams() {
+    var queryString = '';
+    var searchParams = $location.search();
+
+    if (searchParams.query) {
+      queryString = searchParams.query;
+    }
+
+    return queryString;
+  }
 
   var searchQueryChangedListener = $rootScope.$on('searchQueryChanged', queryChanged);
   var startEditingQueryListener = $rootScope.$on('startEditingQuery', $scope.startEditing);
@@ -244,4 +253,7 @@ function Search(
   $scope.$on('$destroy', searchQueryChangedListener);
   $scope.$on('$destroy', stopEditingQueryListener);
 
+  // If the user loads the search page with a query URI param it should be parsed and set for the initial search.
+  // Make sure the queryChanged listener is hooked up else the initial search will not trigger an update.
+  searchHelper.setQueryString(getQueryStringFromParams());
 }

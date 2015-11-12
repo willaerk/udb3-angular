@@ -77,4 +77,13 @@ describe('Controller: Search', function() {
     expect(searchHelper.setQueryString).toHaveBeenCalledWith('city:"Brussel"');
     expect($scope.activeQuery.queryString).toEqual('city:"Brussel"');
   });
+
+  it('should initialize with an existing query set on the search helper', function () {
+    searchHelper.setQueryString('city:"Brussel"');
+
+    var controller = getController();
+    console.log(searchHelper.getQuery());
+
+    expect($scope.activeQuery.queryString).toEqual('city:"Brussel"');
+  });
 });

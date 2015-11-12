@@ -250,15 +250,15 @@ function Search(
   var stopEditingQueryListener = $rootScope.$on('stopEditingQuery', $scope.stopEditing);
 
   function init() {
-    // If the search helper holds an existing query it won't react to the setQueryString below so we force an update.
     var existingQuery = searchHelper.getQuery();
     if (existingQuery.queryString !== '') {
+      // If the search helper holds an existing query it won't react to the setQueryString below so we force an update.
       updateQuery(existingQuery);
+    } else {
+      // If the user loads the search page with a query URI param it should be parsed and set for the initial search.
+      // Make sure the queryChanged listener is hooked up else the initial search will not trigger an update.
+      searchHelper.setQueryString(getQueryStringFromParams());
     }
-
-    // If the user loads the search page with a query URI param it should be parsed and set for the initial search.
-    // Make sure the queryChanged listener is hooked up else the initial search will not trigger an update.
-    searchHelper.setQueryString(getQueryStringFromParams());
   }
 
   init();

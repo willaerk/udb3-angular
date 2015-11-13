@@ -85,4 +85,20 @@ describe('Controller: Search', function() {
 
     expect($scope.activeQuery.queryString).toEqual('city:"Brussel"');
   });
+
+  it('should use the params in the URI even when there is an existing query set on the search helper', function () {
+    searchHelper.setQueryString('city:"Brussel"');
+    $location.search.and.returnValue({query: 'city:"Leuven"', page: 5});
+
+    var controller = getController();
+
+    expect($scope.activeQuery.queryString).toEqual('city:"Leuven"');
+  });
+
+
+  it('should initialize with an empty search when there is no existing query or query params', function () {
+    var controller = getController();
+
+    expect($scope.activeQuery.queryString).toEqual('');
+  });
 });

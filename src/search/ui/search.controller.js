@@ -234,8 +234,13 @@ function Search(
     }
   };
 
+  /**
+   * Get the query string from the URI params
+   *
+   * @return {null|string}
+   */
   function getQueryStringFromParams() {
-    var queryString = '';
+    var queryString = null;
     var searchParams = $location.search();
 
     if (searchParams.query) {
@@ -251,13 +256,20 @@ function Search(
 
   function init() {
     var existingQuery = searchHelper.getQuery();
-    if (existingQuery) {
-      // If the search helper holds an existing query it won't react to the setQueryString below so we force an update.
-      updateQuery(existingQuery);
-    } else {
+    var searchParams = getQueryStringFromParams();
+
+    if (searchParams) {
       // If the user loads the search page with a query URI param it should be parsed and set for the initial search.
       // Make sure the queryChanged listener is hooked up else the initial search will not trigger an update.
-      searchHelper.setQueryString(getQueryStringFromParams());
+      searchHelper.setQueryString(searchParams);
+    } else if (existingQuery) {
+      // If the search helper already holds an existing query it won't react to the setQueryString so we force an update.
+      updateQuery(existingQuery);
+    }
+
+    // If there is no existing query or search params we still want to load some results to show.
+    if (!searchParams && !existingQuery) {
+      searchHelper.setQueryString('');
     }
   }
 

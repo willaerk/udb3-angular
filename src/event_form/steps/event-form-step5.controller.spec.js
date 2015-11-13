@@ -21,7 +21,6 @@ describe('Controller: event form step 5', function () {
     scope.ageRange = scope.ageRanges[0];
     scope.ageRangeChanged();
 
-    expect(scope.eventFormData.ageRange).toEqual(-1);
     expect(scope.saveAgeRange).toHaveBeenCalled();
   });
 

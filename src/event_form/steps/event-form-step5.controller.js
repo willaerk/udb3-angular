@@ -299,27 +299,22 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
   }
 
   /**
-   * Autocomplete callback for organizers.
+   * Auto-complete callback for organizers.
+   * @param {String} value
+   *  Suggest organizers based off of this value.
    */
   function getOrganizers(value) {
-
-    $scope.loadingOrganizers = true;
-
-    return udbOrganizers.suggestOrganizers(value).then(function (organizers) {
-
-      if (organizers.length > 0) {
-        $scope.emptyOrganizerAutocomplete = false;
-      }
-      else {
-        $scope.emptyOrganizerAutocomplete = true;
-      }
-
+    function suggestExistingOrNewOrganiser (organizers) {
+      $scope.emptyOrganizerAutocomplete = organizers.length <= 0;
       $scope.loadingOrganizers = false;
 
       return organizers;
+    }
 
-    });
-
+    $scope.loadingOrganizers = true;
+    return udbOrganizers
+      .suggestOrganizers(value)
+      .then(suggestExistingOrNewOrganiser);
   }
 
   /**

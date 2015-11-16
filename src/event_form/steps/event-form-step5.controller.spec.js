@@ -4,15 +4,19 @@ describe('Controller: event form step 5', function () {
 
   beforeEach(module('udb.event-form'));
 
-  var $controller, stepController, scope, EventFormData;
+  var $controller, stepController, scope, EventFormData, udbOrganizers, UdbOrganizer, $q;
 
   beforeEach(inject(function ($rootScope, $injector) {
     $controller = $injector.get('$controller');
     scope = $rootScope;
     EventFormData = $injector.get('EventFormData');
+    UdbOrganizer = $injector.get('UdbOrganizer');
+    $q = $injector.get('$q');
+    udbOrganizers = jasmine.createSpyObj('udbOrganizers', ['suggestOrganizers']);
     stepController = $controller('EventFormStep5Controller', {
       $scope: scope,
-      EventFormData: EventFormData
+      EventFormData: EventFormData,
+      udbOrganizers: udbOrganizers
     });
   }));
 
@@ -87,5 +91,15 @@ describe('Controller: event form step 5', function () {
 
       expect(EventFormData.typicalAgeRange).toEqual(testCase.expectedResult);
     }
+  });
+
+  it('should suggest creating a new organizer when looking for one yields no results', function () {
+    udbOrganizers.suggestOrganizers.and.returnValue($q.resolve([]));
+
+    scope.getOrganizers('club');
+    scope.$apply();
+
+    expect(udbOrganizers.suggestOrganizers).toHaveBeenCalledWith('club');
+    expect(scope.emptyOrganizerAutocomplete).toEqual(true);
   });
 });

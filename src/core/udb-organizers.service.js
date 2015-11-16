@@ -17,17 +17,17 @@ function UdbOrganizers($q, $http, appConfig) {
    * Get the organizers that match the searched value.
    */
   this.suggestOrganizers = function(value) {
+    var deferredOrganizer = $q.defer();
 
-    var organizers = $q.defer();
+    function returnOrganizerSuggestions(pagedOrganizersResponse) {
+      deferredOrganizer.resolve(pagedOrganizersResponse.data.member);
+    }
 
-    var request = $http.get(appConfig.baseApiUrl + 'organizer/suggest/' + value);
+    $http
+      .get(appConfig.baseApiUrl + 'organizer/suggest/' + value)
+      .then(returnOrganizerSuggestions);
 
-    request.success(function(jsonData) {
-      organizers.resolve(jsonData);
-    });
-
-    return organizers.promise;
-
+    return deferredOrganizer.promise;
   };
 
   /**

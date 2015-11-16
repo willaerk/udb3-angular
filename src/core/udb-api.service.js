@@ -447,7 +447,7 @@ function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth,
   this.deleteOfferOrganizer = function(id, type, organizerId) {
 
     return $http['delete'](
-        appConfig.baseApiUrl + type + '/' + id + '/organizer/' + organizerId,
+        appConfig.baseUrl + type + '/' + id + '/organizer/' + organizerId,
         defaultApiConfig
     );
   };

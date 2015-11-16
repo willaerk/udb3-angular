@@ -324,48 +324,44 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
 
   /**
    * Select listener on the typeahead.
+   * @param {Organizer} organizer
    */
-  function selectOrganizer() {
-    EventFormData.organizer = $scope.organizer;
-    saveOrganizer();
+  function selectOrganizer(organizer) {
+    saveOrganizer(organizer);
+  }
+
+  function showAsyncOrganizerError() {
+    $scope.organizerError = true;
+    $scope.savingOrganizer = false;
   }
 
   /**
    * Delete the selected organiser.
    */
   function deleteOrganizer() {
-
-    $scope.organizerError = false;
-
-    var promise = eventCrud.deleteOfferOrganizer(EventFormData);
-    promise.then(function() {
+    function resetOrganizer() {
       updateLastUpdated();
       $scope.organizerCssClass = 'state-incomplete';
       EventFormData.resetOrganizer();
       $scope.savingOrganizer = false;
-    }, function() {
-      $scope.organizerError = true;
-      $scope.savingOrganizer = false;
-    });
+    }
 
+    $scope.organizerError = false;
+    eventCrud
+      .deleteOfferOrganizer(EventFormData)
+      .then(resetOrganizer, showAsyncOrganizerError);
   }
 
   /**
    * Open the organizer modal.
    */
   function openOrganizerModal() {
-
     var modalInstance = $uibModal.open({
       templateUrl: 'templates/event-form-organizer-modal.html',
-      controller: 'EventFormOrganizerModalController',
+      controller: 'EventFormOrganizerModalController'
     });
 
-    modalInstance.result.then(function (organizer) {
-      EventFormData.organizer = organizer;
-      saveOrganizer();
-      $scope.organizer = '';
-    }, function () {
-      // modal dismissed.
+    function updateOrganizerInfo () {
       $scope.organizer = '';
       $scope.emptyOrganizerAutocomplete = false;
       if (EventFormData.organizer.id) {
@@ -374,29 +370,34 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
       else {
         $scope.organizerCssClass = 'state-incomplete';
       }
-    });
+    }
 
+    modalInstance.result.then(saveOrganizer, updateOrganizerInfo);
   }
 
   /**
    * Save the selected organizer in the backend.
+   * @param {Organizer} organizer
    */
-  function saveOrganizer() {
+  function saveOrganizer(organizer) {
+    function resetOrganizerFeedback() {
+      $scope.emptyOrganizerAutocomplete = false;
+      $scope.organizerError = false;
+      $scope.savingOrganizer = true;
+      $scope.organizer = '';
+    }
 
-    $scope.emptyOrganizerAutocomplete = false;
-    $scope.organizerError = false;
-    $scope.savingOrganizer = true;
-
-    $scope.organizer = '';
-    var promise = eventCrud.updateOrganizer(EventFormData);
-    promise.then(function() {
+    function markOrganizerAsCompleted() {
       updateLastUpdated();
       $scope.organizerCssClass = 'state-complete';
       $scope.savingOrganizer = false;
-    }, function() {
-      $scope.organizerError = true;
-      $scope.savingOrganizer = false;
-    });
+    }
+
+    EventFormData.organizer = organizer;
+    resetOrganizerFeedback();
+    eventCrud
+      .updateOrganizer(EventFormData)
+      .then(markOrganizerAsCompleted, showAsyncOrganizerError);
   }
 
   /**

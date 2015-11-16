@@ -11,7 +11,7 @@ angular
   .service('udbOrganizers', UdbOrganizers);
 
 /* @ngInject */
-function UdbOrganizers($q, $http, appConfig) {
+function UdbOrganizers($q, $http, appConfig, UdbOrganizer) {
 
   /**
    * Get the organizers that match the searched value.
@@ -20,7 +20,12 @@ function UdbOrganizers($q, $http, appConfig) {
     var deferredOrganizer = $q.defer();
 
     function returnOrganizerSuggestions(pagedOrganizersResponse) {
-      deferredOrganizer.resolve(pagedOrganizersResponse.data.member);
+      var jsonOrganizers = pagedOrganizersResponse.data.member;
+      var organizers = _.map(jsonOrganizers, function (jsonOrganizer) {
+        return new UdbOrganizer(jsonOrganizer);
+      });
+
+      deferredOrganizer.resolve(organizers);
     }
 
     $http

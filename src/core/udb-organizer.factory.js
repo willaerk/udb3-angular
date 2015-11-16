@@ -18,9 +18,13 @@ function UdbOrganizerFactory() {
    * @class UdbOrganizer
    * @constructor
    */
-  var UdbOrganizer = function () {
+  var UdbOrganizer = function (jsonOrganizer) {
     this.id = '';
     this.title = {};
+
+    if (jsonOrganizer) {
+      this.parseJson(jsonOrganizer);
+    }
   };
 
   UdbOrganizer.prototype = {

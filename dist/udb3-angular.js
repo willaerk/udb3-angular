@@ -2907,7 +2907,7 @@ function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth,
   this.deleteOfferOrganizer = function(id, type, organizerId) {
 
     return $http['delete'](
-        appConfig.baseApiUrl + type + '/' + id + '/organizer/' + organizerId,
+        appConfig.baseUrl + type + '/' + id + '/organizer/' + organizerId,
         defaultApiConfig
     );
   };
@@ -3460,9 +3460,13 @@ function UdbOrganizerFactory() {
    * @class UdbOrganizer
    * @constructor
    */
-  var UdbOrganizer = function () {
+  var UdbOrganizer = function (jsonOrganizer) {
     this.id = '';
     this.title = {};
+
+    if (jsonOrganizer) {
+      this.parseJson(jsonOrganizer);
+    }
   };
 
   UdbOrganizer.prototype = {
@@ -3506,7 +3510,7 @@ angular
   .service('udbOrganizers', UdbOrganizers);
 
 /* @ngInject */
-function UdbOrganizers($q, $http, appConfig) {
+function UdbOrganizers($q, $http, appConfig, UdbOrganizer) {
 
   /**
    * Get the organizers that match the searched value.
@@ -3515,7 +3519,12 @@ function UdbOrganizers($q, $http, appConfig) {
     var deferredOrganizer = $q.defer();
 
     function returnOrganizerSuggestions(pagedOrganizersResponse) {
-      deferredOrganizer.resolve(pagedOrganizersResponse.data.member);
+      var jsonOrganizers = pagedOrganizersResponse.data.member;
+      var organizers = _.map(jsonOrganizers, function (jsonOrganizer) {
+        return new UdbOrganizer(jsonOrganizer);
+      });
+
+      deferredOrganizer.resolve(organizers);
     }
 
     $http
@@ -3545,7 +3554,7 @@ function UdbOrganizers($q, $http, appConfig) {
   };
 
 }
-UdbOrganizers.$inject = ["$q", "$http", "appConfig"];
+UdbOrganizers.$inject = ["$q", "$http", "appConfig", "UdbOrganizer"];
 
 // Source: src/core/udb-place.factory.js
 /**
@@ -8577,48 +8586,44 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
 
   /**
    * Select listener on the typeahead.
+   * @param {Organizer} organizer
    */
-  function selectOrganizer() {
-    EventFormData.organizer = $scope.organizer;
-    saveOrganizer();
+  function selectOrganizer(organizer) {
+    saveOrganizer(organizer);
+  }
+
+  function showAsyncOrganizerError() {
+    $scope.organizerError = true;
+    $scope.savingOrganizer = false;
   }
 
   /**
    * Delete the selected organiser.
    */
   function deleteOrganizer() {
-
-    $scope.organizerError = false;
-
-    var promise = eventCrud.deleteOfferOrganizer(EventFormData);
-    promise.then(function() {
+    function resetOrganizer() {
       updateLastUpdated();
       $scope.organizerCssClass = 'state-incomplete';
       EventFormData.resetOrganizer();
       $scope.savingOrganizer = false;
-    }, function() {
-      $scope.organizerError = true;
-      $scope.savingOrganizer = false;
-    });
+    }
 
+    $scope.organizerError = false;
+    eventCrud
+      .deleteOfferOrganizer(EventFormData)
+      .then(resetOrganizer, showAsyncOrganizerError);
   }
 
   /**
    * Open the organizer modal.
    */
   function openOrganizerModal() {
-
     var modalInstance = $uibModal.open({
       templateUrl: 'templates/event-form-organizer-modal.html',
-      controller: 'EventFormOrganizerModalController',
+      controller: 'EventFormOrganizerModalController'
     });
 
-    modalInstance.result.then(function (organizer) {
-      EventFormData.organizer = organizer;
-      saveOrganizer();
-      $scope.organizer = '';
-    }, function () {
-      // modal dismissed.
+    function updateOrganizerInfo () {
       $scope.organizer = '';
       $scope.emptyOrganizerAutocomplete = false;
       if (EventFormData.organizer.id) {
@@ -8627,29 +8632,34 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
       else {
         $scope.organizerCssClass = 'state-incomplete';
       }
-    });
+    }
 
+    modalInstance.result.then(saveOrganizer, updateOrganizerInfo);
   }
 
   /**
    * Save the selected organizer in the backend.
+   * @param {Organizer} organizer
    */
-  function saveOrganizer() {
+  function saveOrganizer(organizer) {
+    function resetOrganizerFeedback() {
+      $scope.emptyOrganizerAutocomplete = false;
+      $scope.organizerError = false;
+      $scope.savingOrganizer = true;
+      $scope.organizer = '';
+    }
 
-    $scope.emptyOrganizerAutocomplete = false;
-    $scope.organizerError = false;
-    $scope.savingOrganizer = true;
-
-    $scope.organizer = '';
-    var promise = eventCrud.updateOrganizer(EventFormData);
-    promise.then(function() {
+    function markOrganizerAsCompleted() {
       updateLastUpdated();
       $scope.organizerCssClass = 'state-complete';
       $scope.savingOrganizer = false;
-    }, function() {
-      $scope.organizerError = true;
-      $scope.savingOrganizer = false;
-    });
+    }
+
+    EventFormData.organizer = organizer;
+    resetOrganizerFeedback();
+    eventCrud
+      .updateOrganizer(EventFormData)
+      .then(markOrganizerAsCompleted, showAsyncOrganizerError);
   }
 
   /**
@@ -13669,7 +13679,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "                      <input type=\"text\" class=\"form-control uib-typeahead\" id=\"organisator-autocomplete\"\n" +
     "                             ng-model=\"organizer\"\n" +
     "                             uib-typeahead=\"organizer for organizer in getOrganizers($viewValue)\"\n" +
-    "                             typeahead-on-select=\"selectOrganizer()\"\n" +
+    "                             typeahead-on-select=\"selectOrganizer(organizer)\"\n" +
     "                             typeahead-min-length=\"3\"\n" +
     "                             typeahead-template-url=\"templates/organizer-typeahead-template.html\"/>\n" +
     "                      <div class=\"dropdown-menu-no-results\" ng-show=\"emptyOrganizerAutocomplete\">\n" +

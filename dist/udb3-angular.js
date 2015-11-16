@@ -8376,9 +8376,9 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
 
   var AgeRange = {
     'ALL': {'value': 0, 'label': 'Alle leeftijden'},
-    'KIDS': {'value': 12, 'label': 'Kinderen tot 12 jaar', max: 12, min: 1},
-    'TEENS': {'value': 18, 'label': 'Jongeren tussen 12 en 18 jaar', max: 18, min: 12},
-    'ADULTS': {'value': 99, 'label': 'Volwassenen (+18 jaar)', min: 18}
+    'KIDS': {'value': 12, 'label': 'Kinderen tot 12 jaar', min: 1, max: 12},
+    'TEENS': {'value': 18, 'label': 'Jongeren tussen 12 en 18 jaar', min: 13, max: 18},
+    'ADULTS': {'value': 99, 'label': 'Volwassenen (+18 jaar)', min: 19}
   };
 
   $scope.ageRanges = _.map(AgeRange, function (range) {
@@ -11322,7 +11322,7 @@ angular
 
 /* @ngInject */
 function SearchHelper(LuceneQueryBuilder, $rootScope) {
-  var query = LuceneQueryBuilder.createQuery('');
+  var query = null;
   var queryTree = null;
 
   this.clearQueryTree = function () {
@@ -11330,7 +11330,7 @@ function SearchHelper(LuceneQueryBuilder, $rootScope) {
   };
 
   this.setQueryString = function (queryString) {
-    if (query.queryString !== queryString) {
+    if (!query || query.queryString !== queryString) {
       var newQuery = LuceneQueryBuilder.createQuery(queryString);
       LuceneQueryBuilder.isValid(newQuery);
       this.setQuery(newQuery);
@@ -12117,16 +12117,56 @@ function Search(
     }
   };
 
-  updateQuery(searchHelper.getQuery());
+  /**
+   * Get the query string from the URI params
+   *
+   * @return {null|string}
+   */
+  function getQueryStringFromParams() {
+    var queryString = null;
+    var searchParams = $location.search();
 
-  var searchQueryChangedListener = $rootScope.$on('searchQueryChanged', queryChanged);
-  var startEditingQueryListener = $rootScope.$on('startEditingQuery', $scope.startEditing);
-  var stopEditingQueryListener = $rootScope.$on('stopEditingQuery', $scope.stopEditing);
+    if (searchParams.query) {
+      queryString = searchParams.query;
+    }
 
-  $scope.$on('$destroy', startEditingQueryListener);
-  $scope.$on('$destroy', searchQueryChangedListener);
-  $scope.$on('$destroy', stopEditingQueryListener);
+    return queryString;
+  }
 
+  var initListeners = _.once(function () {
+    var searchQueryChangedListener = $rootScope.$on('searchQueryChanged', queryChanged);
+    var startEditingQueryListener = $rootScope.$on('startEditingQuery', $scope.startEditing);
+    var stopEditingQueryListener = $rootScope.$on('stopEditingQuery', $scope.stopEditing);
+
+    $scope.$on('$destroy', startEditingQueryListener);
+    $scope.$on('$destroy', searchQueryChangedListener);
+    $scope.$on('$destroy', stopEditingQueryListener);
+  });
+
+  function init() {
+    var existingQuery = searchHelper.getQuery();
+    var searchParams = getQueryStringFromParams();
+
+    initListeners();
+
+    // If the user loads the search page with a query URI param it should be parsed and set for the initial search.
+    // Make sure the queryChanged listener is hooked up else the initial search will not trigger an update.
+    if (searchParams) {
+      searchHelper.setQueryString(searchParams);
+    }
+
+    // If the search helper already holds an existing query it won't react to the setQueryString so we force an update.
+    if (existingQuery && (!searchParams || existingQuery.queryString === searchParams)) {
+      updateQuery(existingQuery);
+    }
+
+    // If there is no existing query or search params we still want to load some results to show.
+    if (!searchParams && !existingQuery) {
+      searchHelper.setQueryString('');
+    }
+  }
+
+  init();
 }
 Search.$inject = ["$scope", "udbApi", "LuceneQueryBuilder", "$window", "$location", "$uibModal", "SearchResultViewer", "eventLabeller", "searchHelper", "$rootScope", "eventExporter", "$translate"];
 

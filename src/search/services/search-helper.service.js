@@ -13,7 +13,7 @@ angular
 
 /* @ngInject */
 function SearchHelper(LuceneQueryBuilder, $rootScope) {
-  var query = LuceneQueryBuilder.createQuery('');
+  var query = null;
   var queryTree = null;
 
   this.clearQueryTree = function () {
@@ -21,7 +21,7 @@ function SearchHelper(LuceneQueryBuilder, $rootScope) {
   };
 
   this.setQueryString = function (queryString) {
-    if (query.queryString !== queryString) {
+    if (!query || query.queryString !== queryString) {
       var newQuery = LuceneQueryBuilder.createQuery(queryString);
       LuceneQueryBuilder.isValid(newQuery);
       this.setQuery(newQuery);

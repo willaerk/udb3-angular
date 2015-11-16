@@ -8280,9 +8280,15 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
   $scope.savingAgeRange = false;
   $scope.ageRangeError = false;
   $scope.invalidAgeRange = false;
-  $scope.ageRange = 0;
+  /**
+   * @type {AgeRange|null}
+   */
+  $scope.ageRange = null;
   $scope.ageCssClass = EventFormData.ageRange ? 'state-complete' : 'state-incomplete';
-  $scope.minAge = '';
+  /**
+   * * @type {number|null}
+   */
+  $scope.minAge = null;
 
   // Organizer vars.
   $scope.organizerCssClass = EventFormData.organizer.name ? 'state-complete' : 'state-incomplete';
@@ -8304,7 +8310,7 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
     urlLabel : EventFormData.bookingInfo.urlLabel ? EventFormData.bookingInfo.urlLabel : 'Reserveer plaatsen',
     urlLabelCustom : '',
     phone : EventFormData.bookingInfo.phone ? EventFormData.bookingInfo.phone : '',
-    email : EventFormData.bookingInfo.phone ? EventFormData.bookingInfo.email : '',
+    email : EventFormData.bookingInfo.phone ? EventFormData.bookingInfo.email : ''
   };
 
   $scope.viaWebsite =  EventFormData.bookingInfo.url ? true : false;
@@ -8343,7 +8349,7 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
 
   // Age range functions.
   $scope.saveAgeRange = saveAgeRange;
-  $scope.changeAgeRange = changeAgeRange;
+  $scope.ageRangeChanged = ageRangeChanged;
   $scope.setAllAges = setAllAges;
   $scope.resetAgeRange = resetAgeRange;
 
@@ -8367,6 +8373,19 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
   $scope.openDeleteImageModal = openDeleteImageModal;
 
   var URL_REGEXP = /^(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?$/;
+
+  var AgeRange = {
+    'ALL': {'value': 0, 'label': 'Alle leeftijden'},
+    'KIDS': {'value': 12, 'label': 'Kinderen tot 12 jaar', min: 1, max: 12},
+    'TEENS': {'value': 18, 'label': 'Jongeren tussen 12 en 18 jaar', min: 13, max: 18},
+    'ADULTS': {'value': 99, 'label': 'Volwassenen (+18 jaar)', min: 19}
+  };
+
+  $scope.ageRanges = _.map(AgeRange, function (range) {
+    return range;
+  });
+
+  $scope.AgeRange = AgeRange;
 
   // Init the controller for editing.
   initEditForm();
@@ -8409,24 +8428,53 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
 
   /**
    * Listener on the age range selection.
+   * @param {AgeRange} ageRange
    */
-  function changeAgeRange() {
+  function ageRangeChanged(ageRange) {
+    $scope.minAge = null;
+    $scope.ageCssClass = 'state-complete';
 
-    $scope.ageRange = parseInt($scope.ageRange);
-
-    if ($scope.ageRange > 0) {
-
-      // Always reset the min age.
-      $scope.minAge = '';
-      $scope.invalidAgeRange = false;
-      $scope.ageCssClass = 'state-complete';
-
+    if (ageRange === AgeRange.ALL) {
+      $scope.saveAgeRange();
     }
-    else {
-      setAllAges();
-      saveAgeRange();
+  }
+
+  /**
+   * @param {number} minAge
+   * @param {number} [maxAge]
+   *
+   * @return {string}
+   */
+  function formatTypicalAgeRange(minAge, maxAge) {
+    var formattedAgeRange = '';
+
+    if (maxAge) {
+      formattedAgeRange = minAge === maxAge ? minAge.toString() : minAge + '-' + maxAge;
+    } else {
+      formattedAgeRange = minAge + '-';
     }
 
+    return formattedAgeRange;
+  }
+
+  /**
+   * @param {number} minAge
+   * @param {AgeRange} ageRange
+   *
+   * @return {boolean}
+   */
+  function isMinimumAgeInRange(minAge, ageRange) {
+    var inRange = true;
+
+    if (ageRange.max && minAge > ageRange.max) {
+      inRange = false;
+    }
+
+    if (ageRange.min && minAge < ageRange.min) {
+      inRange = false;
+    }
+
+    return inRange;
   }
 
   /**
@@ -8435,87 +8483,45 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
   function saveAgeRange() {
 
     $scope.invalidAgeRange = false;
-    $scope.ageRange = parseInt($scope.ageRange);
-    $scope.minAge = parseInt($scope.minAge);
-    if ($scope.ageRange > 0) {
+    //$scope.minAge = parseInt($scope.minAge); // should already be a number!
+    if ($scope.ageRange !== AgeRange.ALL) {
 
       if (isNaN($scope.minAge)) {
         $scope.invalidAgeRange = true;
       }
       else {
-        // Check if the entered age is valid for selected range.
-        switch ($scope.ageRange) {
-
-          case 12:
-
-            if ($scope.minAge > 12 || $scope.minAge < 1) {
-              $scope.invalidAgeRange = true;
-            }
-
-            if ($scope.minAge === $scope.ageRange) {
-              EventFormData.typicalAgeRange = $scope.minAge;
-            }
-            else {
-              EventFormData.typicalAgeRange = $scope.minAge + '-' + $scope.ageRange;
-            }
-
-            break;
-
-          case 18:
-
-            if ($scope.minAge < 12 || $scope.minAge > 18) {
-              $scope.invalidAgeRange = true;
-            }
-
-            if ($scope.minAge === $scope.ageRange) {
-              EventFormData.typicalAgeRange = $scope.minAge;
-            }
-            else {
-              EventFormData.typicalAgeRange = $scope.minAge + '-' + $scope.ageRange;
-            }
-
-            break;
-
-          case 99:
-
-            if ($scope.minAge < 19) {
-              $scope.invalidAgeRange = true;
-            }
-
-            EventFormData.typicalAgeRange = $scope.minAge + '-';
-            break;
-
-        }
+        $scope.invalidAgeRange = !isMinimumAgeInRange($scope.minAge, $scope.ageRange);
+        EventFormData.typicalAgeRange = formatTypicalAgeRange($scope.minAge, $scope.ageRange.max);
       }
 
     }
     else {
-      EventFormData.typicalAgeRange = $scope.ageRange;
+      EventFormData.typicalAgeRange = null;
     }
 
     // Save to db if valid age entered.
     if (!$scope.invalidAgeRange) {
+      var ageRangePersisted = null;
 
-      $scope.ageRangeError = false;
-      $scope.savingAgeRange = true;
-      var promise = null;
-      if ($scope.ageRange > 0) {
-        promise = eventCrud.updateTypicalAgeRange(EventFormData);
-      }
-      else {
-        promise = eventCrud.deleteTypicalAgeRange(EventFormData);
-      }
+      var showAgeRangeError = function() {
+        $scope.savingAgeRange = false;
+        $scope.ageRangeError = true;
+      };
 
-      promise.then(function() {
+      var markAgeRangeAsUpdated = function () {
         $scope.savingAgeRange = false;
         updateLastUpdated();
         $scope.ageCssClass = 'state-complete';
-      }, function() {
-        // Error occured.
-        $scope.savingAgeRange = false;
-        $scope.ageRangeError = true;
-      });
+      };
 
+      if ($scope.ageRange === AgeRange.ALL) {
+        ageRangePersisted = eventCrud.deleteTypicalAgeRange(EventFormData);
+      }
+      else {
+        ageRangePersisted = eventCrud.updateTypicalAgeRange(EventFormData);
+      }
+
+      ageRangePersisted.then(markAgeRangeAsUpdated, showAgeRangeError);
     }
 
   }
@@ -8524,17 +8530,15 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
    * Set to all ages.
    */
   function setAllAges() {
-    $scope.ageRange = -1;
-    EventFormData.setAgeRange(-1);
-    $scope.ageCssClass = 'state-complete';
+    $scope.ageRange = AgeRange.ALL;
   }
 
   /**
    * Reset the age selection.
    */
   function resetAgeRange() {
-    $scope.ageRange = 0;
-    $scope.minAge = '';
+    $scope.ageRange = null;
+    $scope.minAge = null;
     $scope.ageCssClass = 'state-incomplete';
   }
 
@@ -8713,7 +8717,7 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
 
     var modalInstance = $uibModal.open({
       templateUrl: 'templates/event-form-facilities-modal.html',
-      controller: 'EventFormFacilitiesModalController',
+      controller: 'EventFormFacilitiesModalController'
     });
 
     modalInstance.result.then(function () {
@@ -8721,12 +8725,7 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
       $scope.facilitiesCssClass = 'state-complete';
       $scope.selectedFacilities = EventFormData.facilities;
 
-      if (EventFormData.facilities.length > 0) {
-        $scope.facilitiesInapplicable = false;
-      }
-      else {
-        $scope.facilitiesInapplicable = true;
-      }
+      $scope.facilitiesInapplicable = EventFormData.facilities.length <= 0;
     }, function () {
       // modal dismissed.
       if (EventFormData.facilities.length > 0 || $scope.facilitiesInapplicable) {
@@ -12196,7 +12195,7 @@ function searchDirective() {
 // Source: .tmp/udb3-angular.templates.js
 angular.module('udb.core').run(['$templateCache', function($templateCache) {
 $templateCache.put('templates/time-autocomplete.html',
-    "<input type=\"text\" ng-model=\"ngModel\" class=\"{{cssClass}}\" placeholder=\"{{inputPlaceholder}}\" typeahead=\"time for time in times | filter:$viewValue | limitTo:8\" />"
+    "<input type=\"text\" ng-model=\"ngModel\" class=\"{{cssClass}}\" placeholder=\"{{inputPlaceholder}}\" uib-typeahead=\"time for time in times | filter:$viewValue | limitTo:8\" />"
   );
 
 
@@ -12753,7 +12752,7 @@ $templateCache.put('templates/time-autocomplete.html',
 
 
   $templateCache.put('templates/city-suggestion.html',
-    "<a href tabindex=\"-1\" ng-bind-html=\"match.label | typeaheadHighlight:query\"></a>"
+    "<a href tabindex=\"-1\" ng-bind-html=\"match.label | uibTypeaheadHighlight:query\"></a>"
   );
 
 
@@ -13128,8 +13127,8 @@ $templateCache.put('templates/time-autocomplete.html',
 
   $templateCache.put('templates/place-suggestion.html',
     "<div class=\"place-suggestion\">\n" +
-    "  <span class=\"place-suggestion-name\" ng-bind-html=\"match.model.name | typeaheadHighlight:query\"></span>\n" +
-    "  <span class=\"place-suggestion-address\" ng-bind-html=\"match.model.address.streetAddress | typeaheadHighlight:query\">\n" +
+    "  <span class=\"place-suggestion-name\" ng-bind-html=\"match.model.name | uibTypeaheadHighlight:query\"></span>\n" +
+    "  <span class=\"place-suggestion-address\" ng-bind-html=\"match.model.address.streetAddress | uibTypeaheadHighlight:query\">\n" +
     "  </span>\n" +
     "</div>\n"
   );
@@ -13304,10 +13303,10 @@ $templateCache.put('templates/time-autocomplete.html',
     "        <div id=\"gemeente-kiezer\" ng-hide=\"selectedCity !== ''\">\n" +
     "          <span style=\"position: relative; display: inline-block; direction: ltr;\" class=\"twitter-typeahead\">\n" +
     "            <input type=\"text\"\n" +
-    "                   class=\"form-control typeahead\"\n" +
+    "                   class=\"form-control uib-typeahead\"\n" +
     "                   placeholder=\"Gemeente of postcode\"\n" +
     "                   ng-model=\"cityAutocompleteTextField\"\n" +
-    "                   typeahead=\"city as city.zip + ' ' + city.name for city in cities | filter:filterCities($viewValue) | orderBy:orderByLevenshteinDistance($viewValue)\"\n" +
+    "                   uib-typeahead=\"city as city.zip + ' ' + city.name for city in cities | filter:filterCities($viewValue) | orderBy:orderByLevenshteinDistance($viewValue)\"\n" +
     "                   typeahead-on-select=\"selectCity($item, $label)\"\n" +
     "                   typeahead-min-length=\"3\"\n" +
     "                   typeahead-template-url=\"templates/city-suggestion.html\">\n" +
@@ -13335,7 +13334,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "                     placeholder=\"Locatie\"\n" +
     "                     class=\"form-control typeahead\"\n" +
     "                     ng-model=\"locationAutocompleteTextField\"\n" +
-    "                     typeahead=\"location.id as location.name for location in filteredLocations = (locationsForCity | filter:filterCityLocations($viewValue)) | orderBy:orderCityLocations($viewValue) | limitTo:50\"\n" +
+    "                     uib-typeahead=\"location.id as location.name for location in filteredLocations = (locationsForCity | filter:filterCityLocations($viewValue)) | orderBy:orderCityLocations($viewValue) | limitTo:50\"\n" +
     "                     typeahead-on-select=\"selectLocation($item, $model, $label)\"\n" +
     "                     typeahead-min-length=\"3\"\n" +
     "                     typeahead-template-url=\"templates/place-suggestion.html\"/>\n" +
@@ -13658,17 +13657,17 @@ $templateCache.put('templates/time-autocomplete.html',
     "            </div>\n" +
     "            <div class=\"col-sm-8\">\n" +
     "              <section>\n" +
-    "                <div class=\"form-group clearfix\" ng-hide=\"ageRange === - 1\">\n" +
-    "                  <select class=\"form-control leeftijd-incomplete-select\" ng-change=\"changeAgeRange()\" ng-model=\"ageRange\" style=\"width: 50%; float: left;\">\n" +
-    "                    <option value=\"0\" ng-show=\"ageRange === 0\">Kies een leeftijdscategorie</option>\n" +
-    "                    <option value=\"12\">Kinderen tot 12 jaar</option>\n" +
-    "                    <option value=\"18\">Jongeren tussen 12 en 18 jaar</option>\n" +
-    "                    <option value=\"99\">Volwassenen (+18 jaar)</option>\n" +
-    "                    <option value=\"-1\" ng-show=\"ageRange > 0\">Alle leeftijden</option>\n" +
+    "                <div class=\"form-group clearfix\" ng-hide=\"ageRange === AgeRange.ALL\">\n" +
+    "                  <select class=\"form-control leeftijd-incomplete-select\"\n" +
+    "                          ng-change=\"ageRangeChanged(ageRange)\"\n" +
+    "                          ng-model=\"ageRange\"\n" +
+    "                          ng-options=\"range.label for range in ageRanges\">\n" +
+    "                    <option value=\"\">Kies een leeftijdscategorie</option>\n" +
     "                  </select>\n" +
-    "                  <a class=\"btn btn-link\" ng-show=\"ageRange === 0\" ng-click=\"setAllAges()\">Alle leeftijden</a>\n" +
+    "\n" +
+    "                  <a class=\"btn btn-link\" ng-show=\"ageRange === null\" ng-click=\"setAllAges()\">Alle leeftijden</a>\n" +
     "                </div>\n" +
-    "                <div class=\"form-inline form-group\" ng-show=\"ageRange > 0\">\n" +
+    "                <div class=\"form-inline form-group\" ng-show=\"ageRange && ageRange !== AgeRange.ALL\">\n" +
     "                  <div class=\"form-group\">\n" +
     "                    <label for=\"min-age\">Vanaf</label>\n" +
     "                    <input type=\"text\" id=\"min-age\" class=\"form-control\" ng-model=\"minAge\" ng-model-options=\"{ updateOn: 'change' }\" ng-change=\"saveAgeRange()\">\n" +
@@ -13676,7 +13675,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "                  </div>\n" +
     "                </div>\n" +
     "\n" +
-    "                <p ng-show=\"ageRange === - 1\">Alle leeftijden <a href=\"#\" class=\"btn btn-link btn-leeftijd-restore to-filling\" ng-click=\"resetAgeRange()\">Wijzigen</a></p>\n" +
+    "                <p ng-show=\"ageRange === AgeRange.ALL\">Alle leeftijden <a href=\"#\" class=\"btn btn-link btn-leeftijd-restore to-filling\" ng-click=\"resetAgeRange()\">Wijzigen</a></p>\n" +
     "\n" +
     "                <div ng-show=\"ageRangeError\" class=\"alert alert-danger\">\n" +
     "                  Er ging iets fout bij het opslaan van de leeftijd.\n" +
@@ -13707,9 +13706,9 @@ $templateCache.put('templates/time-autocomplete.html',
     "                  <label>Kies een organisatie <i class=\"fa fa-circle-o-notch fa-spin\" ng-show=\"loadingOrganizers\"></i></label>\n" +
     "                  <div id=\"organisator-kiezer\">\n" +
     "                    <span class=\"twitter-typeahead\" style=\"position: relative; display: inline-block; direction: ltr;\">\n" +
-    "                      <input type=\"text\" class=\"form-control typeahead\" id=\"organisator-autocomplete\"\n" +
+    "                      <input type=\"text\" class=\"form-control uib-typeahead\" id=\"organisator-autocomplete\"\n" +
     "                             ng-model=\"organizer\"\n" +
-    "                             typeahead=\"organizer for organizer in getOrganizers($viewValue)\"\n" +
+    "                             uib-typeahead=\"organizer for organizer in getOrganizers($viewValue)\"\n" +
     "                             typeahead-on-select=\"selectOrganizer()\"\n" +
     "                             typeahead-min-length=\"3\"\n" +
     "                             typeahead-template-url=\"templates/organizer-typeahead-template.html\"/>\n" +

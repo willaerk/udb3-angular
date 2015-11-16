@@ -14,10 +14,10 @@
         <div id="gemeente-kiezer" ng-hide="selectedCity !== ''">
           <span style="position: relative; display: inline-block; direction: ltr;" class="twitter-typeahead">
             <input type="text"
-                   class="form-control typeahead"
+                   class="form-control uib-typeahead"
                    placeholder="Gemeente of postcode"
                    ng-model="cityAutocompleteTextField"
-                   typeahead="city as city.zip + ' ' + city.name for city in cities | filter:filterCities($viewValue) | orderBy:orderByLevenshteinDistance($viewValue)"
+                   uib-typeahead="city as city.zip + ' ' + city.name for city in cities | filter:filterCities($viewValue) | orderBy:orderByLevenshteinDistance($viewValue)"
                    typeahead-on-select="selectCity($item, $label)"
                    typeahead-min-length="3"
                    typeahead-template-url="templates/city-suggestion.html">
@@ -45,7 +45,7 @@
                      placeholder="Locatie"
                      class="form-control typeahead"
                      ng-model="locationAutocompleteTextField"
-                     typeahead="location.id as location.name for location in filteredLocations = (locationsForCity | filter:filterCityLocations($viewValue)) | orderBy:orderCityLocations($viewValue) | limitTo:50"
+                     uib-typeahead="location.id as location.name for location in filteredLocations = (locationsForCity | filter:filterCityLocations($viewValue)) | orderBy:orderCityLocations($viewValue) | limitTo:50"
                      typeahead-on-select="selectLocation($item, $model, $label)"
                      typeahead-min-length="3"
                      typeahead-template-url="templates/place-suggestion.html"/>

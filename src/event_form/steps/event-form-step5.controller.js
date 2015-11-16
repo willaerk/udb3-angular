@@ -27,9 +27,15 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
   $scope.savingAgeRange = false;
   $scope.ageRangeError = false;
   $scope.invalidAgeRange = false;
-  $scope.ageRange = 0;
+  /**
+   * @type {AgeRange|null}
+   */
+  $scope.ageRange = null;
   $scope.ageCssClass = EventFormData.ageRange ? 'state-complete' : 'state-incomplete';
-  $scope.minAge = '';
+  /**
+   * * @type {number|null}
+   */
+  $scope.minAge = null;
 
   // Organizer vars.
   $scope.organizerCssClass = EventFormData.organizer.name ? 'state-complete' : 'state-incomplete';
@@ -51,7 +57,7 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
     urlLabel : EventFormData.bookingInfo.urlLabel ? EventFormData.bookingInfo.urlLabel : 'Reserveer plaatsen',
     urlLabelCustom : '',
     phone : EventFormData.bookingInfo.phone ? EventFormData.bookingInfo.phone : '',
-    email : EventFormData.bookingInfo.phone ? EventFormData.bookingInfo.email : '',
+    email : EventFormData.bookingInfo.phone ? EventFormData.bookingInfo.email : ''
   };
 
   $scope.viaWebsite =  EventFormData.bookingInfo.url ? true : false;
@@ -90,7 +96,7 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
 
   // Age range functions.
   $scope.saveAgeRange = saveAgeRange;
-  $scope.changeAgeRange = changeAgeRange;
+  $scope.ageRangeChanged = ageRangeChanged;
   $scope.setAllAges = setAllAges;
   $scope.resetAgeRange = resetAgeRange;
 
@@ -114,6 +120,19 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
   $scope.openDeleteImageModal = openDeleteImageModal;
 
   var URL_REGEXP = /^(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?$/;
+
+  var AgeRange = {
+    'ALL': {'value': 0, 'label': 'Alle leeftijden'},
+    'KIDS': {'value': 12, 'label': 'Kinderen tot 12 jaar', min: 1, max: 12},
+    'TEENS': {'value': 18, 'label': 'Jongeren tussen 12 en 18 jaar', min: 13, max: 18},
+    'ADULTS': {'value': 99, 'label': 'Volwassenen (+18 jaar)', min: 19}
+  };
+
+  $scope.ageRanges = _.map(AgeRange, function (range) {
+    return range;
+  });
+
+  $scope.AgeRange = AgeRange;
 
   // Init the controller for editing.
   initEditForm();
@@ -156,24 +175,53 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
 
   /**
    * Listener on the age range selection.
+   * @param {AgeRange} ageRange
    */
-  function changeAgeRange() {
+  function ageRangeChanged(ageRange) {
+    $scope.minAge = null;
+    $scope.ageCssClass = 'state-complete';
 
-    $scope.ageRange = parseInt($scope.ageRange);
-
-    if ($scope.ageRange > 0) {
-
-      // Always reset the min age.
-      $scope.minAge = '';
-      $scope.invalidAgeRange = false;
-      $scope.ageCssClass = 'state-complete';
-
+    if (ageRange === AgeRange.ALL) {
+      $scope.saveAgeRange();
     }
-    else {
-      setAllAges();
-      saveAgeRange();
+  }
+
+  /**
+   * @param {number} minAge
+   * @param {number} [maxAge]
+   *
+   * @return {string}
+   */
+  function formatTypicalAgeRange(minAge, maxAge) {
+    var formattedAgeRange = '';
+
+    if (maxAge) {
+      formattedAgeRange = minAge === maxAge ? minAge.toString() : minAge + '-' + maxAge;
+    } else {
+      formattedAgeRange = minAge + '-';
     }
 
+    return formattedAgeRange;
+  }
+
+  /**
+   * @param {number} minAge
+   * @param {AgeRange} ageRange
+   *
+   * @return {boolean}
+   */
+  function isMinimumAgeInRange(minAge, ageRange) {
+    var inRange = true;
+
+    if (ageRange.max && minAge > ageRange.max) {
+      inRange = false;
+    }
+
+    if (ageRange.min && minAge < ageRange.min) {
+      inRange = false;
+    }
+
+    return inRange;
   }
 
   /**
@@ -182,87 +230,45 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
   function saveAgeRange() {
 
     $scope.invalidAgeRange = false;
-    $scope.ageRange = parseInt($scope.ageRange);
-    $scope.minAge = parseInt($scope.minAge);
-    if ($scope.ageRange > 0) {
+    //$scope.minAge = parseInt($scope.minAge); // should already be a number!
+    if ($scope.ageRange !== AgeRange.ALL) {
 
       if (isNaN($scope.minAge)) {
         $scope.invalidAgeRange = true;
       }
       else {
-        // Check if the entered age is valid for selected range.
-        switch ($scope.ageRange) {
-
-          case 12:
-
-            if ($scope.minAge > 12 || $scope.minAge < 1) {
-              $scope.invalidAgeRange = true;
-            }
-
-            if ($scope.minAge === $scope.ageRange) {
-              EventFormData.typicalAgeRange = $scope.minAge;
-            }
-            else {
-              EventFormData.typicalAgeRange = $scope.minAge + '-' + $scope.ageRange;
-            }
-
-            break;
-
-          case 18:
-
-            if ($scope.minAge < 12 || $scope.minAge > 18) {
-              $scope.invalidAgeRange = true;
-            }
-
-            if ($scope.minAge === $scope.ageRange) {
-              EventFormData.typicalAgeRange = $scope.minAge;
-            }
-            else {
-              EventFormData.typicalAgeRange = $scope.minAge + '-' + $scope.ageRange;
-            }
-
-            break;
-
-          case 99:
-
-            if ($scope.minAge < 19) {
-              $scope.invalidAgeRange = true;
-            }
-
-            EventFormData.typicalAgeRange = $scope.minAge + '-';
-            break;
-
-        }
+        $scope.invalidAgeRange = !isMinimumAgeInRange($scope.minAge, $scope.ageRange);
+        EventFormData.typicalAgeRange = formatTypicalAgeRange($scope.minAge, $scope.ageRange.max);
       }
 
     }
     else {
-      EventFormData.typicalAgeRange = $scope.ageRange;
+      EventFormData.typicalAgeRange = null;
     }
 
     // Save to db if valid age entered.
     if (!$scope.invalidAgeRange) {
+      var ageRangePersisted = null;
 
-      $scope.ageRangeError = false;
-      $scope.savingAgeRange = true;
-      var promise = null;
-      if ($scope.ageRange > 0) {
-        promise = eventCrud.updateTypicalAgeRange(EventFormData);
-      }
-      else {
-        promise = eventCrud.deleteTypicalAgeRange(EventFormData);
-      }
+      var showAgeRangeError = function() {
+        $scope.savingAgeRange = false;
+        $scope.ageRangeError = true;
+      };
 
-      promise.then(function() {
+      var markAgeRangeAsUpdated = function () {
         $scope.savingAgeRange = false;
         updateLastUpdated();
         $scope.ageCssClass = 'state-complete';
-      }, function() {
-        // Error occured.
-        $scope.savingAgeRange = false;
-        $scope.ageRangeError = true;
-      });
+      };
 
+      if ($scope.ageRange === AgeRange.ALL) {
+        ageRangePersisted = eventCrud.deleteTypicalAgeRange(EventFormData);
+      }
+      else {
+        ageRangePersisted = eventCrud.updateTypicalAgeRange(EventFormData);
+      }
+
+      ageRangePersisted.then(markAgeRangeAsUpdated, showAgeRangeError);
     }
 
   }
@@ -271,17 +277,15 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
    * Set to all ages.
    */
   function setAllAges() {
-    $scope.ageRange = -1;
-    EventFormData.setAgeRange(-1);
-    $scope.ageCssClass = 'state-complete';
+    $scope.ageRange = AgeRange.ALL;
   }
 
   /**
    * Reset the age selection.
    */
   function resetAgeRange() {
-    $scope.ageRange = 0;
-    $scope.minAge = '';
+    $scope.ageRange = null;
+    $scope.minAge = null;
     $scope.ageCssClass = 'state-incomplete';
   }
 
@@ -460,7 +464,7 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
 
     var modalInstance = $uibModal.open({
       templateUrl: 'templates/event-form-facilities-modal.html',
-      controller: 'EventFormFacilitiesModalController',
+      controller: 'EventFormFacilitiesModalController'
     });
 
     modalInstance.result.then(function () {
@@ -468,12 +472,7 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
       $scope.facilitiesCssClass = 'state-complete';
       $scope.selectedFacilities = EventFormData.facilities;
 
-      if (EventFormData.facilities.length > 0) {
-        $scope.facilitiesInapplicable = false;
-      }
-      else {
-        $scope.facilitiesInapplicable = true;
-      }
+      $scope.facilitiesInapplicable = EventFormData.facilities.length <= 0;
     }, function () {
       // modal dismissed.
       if (EventFormData.facilities.length > 0 || $scope.facilitiesInapplicable) {

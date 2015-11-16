@@ -20,7 +20,7 @@ function UdbOrganizerFactory() {
    */
   var UdbOrganizer = function (jsonOrganizer) {
     this.id = '';
-    this.title = {};
+    this.name = '';
 
     if (jsonOrganizer) {
       this.parseJson(jsonOrganizer);
@@ -35,22 +35,7 @@ function UdbOrganizerFactory() {
       this.email = jsonOrganizer.email || [];
       this.phone = jsonOrganizer.phone || [];
       this.url = jsonOrganizer.url || [];
-    },
-
-    /**
-     * Set the name of the event for a given langcode.
-     */
-    setName: function(name, langcode) {
-      this.name[langcode] = name;
-    },
-
-    /**
-     * Get the name of the event for a given langcode.
-     */
-    getName: function(langcode) {
-      return this.name[langcode];
     }
-
   };
 
   return (UdbOrganizer);

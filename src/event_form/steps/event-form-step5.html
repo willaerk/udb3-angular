@@ -76,17 +76,17 @@
             </div>
             <div class="col-sm-8">
               <section>
-                <div class="form-group clearfix" ng-hide="ageRange === - 1">
-                  <select class="form-control leeftijd-incomplete-select" ng-change="changeAgeRange()" ng-model="ageRange" style="width: 50%; float: left;">
-                    <option value="0" ng-show="ageRange === 0">Kies een leeftijdscategorie</option>
-                    <option value="12">Kinderen tot 12 jaar</option>
-                    <option value="18">Jongeren tussen 12 en 18 jaar</option>
-                    <option value="99">Volwassenen (+18 jaar)</option>
-                    <option value="-1" ng-show="ageRange > 0">Alle leeftijden</option>
+                <div class="form-group clearfix" ng-hide="ageRange === AgeRange.ALL">
+                  <select class="form-control leeftijd-incomplete-select"
+                          ng-change="ageRangeChanged(ageRange)"
+                          ng-model="ageRange"
+                          ng-options="range.label for range in ageRanges">
+                    <option value="">Kies een leeftijdscategorie</option>
                   </select>
-                  <a class="btn btn-link" ng-show="ageRange === 0" ng-click="setAllAges()">Alle leeftijden</a>
+
+                  <a class="btn btn-link" ng-show="ageRange === null" ng-click="setAllAges()">Alle leeftijden</a>
                 </div>
-                <div class="form-inline form-group" ng-show="ageRange > 0">
+                <div class="form-inline form-group" ng-show="ageRange && ageRange !== AgeRange.ALL">
                   <div class="form-group">
                     <label for="min-age">Vanaf</label>
                     <input type="text" id="min-age" class="form-control" ng-model="minAge" ng-model-options="{ updateOn: 'change' }" ng-change="saveAgeRange()">
@@ -94,7 +94,7 @@
                   </div>
                 </div>
 
-                <p ng-show="ageRange === - 1">Alle leeftijden <a href="#" class="btn btn-link btn-leeftijd-restore to-filling" ng-click="resetAgeRange()">Wijzigen</a></p>
+                <p ng-show="ageRange === AgeRange.ALL">Alle leeftijden <a href="#" class="btn btn-link btn-leeftijd-restore to-filling" ng-click="resetAgeRange()">Wijzigen</a></p>
 
                 <div ng-show="ageRangeError" class="alert alert-danger">
                   Er ging iets fout bij het opslaan van de leeftijd.
@@ -125,9 +125,9 @@
                   <label>Kies een organisatie <i class="fa fa-circle-o-notch fa-spin" ng-show="loadingOrganizers"></i></label>
                   <div id="organisator-kiezer">
                     <span class="twitter-typeahead" style="position: relative; display: inline-block; direction: ltr;">
-                      <input type="text" class="form-control typeahead" id="organisator-autocomplete"
+                      <input type="text" class="form-control uib-typeahead" id="organisator-autocomplete"
                              ng-model="organizer"
-                             typeahead="organizer for organizer in getOrganizers($viewValue)"
+                             uib-typeahead="organizer for organizer in getOrganizers($viewValue)"
                              typeahead-on-select="selectOrganizer()"
                              typeahead-min-length="3"
                              typeahead-template-url="templates/organizer-typeahead-template.html"/>

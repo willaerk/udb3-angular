@@ -719,7 +719,7 @@ body {
 .nav-pills > li[udb-save-search] {
   width: 100%;
 }
-.twitter-typeahead .typeahead,
+.twitter-typeahead .uib-typeahead,
 .twitter-typeahead .query,
 .twitter-typeahead .hint {
   outline: none;

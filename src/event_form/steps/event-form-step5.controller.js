@@ -123,9 +123,9 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
 
   var AgeRange = {
     'ALL': {'value': 0, 'label': 'Alle leeftijden'},
-    'KIDS': {'value': 12, 'label': 'Kinderen tot 12 jaar', max: 12, min: 1},
-    'TEENS': {'value': 18, 'label': 'Jongeren tussen 12 en 18 jaar', max: 18, min: 12},
-    'ADULTS': {'value': 99, 'label': 'Volwassenen (+18 jaar)', min: 18}
+    'KIDS': {'value': 12, 'label': 'Kinderen tot 12 jaar', min: 1, max: 12},
+    'TEENS': {'value': 18, 'label': 'Jongeren tussen 12 en 18 jaar', min: 13, max: 18},
+    'ADULTS': {'value': 99, 'label': 'Volwassenen (+18 jaar)', min: 19}
   };
 
   $scope.ageRanges = _.map(AgeRange, function (range) {

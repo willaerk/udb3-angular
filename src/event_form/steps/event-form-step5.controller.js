@@ -33,7 +33,7 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
   $scope.ageRange = null;
   $scope.ageCssClass = EventFormData.ageRange ? 'state-complete' : 'state-incomplete';
   /**
-   * * @type {number}
+   * * @type {number|null}
    */
   $scope.minAge = null;
 
@@ -175,11 +175,15 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
 
   /**
    * Listener on the age range selection.
+   * @param {AgeRange} ageRange
    */
-  function ageRangeChanged() {
+  function ageRangeChanged(ageRange) {
     $scope.minAge = null;
     $scope.ageCssClass = 'state-complete';
-    $scope.saveAgeRange();
+
+    if (ageRange === AgeRange.ALL) {
+      $scope.saveAgeRange();
+    }
   }
 
   /**

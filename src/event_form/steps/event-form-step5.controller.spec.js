@@ -19,7 +19,7 @@ describe('Controller: event form step 5', function () {
   it('should set the right form data and save it when all ages is selected', function () {
     spyOn(scope, 'saveAgeRange');
     scope.ageRange = scope.ageRanges[0];
-    scope.ageRangeChanged();
+    scope.ageRangeChanged(scope.ageRanges[0]);
 
     expect(scope.saveAgeRange).toHaveBeenCalled();
   });

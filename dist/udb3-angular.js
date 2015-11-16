@@ -8286,7 +8286,7 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
   $scope.ageRange = null;
   $scope.ageCssClass = EventFormData.ageRange ? 'state-complete' : 'state-incomplete';
   /**
-   * * @type {number}
+   * * @type {number|null}
    */
   $scope.minAge = null;
 
@@ -8428,11 +8428,15 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
 
   /**
    * Listener on the age range selection.
+   * @param {AgeRange} ageRange
    */
-  function ageRangeChanged() {
+  function ageRangeChanged(ageRange) {
     $scope.minAge = null;
     $scope.ageCssClass = 'state-complete';
-    $scope.saveAgeRange();
+
+    if (ageRange === AgeRange.ALL) {
+      $scope.saveAgeRange();
+    }
   }
 
   /**
@@ -13615,7 +13619,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "              <section>\n" +
     "                <div class=\"form-group clearfix\" ng-hide=\"ageRange === AgeRange.ALL\">\n" +
     "                  <select class=\"form-control leeftijd-incomplete-select\"\n" +
-    "                          ng-change=\"ageRangeChanged()\"\n" +
+    "                          ng-change=\"ageRangeChanged(ageRange)\"\n" +
     "                          ng-model=\"ageRange\"\n" +
     "                          ng-options=\"range.label for range in ageRanges\">\n" +
     "                    <option value=\"\">Kies een leeftijdscategorie</option>\n" +

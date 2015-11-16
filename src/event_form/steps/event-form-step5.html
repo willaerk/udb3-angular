@@ -78,7 +78,7 @@
               <section>
                 <div class="form-group clearfix" ng-hide="ageRange === AgeRange.ALL">
                   <select class="form-control leeftijd-incomplete-select"
-                          ng-change="ageRangeChanged()"
+                          ng-change="ageRangeChanged(ageRange)"
                           ng-model="ageRange"
                           ng-options="range.label for range in ageRanges">
                     <option value="">Kies een leeftijdscategorie</option>

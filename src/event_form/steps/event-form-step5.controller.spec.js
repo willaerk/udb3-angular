@@ -13,7 +13,12 @@ describe('Controller: event form step 5', function () {
     UdbOrganizer = $injector.get('UdbOrganizer');
     $q = $injector.get('$q');
     udbOrganizers = jasmine.createSpyObj('udbOrganizers', ['suggestOrganizers']);
-    eventCrud = jasmine.createSpyObj('eventCrud', ['updateOrganizer', 'updateTypicalAgeRange', 'deleteTypicalAgeRange']);
+    eventCrud = jasmine.createSpyObj('eventCrud', [
+      'updateOrganizer',
+      'updateTypicalAgeRange',
+      'deleteTypicalAgeRange',
+      'deleteOfferOrganizer'
+    ]);
     stepController = $controller('EventFormStep5Controller', {
       $scope: scope,
       EventFormData: EventFormData,
@@ -144,4 +149,26 @@ describe('Controller: event form step 5', function () {
     scope.$apply();
     expect(scope.savingOrganizer).toEqual(false);
   });
+
+  it('should persist and reset the event organizer when removing it', function () {
+    eventCrud.deleteOfferOrganizer.and.returnValue($q.resolve());
+    spyOn(EventFormData, 'resetOrganizer');
+
+    scope.deleteOrganizer();
+    scope.$apply();
+
+    expect(eventCrud.deleteOfferOrganizer).toHaveBeenCalled();
+    expect(EventFormData.resetOrganizer).toHaveBeenCalled();
+  });
+
+  it('should show an async error when failing to remove the organizer', function () {
+    eventCrud.deleteOfferOrganizer.and.returnValue($q.reject('BOOOM!'));
+    spyOn(stepController, 'showAsyncOrganizerError');
+
+    scope.deleteOrganizer();
+    scope.$apply();
+
+    expect(eventCrud.deleteOfferOrganizer).toHaveBeenCalled();
+    expect(stepController.showAsyncOrganizerError).toHaveBeenCalled();
+  })
 });

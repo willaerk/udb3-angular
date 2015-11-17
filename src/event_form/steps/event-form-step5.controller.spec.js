@@ -4,7 +4,7 @@ describe('Controller: event form step 5', function () {
 
   beforeEach(module('udb.event-form'));
 
-  var $controller, stepController, scope, EventFormData, udbOrganizers, UdbOrganizer, $q;
+  var $controller, stepController, scope, EventFormData, udbOrganizers, UdbOrganizer, $q, eventCrud;
 
   beforeEach(inject(function ($rootScope, $injector) {
     $controller = $injector.get('$controller');
@@ -13,10 +13,12 @@ describe('Controller: event form step 5', function () {
     UdbOrganizer = $injector.get('UdbOrganizer');
     $q = $injector.get('$q');
     udbOrganizers = jasmine.createSpyObj('udbOrganizers', ['suggestOrganizers']);
+    eventCrud = jasmine.createSpyObj('eventCrud', ['updateOrganizer', 'updateTypicalAgeRange', 'deleteTypicalAgeRange']);
     stepController = $controller('EventFormStep5Controller', {
       $scope: scope,
       EventFormData: EventFormData,
-      udbOrganizers: udbOrganizers
+      udbOrganizers: udbOrganizers,
+      eventCrud: eventCrud
     });
   }));
 
@@ -51,6 +53,7 @@ describe('Controller: event form step 5', function () {
         minAge: 10
       }
     };
+    eventCrud.updateTypicalAgeRange.and.returnValue($q.resolve());
 
     for (var caseName in testCases) {
       var testCase = testCases[caseName];
@@ -81,6 +84,8 @@ describe('Controller: event form step 5', function () {
         expectedResult: '21-'
       }
     };
+    eventCrud.updateTypicalAgeRange.and.returnValue($q.resolve());
+    eventCrud.deleteTypicalAgeRange.and.returnValue($q.resolve());
 
     for (var caseName in testCases) {
       var testCase = testCases[caseName];
@@ -101,5 +106,42 @@ describe('Controller: event form step 5', function () {
 
     expect(udbOrganizers.suggestOrganizers).toHaveBeenCalledWith('club');
     expect(scope.emptyOrganizerAutocomplete).toEqual(true);
+  });
+
+  it('should promise a list of organizers and show a loading state while waiting for it', function (done) {
+    var organizer = new UdbOrganizer();
+    udbOrganizers.suggestOrganizers.and.returnValue($q.resolve([organizer]));
+
+    function assertOrganizers (organizers) {
+      expect(organizers).toEqual([organizer]);
+      expect(scope.loadingOrganizers).toEqual(false);
+      done();
+    }
+
+    scope
+      .getOrganizers('club')
+      .then(assertOrganizers);
+
+    expect(scope.loadingOrganizers).toEqual(true);
+    scope.$apply();
+  });
+
+  it('should update an event organizer when selecting a new one', function () {
+    spyOn(stepController, 'saveOrganizer');
+    var organizer = new UdbOrganizer();
+
+    scope.selectOrganizer(organizer);
+    expect(stepController.saveOrganizer).toHaveBeenCalledWith(organizer);
+  });
+
+  it('should persist the organizer for the active event when saving', function () {
+    eventCrud.updateOrganizer.and.returnValue($q.resolve());
+    var organizer = new UdbOrganizer();
+
+    stepController.saveOrganizer(organizer);
+    expect(scope.savingOrganizer).toEqual(true);
+
+    scope.$apply();
+    expect(scope.savingOrganizer).toEqual(false);
   });
 });

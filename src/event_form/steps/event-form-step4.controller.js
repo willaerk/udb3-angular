@@ -12,7 +12,9 @@ angular
   .controller('EventFormStep4Controller', EventFormStep4Controller);
 
 /* @ngInject */
-function EventFormStep4Controller($scope, EventFormData, udbApi, appConfig, SearchResultViewer, eventCrud) {
+function EventFormStep4Controller($scope, EventFormData, udbApi, appConfig, SearchResultViewer, eventCrud, $rootScope) {
+
+  var controller = this;
 
   // Scope vars.
   // main storage for event form.
@@ -175,7 +177,7 @@ function EventFormStep4Controller($scope, EventFormData, udbApi, appConfig, Sear
         EventFormData.id = jsonResponse.data.placeId;
       }
 
-      updateLastUpdated();
+      controller.eventFormSaved();
       $scope.saving = false;
       $scope.resultViewer = new SearchResultViewer();
       EventFormData.showStep(5);
@@ -188,14 +190,9 @@ function EventFormStep4Controller($scope, EventFormData, udbApi, appConfig, Sear
 
   }
 
-  /**
-   * Update the last updated time.
-   */
-  function updateLastUpdated() {
-    // Last updated is not in scope. Themers are free to choose where to place it.
-    angular.element('#last-updated').show();
-    angular.element('#last-updated span').html(moment(Date.now()).format('HH:mm'));
-  }
+  controller.eventFormSaved = function () {
+    $rootScope.$emit('eventFormSaved', EventFormData);
+  };
 
   /**
    * Set a focus to a duplicate

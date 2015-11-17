@@ -3462,7 +3462,7 @@ function UdbOrganizerFactory() {
    */
   var UdbOrganizer = function (jsonOrganizer) {
     this.id = '';
-    this.title = {};
+    this.name = '';
 
     if (jsonOrganizer) {
       this.parseJson(jsonOrganizer);
@@ -3477,22 +3477,7 @@ function UdbOrganizerFactory() {
       this.email = jsonOrganizer.email || [];
       this.phone = jsonOrganizer.phone || [];
       this.url = jsonOrganizer.url || [];
-    },
-
-    /**
-     * Set the name of the event for a given langcode.
-     */
-    setName: function(name, langcode) {
-      this.name[langcode] = name;
-    },
-
-    /**
-     * Get the name of the event for a given langcode.
-     */
-    getName: function(langcode) {
-      return this.name[langcode];
     }
-
   };
 
   return (UdbOrganizer);
@@ -6552,6 +6537,44 @@ function EventFormReservationModalController($scope, $modalInstance, EventFormDa
 }
 EventFormReservationModalController.$inject = ["$scope", "$modalInstance", "EventFormData", "eventCrud"];
 
+// Source: src/event_form/components/save-time-tracker/save-time-tracker.directive.js
+/**
+ * @ngdoc directive
+ * @name udb.search.directive:udbEventFormSaveTimeTracker
+ * @description
+ * Tracks the time of when an event form was last saved.
+ */
+angular
+  .module('udb.event-form')
+  .directive('udbEventFormSaveTimeTracker', TimeTrackerDirective);
+
+/* @ngInject */
+function TimeTrackerDirective($rootScope) {
+
+  var template =
+    '<div class="save-time-tracker" ng-show="timeLastSaved">' +
+    '  Automatisch bewaard om span <span class="time-last-saved" ng-bind="timeLastSaved | date:\'HH:mm\'"></span> uur' +
+    '</div>';
+
+  return {
+    template: template,
+    restrict: 'EA',
+    link: link
+  };
+
+  function link(scope) {
+    scope.timeLastSaved = null;
+
+    function refreshTimeLastSaved() {
+      scope.timeLastSaved = new Date();
+    }
+
+    var eventFormSavedListener = $rootScope.$on('eventFormSaved', refreshTimeLastSaved);
+    scope.$on('$destroy', eventFormSavedListener);
+  }
+}
+TimeTrackerDirective.$inject = ["$rootScope"];
+
 // Source: src/event_form/components/validators/contact-info-validation.directive.js
 /**
 * @ngdoc directive
@@ -8020,7 +8043,9 @@ angular
   .controller('EventFormStep4Controller', EventFormStep4Controller);
 
 /* @ngInject */
-function EventFormStep4Controller($scope, EventFormData, udbApi, appConfig, SearchResultViewer, eventCrud) {
+function EventFormStep4Controller($scope, EventFormData, udbApi, appConfig, SearchResultViewer, eventCrud, $rootScope) {
+
+  var controller = this;
 
   // Scope vars.
   // main storage for event form.
@@ -8183,7 +8208,7 @@ function EventFormStep4Controller($scope, EventFormData, udbApi, appConfig, Sear
         EventFormData.id = jsonResponse.data.placeId;
       }
 
-      updateLastUpdated();
+      controller.eventFormSaved();
       $scope.saving = false;
       $scope.resultViewer = new SearchResultViewer();
       EventFormData.showStep(5);
@@ -8196,14 +8221,9 @@ function EventFormStep4Controller($scope, EventFormData, udbApi, appConfig, Sear
 
   }
 
-  /**
-   * Update the last updated time.
-   */
-  function updateLastUpdated() {
-    // Last updated is not in scope. Themers are free to choose where to place it.
-    angular.element('#last-updated').show();
-    angular.element('#last-updated span').html(moment(Date.now()).format('HH:mm'));
-  }
+  controller.eventFormSaved = function () {
+    $rootScope.$emit('eventFormSaved', EventFormData);
+  };
 
   /**
    * Set a focus to a duplicate
@@ -8259,7 +8279,7 @@ function EventFormStep4Controller($scope, EventFormData, udbApi, appConfig, Sear
   }
 
 }
-EventFormStep4Controller.$inject = ["$scope", "EventFormData", "udbApi", "appConfig", "SearchResultViewer", "eventCrud"];
+EventFormStep4Controller.$inject = ["$scope", "EventFormData", "udbApi", "appConfig", "SearchResultViewer", "eventCrud", "$rootScope"];
 
 // Source: src/event_form/steps/event-form-step5.controller.js
 /**
@@ -8274,7 +8294,9 @@ angular
   .controller('EventFormStep5Controller', EventFormStep5Controller);
 
 /* @ngInject */
-function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizers, $uibModal) {
+function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizers, $uibModal, $rootScope) {
+
+  var controller = this;
 
   // Scope vars.
   $scope.eventFormData = EventFormData; // main storage for event form.
@@ -8416,7 +8438,7 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
     promise.then(function() {
 
       $scope.savingDescription = false;
-      updateLastUpdated();
+      controller.eventFormSaved();
 
       // Toggle correct class.
       if ($scope.description) {
@@ -8519,7 +8541,7 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
 
       var markAgeRangeAsUpdated = function () {
         $scope.savingAgeRange = false;
-        updateLastUpdated();
+        controller.eventFormSaved();
         $scope.ageCssClass = 'state-complete';
       };
 
@@ -8551,37 +8573,27 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
     $scope.ageCssClass = 'state-incomplete';
   }
 
-  /**
-   * Update the last updated time.
-   */
-  function updateLastUpdated() {
-    // Last updated is not in scope. Themers are free to choose where to place it.
-    angular.element('#last-updated').show();
-    angular.element('#last-updated span').html(moment(Date.now()).format('HH:mm'));
-  }
+  controller.eventFormSaved = function () {
+    $rootScope.$emit('eventFormSaved', EventFormData);
+  };
 
   /**
-   * Autocomplete callback for organizers.
+   * Auto-complete callback for organizers.
+   * @param {String} value
+   *  Suggest organizers based off of this value.
    */
   function getOrganizers(value) {
-
-    $scope.loadingOrganizers = true;
-
-    return udbOrganizers.suggestOrganizers(value).then(function (organizers) {
-
-      if (organizers.length > 0) {
-        $scope.emptyOrganizerAutocomplete = false;
-      }
-      else {
-        $scope.emptyOrganizerAutocomplete = true;
-      }
-
+    function suggestExistingOrNewOrganiser (organizers) {
+      $scope.emptyOrganizerAutocomplete = organizers.length <= 0;
       $scope.loadingOrganizers = false;
 
       return organizers;
+    }
 
-    });
-
+    $scope.loadingOrganizers = true;
+    return udbOrganizers
+      .suggestOrganizers(value)
+      .then(suggestExistingOrNewOrganiser);
   }
 
   /**
@@ -8589,20 +8601,20 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
    * @param {Organizer} organizer
    */
   function selectOrganizer(organizer) {
-    saveOrganizer(organizer);
+    controller.saveOrganizer(organizer);
   }
 
-  function showAsyncOrganizerError() {
+  controller.showAsyncOrganizerError = function() {
     $scope.organizerError = true;
     $scope.savingOrganizer = false;
-  }
+  };
 
   /**
    * Delete the selected organiser.
    */
   function deleteOrganizer() {
     function resetOrganizer() {
-      updateLastUpdated();
+      controller.eventFormSaved();
       $scope.organizerCssClass = 'state-incomplete';
       EventFormData.resetOrganizer();
       $scope.savingOrganizer = false;
@@ -8611,7 +8623,7 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
     $scope.organizerError = false;
     eventCrud
       .deleteOfferOrganizer(EventFormData)
-      .then(resetOrganizer, showAsyncOrganizerError);
+      .then(resetOrganizer, controller.showAsyncOrganizerError);
   }
 
   /**
@@ -8634,14 +8646,14 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
       }
     }
 
-    modalInstance.result.then(saveOrganizer, updateOrganizerInfo);
+    modalInstance.result.then(controller.saveOrganizer, updateOrganizerInfo);
   }
 
   /**
-   * Save the selected organizer in the backend.
+   * Persist the organizer for the active event.
    * @param {Organizer} organizer
    */
-  function saveOrganizer(organizer) {
+  controller.saveOrganizer = function (organizer) {
     function resetOrganizerFeedback() {
       $scope.emptyOrganizerAutocomplete = false;
       $scope.organizerError = false;
@@ -8650,7 +8662,7 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
     }
 
     function markOrganizerAsCompleted() {
-      updateLastUpdated();
+      controller.eventFormSaved();
       $scope.organizerCssClass = 'state-complete';
       $scope.savingOrganizer = false;
     }
@@ -8659,8 +8671,8 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
     resetOrganizerFeedback();
     eventCrud
       .updateOrganizer(EventFormData)
-      .then(markOrganizerAsCompleted, showAsyncOrganizerError);
-  }
+      .then(markOrganizerAsCompleted, controller.showAsyncOrganizerError);
+  };
 
   /**
    * Add contact info.
@@ -8709,7 +8721,7 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
 
       var promise = eventCrud.updateContactPoint(EventFormData);
       promise.then(function() {
-        updateLastUpdated();
+        controller.eventFormSaved();
         $scope.contactInfoCssClass = 'state-complete';
         $scope.savingContactInfo = false;
       }, function() {
@@ -8928,7 +8940,7 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
 
     var promise = eventCrud.updateBookingInfo(EventFormData);
     promise.then(function() {
-      updateLastUpdated();
+      controller.eventFormSaved();
       $scope.bookingInfoCssClass = 'state-complete';
       $scope.savingBookingInfo = false;
       $scope.bookingInfoError = false;
@@ -9082,7 +9094,7 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
   }
 
 }
-EventFormStep5Controller.$inject = ["$scope", "EventFormData", "eventCrud", "udbOrganizers", "$uibModal"];
+EventFormStep5Controller.$inject = ["$scope", "EventFormData", "eventCrud", "udbOrganizers", "$uibModal", "$rootScope"];
 
 // Source: src/export/event-export-job.factory.js
 /**
@@ -13956,9 +13968,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "  <udb-event-form-step4></udb-event-form-step4>\n" +
     "  <udb-event-form-step5></udb-event-form-step5>\n" +
     "\n" +
-    "  <div id=\"last-updated\" style=\"display: none;\">\n" +
-    "    Automatisch bewaard om <span></span> uur\n" +
-    "  </div>\n" +
+    "  <udb-event-form-save-time-tracker></udb-event-form-save-time-tracker>\n" +
     "</div>\n"
   );
 

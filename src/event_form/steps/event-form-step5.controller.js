@@ -12,7 +12,9 @@ angular
   .controller('EventFormStep5Controller', EventFormStep5Controller);
 
 /* @ngInject */
-function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizers, $uibModal) {
+function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizers, $uibModal, $rootScope) {
+
+  var controller = this;
 
   // Scope vars.
   $scope.eventFormData = EventFormData; // main storage for event form.
@@ -154,7 +156,7 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
     promise.then(function() {
 
       $scope.savingDescription = false;
-      updateLastUpdated();
+      controller.eventFormSaved();
 
       // Toggle correct class.
       if ($scope.description) {
@@ -257,7 +259,7 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
 
       var markAgeRangeAsUpdated = function () {
         $scope.savingAgeRange = false;
-        updateLastUpdated();
+        controller.eventFormSaved();
         $scope.ageCssClass = 'state-complete';
       };
 
@@ -289,14 +291,9 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
     $scope.ageCssClass = 'state-incomplete';
   }
 
-  /**
-   * Update the last updated time.
-   */
-  function updateLastUpdated() {
-    // Last updated is not in scope. Themers are free to choose where to place it.
-    angular.element('#last-updated').show();
-    angular.element('#last-updated span').html(moment(Date.now()).format('HH:mm'));
-  }
+  controller.eventFormSaved = function () {
+    $rootScope.$emit('eventFormSaved', EventFormData);
+  };
 
   /**
    * Auto-complete callback for organizers.
@@ -322,20 +319,20 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
    * @param {Organizer} organizer
    */
   function selectOrganizer(organizer) {
-    saveOrganizer(organizer);
+    controller.saveOrganizer(organizer);
   }
 
-  function showAsyncOrganizerError() {
+  controller.showAsyncOrganizerError = function() {
     $scope.organizerError = true;
     $scope.savingOrganizer = false;
-  }
+  };
 
   /**
    * Delete the selected organiser.
    */
   function deleteOrganizer() {
     function resetOrganizer() {
-      updateLastUpdated();
+      controller.eventFormSaved();
       $scope.organizerCssClass = 'state-incomplete';
       EventFormData.resetOrganizer();
       $scope.savingOrganizer = false;
@@ -344,7 +341,7 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
     $scope.organizerError = false;
     eventCrud
       .deleteOfferOrganizer(EventFormData)
-      .then(resetOrganizer, showAsyncOrganizerError);
+      .then(resetOrganizer, controller.showAsyncOrganizerError);
   }
 
   /**
@@ -367,14 +364,14 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
       }
     }
 
-    modalInstance.result.then(saveOrganizer, updateOrganizerInfo);
+    modalInstance.result.then(controller.saveOrganizer, updateOrganizerInfo);
   }
 
   /**
-   * Save the selected organizer in the backend.
+   * Persist the organizer for the active event.
    * @param {Organizer} organizer
    */
-  function saveOrganizer(organizer) {
+  controller.saveOrganizer = function (organizer) {
     function resetOrganizerFeedback() {
       $scope.emptyOrganizerAutocomplete = false;
       $scope.organizerError = false;
@@ -383,7 +380,7 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
     }
 
     function markOrganizerAsCompleted() {
-      updateLastUpdated();
+      controller.eventFormSaved();
       $scope.organizerCssClass = 'state-complete';
       $scope.savingOrganizer = false;
     }
@@ -392,8 +389,8 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
     resetOrganizerFeedback();
     eventCrud
       .updateOrganizer(EventFormData)
-      .then(markOrganizerAsCompleted, showAsyncOrganizerError);
-  }
+      .then(markOrganizerAsCompleted, controller.showAsyncOrganizerError);
+  };
 
   /**
    * Add contact info.
@@ -442,7 +439,7 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
 
       var promise = eventCrud.updateContactPoint(EventFormData);
       promise.then(function() {
-        updateLastUpdated();
+        controller.eventFormSaved();
         $scope.contactInfoCssClass = 'state-complete';
         $scope.savingContactInfo = false;
       }, function() {
@@ -661,7 +658,7 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
 
     var promise = eventCrud.updateBookingInfo(EventFormData);
     promise.then(function() {
-      updateLastUpdated();
+      controller.eventFormSaved();
       $scope.bookingInfoCssClass = 'state-complete';
       $scope.savingBookingInfo = false;
       $scope.bookingInfoError = false;

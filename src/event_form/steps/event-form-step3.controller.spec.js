@@ -11,7 +11,7 @@ describe('Controller: event form step 3', function (){
     scope = $rootScope;
     stepController = $controller('EventFormStep3Controller', {
       $scope: scope
-    })
+    });
   }));
 
   it('should fetch a list of places by zipcode when a city is selected', function () {

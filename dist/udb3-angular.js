@@ -2682,7 +2682,7 @@ function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth,
       deferredUser.resolve(activeUser);
     } else {
 
-      var request = $http.get(apiUrl + 'user', {
+      var request = $http.get(appConfig.baseUrl + 'uitid/user', {
         withCredentials: true
       });
 
@@ -3801,7 +3801,7 @@ function UitidAuth($window, $location, $http, appConfig, $cookieStore) {
    * Log the active user out.
    */
   this.logout = function () {
-    var logoutUrl = appConfig.baseUrl + 'logout',
+    var logoutUrl = appConfig.baseUrl + 'uitid/logout',
       request = $http.get(logoutUrl, {
         withCredentials: true
       });
@@ -3819,12 +3819,13 @@ function UitidAuth($window, $location, $http, appConfig, $cookieStore) {
    */
   this.login = function () {
     var currentLocation = $location.absUrl(),
-      authUrl = appConfig.authUrl;
+        authUrl = appConfig.authUrl;
 
     authUrl += '?destination=' + currentLocation;
     $window.location.href = authUrl;
   };
 
+  // TODO: Have this method return a promise, an event can be broadcast to keep other components updated.
   /**
    * Returns the currently logged in user
    */
@@ -11344,7 +11345,7 @@ angular
 
 /* @ngInject */
 function SearchHelper(LuceneQueryBuilder, $rootScope) {
-  var query = LuceneQueryBuilder.createQuery('');
+  var query = null;
   var queryTree = null;
 
   this.clearQueryTree = function () {
@@ -11352,7 +11353,7 @@ function SearchHelper(LuceneQueryBuilder, $rootScope) {
   };
 
   this.setQueryString = function (queryString) {
-    if (query.queryString !== queryString) {
+    if (!query || query.queryString !== queryString) {
       var newQuery = LuceneQueryBuilder.createQuery(queryString);
       LuceneQueryBuilder.isValid(newQuery);
       this.setQuery(newQuery);
@@ -12139,16 +12140,56 @@ function Search(
     }
   };
 
-  updateQuery(searchHelper.getQuery());
+  /**
+   * Get the query string from the URI params
+   *
+   * @return {null|string}
+   */
+  function getQueryStringFromParams() {
+    var queryString = null;
+    var searchParams = $location.search();
 
-  var searchQueryChangedListener = $rootScope.$on('searchQueryChanged', queryChanged);
-  var startEditingQueryListener = $rootScope.$on('startEditingQuery', $scope.startEditing);
-  var stopEditingQueryListener = $rootScope.$on('stopEditingQuery', $scope.stopEditing);
+    if (searchParams.query) {
+      queryString = searchParams.query;
+    }
 
-  $scope.$on('$destroy', startEditingQueryListener);
-  $scope.$on('$destroy', searchQueryChangedListener);
-  $scope.$on('$destroy', stopEditingQueryListener);
+    return queryString;
+  }
 
+  var initListeners = _.once(function () {
+    var searchQueryChangedListener = $rootScope.$on('searchQueryChanged', queryChanged);
+    var startEditingQueryListener = $rootScope.$on('startEditingQuery', $scope.startEditing);
+    var stopEditingQueryListener = $rootScope.$on('stopEditingQuery', $scope.stopEditing);
+
+    $scope.$on('$destroy', startEditingQueryListener);
+    $scope.$on('$destroy', searchQueryChangedListener);
+    $scope.$on('$destroy', stopEditingQueryListener);
+  });
+
+  function init() {
+    var existingQuery = searchHelper.getQuery();
+    var searchParams = getQueryStringFromParams();
+
+    initListeners();
+
+    // If the user loads the search page with a query URI param it should be parsed and set for the initial search.
+    // Make sure the queryChanged listener is hooked up else the initial search will not trigger an update.
+    if (searchParams) {
+      searchHelper.setQueryString(searchParams);
+    }
+
+    // If the search helper already holds an existing query it won't react to the setQueryString so we force an update.
+    if (existingQuery && (!searchParams || existingQuery.queryString === searchParams)) {
+      updateQuery(existingQuery);
+    }
+
+    // If there is no existing query or search params we still want to load some results to show.
+    if (!searchParams && !existingQuery) {
+      searchHelper.setQueryString('');
+    }
+  }
+
+  init();
 }
 Search.$inject = ["$scope", "udbApi", "LuceneQueryBuilder", "$window", "$location", "$uibModal", "SearchResultViewer", "eventLabeller", "searchHelper", "$rootScope", "eventExporter", "$translate"];
 

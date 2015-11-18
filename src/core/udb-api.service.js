@@ -222,7 +222,7 @@ function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth,
       deferredUser.resolve(activeUser);
     } else {
 
-      var request = $http.get(apiUrl + 'user', {
+      var request = $http.get(appConfig.baseUrl + 'uitid/user', {
         withCredentials: true
       });
 

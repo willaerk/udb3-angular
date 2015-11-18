@@ -1,7 +1,7 @@
 'use strict';
 
 describe('Controller: Search', function() {
-  var $scope, $window, udbApi, $controller, eventLabeller = null, $location, $q;
+  var $scope, $window, udbApi, $controller, eventLabeller = null, $location, $q, searchHelper;
 
   beforeEach(module('udb.core', function ($translateProvider) {
     $translateProvider.translations('en', {
@@ -16,10 +16,11 @@ describe('Controller: Search', function() {
 
   beforeEach(module('udb.search'));
 
-  beforeEach(inject(function($rootScope, _$controller_, _$q_) {
+  beforeEach(inject(function($rootScope, _$controller_, _$q_, _searchHelper_) {
     $controller = _$controller_;
     $scope = $rootScope.$new();
     $q = _$q_;
+    searchHelper = _searchHelper_;
   }));
 
   beforeEach(function () {
@@ -40,7 +41,8 @@ describe('Controller: Search', function() {
         $window: $window,
         udbApi: udbApi,
         eventLabeller: eventLabeller,
-        $location: $location
+        $location: $location,
+        searchHelper: searchHelper
       }
     );
   }
@@ -64,5 +66,39 @@ describe('Controller: Search', function() {
     $scope.pageChanged();
 
     expect($scope.currentPage).toEqual(5);
+  });
+
+  it('should load initial query parameters from the URI params', function () {
+    $location.search.and.returnValue({query: 'city:"Brussel"', page: 5});
+    spyOn(searchHelper, 'setQueryString').and.callThrough();
+
+    var controller = getController();
+
+    expect(searchHelper.setQueryString).toHaveBeenCalledWith('city:"Brussel"');
+    expect($scope.activeQuery.queryString).toEqual('city:"Brussel"');
+  });
+
+  it('should initialize with an existing query set on the search helper', function () {
+    searchHelper.setQueryString('city:"Brussel"');
+
+    var controller = getController();
+
+    expect($scope.activeQuery.queryString).toEqual('city:"Brussel"');
+  });
+
+  it('should use the params in the URI even when there is an existing query set on the search helper', function () {
+    searchHelper.setQueryString('city:"Brussel"');
+    $location.search.and.returnValue({query: 'city:"Leuven"', page: 5});
+
+    var controller = getController();
+
+    expect($scope.activeQuery.queryString).toEqual('city:"Leuven"');
+  });
+
+
+  it('should initialize with an empty search when there is no existing query or query params', function () {
+    var controller = getController();
+
+    expect($scope.activeQuery.queryString).toEqual('');
   });
 });

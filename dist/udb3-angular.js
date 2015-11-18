@@ -6554,7 +6554,7 @@ function TimeTrackerDirective($rootScope) {
 
   var template =
     '<div class="save-time-tracker" ng-show="timeLastSaved">' +
-    '  Automatisch bewaard om span <span class="time-last-saved" ng-bind="timeLastSaved | date:\'HH:mm\'"></span> uur' +
+    '  Automatisch bewaard om <span class="time-last-saved" ng-bind="timeLastSaved | date:\'HH:mm\'"></span> uur' +
     '</div>';
 
   return {

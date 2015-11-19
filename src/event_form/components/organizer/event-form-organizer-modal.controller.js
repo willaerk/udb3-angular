@@ -12,7 +12,15 @@ angular
   .controller('EventFormOrganizerModalController', EventFormOrganizerModalController);
 
 /* @ngInject */
-function EventFormOrganizerModalController($scope, $uibModalInstance, udbOrganizers, eventCrud, cities, Levenshtein, $q) {
+function EventFormOrganizerModalController(
+  $scope,
+  $uibModalInstance,
+  udbOrganizers,
+  eventCrud,
+  cities,
+  Levenshtein,
+  $q
+) {
 
   var controller = this;
 

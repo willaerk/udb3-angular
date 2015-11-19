@@ -23,19 +23,33 @@
             <input type="text" class="form-control" name="street" ng-model="newOrganizer.address.streetAddress">
           </div>
         </div>
-        <div class="col-xs-3">
-          <div class="form-group">
-            <label>Postcode</label>
-            <input type="number" class="form-control" name="postalCode" ng-model="newOrganizer.address.postalCode">
-          </div>
-        </div>
-        <div class="col-xs-9">
-          <div class="form-group">
-            <label>Gemeente</label>
-            <input type="text" class="form-control" name="city" ng-model="newOrganizer.address.locality">
-          </div>
-        </div>
 
+      </div>
+
+      <div class="row">
+         <div class="col-xs-12">
+          <label for="organizer-gemeente-autocomplete" id="gemeente-label" ng-hide="selectedCity !== ''">Kies een gemeente</label>
+          <div id="gemeente-kiezer" ng-hide="selectedCity !== ''">
+            <span style="position: relative; display: inline-block; direction: ltr;" class="twitter-typeahead">
+              <input id="organizer-gemeente-autocomplete"
+                     type="text"
+                     class="form-control uib-typeahead"
+                     placeholder="Gemeente of postcode"
+                     ng-model="cityAutocompleteTextField"
+                     uib-typeahead="city as city.zip + ' ' + city.name for city in cities | filter:filterCities($viewValue) | orderBy:orderByLevenshteinDistance($viewValue)"
+                     typeahead-on-select="selectCity($item, $label)"
+                     typeahead-min-length="3"
+                     typeahead-template-url="templates/city-suggestion.html">
+            </span>
+            <div class="alert alert-danger" ng-show="cityAutoCompleteError">
+              <span class="help-block">Er was een probleem tijdens het ophalen van de steden</span>
+            </div>
+          </div>
+          <div id="gemeente-gekozen" ng-show="selectedCity !== ''">
+            <span class="btn-chosen" id="gemeente-gekozen-button" ng-bind="selectedCity"></span>
+            <a href="" class="btn btn-default btn-link" ng-click="changeCitySelection()">Wijzigen</a>
+          </div>
+        </div>
       </div>
 
       <h2>Contact</h2>

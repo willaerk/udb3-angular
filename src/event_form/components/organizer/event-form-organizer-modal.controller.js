@@ -160,7 +160,7 @@ function EventFormOrganizerModalController($scope, $uibModalInstance, udbOrganiz
    */
   controller.selectCity = function ($item, $label) {
     $scope.newOrganizer.address.postalCode = $item.zip;
-    $scope.newOrganizer.address.addressLocality = $item.name;
+    $scope.newOrganizer.address.locality = $item.name;
 
     $scope.cityAutocompleteTextField = '';
     $scope.selectedCity = $label;

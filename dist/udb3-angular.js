@@ -6195,7 +6195,17 @@ angular
   .controller('EventFormOrganizerModalController', EventFormOrganizerModalController);
 
 /* @ngInject */
-function EventFormOrganizerModalController($scope, $modalInstance, udbOrganizers, eventCrud) {
+function EventFormOrganizerModalController(
+  $scope,
+  $uibModalInstance,
+  udbOrganizers,
+  eventCrud,
+  cities,
+  Levenshtein,
+  $q
+) {
+
+  var controller = this;
 
   // Scope vars.
   $scope.organizersFound = false;
@@ -6203,6 +6213,7 @@ function EventFormOrganizerModalController($scope, $modalInstance, udbOrganizers
   $scope.error = false;
   $scope.showValidation = false;
   $scope.organizers = [];
+  $scope.selectedCity = '';
 
   $scope.newOrganizer = {
     name : '',
@@ -6227,7 +6238,7 @@ function EventFormOrganizerModalController($scope, $modalInstance, udbOrganizers
    * Cancel the modal.
    */
   function cancel() {
-    $modalInstance.dismiss('cancel');
+    $uibModalInstance.dismiss('cancel');
   }
 
   /**
@@ -6258,7 +6269,9 @@ function EventFormOrganizerModalController($scope, $modalInstance, udbOrganizers
       return;
     }
 
-    var promise = udbOrganizers.searchDuplicates($scope.newOrganizer.name, $scope.newOrganizer.address.postalCode);
+    //var promise = udbOrganizers.searchDuplicates($scope.newOrganizer.name, $scope.newOrganizer.address.postalCode);
+    // resolve for now, will re-introduce duplicate detection later on
+    var promise = $q.resolve([]);
 
     $scope.error = false;
     $scope.saving = true;
@@ -6271,7 +6284,7 @@ function EventFormOrganizerModalController($scope, $modalInstance, udbOrganizers
         $scope.organizers = data;
         $scope.saving = false;
       }
-      // or save the event immediataly if no duplicates were found.
+      // or save the event immediately if no duplicates were found.
       else {
         saveOrganizer();
       }
@@ -6287,7 +6300,7 @@ function EventFormOrganizerModalController($scope, $modalInstance, udbOrganizers
    * Select the organizer that should be used.
    */
   function selectOrganizer(organizer) {
-    $modalInstance.close(organizer);
+    $uibModalInstance.close(organizer);
   }
 
   /**
@@ -6309,8 +6322,52 @@ function EventFormOrganizerModalController($scope, $modalInstance, udbOrganizers
     });
   }
 
+  // Scope functions.
+  $scope.cities = cities;
+  $scope.changeCitySelection = changeCitySelection;
+
+  $scope.filterCities = function(value) {
+    return function (city) {
+      var words = value.match(/\w+/g);
+      var zipMatches = words.filter(function (word) {
+        return city.zip.indexOf(word) !== -1;
+      });
+      var nameMatches = words.filter(function (word) {
+        return city.name.toLowerCase().indexOf(word.toLowerCase()) !== -1;
+      });
+
+      return zipMatches.length + nameMatches.length >= words.length;
+    };
+  };
+
+  $scope.orderByLevenshteinDistance = function(value) {
+    return function (city) {
+      return new Levenshtein(value, city.zip + '' + city.name);
+    };
+  };
+
+  /**
+   * Select City.
+   */
+  controller.selectCity = function ($item, $label) {
+    $scope.newOrganizer.address.postalCode = $item.zip;
+    $scope.newOrganizer.address.locality = $item.name;
+
+    $scope.cityAutocompleteTextField = '';
+    $scope.selectedCity = $label;
+  };
+  $scope.selectCity = controller.selectCity;
+
+  /**
+   * Change a city selection.
+   */
+  function changeCitySelection() {
+    $scope.selectedCity = '';
+    $scope.cityAutocompleteTextField = '';
+  }
+
 }
-EventFormOrganizerModalController.$inject = ["$scope", "$modalInstance", "udbOrganizers", "eventCrud"];
+EventFormOrganizerModalController.$inject = ["$scope", "$uibModalInstance", "udbOrganizers", "eventCrud", "cities", "Levenshtein", "$q"];
 
 // Source: src/event_form/components/place/event-form-place-modal.controller.js
 (function () {
@@ -13004,19 +13061,33 @@ $templateCache.put('templates/time-autocomplete.html',
     "            <input type=\"text\" class=\"form-control\" name=\"street\" ng-model=\"newOrganizer.address.streetAddress\">\n" +
     "          </div>\n" +
     "        </div>\n" +
-    "        <div class=\"col-xs-3\">\n" +
-    "          <div class=\"form-group\">\n" +
-    "            <label>Postcode</label>\n" +
-    "            <input type=\"number\" class=\"form-control\" name=\"postalCode\" ng-model=\"newOrganizer.address.postalCode\">\n" +
-    "          </div>\n" +
-    "        </div>\n" +
-    "        <div class=\"col-xs-9\">\n" +
-    "          <div class=\"form-group\">\n" +
-    "            <label>Gemeente</label>\n" +
-    "            <input type=\"text\" class=\"form-control\" name=\"city\" ng-model=\"newOrganizer.address.locality\">\n" +
-    "          </div>\n" +
-    "        </div>\n" +
     "\n" +
+    "      </div>\n" +
+    "\n" +
+    "      <div class=\"row\">\n" +
+    "         <div class=\"col-xs-12\">\n" +
+    "          <label for=\"organizer-gemeente-autocomplete\" id=\"gemeente-label\" ng-hide=\"selectedCity !== ''\">Kies een gemeente</label>\n" +
+    "          <div id=\"gemeente-kiezer\" ng-hide=\"selectedCity !== ''\">\n" +
+    "            <span style=\"position: relative; display: inline-block; direction: ltr;\" class=\"twitter-typeahead\">\n" +
+    "              <input id=\"organizer-gemeente-autocomplete\"\n" +
+    "                     type=\"text\"\n" +
+    "                     class=\"form-control uib-typeahead\"\n" +
+    "                     placeholder=\"Gemeente of postcode\"\n" +
+    "                     ng-model=\"cityAutocompleteTextField\"\n" +
+    "                     uib-typeahead=\"city as city.zip + ' ' + city.name for city in cities | filter:filterCities($viewValue) | orderBy:orderByLevenshteinDistance($viewValue)\"\n" +
+    "                     typeahead-on-select=\"selectCity($item, $label)\"\n" +
+    "                     typeahead-min-length=\"3\"\n" +
+    "                     typeahead-template-url=\"templates/city-suggestion.html\">\n" +
+    "            </span>\n" +
+    "            <div class=\"alert alert-danger\" ng-show=\"cityAutoCompleteError\">\n" +
+    "              <span class=\"help-block\">Er was een probleem tijdens het ophalen van de steden</span>\n" +
+    "            </div>\n" +
+    "          </div>\n" +
+    "          <div id=\"gemeente-gekozen\" ng-show=\"selectedCity !== ''\">\n" +
+    "            <span class=\"btn-chosen\" id=\"gemeente-gekozen-button\" ng-bind=\"selectedCity\"></span>\n" +
+    "            <a href=\"\" class=\"btn btn-default btn-link\" ng-click=\"changeCitySelection()\">Wijzigen</a>\n" +
+    "          </div>\n" +
+    "        </div>\n" +
     "      </div>\n" +
     "\n" +
     "      <h2>Contact</h2>\n" +
@@ -13046,7 +13117,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "            <button type=\"button\" class=\"close\" aria-label=\"Close\" ng-click=\"deleteOrganizerContactInfo(key)\"><span aria-hidden=\"true\">&times;</span></button>\n" +
     "          </td>\n" +
     "        </tr>\n" +
-    "        <tr><td colspan=\"3\"><a ng-click=\"addOrganizerContactInfo('')\">Meer contactgegevens toevoegen</a></td></tr>\n" +
+    "        <tr><td colspan=\"3\"><a ng-click=\"addOrganizerContactInfo('url')\">Meer contactgegevens toevoegen</a></td></tr>\n" +
     "      </table>\n" +
     "    </form>\n" +
     "  </section>\n" +
@@ -13088,7 +13159,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "  <button type=\"button\" class=\"btn btn-primary organisator-toevoegen-bewaren\" ng-click=\"validateNewOrganizer()\">\n" +
     "    Bewaren <i class=\"fa fa-circle-o-notch fa-spin\" ng-show=\"saving\"></i>\n" +
     "  </button>\n" +
-    "</div>"
+    "</div>\n"
   );
 
 

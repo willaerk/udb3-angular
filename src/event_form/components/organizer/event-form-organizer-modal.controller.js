@@ -12,7 +12,17 @@ angular
   .controller('EventFormOrganizerModalController', EventFormOrganizerModalController);
 
 /* @ngInject */
-function EventFormOrganizerModalController($scope, $modalInstance, udbOrganizers, eventCrud) {
+function EventFormOrganizerModalController(
+  $scope,
+  $uibModalInstance,
+  udbOrganizers,
+  eventCrud,
+  cities,
+  Levenshtein,
+  $q
+) {
+
+  var controller = this;
 
   // Scope vars.
   $scope.organizersFound = false;
@@ -20,6 +30,7 @@ function EventFormOrganizerModalController($scope, $modalInstance, udbOrganizers
   $scope.error = false;
   $scope.showValidation = false;
   $scope.organizers = [];
+  $scope.selectedCity = '';
 
   $scope.newOrganizer = {
     name : '',
@@ -44,7 +55,7 @@ function EventFormOrganizerModalController($scope, $modalInstance, udbOrganizers
    * Cancel the modal.
    */
   function cancel() {
-    $modalInstance.dismiss('cancel');
+    $uibModalInstance.dismiss('cancel');
   }
 
   /**
@@ -75,7 +86,9 @@ function EventFormOrganizerModalController($scope, $modalInstance, udbOrganizers
       return;
     }
 
-    var promise = udbOrganizers.searchDuplicates($scope.newOrganizer.name, $scope.newOrganizer.address.postalCode);
+    //var promise = udbOrganizers.searchDuplicates($scope.newOrganizer.name, $scope.newOrganizer.address.postalCode);
+    // resolve for now, will re-introduce duplicate detection later on
+    var promise = $q.resolve([]);
 
     $scope.error = false;
     $scope.saving = true;
@@ -88,7 +101,7 @@ function EventFormOrganizerModalController($scope, $modalInstance, udbOrganizers
         $scope.organizers = data;
         $scope.saving = false;
       }
-      // or save the event immediataly if no duplicates were found.
+      // or save the event immediately if no duplicates were found.
       else {
         saveOrganizer();
       }
@@ -104,7 +117,7 @@ function EventFormOrganizerModalController($scope, $modalInstance, udbOrganizers
    * Select the organizer that should be used.
    */
   function selectOrganizer(organizer) {
-    $modalInstance.close(organizer);
+    $uibModalInstance.close(organizer);
   }
 
   /**
@@ -124,6 +137,50 @@ function EventFormOrganizerModalController($scope, $modalInstance, udbOrganizers
       $scope.error = true;
       $scope.saving = false;
     });
+  }
+
+  // Scope functions.
+  $scope.cities = cities;
+  $scope.changeCitySelection = changeCitySelection;
+
+  $scope.filterCities = function(value) {
+    return function (city) {
+      var words = value.match(/\w+/g);
+      var zipMatches = words.filter(function (word) {
+        return city.zip.indexOf(word) !== -1;
+      });
+      var nameMatches = words.filter(function (word) {
+        return city.name.toLowerCase().indexOf(word.toLowerCase()) !== -1;
+      });
+
+      return zipMatches.length + nameMatches.length >= words.length;
+    };
+  };
+
+  $scope.orderByLevenshteinDistance = function(value) {
+    return function (city) {
+      return new Levenshtein(value, city.zip + '' + city.name);
+    };
+  };
+
+  /**
+   * Select City.
+   */
+  controller.selectCity = function ($item, $label) {
+    $scope.newOrganizer.address.postalCode = $item.zip;
+    $scope.newOrganizer.address.locality = $item.name;
+
+    $scope.cityAutocompleteTextField = '';
+    $scope.selectedCity = $label;
+  };
+  $scope.selectCity = controller.selectCity;
+
+  /**
+   * Change a city selection.
+   */
+  function changeCitySelection() {
+    $scope.selectedCity = '';
+    $scope.cityAutocompleteTextField = '';
   }
 
 }

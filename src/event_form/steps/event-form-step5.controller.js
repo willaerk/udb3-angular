@@ -12,7 +12,9 @@ angular
   .controller('EventFormStep5Controller', EventFormStep5Controller);
 
 /* @ngInject */
-function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizers, $uibModal) {
+function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizers, $uibModal, $rootScope) {
+
+  var controller = this;
 
   // Scope vars.
   $scope.eventFormData = EventFormData; // main storage for event form.
@@ -154,7 +156,7 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
     promise.then(function() {
 
       $scope.savingDescription = false;
-      updateLastUpdated();
+      controller.eventFormSaved();
 
       // Toggle correct class.
       if ($scope.description) {
@@ -257,7 +259,7 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
 
       var markAgeRangeAsUpdated = function () {
         $scope.savingAgeRange = false;
-        updateLastUpdated();
+        controller.eventFormSaved();
         $scope.ageCssClass = 'state-complete';
       };
 
@@ -289,83 +291,69 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
     $scope.ageCssClass = 'state-incomplete';
   }
 
-  /**
-   * Update the last updated time.
-   */
-  function updateLastUpdated() {
-    // Last updated is not in scope. Themers are free to choose where to place it.
-    angular.element('#last-updated').show();
-    angular.element('#last-updated span').html(moment(Date.now()).format('HH:mm'));
-  }
+  controller.eventFormSaved = function () {
+    $rootScope.$emit('eventFormSaved', EventFormData);
+  };
 
   /**
-   * Autocomplete callback for organizers.
+   * Auto-complete callback for organizers.
+   * @param {String} value
+   *  Suggest organizers based off of this value.
    */
   function getOrganizers(value) {
-
-    $scope.loadingOrganizers = true;
-
-    return udbOrganizers.suggestOrganizers(value).then(function (organizers) {
-
-      if (organizers.length > 0) {
-        $scope.emptyOrganizerAutocomplete = false;
-      }
-      else {
-        $scope.emptyOrganizerAutocomplete = true;
-      }
-
+    function suggestExistingOrNewOrganiser (organizers) {
+      $scope.emptyOrganizerAutocomplete = organizers.length <= 0;
       $scope.loadingOrganizers = false;
 
       return organizers;
+    }
 
-    });
-
+    $scope.loadingOrganizers = true;
+    return udbOrganizers
+      .suggestOrganizers(value)
+      .then(suggestExistingOrNewOrganiser);
   }
 
   /**
    * Select listener on the typeahead.
+   * @param {Organizer} organizer
    */
-  function selectOrganizer() {
-    EventFormData.organizer = $scope.organizer;
-    saveOrganizer();
+  function selectOrganizer(organizer) {
+    controller.saveOrganizer(organizer);
   }
+
+  controller.showAsyncOrganizerError = function() {
+    $scope.organizerError = true;
+    $scope.savingOrganizer = false;
+  };
 
   /**
    * Delete the selected organiser.
    */
   function deleteOrganizer() {
-
-    $scope.organizerError = false;
-
-    var promise = eventCrud.deleteOfferOrganizer(EventFormData);
-    promise.then(function() {
-      updateLastUpdated();
+    function resetOrganizer() {
+      controller.eventFormSaved();
       $scope.organizerCssClass = 'state-incomplete';
       EventFormData.resetOrganizer();
       $scope.savingOrganizer = false;
-    }, function() {
-      $scope.organizerError = true;
-      $scope.savingOrganizer = false;
-    });
+    }
 
+    $scope.organizerError = false;
+    eventCrud
+      .deleteOfferOrganizer(EventFormData)
+      .then(resetOrganizer, controller.showAsyncOrganizerError);
   }
 
   /**
    * Open the organizer modal.
    */
   function openOrganizerModal() {
-
     var modalInstance = $uibModal.open({
       templateUrl: 'templates/event-form-organizer-modal.html',
-      controller: 'EventFormOrganizerModalController',
+      controller: 'EventFormOrganizerModalController'
     });
 
-    modalInstance.result.then(function (organizer) {
-      EventFormData.organizer = organizer;
-      saveOrganizer();
-      $scope.organizer = '';
-    }, function () {
-      // modal dismissed.
+    function updateOrganizerInfo () {
       $scope.organizer = '';
       $scope.emptyOrganizerAutocomplete = false;
       if (EventFormData.organizer.id) {
@@ -374,30 +362,35 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
       else {
         $scope.organizerCssClass = 'state-incomplete';
       }
-    });
+    }
 
+    modalInstance.result.then(controller.saveOrganizer, updateOrganizerInfo);
   }
 
   /**
-   * Save the selected organizer in the backend.
+   * Persist the organizer for the active event.
+   * @param {Organizer} organizer
    */
-  function saveOrganizer() {
+  controller.saveOrganizer = function (organizer) {
+    function resetOrganizerFeedback() {
+      $scope.emptyOrganizerAutocomplete = false;
+      $scope.organizerError = false;
+      $scope.savingOrganizer = true;
+      $scope.organizer = '';
+    }
 
-    $scope.emptyOrganizerAutocomplete = false;
-    $scope.organizerError = false;
-    $scope.savingOrganizer = true;
-
-    $scope.organizer = '';
-    var promise = eventCrud.updateOrganizer(EventFormData);
-    promise.then(function() {
-      updateLastUpdated();
+    function markOrganizerAsCompleted() {
+      controller.eventFormSaved();
       $scope.organizerCssClass = 'state-complete';
       $scope.savingOrganizer = false;
-    }, function() {
-      $scope.organizerError = true;
-      $scope.savingOrganizer = false;
-    });
-  }
+    }
+
+    EventFormData.organizer = organizer;
+    resetOrganizerFeedback();
+    eventCrud
+      .updateOrganizer(EventFormData)
+      .then(markOrganizerAsCompleted, controller.showAsyncOrganizerError);
+  };
 
   /**
    * Add contact info.
@@ -446,7 +439,7 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
 
       var promise = eventCrud.updateContactPoint(EventFormData);
       promise.then(function() {
-        updateLastUpdated();
+        controller.eventFormSaved();
         $scope.contactInfoCssClass = 'state-complete';
         $scope.savingContactInfo = false;
       }, function() {
@@ -665,7 +658,7 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
 
     var promise = eventCrud.updateBookingInfo(EventFormData);
     promise.then(function() {
-      updateLastUpdated();
+      controller.eventFormSaved();
       $scope.bookingInfoCssClass = 'state-complete';
       $scope.savingBookingInfo = false;
       $scope.bookingInfoError = false;

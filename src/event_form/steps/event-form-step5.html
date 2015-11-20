@@ -128,7 +128,7 @@
                       <input type="text" class="form-control uib-typeahead" id="organisator-autocomplete"
                              ng-model="organizer"
                              uib-typeahead="organizer for organizer in getOrganizers($viewValue)"
-                             typeahead-on-select="selectOrganizer()"
+                             typeahead-on-select="selectOrganizer(organizer)"
                              typeahead-min-length="3"
                              typeahead-template-url="templates/organizer-typeahead-template.html"/>
                       <div class="dropdown-menu-no-results" ng-show="emptyOrganizerAutocomplete">

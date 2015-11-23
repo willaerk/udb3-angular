@@ -1,6 +1,14 @@
 'use strict';
 
 /**
+ * @typedef {Object} UiTIDUser
+ * @property {string} id        The UiTID of the user.
+ * @property {string} nick      A user nickname.
+ * @property {string} mbox      The email address of the user.
+ * @property {string} givenName The user's given name.
+ */
+
+/**
  * @ngdoc service
  * @name udb.core.udbApi
  * @description
@@ -211,7 +219,8 @@ function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth,
   };
 
   /**
-   * @returns {Promise} A promise with the credentials of the currently logged in user.
+   * @returns {Promise.<UiTIDUser>}
+   *   A promise with the credentials of the currently logged in user.
    */
   this.getMe = function () {
     var deferredUser = $q.defer();
@@ -227,8 +236,15 @@ function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth,
       });
 
       request.success(function (userData) {
-        $cookieStore.put('user', userData);
-        deferredUser.resolve(userData);
+        var user = {
+          id: userData.id,
+          nick: userData.nick,
+          mbox: userData.mbox,
+          givenName: userData.givenName
+        };
+
+        $cookieStore.put('user', user);
+        deferredUser.resolve(user);
       });
 
       request.error(function () {

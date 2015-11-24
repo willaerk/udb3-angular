@@ -224,32 +224,27 @@ function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth,
    */
   this.getMe = function () {
     var deferredUser = $q.defer();
-
     var activeUser = uitidAuth.getUser();
+
+    function storeAndResolveUser (userData) {
+      var user = {
+        id: userData.id,
+        nick: userData.nick,
+        mbox: userData.mbox,
+        givenName: userData.givenName
+      };
+
+      $cookieStore.put('user', user);
+      deferredUser.resolve(user);
+    }
 
     if (activeUser) {
       deferredUser.resolve(activeUser);
     } else {
-
-      var request = $http.get(appConfig.baseUrl + 'uitid/user', {
-        withCredentials: true
-      });
-
-      request.success(function (userData) {
-        var user = {
-          id: userData.id,
-          nick: userData.nick,
-          mbox: userData.mbox,
-          givenName: userData.givenName
-        };
-
-        $cookieStore.put('user', user);
-        deferredUser.resolve(user);
-      });
-
-      request.error(function () {
-        deferredUser.reject();
-      });
+      $http
+        .get(appConfig.baseUrl + 'uitid/user', defaultApiConfig)
+        .success(storeAndResolveUser)
+        .error(deferredUser.reject);
     }
 
     return deferredUser.promise;

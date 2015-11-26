@@ -17,7 +17,7 @@ function CityAutocomplete($q, $http, appConfig, UdbPlace) {
    * Get the places for a city
    *
    * @param {string} zipcode
-   * @returns {$q@call;defer.promise}
+   * @returns {Promise}
    */
   this.getPlacesByZipcode = function(zipcode) {
 

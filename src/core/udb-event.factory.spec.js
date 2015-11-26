@@ -101,7 +101,10 @@ describe('Factory: UdbEvent', function () {
   });
 
   it('Parses the event type and theme from their matching json-ld terms', function () {
-    expect(event.type).toBe('Film');
-    expect(event.theme).toBe('Drama');
+    var expectedType = { label: 'Film', domain: 'eventtype', id: '0.50.6.0.0'},
+        expectedTheme = { label: 'Drama', domain: 'theme', id: '1.7.4.0.0' };
+
+    expect(event.type).toEqual(expectedType);
+    expect(event.theme).toEqual(expectedTheme);
   });
 });

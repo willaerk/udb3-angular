@@ -14,10 +14,10 @@ angular
 /* @ngInject */
 function EventFormController($scope, eventId, placeId, offerType, EventFormData, udbApi, moment) {
 
-  // Other controllers won't load untill this boolean is set to true.
+  // Other controllers won't load until this boolean is set to true.
   $scope.loaded = false;
 
-  // Fill the event form data if an event is beïng edited.
+  // Fill the event form data if an event is being edited.
   if (eventId) {
 
     if (offerType === 'event') {

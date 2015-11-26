@@ -3076,7 +3076,7 @@ function UdbEventFactory(EventTranslationState) {
       label = category.label;
     }
 
-    return label;
+    return category;
   }
 
   function getPricing(jsonEvent) {
@@ -6730,10 +6730,10 @@ angular
 /* @ngInject */
 function EventFormController($scope, eventId, placeId, offerType, EventFormData, udbApi, moment) {
 
-  // Other controllers won't load untill this boolean is set to true.
+  // Other controllers won't load until this boolean is set to true.
   $scope.loaded = false;
 
-  // Fill the event form data if an event is beïng edited.
+  // Fill the event form data if an event is being edited.
   if (eventId) {
 
     if (offerType === 'event') {
@@ -6993,7 +6993,7 @@ function EventFormDataFactory(UdbEvent, UdbPlace) {
       this.type = {
         'id' : id,
         'label' : label,
-        'domain' : 'eventtype',
+        'domain' : 'eventtype'
       };
     },
 
@@ -12660,7 +12660,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "            </tr>\n" +
     "            <tr>\n" +
     "              <td><strong>Type</strong></td>\n" +
-    "              <td>{{event.type}}</td>\n" +
+    "              <td>{{event.type.label}}</td>\n" +
     "            </tr>\n" +
     "            <tr>\n" +
     "              <td><strong>Beschrijving</strong></td>\n" +
@@ -14803,9 +14803,9 @@ $templateCache.put('templates/time-autocomplete.html',
     "    </div>\n" +
     "\n" +
     "    <div class=\"udb-short-info\">\n" +
-    "      <span class=\"udb-category\" ng-bind=\"event.type\"></span>\n" +
+    "      <span class=\"udb-category\" ng-bind=\"event.type.label\"></span>\n" +
     "      <span class=\"udb-short-info-seperator\" ng-show=\"event.type && event.theme\"> • </span>\n" +
-    "      <span class=\"udb-theme\" ng-bind=\"event.theme\"></span>\n" +
+    "      <span class=\"udb-theme\" ng-bind=\"event.theme.label\"></span>\n" +
     "    </div>\n" +
     "    <div class=\"udb-title\">\n" +
     "      <a ng-href=\"{{ event.url }}\" ng-bind=\"event.name\"></a>\n" +

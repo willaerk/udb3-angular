@@ -8,9 +8,9 @@
     </div>
 
     <div class="udb-short-info">
-      <span class="udb-category" ng-bind="event.type"></span>
+      <span class="udb-category" ng-bind="event.type.label"></span>
       <span class="udb-short-info-seperator" ng-show="event.type && event.theme"> • </span>
-      <span class="udb-theme" ng-bind="event.theme"></span>
+      <span class="udb-theme" ng-bind="event.theme.label"></span>
     </div>
     <div class="udb-title">
       <a ng-href="{{ event.url }}" ng-bind="event.name"></a>

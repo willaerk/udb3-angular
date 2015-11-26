@@ -112,7 +112,7 @@ function EventFormDataFactory(UdbEvent, UdbPlace) {
       this.type = {
         'id' : id,
         'label' : label,
-        'domain' : 'eventtype',
+        'domain' : 'eventtype'
       };
     },
 

@@ -30,7 +30,7 @@ function UdbEventFactory(EventTranslationState) {
       label = category.label;
     }
 
-    return label;
+    return category;
   }
 
   function getPricing(jsonEvent) {

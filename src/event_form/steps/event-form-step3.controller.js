@@ -189,30 +189,41 @@ function EventFormStep3Controller(
    */
   controller.getLocations = function (zipcode) {
 
-    $scope.loadingPlaces = true;
-    $scope.locationAutoCompleteError = false;
-
-    var promise = cityAutocomplete.getPlacesByZipcode(zipcode);
-    return promise.then(function (locations) {
-      $scope.locationsForCity = locations;
-      $scope.locationsSearched = false;
-      $scope.loadingPlaces = false;
-      return $scope.locationsForCity;
-    }, function() {
-      $scope.locationsSearched = false;
-      $scope.loadingPlaces = false;
+    function showErrorAndReturnEmptyList () {
       $scope.locationAutoCompleteError = true;
       return [];
-    });
+    }
 
+    function updateLocationsAndReturnList (locations) {
+      $scope.locationsForCity = locations;
+      return locations;
+    }
+
+    function clearLoadingState() {
+      $scope.locationsSearched = false;
+      $scope.loadingPlaces = false;
+    }
+
+    $scope.loadingPlaces = true;
+    $scope.locationAutoCompleteError = false;
+    return cityAutocomplete
+      .getPlacesByZipcode(zipcode)
+      .then(updateLocationsAndReturnList, showErrorAndReturnEmptyList)
+      .finally(clearLoadingState);
   };
+
+  controller.cityHasLocations = function () {
+    return $scope.locationsForCity instanceof Array && $scope.locationsForCity.length > 0;
+  };
+  $scope.cityHasLocations = controller.cityHasLocations;
+
+  controller.locationSearched = function () {
+    $scope.locationsSearched = true;
+  };
+  $scope.locationSearched = controller.locationSearched;
 
   controller.filterCityLocations = function (filterValue) {
     return function (location) {
-      // assume a search has been launched once a location goes through the filter
-      // getLocations() is called when the city changes and toggles this off again
-      $scope.locationsSearched = true;
-
       var words = filterValue.match(/\w+/g).filter(function (word) {
         return word.length > 2;
       });

@@ -41,7 +41,7 @@
           </label>
           <div id="locatie-kiezer" ng-show="!selectedLocation" ng-hide="loadingPlaces">
             <span style="position: relative; display: inline-block; direction: ltr;" class="twitter-typeahead">
-              <input type="text"
+              <input type="text" ng-change="locationSearched()"
                      placeholder="Locatie"
                      class="form-control typeahead"
                      ng-model="locationAutocompleteTextField"
@@ -50,7 +50,7 @@
                      typeahead-min-length="3"
                      typeahead-template-url="templates/place-suggestion.html"/>
               <div class="plaats-adres-resultaat dropdown-menu-no-results"
-                   ng-show="filteredLocations.length === 0 && locationsSearched">
+                   ng-show="(!cityHasLocations() || filteredLocations.length === 0) && locationsSearched">
                 <p class="text-center">
                   Locatie niet gevonden?<br />
                   <button type="button" class="btn btn-primary" data-toggle="modal"

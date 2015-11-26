@@ -1889,7 +1889,7 @@ function CityAutocomplete($q, $http, appConfig, UdbPlace) {
    * Get the places for a city
    *
    * @param {string} zipcode
-   * @returns {$q@call;defer.promise}
+   * @returns {Promise}
    */
   this.getPlacesByZipcode = function(zipcode) {
 
@@ -7961,30 +7961,41 @@ function EventFormStep3Controller(
    */
   controller.getLocations = function (zipcode) {
 
-    $scope.loadingPlaces = true;
-    $scope.locationAutoCompleteError = false;
-
-    var promise = cityAutocomplete.getPlacesByZipcode(zipcode);
-    return promise.then(function (locations) {
-      $scope.locationsForCity = locations;
-      $scope.locationsSearched = false;
-      $scope.loadingPlaces = false;
-      return $scope.locationsForCity;
-    }, function() {
-      $scope.locationsSearched = false;
-      $scope.loadingPlaces = false;
+    function showErrorAndReturnEmptyList () {
       $scope.locationAutoCompleteError = true;
       return [];
-    });
+    }
 
+    function updateLocationsAndReturnList (locations) {
+      $scope.locationsForCity = locations;
+      return locations;
+    }
+
+    function clearLoadingState() {
+      $scope.locationsSearched = false;
+      $scope.loadingPlaces = false;
+    }
+
+    $scope.loadingPlaces = true;
+    $scope.locationAutoCompleteError = false;
+    return cityAutocomplete
+      .getPlacesByZipcode(zipcode)
+      .then(updateLocationsAndReturnList, showErrorAndReturnEmptyList)
+      .finally(clearLoadingState);
   };
+
+  controller.cityHasLocations = function () {
+    return $scope.locationsForCity instanceof Array && $scope.locationsForCity.length > 0;
+  };
+  $scope.cityHasLocations = controller.cityHasLocations;
+
+  controller.locationSearched = function () {
+    $scope.locationsSearched = true;
+  };
+  $scope.locationSearched = controller.locationSearched;
 
   controller.filterCityLocations = function (filterValue) {
     return function (location) {
-      // assume a search has been launched once a location goes through the filter
-      // getLocations() is called when the city changes and toggles this off again
-      $scope.locationsSearched = true;
-
       var words = filterValue.match(/\w+/g).filter(function (word) {
         return word.length > 2;
       });
@@ -13435,7 +13446,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "          </label>\n" +
     "          <div id=\"locatie-kiezer\" ng-show=\"!selectedLocation\" ng-hide=\"loadingPlaces\">\n" +
     "            <span style=\"position: relative; display: inline-block; direction: ltr;\" class=\"twitter-typeahead\">\n" +
-    "              <input type=\"text\"\n" +
+    "              <input type=\"text\" ng-change=\"locationSearched()\"\n" +
     "                     placeholder=\"Locatie\"\n" +
     "                     class=\"form-control typeahead\"\n" +
     "                     ng-model=\"locationAutocompleteTextField\"\n" +
@@ -13444,7 +13455,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "                     typeahead-min-length=\"3\"\n" +
     "                     typeahead-template-url=\"templates/place-suggestion.html\"/>\n" +
     "              <div class=\"plaats-adres-resultaat dropdown-menu-no-results\"\n" +
-    "                   ng-show=\"filteredLocations.length === 0 && locationsSearched\">\n" +
+    "                   ng-show=\"(!cityHasLocations() || filteredLocations.length === 0) && locationsSearched\">\n" +
     "                <p class=\"text-center\">\n" +
     "                  Locatie niet gevonden?<br />\n" +
     "                  <button type=\"button\" class=\"btn btn-primary\" data-toggle=\"modal\"\n" +

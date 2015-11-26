@@ -114,7 +114,6 @@ describe('Controller: event form step 3', function (){
     scope.$apply();
 
     expect(stepController.cityHasLocations()).toEqual(false);
-    expect(stepController.cityHasLocations()).toEqual(false);
-    expect(scope.locationAutoCompleteError).toEqual(true);;
+    expect(scope.locationAutoCompleteError).toEqual(true);
   })
 });

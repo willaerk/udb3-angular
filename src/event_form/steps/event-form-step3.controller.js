@@ -19,7 +19,8 @@ function EventFormStep3Controller(
     placeCategories,
     $uibModal,
     cities,
-    Levenshtein
+    Levenshtein,
+    eventCrud
 ) {
 
   var controller = this;
@@ -332,6 +333,10 @@ function EventFormStep3Controller(
 
   controller.stepCompleted = function () {
     EventFormData.showStep(4);
+
+    if (EventFormData.id) {
+      eventCrud.updateMajorInfo(EventFormData);
+    }
   };
 
   controller.stepUncompleted = function () {

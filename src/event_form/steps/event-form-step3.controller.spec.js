@@ -4,7 +4,7 @@ describe('Controller: event form step 3', function (){
 
   beforeEach(module('udb.event-form'));
 
-  var $controller, stepController, scope, $q, cityAutocomplete, EventFormData;
+  var $controller, stepController, scope, $q, cityAutocomplete, EventFormData, eventCrud;
 
   beforeEach(inject(function ($rootScope, $injector) {
     $controller = $injector.get('$controller');
@@ -12,11 +12,19 @@ describe('Controller: event form step 3', function (){
     $q = $injector.get('$q');
     cityAutocomplete = jasmine.createSpyObj('cityAutocomplete', ['getPlacesByZipcode']);
     EventFormData = $injector.get('EventFormData');
+    eventCrud = jasmine.createSpyObj('eventCrud', ['updateMajorInfo']);
     stepController = $controller('EventFormStep3Controller', {
       $scope: scope,
-      cityAutocomplete: cityAutocomplete
+      cityAutocomplete: cityAutocomplete,
+      eventCrud: eventCrud
     });
   }));
+
+  function formForExistingEvent() {
+    // The id of the form-data is used to store the id of an existing event.
+    // Setting it means the event exists and the user already has gone through all the steps.
+    EventFormData.id = 1;
+  }
 
   it('should fetch a list of places by zipcode when a city is selected', function () {
     var zipcode = '1234';
@@ -150,9 +158,7 @@ describe('Controller: event form step 3', function (){
 
   it('should not hide the next step when this step becomes incomplete and the event already exists', function () {
     spyOn(EventFormData, 'hideStep');
-    // The id of the form-data is used to store the id of an existing event.
-    // Setting it means the event exists and the user already has gone through all the steps.
-    EventFormData.id = 1;
+    formForExistingEvent();
     stepController.stepUncompleted();
 
     expect(EventFormData.hideStep).not.toHaveBeenCalled();
@@ -164,5 +170,12 @@ describe('Controller: event form step 3', function (){
     stepController.stepCompleted();
 
     expect(EventFormData.showStep).toHaveBeenCalledWith(4);
+  });
+
+  it('should update and existing event on step completion', function () {
+    formForExistingEvent();
+    stepController.stepCompleted();
+
+    expect(eventCrud.updateMajorInfo).toHaveBeenCalled();
   });
 });

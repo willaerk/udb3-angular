@@ -14095,7 +14095,7 @@ $templateCache.put('templates/time-autocomplete.html',
 
 
   $templateCache.put('templates/event-form.html',
-    "<div class=\"offer-form\">\n" +
+    "<div class=\"offer-form\" ng-if=\"loaded\">\n" +
     "  <udb-event-form-step1></udb-event-form-step1>\n" +
     "  <udb-event-form-step2></udb-event-form-step2>\n" +
     "  <udb-event-form-step3></udb-event-form-step3>\n" +

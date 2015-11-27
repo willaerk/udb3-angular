@@ -335,4 +335,16 @@ function EventFormStep3Controller(
     }
   }
 
+  controller.init = function (EventFormData) {
+    if (EventFormData.location.address.addressCountry) {
+      var location = EventFormData.location;
+
+      $scope.selectedCity = location.address.addressLocality;
+      controller.getLocations(location.address.postalCode);
+      $scope.placeStreetAddress = location.address.streetAddress;
+      $scope.selectedLocation = location;
+    }
+  };
+
+  controller.init(EventFormData);
 }

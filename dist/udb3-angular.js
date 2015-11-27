@@ -8107,6 +8107,18 @@ function EventFormStep3Controller(
     }
   }
 
+  controller.init = function (EventFormData) {
+    if (EventFormData.location.address.addressCountry) {
+      var location = EventFormData.location;
+
+      $scope.selectedCity = location.address.addressLocality;
+      controller.getLocations(location.address.postalCode);
+      $scope.placeStreetAddress = location.address.streetAddress;
+      $scope.selectedLocation = location;
+    }
+  };
+
+  controller.init(EventFormData);
 }
 EventFormStep3Controller.$inject = ["$scope", "EventFormData", "cityAutocomplete", "placeCategories", "$uibModal", "cities", "Levenshtein"];
 
@@ -13444,7 +13456,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "          <label id=\"locatie-label\" ng-show=\"!selectedLocation\">\n" +
     "            Kies een locatie <i class=\"fa fa-circle-o-notch fa-spin\" ng-show=\"loadingPlaces\"></i>\n" +
     "          </label>\n" +
-    "          <div id=\"locatie-kiezer\" ng-show=\"!selectedLocation\" ng-hide=\"loadingPlaces\">\n" +
+    "          <div id=\"locatie-kiezer\" ng-hide=\"selectedLocation || loadingPlaces\">\n" +
     "            <span style=\"position: relative; display: inline-block; direction: ltr;\" class=\"twitter-typeahead\">\n" +
     "              <input type=\"text\" ng-change=\"locationSearched()\"\n" +
     "                     placeholder=\"Locatie\"\n" +

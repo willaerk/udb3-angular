@@ -4,13 +4,14 @@ describe('Controller: event form step 3', function (){
 
   beforeEach(module('udb.event-form'));
 
-  var $controller, stepController, scope, $q, cityAutocomplete;
+  var $controller, stepController, scope, $q, cityAutocomplete, EventFormData;
 
   beforeEach(inject(function ($rootScope, $injector) {
     $controller = $injector.get('$controller');
     scope = $rootScope;
     $q = $injector.get('$q');
     cityAutocomplete = jasmine.createSpyObj('cityAutocomplete', ['getPlacesByZipcode']);
+    EventFormData = $injector.get('EventFormData');
     stepController = $controller('EventFormStep3Controller', {
       $scope: scope,
       cityAutocomplete: cityAutocomplete
@@ -105,7 +106,7 @@ describe('Controller: event form step 3', function (){
     scope.$apply();
 
     expect(stepController.cityHasLocations()).toEqual(true);
-  })
+  });
 
   it('should display an error when locations for a city fail to load', function () {
     cityAutocomplete.getPlacesByZipcode.and.returnValue($q.reject('kapot'));
@@ -115,5 +116,27 @@ describe('Controller: event form step 3', function (){
 
     expect(stepController.cityHasLocations()).toEqual(false);
     expect(scope.locationAutoCompleteError).toEqual(true);
-  })
+  });
+
+  it('should set the location when initializing with form data that has already has one', function () {
+    spyOn(stepController, 'getLocations');
+    var location = {
+      'id' : 182,
+      'name': 'De Hoorn',
+      'address': {
+        'addressCountry': 'Belgium',
+        'addressLocality': 'Leuven',
+        'postalCode': '3000',
+        'streetAddress': 'Sluisstraat 79'
+      }
+    };
+
+    EventFormData.setLocation(location);
+    stepController.init(EventFormData);
+
+    expect(scope.selectedCity).toEqual('Leuven');
+    expect(scope.placeStreetAddress).toEqual('Sluisstraat 79');
+    expect(scope.selectedLocation).toEqual(location);
+    expect(stepController.getLocations).toHaveBeenCalledWith('3000');
+  });
 });

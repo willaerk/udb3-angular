@@ -139,4 +139,30 @@ describe('Controller: event form step 3', function (){
     expect(scope.selectedLocation).toEqual(location);
     expect(stepController.getLocations).toHaveBeenCalledWith('3000');
   });
+
+  it('should hide the next step when this step becomes incomplete and the event is not yet created', function () {
+    spyOn(EventFormData, 'hideStep');
+
+    stepController.stepUncompleted();
+
+    expect(EventFormData.hideStep).toHaveBeenCalledWith(4);
+  });
+
+  it('should not hide the next step when this step becomes incomplete and the event already exists', function () {
+    spyOn(EventFormData, 'hideStep');
+    // The id of the form-data is used to store the id of an existing event.
+    // Setting it means the event exists and the user already has gone through all the steps.
+    EventFormData.id = 1;
+    stepController.stepUncompleted();
+
+    expect(EventFormData.hideStep).not.toHaveBeenCalled();
+  });
+
+  it('should show the next step when this one is completed', function () {
+    spyOn(EventFormData, 'showStep');
+
+    stepController.stepCompleted();
+
+    expect(EventFormData.showStep).toHaveBeenCalledWith(4);
+  });
 });

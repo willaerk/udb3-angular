@@ -7866,7 +7866,6 @@ function EventFormStep3Controller(
       $scope.placeStreetAddress = EventFormData.location.address.streetAddress;
       $scope.selectedLocation = EventFormData.location;
     }
-
   }
 
   /**
@@ -7897,15 +7896,13 @@ function EventFormStep3Controller(
    * Change a city selection.
    */
   function changeCitySelection() {
-
     EventFormData.resetLocation();
     $scope.selectedCity = '';
     $scope.selectedLocation = undefined;
     $scope.cityAutocompleteTextField = '';
     $scope.locationsSearched = false;
     $scope.locationAutocompleteTextField = '';
-    EventFormData.showStep4 = false;
-
+    controller.stepUncompleted();
   }
 
   /**
@@ -7927,7 +7924,7 @@ function EventFormStep3Controller(
     location.name = $label;
     EventFormData.setLocation(location);
 
-    EventFormData.showStep4 = true;
+    controller.stepCompleted();
     setMajorInfoChanged();
 
   };
@@ -7950,8 +7947,7 @@ function EventFormStep3Controller(
     $scope.locationAutocompleteTextField = '';
     $scope.locationsSearched = false;
 
-    EventFormData.showStep4 = false;
-
+    controller.stepUncompleted();
   }
 
   /**
@@ -8057,10 +8053,9 @@ function EventFormStep3Controller(
       EventFormData.setLocation(location);
       $scope.selectedLocation = location;
 
-      EventFormData.showStep4 = true;
+      controller.stepCompleted();
 
     });
-
   }
 
   function setStreetAddress() {
@@ -8077,7 +8072,7 @@ function EventFormStep3Controller(
 
     $scope.selectedLocation = location;
 
-    EventFormData.showStep4 = true;
+    controller.stepCompleted();
   }
 
   /**
@@ -8093,7 +8088,7 @@ function EventFormStep3Controller(
 
     $scope.selectedLocation = undefined;
 
-    EventFormData.showStep4 = false;
+    controller.stepUncompleted();
 
     setMajorInfoChanged();
   }
@@ -8106,6 +8101,16 @@ function EventFormStep3Controller(
       EventFormData.majorInfoChanged = true;
     }
   }
+
+  controller.stepCompleted = function () {
+    EventFormData.showStep(4);
+  };
+
+  controller.stepUncompleted = function () {
+    if (!EventFormData.id) {
+      EventFormData.hideStep(4);
+    }
+  };
 
   controller.init = function (EventFormData) {
     if (EventFormData.location.address.addressCountry) {

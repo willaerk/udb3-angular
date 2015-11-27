@@ -435,7 +435,7 @@ function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth,
    */
   this.updateMajorInfo = function(id, type, item) {
     return $http.post(
-      appConfig.baseApiUrl + type + '/' + id + '/major-info',
+      appConfig.baseUrl + type + '/' + id + '/major-info',
       item,
       defaultApiConfig
     );

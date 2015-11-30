@@ -14,7 +14,7 @@ angular
 function TimeTrackerDirective($rootScope) {
 
   var template =
-    '<div class="save-time-tracker" ng-show="timeLastSaved">' +
+    '<div class="save-time-tracker" ng-if="::timeLastSaved">' +
     '  Automatisch bewaard om <span class="time-last-saved" ng-bind="timeLastSaved | date:\'HH:mm\'"></span> uur' +
     '</div>';
 
@@ -25,7 +25,7 @@ function TimeTrackerDirective($rootScope) {
   };
 
   function link(scope) {
-    scope.timeLastSaved = null;
+    scope.timeLastSaved = undefined;
 
     function refreshTimeLastSaved() {
       scope.timeLastSaved = new Date();

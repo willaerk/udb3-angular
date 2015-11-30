@@ -5941,30 +5941,13 @@ function EventFormFacilitiesModalController($scope, $modalInstance, EventFormDat
    * Save the selected facilities in db.
    */
   function saveFacilities() {
+    var selectedFacilities = _.where(_.union(
+      $scope.facilities.motor,
+      $scope.facilities.visual,
+      $scope.facilities.hearing
+    ), {selected: true});
 
-    EventFormData.facilities = [];
-
-    // Add all selected motor facilities.
-    var i;
-    for (i = 0; i < $scope.facilities.motor.length; i++) {
-      if ($scope.facilities.motor[i].selected) {
-        EventFormData.facilities.push($scope.facilities.motor[i]);
-      }
-    }
-
-    // Add all selected visual facilities.
-    for (i = 0; i < $scope.facilities.visual.length; i++) {
-      if ($scope.facilities.visual[i].selected) {
-        EventFormData.facilities.push($scope.facilities.visual[i]);
-      }
-    }
-
-    // Add all selected hearing facilities.
-    for (i = 0; i < $scope.facilities.hearing.length; i++) {
-      if ($scope.facilities.hearing[i].selected) {
-        EventFormData.facilities.push($scope.facilities.hearing[i]);
-      }
-    }
+    EventFormData.facilities = selectedFacilities;
 
     $scope.saving = true;
     $scope.error = false;
@@ -6621,7 +6604,7 @@ angular
 function TimeTrackerDirective($rootScope) {
 
   var template =
-    '<div class="save-time-tracker" ng-show="timeLastSaved">' +
+    '<div class="save-time-tracker" ng-if="::timeLastSaved">' +
     '  Automatisch bewaard om <span class="time-last-saved" ng-bind="timeLastSaved | date:\'HH:mm\'"></span> uur' +
     '</div>';
 
@@ -6632,7 +6615,7 @@ function TimeTrackerDirective($rootScope) {
   };
 
   function link(scope) {
-    scope.timeLastSaved = null;
+    scope.timeLastSaved = undefined;
 
     function refreshTimeLastSaved() {
       scope.timeLastSaved = new Date();
@@ -6715,172 +6698,7 @@ function UdbContactInfoValidationDirective() {
 
 }
 
-// Source: src/event_form/event-form.controller.js
-/**
- * @ngdoc function
- * @name udbApp.controller:EventFormController
- * @description
- * # EventFormController
- * Init the event form
- */
-angular
-  .module('udb.event-form')
-  .controller('EventFormController', EventFormController);
-
-/* @ngInject */
-function EventFormController($scope, eventId, placeId, offerType, EventFormData, udbApi, moment) {
-
-  // Other controllers won't load until this boolean is set to true.
-  $scope.loaded = false;
-
-  // Fill the event form data if an event is being edited.
-  if (eventId) {
-
-    if (offerType === 'event') {
-      udbApi.getEventById(eventId).then(function(event) {
-        EventFormData.isEvent = true;
-        EventFormData.isPlace = false;
-        copyItemDataToFormData(event);
-
-        // Copy location.
-        if (event.location && event.location['@id']) {
-          EventFormData.location = {
-            id : event.location['@id'].split('/').pop(),
-            name : event.location.name,
-            address : event.location.address
-          };
-        }
-      });
-    }
-  }
-  else if (placeId) {
-
-    udbApi.getPlaceById(placeId).then(function(place) {
-
-      EventFormData.isEvent = false;
-      EventFormData.isPlace = true;
-      copyItemDataToFormData(place);
-
-      // Places only have an address, form uses location property.
-      if (place.address) {
-        EventFormData.location = {
-          address : place.address
-        };
-      }
-
-    });
-
-  }
-  else {
-    $scope.loaded = true;
-  }
-
-  /**
-   * Copy all item data to form data so it can be used for edting.
-   * var {UdbEvent|UdbPlace} item
-   */
-  function copyItemDataToFormData(item) {
-
-    // Properties that exactly match.
-    var sameProperties = [
-      'id',
-      'type',
-      'theme',
-      'openingHours',
-      'description',
-      'typicalAgeRange',
-      'organizer',
-      'bookingInfo',
-      'contactPoint',
-      'facilities',
-      'mediaObject',
-      'image',
-      'additionalData'
-    ];
-    for (var i = 0; i < sameProperties.length; i++) {
-      if (item[sameProperties[i]]) {
-        EventFormData[sameProperties[i]] = item[sameProperties[i]];
-      }
-    }
-
-    // Places don't have nl.
-    if (item.name) {
-      if (typeof item.name === 'object') {
-        EventFormData.name = item.name;
-      }
-      else {
-        EventFormData.setName(item.name, 'nl');
-      }
-    }
-
-    EventFormData.calendarType = item.calendarType === 'multiple' ? 'single' : item.calendarType;
-
-    // Set correct date object for start and end.
-    if (item.startDate) {
-      EventFormData.startDate = moment(item.startDate).toDate();
-    }
-
-    if (item.endDate) {
-      EventFormData.endDate = moment(item.endDate).toDate();
-    }
-
-    // SubEvents are timestamps.
-    if (item.calendarType === 'multiple' && item.subEvent) {
-      for (var j = 0; j < item.subEvent.length; j++) {
-        var subEvent = item.subEvent[j];
-        addTimestamp(subEvent.startDate, subEvent.endDate);
-      }
-    }
-    else if (item.calendarType === 'single') {
-      addTimestamp(item.startDate, item.endDate);
-    }
-
-    $scope.loaded = true;
-    EventFormData.showStep(1);
-    EventFormData.showStep(2);
-    EventFormData.showStep(3);
-    EventFormData.showStep(4);
-    EventFormData.showStep(5);
-
-  }
-
-  /**
-   * Add a timestamp based on a given start and enddate.
-   */
-  function addTimestamp(startDateString, endDateString) {
-
-    var startDate = moment(startDateString);
-    var endDate = moment(endDateString);
-
-    var startHour = '';
-    startHour = startDate.hours() <= 9 ? '0' + startDate.hours() : startDate.hours();
-    if (startDate.minutes() <= 9) {
-      startHour += ':0' + startDate.minutes();
-    }
-    else {
-      startHour += ':' + startDate.minutes();
-    }
-
-    var endHour = '';
-    endHour = endDate.hours() <= 9 ? '0' + endDate.hours() : endDate.hours();
-    if (endDate.minutes() <= 9) {
-      endHour += ':0' + endDate.minutes();
-    }
-    else {
-      endHour += ':' + endDate.minutes();
-    }
-
-    startHour = startHour === '00:00' ? '' : startHour;
-    endHour = endHour === '00:00' ? '' : endHour;
-
-    EventFormData.addTimestamp(startDate.toDate(), startHour, endHour);
-
-  }
-
-}
-EventFormController.$inject = ["$scope", "eventId", "placeId", "offerType", "EventFormData", "udbApi", "moment"];
-
-// Source: src/event_form/event-form.data.js
+// Source: src/event_form/event-form-data.factory.js
 /**
  * @ngdoc service
  * @name udb.core.EventFormData
@@ -7222,6 +7040,171 @@ function EventFormDataFactory(UdbEvent, UdbPlace) {
 }
 EventFormDataFactory.$inject = ["UdbEvent", "UdbPlace"];
 
+// Source: src/event_form/event-form.controller.js
+/**
+ * @ngdoc function
+ * @name udbApp.controller:EventFormController
+ * @description
+ * # EventFormController
+ * Init the event form
+ */
+angular
+  .module('udb.event-form')
+  .controller('EventFormController', EventFormController);
+
+/* @ngInject */
+function EventFormController($scope, eventId, placeId, offerType, EventFormData, udbApi, moment) {
+
+  // Other controllers won't load until this boolean is set to true.
+  $scope.loaded = false;
+
+  // Fill the event form data if an event is being edited.
+  if (eventId) {
+
+    if (offerType === 'event') {
+      udbApi.getEventById(eventId).then(function(event) {
+        EventFormData.isEvent = true;
+        EventFormData.isPlace = false;
+        copyItemDataToFormData(event);
+
+        // Copy location.
+        if (event.location && event.location['@id']) {
+          EventFormData.location = {
+            id : event.location['@id'].split('/').pop(),
+            name : event.location.name,
+            address : event.location.address
+          };
+        }
+      });
+    }
+  }
+  else if (placeId) {
+
+    udbApi.getPlaceById(placeId).then(function(place) {
+
+      EventFormData.isEvent = false;
+      EventFormData.isPlace = true;
+      copyItemDataToFormData(place);
+
+      // Places only have an address, form uses location property.
+      if (place.address) {
+        EventFormData.location = {
+          address : place.address
+        };
+      }
+
+    });
+
+  }
+  else {
+    $scope.loaded = true;
+  }
+
+  /**
+   * Copy all item data to form data so it can be used for edting.
+   * var {UdbEvent|UdbPlace} item
+   */
+  function copyItemDataToFormData(item) {
+
+    // Properties that exactly match.
+    var sameProperties = [
+      'id',
+      'type',
+      'theme',
+      'openingHours',
+      'description',
+      'typicalAgeRange',
+      'organizer',
+      'bookingInfo',
+      'contactPoint',
+      'facilities',
+      'mediaObject',
+      'image',
+      'additionalData'
+    ];
+    for (var i = 0; i < sameProperties.length; i++) {
+      if (item[sameProperties[i]]) {
+        EventFormData[sameProperties[i]] = item[sameProperties[i]];
+      }
+    }
+
+    // Places don't have nl.
+    if (item.name) {
+      if (typeof item.name === 'object') {
+        EventFormData.name = item.name;
+      }
+      else {
+        EventFormData.setName(item.name, 'nl');
+      }
+    }
+
+    EventFormData.calendarType = item.calendarType === 'multiple' ? 'single' : item.calendarType;
+
+    // Set correct date object for start and end.
+    if (item.startDate) {
+      EventFormData.startDate = moment(item.startDate).toDate();
+    }
+
+    if (item.endDate) {
+      EventFormData.endDate = moment(item.endDate).toDate();
+    }
+
+    // SubEvents are timestamps.
+    if (item.calendarType === 'multiple' && item.subEvent) {
+      for (var j = 0; j < item.subEvent.length; j++) {
+        var subEvent = item.subEvent[j];
+        addTimestamp(subEvent.startDate, subEvent.endDate);
+      }
+    }
+    else if (item.calendarType === 'single') {
+      addTimestamp(item.startDate, item.endDate);
+    }
+
+    $scope.loaded = true;
+    EventFormData.showStep(1);
+    EventFormData.showStep(2);
+    EventFormData.showStep(3);
+    EventFormData.showStep(4);
+    EventFormData.showStep(5);
+
+  }
+
+  /**
+   * Add a timestamp based on a given start and enddate.
+   */
+  function addTimestamp(startDateString, endDateString) {
+
+    var startDate = moment(startDateString);
+    var endDate = moment(endDateString);
+
+    var startHour = '';
+    startHour = startDate.hours() <= 9 ? '0' + startDate.hours() : startDate.hours();
+    if (startDate.minutes() <= 9) {
+      startHour += ':0' + startDate.minutes();
+    }
+    else {
+      startHour += ':' + startDate.minutes();
+    }
+
+    var endHour = '';
+    endHour = endDate.hours() <= 9 ? '0' + endDate.hours() : endDate.hours();
+    if (endDate.minutes() <= 9) {
+      endHour += ':0' + endDate.minutes();
+    }
+    else {
+      endHour += ':' + endDate.minutes();
+    }
+
+    startHour = startHour === '00:00' ? '' : startHour;
+    endHour = endHour === '00:00' ? '' : endHour;
+
+    EventFormData.addTimestamp(startDate.toDate(), startHour, endHour);
+
+  }
+
+}
+EventFormController.$inject = ["$scope", "eventId", "placeId", "offerType", "EventFormData", "udbApi", "moment"];
+
 // Source: src/event_form/event-form.directive.js
 /**
  * @ngdoc directive
@@ -7368,9 +7351,6 @@ function EventFormStep1Controller($scope, EventFormData, eventCategories, placeC
   $scope.eventFormData = EventFormData;
 
   // Categories, event types, places.
-  $scope.eventTypeLabels = [];
-  $scope.placeLabels = [];
-
   $scope.eventTypeLabels = eventCategories;
   $scope.placeLabels = placeCategories;
 
@@ -7405,30 +7385,14 @@ function EventFormStep1Controller($scope, EventFormData, eventCategories, placeC
     $scope.activeEventType = type;
     $scope.showEventSelection = false;
     $scope.showPlaceSelection = false;
+    var eventTypes;
 
     // User selected an event.
     if (isEvent) {
-
       EventFormData.isEvent = true;
       EventFormData.isPlace = false;
 
-      for (var i = 0; i < $scope.eventTypeLabels.length; i++) {
-        if ($scope.eventTypeLabels[i].id === type) {
-          $scope.activeEventType = $scope.eventTypeLabels[i].id;
-          $scope.activeEventTypeLabel = $scope.eventTypeLabels[i].label;
-
-          if ($scope.eventTypeLabels[i].themes && $scope.eventTypeLabels[i].themes.length > 0) {
-            $scope.eventThemeLabels = $scope.eventTypeLabels[i].themes;
-            $scope.canRefine = true;
-          }
-          else {
-            $scope.canRefine = false;
-          }
-
-          break;
-        }
-      }
-
+      eventTypes = $scope.eventTypeLabels;
     }
     // User selected a place.
     else {
@@ -7441,22 +7405,7 @@ function EventFormStep1Controller($scope, EventFormData, eventCategories, placeC
       EventFormData.isEvent = false;
       EventFormData.isPlace = true;
 
-      for (var j = 0; j < $scope.placeLabels.length; j++) {
-        if ($scope.placeLabels[j].id === type) {
-          $scope.activeEventType = $scope.placeLabels[j].id;
-          $scope.activeEventTypeLabel = $scope.placeLabels[j].label;
-
-          if ($scope.placeLabels[j].themes && $scope.placeLabels[j].themes.length > 0) {
-            $scope.eventThemeLabels = $scope.placeLabels[j].themes;
-            $scope.canRefine = true;
-          }
-          else {
-            $scope.canRefine = false;
-          }
-
-          break;
-        }
-      }
+      eventTypes = $scope.placeLabels;
 
       // Places are default permanent. Users should not see a selection.
       EventFormData.calendarType = 'permanent';
@@ -7467,6 +7416,18 @@ function EventFormStep1Controller($scope, EventFormData, eventCategories, placeC
       }
       EventFormData.showStep(3);
 
+    }
+
+    var eventType = _.findWhere(eventTypes, {id: type});
+    if (eventType) {
+      $scope.activeEventType = eventType.id;
+      $scope.activeEventTypeLabel = eventType.label;
+
+      $scope.canRefine = !_.isEmpty(eventType.themes);
+
+      if ($scope.canRefine) {
+        $scope.eventThemeLabels = eventType.themes;
+      }
     }
 
     // Check if previous event type was the same.
@@ -7573,7 +7534,7 @@ function EventFormStep1Controller($scope, EventFormData, eventCategories, placeC
 }
 EventFormStep1Controller.$inject = ["$scope", "EventFormData", "eventCategories", "placeCategories"];
 
-// Source: src/event_form/steps/event-form-step2-controller.js
+// Source: src/event_form/steps/event-form-step2.controller.js
 /**
  * @ngdoc function
  * @name udbApp.controller:EventFormStep2Controller
@@ -7669,16 +7630,12 @@ function EventFormStep2Controller($scope, EventFormData, UdbOpeningHours) {
    */
   function initCalendar() {
 
-    var calendarLabel = '';
-    for (var i = 0; i < $scope.calendarLabels.length; i++) {
-      if ($scope.calendarLabels[i].id === EventFormData.calendarType) {
-        calendarLabel = $scope.calendarLabels[i].label;
-        break;
-      }
-    }
-    EventFormData.activeCalendarType = EventFormData.calendarType;
-    EventFormData.activeCalendarLabel = calendarLabel;
+    var calendarType = _.findWhere($scope.calendarLabels, {id: EventFormData.calendarType});
 
+    if (calendarType) {
+      EventFormData.activeCalendarLabel = calendarType.label;
+      EventFormData.activeCalendarType = EventFormData.calendarType;
+    }
   }
 
   /**
@@ -12319,7 +12276,11 @@ function searchDirective() {
 // Source: .tmp/udb3-angular.templates.js
 angular.module('udb.core').run(['$templateCache', function($templateCache) {
 $templateCache.put('templates/time-autocomplete.html',
-    "<input type=\"text\" ng-model=\"ngModel\" class=\"{{cssClass}}\" placeholder=\"{{inputPlaceholder}}\" uib-typeahead=\"time for time in times | filter:$viewValue | limitTo:8\" />"
+    "<input type=\"text\"\n" +
+    "       ng-model=\"ngModel\"\n" +
+    "       class=\"{{cssClass}}\"\n" +
+    "       placeholder=\"{{inputPlaceholder}}\"\n" +
+    "       uib-typeahead=\"time for time in ::times | filter:$viewValue | limitTo:8\" />"
   );
 
 
@@ -12932,28 +12893,28 @@ $templateCache.put('templates/time-autocomplete.html',
     "<div class=\"modal-body\">\n" +
     "\n" +
     "  <label>Voorzieningen voor personen met een motorische beperking</label>\n" +
-    "  <div class=\"checkbox\" ng-repeat=\"facility in facilities.motor\">\n" +
+    "  <div class=\"checkbox\" ng-repeat=\"facility in ::facilities.motor\">\n" +
     "    <label>\n" +
     "      <input type=\"checkbox\" ng-model=\"facility.selected\">\n" +
-    "      <span ng-bind=\"facility.label\"></span>\n" +
+    "      <span ng-bind=\"::facility.label\"></span>\n" +
     "    </label>\n" +
     "  </div>\n" +
     "\n" +
     "  <label>Voorzieningen voor personen met een visuele beperking</label>\n" +
     "\n" +
-    "  <div class=\"checkbox\" ng-repeat=\"facility in facilities.visual\">\n" +
+    "  <div class=\"checkbox\" ng-repeat=\"facility in ::facilities.visual\">\n" +
     "    <label>\n" +
     "      <input type=\"checkbox\" ng-model=\"facility.selected\">\n" +
-    "      <span ng-bind=\"facility.label\"></span>\n" +
+    "      <span ng-bind=\"::facility.label\"></span>\n" +
     "    </label>\n" +
     "  </div>\n" +
     "\n" +
     "  <label>Voorzieningen voor personen met een auditieve beperking</label>\n" +
     "\n" +
-    "  <div class=\"checkbox\" ng-repeat=\"facility in facilities.hearing\">\n" +
+    "  <div class=\"checkbox\" ng-repeat=\"facility in ::facilities.hearing\">\n" +
     "    <label>\n" +
     "      <input type=\"checkbox\" ng-model=\"facility.selected\">\n" +
-    "      <span ng-bind=\"facility.label\"></span>\n" +
+    "      <span ng-bind=\"::facility.label\"></span>\n" +
     "    </label>\n" +
     "  </div>\n" +
     "\n" +
@@ -13005,7 +12966,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "<div class=\"modal-content\">\n" +
     "  <div class=\"modal-header\">\n" +
     "    <button type=\"button\" class=\"close\" ng-click=\"cancel()\"><span aria-hidden=\"true\">&times;</span><span class=\"sr-only\">Close</span></button>\n" +
-    "    <h4 class=\"modal-title\" ng-bind=\"modalTitle\"></h4>\n" +
+    "    <h4 class=\"modal-title\" ng-bind=\"::modalTitle\"></h4>\n" +
     "  </div>\n" +
     "  <div class=\"modal-body\">\n" +
     "\n" +
@@ -13013,8 +12974,8 @@ $templateCache.put('templates/time-autocomplete.html',
     "      Je staat op het punt (een) afbeelding(en) toe te voegen en openbaar te verspreiden.\n" +
     "       Je dient daartoe alle geldende auteurs- en portretrechten te respecteren, alsook alle andere toepasselijke\n" +
     "       wetgeving. Je kan daarvoor aansprakelijk worden gehouden, zoals vastgelegd in de\n" +
-    "       <a ng-href=\"{{uploadTermsConditionsUrl}}\" target=\"_blank\">algemene voorwaarden</a>.\n" +
-    "       <a ng-href=\"{{uploadCopyRightInfoUrl}}\" target=\"_blank\">Meer informatie over copyright</a>\n" +
+    "       <a ng-href=\"{{::uploadTermsConditionsUrl}}\" target=\"_blank\">algemene voorwaarden</a>.\n" +
+    "       <a ng-href=\"{{::uploadCopyRightInfoUrl}}\" target=\"_blank\">Meer informatie over copyright</a>\n" +
     "    </p>\n" +
     "    <div ng-hide=\"showAgreements\">\n" +
     "      <div class=\"form-group\">\n" +
@@ -13222,8 +13183,8 @@ $templateCache.put('templates/time-autocomplete.html',
     "              <span class=\"help-block\">Er was een probleem tijdens het ophalen van de steden</span>\n" +
     "            </div>\n" +
     "          </div>\n" +
-    "          <div id=\"gemeente-gekozen\" ng-show=\"selectedCity !== ''\">\n" +
-    "            <span class=\"btn-chosen\" id=\"gemeente-gekozen-button\" ng-bind=\"selectedCity\"></span>\n" +
+    "          <div id=\"gemeente-gekozen\" ng-if=\"selectedCity\">\n" +
+    "            <span class=\"btn-chosen\" id=\"gemeente-gekozen-button\" ng-bind=\"::selectedCity\"></span>\n" +
     "            <a href=\"\" class=\"btn btn-default btn-link\" ng-click=\"changeCitySelection()\">Wijzigen</a>\n" +
     "          </div>\n" +
     "        </div>\n" +
@@ -13258,7 +13219,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "                   name=\"contact[{{key}}]\"\n" +
     "                   ng-change=\"validateInfo(key)\"\n" +
     "                   ng-model-options=\"{ updateOn: 'blur' }\"/>\n" +
-    "            <span class=\"help-block\" ng-hide=\"infoErrorMessage === ''\" ng-bind=\"infoErrorMessage\"></span>\n" +
+    "            <span class=\"help-block\" ng-if=\"infoErrorMessage\" ng-bind=\"::infoErrorMessage\"></span>\n" +
     "          </td>\n" +
     "          <td>\n" +
     "            <button type=\"button\" class=\"close\" aria-label=\"Close\" ng-click=\"deleteOrganizerContactInfo(key)\">\n" +
@@ -13286,10 +13247,10 @@ $templateCache.put('templates/time-autocomplete.html',
     "          <i class=\"fa fa-circle-o-notch fa-spin\"></i>\n" +
     "        </td>\n" +
     "        <td ng-hide=\"fetching\">\n" +
-    "          <strong ng-bind=\"organizer.name\"></strong>\n" +
-    "          , <span ng-bin=\"organizer.addresses[0].streetAddress\"></span>\n" +
-    "          , <span ng-bind=\"organizer.addresses[0].postalCode\"></span>\n" +
-    "           <span ng-bind=\"organizer.addresses[0].addressLocality\"></span>\n" +
+    "          <strong ng-bind=\"::organizer.name\"></strong>\n" +
+    "          , <span ng-bind=\"::organizer.addresses[0].streetAddress\"></span>\n" +
+    "          , <span ng-bind=\"::organizer.addresses[0].postalCode\"></span>\n" +
+    "           <span ng-bind=\"::organizer.addresses[0].addressLocality\"></span>\n" +
     "        </td>\n" +
     "        <td ng-hide=\"fetching\"><a class=\"btn btn-default\" ng-click=\"selectOrganizer(organizer)\">Selecteren</a></td>\n" +
     "      </tr>\n" +
@@ -13448,7 +13409,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "      </div>\n" +
     "    </div>\n" +
     "\n" +
-    "    <div class=\"alert alert-danger\" ng-show=\"errorMessage\" ng-bind=\"errorMessage\">\n" +
+    "    <div class=\"alert alert-danger\" ng-if=\"errorMessage\" ng-bind=\"::errorMessage\">\n" +
     "    </div>\n" +
     "\n" +
     "  </div>\n" +
@@ -13477,8 +13438,9 @@ $templateCache.put('templates/time-autocomplete.html',
     "      <div class=\"col-xs-12\" ng-class=\"eventSelectionClass\" ng-show=\"showEventSelection\">\n" +
     "        <label class=\"event-type-choser-label\">Een activiteit of evenement</label>\n" +
     "        <ul class=\"list-inline\" id=\"step1-events\">\n" +
-    "          <li ng-repeat=\"eventTypeLabel in eventTypeLabels\" ng-show=\"eventTypeLabel.primary === true || showAllEventTypes\">\n" +
-    "            <button ng-bind=\"eventTypeLabel.label\" class=\"btn btn-default\" ng-click=\"setEventType(eventTypeLabel.id, eventTypeLabel.label, true)\"></button>\n" +
+    "          <li ng-repeat=\"eventTypeLabel in ::eventTypeLabels\" ng-show=\"eventTypeLabel.primary === true || showAllEventTypes\">\n" +
+    "            <button ng-bind=\"::eventTypeLabel.label\" class=\"btn btn-default\"\n" +
+    "                    ng-click=\"setEventType(eventTypeLabel.id, eventTypeLabel.label, true)\"></button>\n" +
     "          </li>\n" +
     "        </ul>\n" +
     "        <p ng-hide=\"showAllEventTypes\">\n" +
@@ -13493,8 +13455,9 @@ $templateCache.put('templates/time-autocomplete.html',
     "      <div ng-class=\"placeSelectionClass\" ng-show=\"showPlaceSelection\">\n" +
     "        <label class=\"event-type-choser-label\">Een locatie of plaats</label>\n" +
     "        <ul class=\"list-inline\" id=\"step1-places\">\n" +
-    "          <li ng-repeat=\"placeLabel in placeLabels\" ng-show=\"placeLabel.primary == true || showAllPlaces\">\n" +
-    "            <button ng-bind=\"placeLabel.label\" class=\"btn btn-default\" ng-click=\"setEventType(placeLabel.id, placeLabel.label, false)\"></button>\n" +
+    "          <li ng-repeat=\"placeLabel in ::placeLabels\" ng-show=\"placeLabel.primary == true || showAllPlaces\">\n" +
+    "            <button ng-bind=\"::placeLabel.label\" class=\"btn btn-default\"\n" +
+    "                    ng-click=\"setEventType(placeLabel.id, placeLabel.label, false)\"></button>\n" +
     "          </li>\n" +
     "        </ul>\n" +
     "        <p ng-hide=\"showAllPlaces\">\n" +
@@ -13507,11 +13470,12 @@ $templateCache.put('templates/time-autocomplete.html',
     "        <a class=\"btn btn-link btn-default\" href=\"\" ng-click=\"resetEventType()\">Wijzigen</a>\n" +
     "      </p>\n" +
     "\n" +
-    "      <div class=\"col-xs-12\" ng-show=\"canRefine\">\n" +
+    "      <div class=\"col-xs-12\" ng-if=\"canRefine\">\n" +
     "        <label class=\"event-theme-label\" ng-show=\"eventThemeLabels.length\">Verfijn</label>\n" +
     "        <ul class=\"list-inline\" id=\"step2-list\">\n" +
-    "          <li ng-repeat=\"eventThemeLabel in eventThemeLabels\">\n" +
-    "            <button ng-bind=\"eventThemeLabel.label\" class=\"btn btn-default\" ng-click=\"setTheme(eventThemeLabel.id, eventThemeLabel.label)\"></button>\n" +
+    "          <li ng-repeat=\"eventThemeLabel in ::eventThemeLabels\">\n" +
+    "            <button ng-bind=\"::eventThemeLabel.label\" class=\"btn btn-default\"\n" +
+    "                    ng-click=\"setTheme(eventThemeLabel.id, eventThemeLabel.label)\"></button>\n" +
     "          </li>\n" +
     "        </ul>\n" +
     "      </div>\n" +
@@ -13546,13 +13510,14 @@ $templateCache.put('templates/time-autocomplete.html',
     "          <label class=\"wanneerkiezer-label\" ng-show=\"eventFormData.activeCalendarType === ''\">Maak een keuze</label>\n" +
     "          <div class=\"wanneerkiezer\" ng-show=\"eventFormData.activeCalendarType === ''\">\n" +
     "            <ul class=\"list-inline button-list\">\n" +
-    "              <li ng-repeat=\"calendarLabel in calendarLabels\" ng-hide=\"eventFormData.isPlace && calendarLabel.eventOnly\">\n" +
-    "                <button class=\"btn btn-default\" ng-bind=\"calendarLabel.label\" ng-click=\"setCalendarType(calendarLabel.id)\"></button>\n" +
+    "              <li ng-repeat=\"calendarLabel in ::calendarLabels\" ng-hide=\"eventFormData.isPlace && calendarLabel.eventOnly\">\n" +
+    "                <button class=\"btn btn-default\" ng-bind=\"::calendarLabel.label\" ng-click=\"setCalendarType(calendarLabel.id)\"></button>\n" +
     "              </li>\n" +
     "            </ul>\n" +
     "          </div>\n" +
     "          <div class=\"wanneer-chosen\" ng-hide=\"eventFormData.activeCalendarType === ''\">\n" +
-    "            <span class=\"btn-chosen\" ng-bind=\"eventFormData.activeCalendarLabel\"></span><a class=\"btn btn-link wanneerrestore\" href=\"#\" ng-click=\"resetCalendar()\">Wijzigen</a>\n" +
+    "            <span class=\"btn-chosen\" ng-bind=\"eventFormData.activeCalendarLabel\">\n" +
+    "            </span><a class=\"btn btn-link wanneerrestore\" href=\"#\" ng-click=\"resetCalendar()\">Wijzigen</a>\n" +
     "          </div>\n" +
     "        </div>\n" +
     "      </div>\n" +
@@ -13645,8 +13610,11 @@ $templateCache.put('templates/time-autocomplete.html',
     "          </div>\n" +
     "          <div id=\"locatie-gekozen\" ng-show=\"selectedLocation\" >\n" +
     "            <span ng-bind=\"selectedLocation.name\"></span>\n" +
-    "            <button type=\"button\" class=\"btn btn-default btn-link\" data-toggle=\"modal\"\n" +
-    "                    data-target=\"#waar-locatie-toevoegen\"ng-click=\"changeLocationSelection()\">Wijzigen</button>\n" +
+    "            <button type=\"button\"\n" +
+    "                    class=\"btn btn-default btn-link\"\n" +
+    "                    data-toggle=\"modal\"\n" +
+    "                    data-target=\"#waar-locatie-toevoegen\"\n" +
+    "                    ng-click=\"changeLocationSelection()\">Wijzigen</button>\n" +
     "            <br>\n" +
     "            <span ng-bind=\"selectedLocation.address.streetAddress\"></span>\n" +
     "          </div>\n" +
@@ -13744,17 +13712,17 @@ $templateCache.put('templates/time-autocomplete.html',
     "             ng-click=\"setActiveDuplicate(event.id)\"\n" +
     "             data-toggle=\"modal\"\n" +
     "             data-target=\"#dubbeldetectie-voorbeeld\">\n" +
-    "            <small class=\"label label-default\" ng-bind=\"event.type.label\"></small><br>\n" +
-    "            <strong class=\"title\" ng-bind=\"event.name\"></strong><br>\n" +
-    "             <span ng-bind=\"event.location.name\"></span> -\n" +
+    "            <small class=\"label label-default\" ng-bind=\"::event.type.label\"></small><br>\n" +
+    "            <strong class=\"title\" ng-bind=\"::event.name\"></strong><br>\n" +
+    "             <span ng-bind=\"::event.location.name\"></span> -\n" +
     "             <ng-switch on=\"event.calendarType\">\n" +
-    "               <span ng-switch-when=\"single\" ng-bind=\"event.startDate | date: 'dd/MM'\">\n" +
+    "               <span ng-switch-when=\"single\" ng-bind=\"::event.startDate | date: 'dd/MM'\">\n" +
     "               </span>\n" +
     "               <span ng-switch-when=\"multiple\">\n" +
-    "                  Van <span ng-bind=\"event.startDate | date: 'dd/MM'\"></span> tot <span ng-bind=\"event.endDate | date: 'dd/MM'\"></span>\n" +
+    "                  Van <span ng-bind=\"::event.startDate | date: 'dd/MM'\"></span> tot <span ng-bind=\"::event.endDate | date: 'dd/MM'\"></span>\n" +
     "               </span>\n" +
     "               <span ng-switch-when=\"periodic\">\n" +
-    "                  Van <span ng-bind=\"event.startDate | date: 'dd/MM'\"></span> tot <span ng-bind=\"event.endDate | date: 'dd/MM'\"></span>\n" +
+    "                  Van <span ng-bind=\"::event.startDate | date: 'dd/MM'\"></span> tot <span ng-bind=\"::event.endDate | date: 'dd/MM'\"></span>\n" +
     "               </span>\n" +
     "               <span ng-switch-when=\"permanent\">\n" +
     "                  Permanent\n" +
@@ -13834,14 +13802,14 @@ $templateCache.put('templates/time-autocomplete.html',
     "\n" +
     "                <div class=\"panel-heading\" ng-style=\"{'background-image': 'url(' + event.image + ')'}\">\n" +
     "                  <ul class=\"list-inline\">\n" +
-    "                    <li><small class=\"label label-default\" ng-bind=\"event.type.label\"></small></li>\n" +
+    "                    <li><small class=\"label label-default\" ng-bind=\"::event.type.label\"></small></li>\n" +
     "                  </ul>\n" +
-    "                  <p class=\"title\" ng-bind=\"event.getName('nl')\"></p>\n" +
+    "                  <p class=\"title\" ng-bind=\"::event.getName('nl')\"></p>\n" +
     "                </div>\n" +
     "\n" +
     "                <div class=\"panel-body\">\n" +
     "\n" +
-    "                  <span ng-bind=\"event.getDescription('nl')\"></span>\n" +
+    "                  <span ng-bind=\"::event.getDescription('nl')\"></span>\n" +
     "\n" +
     "                  <table class=\"table table-condended\">\n" +
     "                    <tbody>\n" +
@@ -13850,7 +13818,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "                          <strong class=\"hidden-xs hidden-sm\">Waar</strong>\n" +
     "                          <i class=\"fa fa-map-marker hidden-md hidden-lg\"></i>\n" +
     "                        </td>\n" +
-    "                        <td ng-bind=\"event.location.name\"></td>\n" +
+    "                        <td ng-bind=\"::event.location.name\"></td>\n" +
     "                      </tr>\n" +
     "                      <tr>\n" +
     "                        <td>\n" +
@@ -13858,17 +13826,17 @@ $templateCache.put('templates/time-autocomplete.html',
     "                          <i class=\"fa fa-calendar hidden-md hidden-lg\"></i>\n" +
     "                        </td>\n" +
     "                        <td class=\"cf-when scroll scroll-150\">\n" +
-    "                          <ng-switch on=\"event.calendarType\">\n" +
-    "                            <span ng-switch-when=\"single\" ng-bind=\"event.startDate | date: 'dd/MM/yyyy'\"></span>\n" +
+    "                          <ng-switch on=\"::event.calendarType\">\n" +
+    "                            <span ng-switch-when=\"single\" ng-bind=\"::event.startDate | date: 'dd/MM/yyyy'\"></span>\n" +
     "                            <span ng-switch-when=\"multiple\">\n" +
-    "                              Van <span ng-bind=\"event.startDate | date: 'dd/MM/yyyy'\"></span>\n" +
+    "                              Van <span ng-bind=\"::event.startDate | date: 'dd/MM/yyyy'\"></span>\n" +
     "                              <span> tot </span>\n" +
-    "                              <span ng-bind=\"event.endDate | date: 'dd/MM/yyyy'\"></span>\n" +
+    "                              <span ng-bind=\"::event.endDate | date: 'dd/MM/yyyy'\"></span>\n" +
     "                            </span>\n" +
     "                            <span ng-switch-when=\"periodic\">\n" +
-    "                              Van <span ng-bind=\"event.startDate | date: 'dd/MM/yyyy'\"></span>\n" +
+    "                              Van <span ng-bind=\"::event.startDate | date: 'dd/MM/yyyy'\"></span>\n" +
     "                              <span> tot </span>\n" +
-    "                              <span ng-bind=\"event.endDate | date: 'dd/MM/yyyy'\"></span>\n" +
+    "                              <span ng-bind=\"::event.endDate | date: 'dd/MM/yyyy'\"></span>\n" +
     "                            </span>\n" +
     "                            <span ng-switch-when=\"permanent\">\n" +
     "                               Permanent\n" +
@@ -13881,16 +13849,16 @@ $templateCache.put('templates/time-autocomplete.html',
     "                          <strong class=\"hidden-xs hidden-sm\">Organisatie</strong>\n" +
     "                          <i class=\"fa fa-building-o hidden-md hidden-lg\"></i>\n" +
     "                        </td>\n" +
-    "                        <td ng-bind=\"event.organizer.name\"></td>\n" +
+    "                        <td ng-bind=\"::event.organizer.name\"></td>\n" +
     "                      </tr>\n" +
     "                      <tr>\n" +
     "                        <td><strong class=\"hidden-xs hidden-sm\">Prijs</strong><i class=\"fa fa-eur hidden-md hidden-lg\"></i></td>\n" +
     "                        <td>\n" +
-    "                          <div ng-switch=\"event.pricing\">\n" +
+    "                          <div ng-switch=\"::event.pricing\">\n" +
     "                          <span ng-switch-when=\"free\">gratis</span>\n" +
     "                          <span ng-switch-when=\"payed\">\n" +
     "                            <i class=\"fa fa-eur meta icon\"></i>\n" +
-    "                            <span ng-if=\"event.price\" ng-bind=\"event.price | currency\">\n" +
+    "                            <span ng-if=\"::event.price\" ng-bind=\"::event.price | currency\">\n" +
     "                          </span>\n" +
     "                          </span>\n" +
     "                          <span ng-switch-when=\"unknown\">niet ingevoerd</span>\n" +
@@ -13902,13 +13870,13 @@ $templateCache.put('templates/time-autocomplete.html',
     "                </div>\n" +
     "            </div>\n" +
     "\n" +
-    "            <p>\n" +
+    "            <div>\n" +
     "              <em>\n" +
-    "                Ingevoerd door <span ng-bind=\"event.organizer.name\"></span>\n" +
+    "                Ingevoerd door <span ng-bind=\"::event.organizer.name\"></span>\n" +
     "                <span> op </span>\n" +
-    "                <span ng-bind=\"event.created | date : 'dd/MM/yyyy • HH:mm'\"></span>\n" +
+    "                <span ng-bind=\"::event.created | date : 'dd/MM/yyyy • HH:mm'\"></span>\n" +
     "              </em>\n" +
-    "            </p>\n" +
+    "            </div>\n" +
     "\n" +
     "          </div>\n" +
     "        </div><!-- /.modal-content -->\n" +
@@ -14403,7 +14371,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "              </section>\n" +
     "              <section class=\"state complete\">\n" +
     "                <ul ng-if=\"selectedFacilities.length > 0\">\n" +
-    "                  <li ng-repeat=\"facility in selectedFacilities\" ng-bind=\"facility.label\"></li>\n" +
+    "                  <li ng-repeat=\"facility in selectedFacilities\" ng-bind=\"::facility.label\"></li>\n" +
     "                </ul>\n" +
     "                <span>\n" +
     "                  <span ng-show=\"facilitiesInapplicable\">Niet van toepassing</span>\n" +

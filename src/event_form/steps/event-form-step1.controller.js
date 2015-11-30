@@ -18,9 +18,6 @@ function EventFormStep1Controller($scope, EventFormData, eventCategories, placeC
   $scope.eventFormData = EventFormData;
 
   // Categories, event types, places.
-  $scope.eventTypeLabels = [];
-  $scope.placeLabels = [];
-
   $scope.eventTypeLabels = eventCategories;
   $scope.placeLabels = placeCategories;
 
@@ -55,30 +52,14 @@ function EventFormStep1Controller($scope, EventFormData, eventCategories, placeC
     $scope.activeEventType = type;
     $scope.showEventSelection = false;
     $scope.showPlaceSelection = false;
+    var eventTypes;
 
     // User selected an event.
     if (isEvent) {
-
       EventFormData.isEvent = true;
       EventFormData.isPlace = false;
 
-      for (var i = 0; i < $scope.eventTypeLabels.length; i++) {
-        if ($scope.eventTypeLabels[i].id === type) {
-          $scope.activeEventType = $scope.eventTypeLabels[i].id;
-          $scope.activeEventTypeLabel = $scope.eventTypeLabels[i].label;
-
-          if ($scope.eventTypeLabels[i].themes && $scope.eventTypeLabels[i].themes.length > 0) {
-            $scope.eventThemeLabels = $scope.eventTypeLabels[i].themes;
-            $scope.canRefine = true;
-          }
-          else {
-            $scope.canRefine = false;
-          }
-
-          break;
-        }
-      }
-
+      eventTypes = $scope.eventTypeLabels;
     }
     // User selected a place.
     else {
@@ -91,22 +72,7 @@ function EventFormStep1Controller($scope, EventFormData, eventCategories, placeC
       EventFormData.isEvent = false;
       EventFormData.isPlace = true;
 
-      for (var j = 0; j < $scope.placeLabels.length; j++) {
-        if ($scope.placeLabels[j].id === type) {
-          $scope.activeEventType = $scope.placeLabels[j].id;
-          $scope.activeEventTypeLabel = $scope.placeLabels[j].label;
-
-          if ($scope.placeLabels[j].themes && $scope.placeLabels[j].themes.length > 0) {
-            $scope.eventThemeLabels = $scope.placeLabels[j].themes;
-            $scope.canRefine = true;
-          }
-          else {
-            $scope.canRefine = false;
-          }
-
-          break;
-        }
-      }
+      eventTypes = $scope.placeLabels;
 
       // Places are default permanent. Users should not see a selection.
       EventFormData.calendarType = 'permanent';
@@ -117,6 +83,18 @@ function EventFormStep1Controller($scope, EventFormData, eventCategories, placeC
       }
       EventFormData.showStep(3);
 
+    }
+
+    var eventType = _.findWhere(eventTypes, {id: type});
+    if (eventType) {
+      $scope.activeEventType = eventType.id;
+      $scope.activeEventTypeLabel = eventType.label;
+
+      $scope.canRefine = !_.isEmpty(eventType.themes);
+
+      if ($scope.canRefine) {
+        $scope.eventThemeLabels = eventType.themes;
+      }
     }
 
     // Check if previous event type was the same.

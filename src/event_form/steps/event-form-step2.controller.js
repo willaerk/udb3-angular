@@ -95,16 +95,12 @@ function EventFormStep2Controller($scope, EventFormData, UdbOpeningHours) {
    */
   function initCalendar() {
 
-    var calendarLabel = '';
-    for (var i = 0; i < $scope.calendarLabels.length; i++) {
-      if ($scope.calendarLabels[i].id === EventFormData.calendarType) {
-        calendarLabel = $scope.calendarLabels[i].label;
-        break;
-      }
-    }
-    EventFormData.activeCalendarType = EventFormData.calendarType;
-    EventFormData.activeCalendarLabel = calendarLabel;
+    var calendarType = _.findWhere($scope.calendarLabels, {id: EventFormData.calendarType});
 
+    if (calendarType) {
+      EventFormData.activeCalendarLabel = calendarType.label;
+      EventFormData.activeCalendarType = EventFormData.calendarType;
+    }
   }
 
   /**

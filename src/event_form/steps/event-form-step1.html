@@ -12,8 +12,9 @@
       <div class="col-xs-12" ng-class="eventSelectionClass" ng-show="showEventSelection">
         <label class="event-type-choser-label">Een activiteit of evenement</label>
         <ul class="list-inline" id="step1-events">
-          <li ng-repeat="eventTypeLabel in eventTypeLabels" ng-show="eventTypeLabel.primary === true || showAllEventTypes">
-            <button ng-bind="eventTypeLabel.label" class="btn btn-default" ng-click="setEventType(eventTypeLabel.id, eventTypeLabel.label, true)"></button>
+          <li ng-repeat="eventTypeLabel in ::eventTypeLabels" ng-show="eventTypeLabel.primary === true || showAllEventTypes">
+            <button ng-bind="::eventTypeLabel.label" class="btn btn-default"
+                    ng-click="setEventType(eventTypeLabel.id, eventTypeLabel.label, true)"></button>
           </li>
         </ul>
         <p ng-hide="showAllEventTypes">
@@ -28,8 +29,9 @@
       <div ng-class="placeSelectionClass" ng-show="showPlaceSelection">
         <label class="event-type-choser-label">Een locatie of plaats</label>
         <ul class="list-inline" id="step1-places">
-          <li ng-repeat="placeLabel in placeLabels" ng-show="placeLabel.primary == true || showAllPlaces">
-            <button ng-bind="placeLabel.label" class="btn btn-default" ng-click="setEventType(placeLabel.id, placeLabel.label, false)"></button>
+          <li ng-repeat="placeLabel in ::placeLabels" ng-show="placeLabel.primary == true || showAllPlaces">
+            <button ng-bind="::placeLabel.label" class="btn btn-default"
+                    ng-click="setEventType(placeLabel.id, placeLabel.label, false)"></button>
           </li>
         </ul>
         <p ng-hide="showAllPlaces">
@@ -42,11 +44,12 @@
         <a class="btn btn-link btn-default" href="" ng-click="resetEventType()">Wijzigen</a>
       </p>
 
-      <div class="col-xs-12" ng-show="canRefine">
+      <div class="col-xs-12" ng-if="canRefine">
         <label class="event-theme-label" ng-show="eventThemeLabels.length">Verfijn</label>
         <ul class="list-inline" id="step2-list">
-          <li ng-repeat="eventThemeLabel in eventThemeLabels">
-            <button ng-bind="eventThemeLabel.label" class="btn btn-default" ng-click="setTheme(eventThemeLabel.id, eventThemeLabel.label)"></button>
+          <li ng-repeat="eventThemeLabel in ::eventThemeLabels">
+            <button ng-bind="::eventThemeLabel.label" class="btn btn-default"
+                    ng-click="setTheme(eventThemeLabel.id, eventThemeLabel.label)"></button>
           </li>
         </ul>
       </div>

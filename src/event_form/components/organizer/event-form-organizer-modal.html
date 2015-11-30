@@ -49,8 +49,8 @@
               <span class="help-block">Er was een probleem tijdens het ophalen van de steden</span>
             </div>
           </div>
-          <div id="gemeente-gekozen" ng-show="selectedCity !== ''">
-            <span class="btn-chosen" id="gemeente-gekozen-button" ng-bind="selectedCity"></span>
+          <div id="gemeente-gekozen" ng-if="selectedCity">
+            <span class="btn-chosen" id="gemeente-gekozen-button" ng-bind="::selectedCity"></span>
             <a href="" class="btn btn-default btn-link" ng-click="changeCitySelection()">Wijzigen</a>
           </div>
         </div>
@@ -85,7 +85,7 @@
                    name="contact[{{key}}]"
                    ng-change="validateInfo(key)"
                    ng-model-options="{ updateOn: 'blur' }"/>
-            <span class="help-block" ng-hide="infoErrorMessage === ''" ng-bind="infoErrorMessage"></span>
+            <span class="help-block" ng-if="infoErrorMessage" ng-bind="::infoErrorMessage"></span>
           </td>
           <td>
             <button type="button" class="close" aria-label="Close" ng-click="deleteOrganizerContactInfo(key)">
@@ -113,10 +113,10 @@
           <i class="fa fa-circle-o-notch fa-spin"></i>
         </td>
         <td ng-hide="fetching">
-          <strong ng-bind="organizer.name"></strong>
-          , <span ng-bin="organizer.addresses[0].streetAddress"></span>
-          , <span ng-bind="organizer.addresses[0].postalCode"></span>
-           <span ng-bind="organizer.addresses[0].addressLocality"></span>
+          <strong ng-bind="::organizer.name"></strong>
+          , <span ng-bind="::organizer.addresses[0].streetAddress"></span>
+          , <span ng-bind="::organizer.addresses[0].postalCode"></span>
+           <span ng-bind="::organizer.addresses[0].addressLocality"></span>
         </td>
         <td ng-hide="fetching"><a class="btn btn-default" ng-click="selectOrganizer(organizer)">Selecteren</a></td>
       </tr>

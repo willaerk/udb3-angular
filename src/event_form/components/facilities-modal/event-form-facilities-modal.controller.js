@@ -35,30 +35,13 @@ function EventFormFacilitiesModalController($scope, $modalInstance, EventFormDat
    * Save the selected facilities in db.
    */
   function saveFacilities() {
+    var selectedFacilities = _.where(_.union(
+      $scope.facilities.motor,
+      $scope.facilities.visual,
+      $scope.facilities.hearing
+    ), {selected: true});
 
-    EventFormData.facilities = [];
-
-    // Add all selected motor facilities.
-    var i;
-    for (i = 0; i < $scope.facilities.motor.length; i++) {
-      if ($scope.facilities.motor[i].selected) {
-        EventFormData.facilities.push($scope.facilities.motor[i]);
-      }
-    }
-
-    // Add all selected visual facilities.
-    for (i = 0; i < $scope.facilities.visual.length; i++) {
-      if ($scope.facilities.visual[i].selected) {
-        EventFormData.facilities.push($scope.facilities.visual[i]);
-      }
-    }
-
-    // Add all selected hearing facilities.
-    for (i = 0; i < $scope.facilities.hearing.length; i++) {
-      if ($scope.facilities.hearing[i].selected) {
-        EventFormData.facilities.push($scope.facilities.hearing[i]);
-      }
-    }
+    EventFormData.facilities = selectedFacilities;
 
     $scope.saving = true;
     $scope.error = false;

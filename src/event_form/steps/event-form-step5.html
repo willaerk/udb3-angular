@@ -478,7 +478,7 @@
               </section>
               <section class="state complete">
                 <ul ng-if="selectedFacilities.length > 0">
-                  <li ng-repeat="facility in selectedFacilities" ng-bind="facility.label"></li>
+                  <li ng-repeat="facility in selectedFacilities" ng-bind="::facility.label"></li>
                 </ul>
                 <span>
                   <span ng-show="facilitiesInapplicable">Niet van toepassing</span>

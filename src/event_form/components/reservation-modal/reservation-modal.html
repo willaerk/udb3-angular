@@ -9,16 +9,30 @@
       <div class="form-group col-md-6 col-sm-12" ng-class="{'has-error' : showStartDateRequired }">
         <div class="add-date">
           <label>Reserveren van</label>
-          <div ng-if="eventFormData.bookingInfo.availabilityStarts" udb-datepicker highlight-date="2015-8-12" ng-model="eventFormData.bookingInfo.availabilityStarts" data-date="{{ eventFormData.bookingInfo.availabilityStarts|date:'dd/MM/yyyy' }}"></div>
-          <div ng-if="!eventFormData.bookingInfo.availabilityStarts" udb-datepicker highlight-date="2015-8-12" ng-model="eventFormData.bookingInfo.availabilityStarts"></div>
+          <div ng-if="eventFormData.bookingInfo.availabilityStarts"
+               udb-datepicker
+               highlight-date="2015-8-12"
+               ng-model="eventFormData.bookingInfo.availabilityStarts"
+               data-date="{{ eventFormData.bookingInfo.availabilityStarts|date:'dd/MM/yyyy' }}"></div>
+          <div ng-if="!eventFormData.bookingInfo.availabilityStarts"
+               udb-datepicker
+               highlight-date="2015-8-12"
+               ng-model="eventFormData.bookingInfo.availabilityStarts"></div>
           <span class="help-block" ng-show="showStartDateRequired">Gelieve een start datum te kiezen</span>
         </div>
       </div>
       <div class="form-group col-md-6 col-sm-12" ng-class="{'has-error' : showEndDateRequired }">
         <div class="add-date">
           <label>Tot</label>
-          <div ng-if="eventFormData.bookingInfo.availabilityEnds" udb-datepicker highlight-date="2015-8-12" ng-model="eventFormData.bookingInfo.availabilityEnds" data-date="{{ eventFormData.bookingInfo.availabilityEnds|date:'dd/MM/yyyy' }}"></div>
-          <div ng-if="!eventFormData.bookingInfo.availabilityEnds" udb-datepicker highlight-date="2015-8-12" ng-model="eventFormData.bookingInfo.availabilityEnds"></div>
+          <div ng-if="eventFormData.bookingInfo.availabilityEnds"
+               udb-datepicker
+               highlight-date="2015-8-12"
+               ng-model="eventFormData.bookingInfo.availabilityEnds"
+               data-date="{{ eventFormData.bookingInfo.availabilityEnds|date:'dd/MM/yyyy' }}"></div>
+          <div ng-if="!eventFormData.bookingInfo.availabilityEnds"
+               udb-datepicker
+               highlight-date="2015-8-12"
+               ng-model="eventFormData.bookingInfo.availabilityEnds"></div>
           <span class="help-block" ng-show="showEndDateRequired">Gelieve een eind datum te kiezen</span>
         </div>
       </div>
@@ -30,6 +44,8 @@
   </div>
   <div class="modal-footer">
     <button type="button" class="btn btn-default" ng-click="cancel()">Annuleren</button>
-    <button type="button" class="btn btn-primary" ng-click="save()">Bevestigen <i class="fa fa-circle-o-notch fa-spin" ng-show="saving"></i></button>
+    <button type="button" class="btn btn-primary" ng-click="save()">
+      Bevestigen <i class="fa fa-circle-o-notch fa-spin" ng-show="saving"></i>
+    </button>
   </div>
 </div>

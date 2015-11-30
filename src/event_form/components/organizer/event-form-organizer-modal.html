@@ -12,7 +12,9 @@
         <label>Naam</label>
         <input type="text" name="name" class="form-control" ng-model="newOrganizer.name" required>
         <p class="help-block">De officiële publieke naam van de organisatie.</p>
-        <span class="help-block" ng-show="showValidation && organizerForm.name.$error.required">Gelieve een naam in te vullen</span>
+        <span class="help-block" ng-show="showValidation && organizerForm.name.$error.required">
+          Gelieve een naam in te vullen
+        </span>
       </div>
 
       <div class="row">
@@ -28,7 +30,9 @@
 
       <div class="row">
          <div class="col-xs-12">
-          <label for="organizer-gemeente-autocomplete" id="gemeente-label" ng-hide="selectedCity !== ''">Kies een gemeente</label>
+          <label for="organizer-gemeente-autocomplete" id="gemeente-label" ng-hide="selectedCity !== ''">
+            Kies een gemeente
+          </label>
           <div id="gemeente-kiezer" ng-hide="selectedCity !== ''">
             <span style="position: relative; display: inline-block; direction: ltr;" class="twitter-typeahead">
               <input id="organizer-gemeente-autocomplete"
@@ -63,7 +67,10 @@
       </div>
 
       <table class="table" ng-show="newOrganizer.contact.length">
-        <tr ng-repeat="(key, info) in newOrganizer.contact" ng-model="info" udb-contact-info-validation ng-class="{'has-error' : infoErrorMessage !== '' }">
+        <tr ng-repeat="(key, info) in newOrganizer.contact"
+            ng-model="info"
+            udb-contact-info-validation
+            ng-class="{'has-error' : infoErrorMessage !== '' }">
           <td>
             <select class="form-control" ng-model="info.type" ng-change="clearInfo();">
               <option value="url">Website</option>
@@ -72,11 +79,18 @@
             </select>
           </td>
           <td>
-            <input type="text" class="form-control" ng-model="info.value" name="contact[{{key}}]" ng-change="validateInfo(key)" ng-model-options="{ updateOn: 'blur' }"/>
+            <input type="text"
+                   class="form-control"
+                   ng-model="info.value"
+                   name="contact[{{key}}]"
+                   ng-change="validateInfo(key)"
+                   ng-model-options="{ updateOn: 'blur' }"/>
             <span class="help-block" ng-hide="infoErrorMessage === ''" ng-bind="infoErrorMessage"></span>
           </td>
           <td>
-            <button type="button" class="close" aria-label="Close" ng-click="deleteOrganizerContactInfo(key)"><span aria-hidden="true">&times;</span></button>
+            <button type="button" class="close" aria-label="Close" ng-click="deleteOrganizerContactInfo(key)">
+              <span aria-hidden="true">&times;</span>
+            </button>
           </td>
         </tr>
         <tr><td colspan="3"><a ng-click="addOrganizerContactInfo('url')">Meer contactgegevens toevoegen</a></td></tr>
@@ -87,7 +101,10 @@
   <section ng-show="organizersFound">
 
     <div class="alert alert-info">
-      <p>Ben je zeker dat je "{{ newOrganizer.name}}" wil toevoegen als organisator? Dubbele invoer van organisaties is niet toegelaten.</p>
+      <p>
+        Ben je zeker dat je "<span ng-bind="newOrganizer.name"></span>" wil toevoegen als organisator? Dubbele invoer
+         van organisaties is niet toegelaten.
+      </p>
     </div>
     <p>We vonden deze gelijkaardige items:</p>
     <table class="table">
@@ -96,14 +113,22 @@
           <i class="fa fa-circle-o-notch fa-spin"></i>
         </td>
         <td ng-hide="fetching">
-          <strong>{{ organizer.name }} </strong>, {{ organizer.addresses[0].streetAddress }}, {{ organizer.addresses[0].postalCode }} {{ organizer.addresses[0].addressLocality }}</strong>
+          <strong ng-bind="organizer.name"></strong>
+          , <span ng-bin="organizer.addresses[0].streetAddress"></span>
+          , <span ng-bind="organizer.addresses[0].postalCode"></span>
+           <span ng-bind="organizer.addresses[0].addressLocality"></span>
         </td>
         <td ng-hide="fetching"><a class="btn btn-default" ng-click="selectOrganizer(organizer)">Selecteren</a></td>
       </tr>
       <tr>
         <td>
-          Jij voerde in:<br/>
-          <strong>{{ newOrganizer.name}}</strong>, {{ newOrganizer.street }} {{ newOrganizer.number }} {{ newOrganizer.postalCode }} {{ newOrganizer.city }}</strong>
+          Jij voerde in:
+          <br/>
+          <strong ng-bind="newOrganizer.name"></strong>
+          , <span ng-bind="newOrganizer.street"></span>
+           <span ng-bind="newOrganizer.number"></span>
+           <span ng-bind="newOrganizer.postalCode"></span>
+           <span ng-bind="newOrganizer.city"></span>
         </td>
         <td><a class="btn btn-default" ng-click="saveOrganizer()">Toch invoeren</a></td>
       </tr>

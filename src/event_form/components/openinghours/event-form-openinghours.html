@@ -7,12 +7,18 @@
     <table class="table table-condensed ">
       <thead>
       <th>Openingsuren</th>
-      <th><a href="#" data-toggle="modal" data-target="#wanneer-openingsuren-toevoegen" class="btn btn-default">Wijzigen</a></th>
+      <th>
+        <a href="#" data-toggle="modal" data-target="#wanneer-openingsuren-toevoegen" class="btn btn-default">
+          Wijzigen
+        </a>
+      </th>
       </thead>
       <tbody>
         <tr ng-repeat="openingHour in eventFormData.openingHours">
-          <td>{{ openingHour.label }}</td>
-          <td>{{ openingHour.opens }} – {{ openingHour.closes }}</td>
+          <td ng-bind="openingHour.label"></td>
+          <td>
+            <span ng-bind="openingHour.opens"></span> – <span ng-bind="openingHour.closes"></span>
+          </td>
          </tr>
       </tbody>
     </table>
@@ -45,7 +51,12 @@
 
           <tr ng-repeat="(i, openingHour) in eventFormData.openingHours">
             <td>
-              <select class="selectpicker" multiple udb-multiselect start-label="Kies dag(en)" ng-model="openingHour.dayOfWeek" ng-change="saveOpeningHourDaySelection(i, openingHour.dayOfWeek)">
+              <select class="selectpicker"
+                      multiple
+                      udb-multiselect
+                      start-label="Kies dag(en)"
+                      ng-model="openingHour.dayOfWeek"
+                      ng-change="saveOpeningHourDaySelection(i, openingHour.dayOfWeek)">
                 <option value="monday">maandag</option>
                 <option value="tuesday">dinsdag</option>
                 <option value="wednesday">woensdag</option>
@@ -56,25 +67,33 @@
               </select>
             </td>
             <td>
-              <udb-time-autocomplete ng-model="openingHour.opens" css-class="form-control" input-placeholder=""></udb-time-autocomplete>
+              <udb-time-autocomplete ng-model="openingHour.opens" css-class="form-control" input-placeholder="">
+              </udb-time-autocomplete>
             </td>
             <td>
               &nbsp;-&nbsp;
             </td>
             <td>
-              <udb-time-autocomplete ng-model="openingHour.closes" css-class="form-control" input-placeholder=""></udb-time-autocomplete>
+              <udb-time-autocomplete ng-model="openingHour.closes" css-class="form-control" input-placeholder="">
+              </udb-time-autocomplete>
             </td>
             <td>
-              <button type="button" class="close" aria-label="Close" ng-click="eventFormData.removeOpeningHour(i)"><span aria-hidden="true">&times;</span>
+              <button type="button" class="close" aria-label="Close" ng-click="eventFormData.removeOpeningHour(i)">
+                <span aria-hidden="true">&times;</span>
               </button>
             </td>
           </tr>
         </table>
-        <a class="btn btn-link btn-plus" ng-click="eventFormData.addOpeningHour('', '' , '')">Meer openingstijden toevoegen</a>
+        <a class="btn btn-link btn-plus" ng-click="eventFormData.addOpeningHour('', '' , '')">
+          Meer openingstijden toevoegen
+        </a>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal">Annuleren</button>
-        <button type="button" class="btn btn-primary openingsuren-toevoegen" data-dismiss="modal" ng-click="saveOpeningHours()">Toevoegen</button>
+        <button type="button" class="btn btn-primary openingsuren-toevoegen" data-dismiss="modal"
+                ng-click="saveOpeningHours()">
+          Toevoegen
+        </button>
       </div>
     </div>
     <!-- /.modal-content -->

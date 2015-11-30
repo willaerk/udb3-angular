@@ -14,6 +14,7 @@
         <div id="gemeente-kiezer" ng-hide="selectedCity !== ''">
           <span style="position: relative; display: inline-block; direction: ltr;" class="twitter-typeahead">
             <input type="text"
+                   id="gemeente-autocomplete"
                    class="form-control uib-typeahead"
                    placeholder="Gemeente of postcode"
                    ng-model="cityAutocompleteTextField"
@@ -83,8 +84,16 @@
           <div class="col-xs-12">
             <div class="form-group" ng-class="{'has-error' : showValidation && step3Form.street.$error.required }">
               <label>Straat en nummer</label>
-              <input class="form-control" id="straat" name="street" ng-model="placeStreetAddress" placeholder="" type="text" required>
-              <span class="help-block" ng-show="showValidation && step3Form.street.$error.required">Straat en nummer is een verplicht veld.</span>
+              <input class="form-control"
+                     id="straat"
+                     name="street"
+                     ng-model="placeStreetAddress"
+                     placeholder=""
+                     type="text"
+                     required>
+              <span class="help-block" ng-show="showValidation && step3Form.street.$error.required">
+                Straat en nummer is een verplicht veld.
+              </span>
             </div>
           </div>
         </div>
@@ -92,10 +101,10 @@
       </div>
 
       <div class="plaats-adres-resultaat" ng-show="selectedLocation.address.streetAddress">
-        <p>
+        <span>
           <span class="btn-chosen" ng-bind="selectedLocation.address.streetAddress"></span>
           <a class="btn btn-link plaats-adres-wijzigen" ng-click="changeStreetAddress()">Wijzigen</a>
-        </p>
+        </span>
       </div>
 
     </div>

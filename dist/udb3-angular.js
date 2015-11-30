@@ -12810,8 +12810,17 @@ $templateCache.put('templates/time-autocomplete.html',
     "    <section class=\"add-date\">\n" +
     "      <div class=\"form-group\">\n" +
     "        <p class=\"module-title\">Vanaf</p>\n" +
-    "        <div ng-if=\"eventFormData.startDate\" udb-datepicker highlight-date=\"2015-8-12\" ng-change=\"setMajorInfoChanged()\" ng-model=\"eventFormData.startDate\" data-date=\"{{ eventFormData.startDate|date:'dd/MM/yyyy' }}\"></div>\n" +
-    "        <div ng-if=\"!eventFormData.startDate\" udb-datepicker highlight-date=\"2015-8-12\" ng-change=\"setMajorInfoChanged()\" ng-model=\"eventFormData.startDate\"></div>\n" +
+    "        <div ng-if=\"eventFormData.startDate\"\n" +
+    "             udb-datepicker\n" +
+    "             highlight-date=\"2015-8-12\"\n" +
+    "             ng-change=\"setMajorInfoChanged()\"\n" +
+    "             ng-model=\"eventFormData.startDate\"\n" +
+    "             data-date=\"{{ eventFormData.startDate|date:'dd/MM/yyyy' }}\"></div>\n" +
+    "        <div ng-if=\"!eventFormData.startDate\"\n" +
+    "             udb-datepicker\n" +
+    "             highlight-date=\"2015-8-12\"\n" +
+    "             ng-change=\"setMajorInfoChanged()\"\n" +
+    "             ng-model=\"eventFormData.startDate\"></div>\n" +
     "      </div>\n" +
     "    </section>\n" +
     "  </div>\n" +
@@ -12820,8 +12829,17 @@ $templateCache.put('templates/time-autocomplete.html',
     "    <section class=\"add-date\">\n" +
     "      <div class=\"form-group\">\n" +
     "        <p class=\"module-title\">Tot en met</p>\n" +
-    "        <div ng-if=\"eventFormData.endDate\" udb-datepicker highlight-date=\"2015-8-12\" ng-change=\"setMajorInfoChanged()\" ng-model=\"eventFormData.endDate\" data-date=\"{{ eventFormData.endDate|date:'dd/MM/yyyy' }}\"></div>\n" +
-    "        <div ng-if=\"!eventFormData.endDate\" udb-datepicker highlight-date=\"2015-8-12\" ng-change=\"setMajorInfoChanged()\" ng-model=\"eventFormData.endDate\"></div>\n" +
+    "        <div ng-if=\"eventFormData.endDate\"\n" +
+    "             udb-datepicker\n" +
+    "             highlight-date=\"2015-8-12\"\n" +
+    "             ng-change=\"setMajorInfoChanged()\"\n" +
+    "             ng-model=\"eventFormData.endDate\"\n" +
+    "             data-date=\"{{ eventFormData.endDate|date:'dd/MM/yyyy' }}\"></div>\n" +
+    "        <div ng-if=\"!eventFormData.endDate\"\n" +
+    "             udb-datepicker\n" +
+    "             highlight-date=\"2015-8-12\"\n" +
+    "             ng-change=\"setMajorInfoChanged()\"\n" +
+    "             ng-model=\"eventFormData.endDate\"></div>\n" +
     "      </div>\n" +
     "    </section>\n" +
     "  </div>\n" +
@@ -12836,26 +12854,53 @@ $templateCache.put('templates/time-autocomplete.html',
     "  <div class=\"col-xs-12 col-sm-4 prototype-step\" id=\"add-date-form\">\n" +
     "    <section class=\"add-date\">\n" +
     "\n" +
-    "      <div udb-datepicker ng-if=\"timestamp.date\" ng-change=\"setMajorInfoChanged()\" highlight-date=\"2015-8-12\" ng-model=\"timestamp.date\" data-date=\"{{ timestamp.date|date:'dd/MM/yyyy' }}\"></div>\n" +
-    "      <div udb-datepicker ng-if=\"!timestamp.date\" ng-change=\"setMajorInfoChanged()\" highlight-date=\"2015-8-12\" ng-model=\"timestamp.date\"></div>\n" +
+    "      <div udb-datepicker\n" +
+    "           ng-if=\"timestamp.date\"\n" +
+    "           ng-change=\"setMajorInfoChanged()\"\n" +
+    "           highlight-date=\"2015-8-12\"\n" +
+    "           ng-model=\"timestamp.date\"\n" +
+    "           data-date=\"{{ timestamp.date|date:'dd/MM/yyyy' }}\"></div>\n" +
+    "      <div udb-datepicker\n" +
+    "           ng-if=\"!timestamp.date\"\n" +
+    "           ng-change=\"setMajorInfoChanged()\"\n" +
+    "           highlight-date=\"2015-8-12\"\n" +
+    "           ng-model=\"timestamp.date\"></div>\n" +
     "\n" +
     "      <div class=\"row\">\n" +
     "        <div class=\"col-xs-6\">\n" +
     "          <label>\n" +
-    "            <input type=\"checkbox\" value=\"\" ng-change=\"setMajorInfoChanged()\" ng-model=\"timestamp.showStartHour\" class=\"beginuur-toevoegen\" ng-click=\"toggleStartHour(timestamp)\">\n" +
+    "            <input type=\"checkbox\"\n" +
+    "                   value=\"\"\n" +
+    "                   ng-change=\"setMajorInfoChanged()\"\n" +
+    "                   ng-model=\"timestamp.showStartHour\"\n" +
+    "                   class=\"beginuur-toevoegen\"\n" +
+    "                   ng-click=\"toggleStartHour(timestamp)\">\n" +
     "            Beginuur\n" +
     "          </label>\n" +
     "          <div class=\"beginuur-invullen\" ng-show=\"timestamp.showStartHour\">\n" +
-    "            <udb-time-autocomplete ng-model=\"timestamp.startHour\" ng-change=\"setMajorInfoChanged()\" css-class=\"form-control uur\" input-placeholder=\"Bv. 08:00\"></udb-time-autocomplete>\n" +
+    "            <udb-time-autocomplete\n" +
+    "                ng-model=\"timestamp.startHour\"\n" +
+    "                ng-change=\"setMajorInfoChanged()\"\n" +
+    "                css-class=\"form-control uur\"\n" +
+    "                input-placeholder=\"Bv. 08:00\"></udb-time-autocomplete>\n" +
     "          </div>\n" +
     "        </div>\n" +
     "        <div class=\"col-xs-6 einduur\" ng-show=\"timestamp.showStartHour\">\n" +
     "          <label>\n" +
-    "            <input type=\"checkbox\" ng-change=\"setMajorInfoChanged()\" value=\"\" ng-model=\"timestamp.showEndHour\" class=\"einduur-toevoegen\" ng-click=\"toggleEndHour(timestamp)\">\n" +
+    "            <input type=\"checkbox\"\n" +
+    "                   ng-change=\"setMajorInfoChanged()\"\n" +
+    "                   value=\"\"\n" +
+    "                   ng-model=\"timestamp.showEndHour\"\n" +
+    "                   class=\"einduur-toevoegen\"\n" +
+    "                   ng-click=\"toggleEndHour(timestamp)\">\n" +
     "            Einduur\n" +
     "          </label>\n" +
     "          <div class=\"einduur-invullen\" ng-show=\"timestamp.showEndHour\">\n" +
-    "            <udb-time-autocomplete ng-change=\"setMajorInfoChanged()\" ng-model=\"timestamp.endHour\" css-class=\"form-control uur\" input-placeholder=\"Bv. 23:00\"></udb-time-autocomplete>\n" +
+    "            <udb-time-autocomplete\n" +
+    "                ng-change=\"setMajorInfoChanged()\"\n" +
+    "                ng-model=\"timestamp.endHour\"\n" +
+    "                css-class=\"form-control uur\"\n" +
+    "                input-placeholder=\"Bv. 23:00\"></udb-time-autocomplete>\n" +
     "          </div>\n" +
     "        </div>\n" +
     "      </div>\n" +
@@ -12889,21 +12934,27 @@ $templateCache.put('templates/time-autocomplete.html',
     "  <label>Voorzieningen voor personen met een motorische beperking</label>\n" +
     "  <div class=\"checkbox\" ng-repeat=\"facility in facilities.motor\">\n" +
     "    <label>\n" +
-    "      <input type=\"checkbox\" ng-model=\"facility.selected\">{{facility.label}}</label>\n" +
+    "      <input type=\"checkbox\" ng-model=\"facility.selected\">\n" +
+    "      <span ng-bind=\"facility.label\"></span>\n" +
+    "    </label>\n" +
     "  </div>\n" +
     "\n" +
     "  <label>Voorzieningen voor personen met een visuele beperking</label>\n" +
     "\n" +
     "  <div class=\"checkbox\" ng-repeat=\"facility in facilities.visual\">\n" +
     "    <label>\n" +
-    "      <input type=\"checkbox\" ng-model=\"facility.selected\">{{facility.label}}</label>\n" +
+    "      <input type=\"checkbox\" ng-model=\"facility.selected\">\n" +
+    "      <span ng-bind=\"facility.label\"></span>\n" +
+    "    </label>\n" +
     "  </div>\n" +
     "\n" +
     "  <label>Voorzieningen voor personen met een auditieve beperking</label>\n" +
     "\n" +
     "  <div class=\"checkbox\" ng-repeat=\"facility in facilities.hearing\">\n" +
     "    <label>\n" +
-    "      <input type=\"checkbox\" ng-model=\"facility.selected\">{{facility.label}}</label>\n" +
+    "      <input type=\"checkbox\" ng-model=\"facility.selected\">\n" +
+    "      <span ng-bind=\"facility.label\"></span>\n" +
+    "    </label>\n" +
     "  </div>\n" +
     "\n" +
     "  <div class=\"alert alert-danger\" ng-show=\"error\">\n" +
@@ -12912,8 +12963,10 @@ $templateCache.put('templates/time-autocomplete.html',
     "\n" +
     "</div>\n" +
     "<div class=\"modal-footer\">\n" +
-    "  <button type=\"button\" class=\"btn btn-default\" ng-click=\"cancel();\">Annuleren</button>\n" +
-    "  <button type=\"button\" class=\"btn btn-primary\" ng-click=\"saveFacilities();\">Bevestigen <i class=\"fa fa-circle-o-notch fa-spin\" ng-show=\"saving\"></i></button>\n" +
+    "  <button type=\"button\" class=\"btn btn-default\" ng-click=\"cancel()\">Annuleren</button>\n" +
+    "  <button type=\"button\" class=\"btn btn-primary\" ng-click=\"saveFacilities()\">\n" +
+    "    Bevestigen <i class=\"fa fa-circle-o-notch fa-spin\" ng-show=\"saving\"></i>\n" +
+    "  </button>\n" +
     "</div>\n"
   );
 
@@ -12922,7 +12975,9 @@ $templateCache.put('templates/time-autocomplete.html',
     "\n" +
     "<div class=\"modal-content\">\n" +
     "  <div class=\"modal-header\">\n" +
-    "    <button type=\"button\" class=\"close\" ng-click=\"cancel()\"><span aria-hidden=\"true\">&times;</span><span class=\"sr-only\">Close</span></button>\n" +
+    "    <button type=\"button\" class=\"close\" ng-click=\"cancel()\">\n" +
+    "      <span aria-hidden=\"true\">&times;</span><span class=\"sr-only\">Close</span>\n" +
+    "    </button>\n" +
     "    <h4 class=\"modal-title\">Afbeeldingen verwijderen</h4>\n" +
     "  </div>\n" +
     "  <div class=\"modal-body\">\n" +
@@ -12935,7 +12990,9 @@ $templateCache.put('templates/time-autocomplete.html',
     "  <div class=\"modal-footer\">\n" +
     "\n" +
     "    <button type=\"button\" class=\"btn btn-default\" ng-click=\"cancel()\">Annuleren</button>\n" +
-    "    <button class=\"btn btn-primary\" ng-click=\"deleteImage()\">Akkoord <i ng-show=\"saving\" class=\"fa fa-circle-o-notch fa-spin\"></i></button>\n" +
+    "    <button class=\"btn btn-primary\" ng-click=\"deleteImage()\">\n" +
+    "      Akkoord <i ng-show=\"saving\" class=\"fa fa-circle-o-notch fa-spin\"></i>\n" +
+    "    </button>\n" +
     "\n" +
     "  </div>\n" +
     "</div><!-- /.modal-content -->\n" +
@@ -12952,11 +13009,23 @@ $templateCache.put('templates/time-autocomplete.html',
     "  </div>\n" +
     "  <div class=\"modal-body\">\n" +
     "\n" +
-    "    <p ng-show=\"showAgreements\">Je staat op het punt (een) afbeelding(en) toe te voegen en openbaar te verspreiden. Je dient daartoe alle geldende auteurs- en portretrechten te respecteren, alsook alle andere toepasselijke wetgeving. Je kan daarvoor aansprakelijk worden gehouden, zoals vastgelegd in de <a href=\"{{uploadTermsConditionsUrl}}\" target=\"_blank\">algemene voorwaarden</a>. <a href=\"{{uploadCopyRightInfoUrl}}\" target=\"_blank\">Meer informatie over copyright</a></p>\n" +
+    "    <p ng-show=\"showAgreements\">\n" +
+    "      Je staat op het punt (een) afbeelding(en) toe te voegen en openbaar te verspreiden.\n" +
+    "       Je dient daartoe alle geldende auteurs- en portretrechten te respecteren, alsook alle andere toepasselijke\n" +
+    "       wetgeving. Je kan daarvoor aansprakelijk worden gehouden, zoals vastgelegd in de\n" +
+    "       <a ng-href=\"{{uploadTermsConditionsUrl}}\" target=\"_blank\">algemene voorwaarden</a>.\n" +
+    "       <a ng-href=\"{{uploadCopyRightInfoUrl}}\" target=\"_blank\">Meer informatie over copyright</a>\n" +
+    "    </p>\n" +
     "    <div ng-hide=\"showAgreements\">\n" +
     "      <div class=\"form-group\">\n" +
     "        <label for=\"inputFile\">Selecteer je foto('s)</label>\n" +
-    "        <input type=\"file\" id=\"inputFile\" ng-model=\"imagesToUpload\" multiple ng-file-select ng-multiple=\"true\" accept=\"'image/*'\">\n" +
+    "        <input type=\"file\"\n" +
+    "               id=\"inputFile\"\n" +
+    "               ng-model=\"imagesToUpload\"\n" +
+    "               multiple\n" +
+    "               ng-file-select\n" +
+    "               ng-multiple=\"true\"\n" +
+    "               accept=\"'image/*'\">\n" +
     "        <p class=\"help-block\">\n" +
     "          De maximale grootte van je afbeelding is 5 MB en heeft als type .jpeg, .gif of .png</p>\n" +
     "      </div>\n" +
@@ -12965,7 +13034,8 @@ $templateCache.put('templates/time-autocomplete.html',
     "        <label>Beschrijving</label>\n" +
     "        <input type=\"text\" class=\"form-control\" ng-model=\"description\">\n" +
     "        <p class=\"help-block\">\n" +
-    "          Een goede beschrijving van je afbeelding wordt gelezen door zoekmachines en gebruikers met een visuele beperking.</p>\n" +
+    "          Een goede beschrijving van je afbeelding wordt gelezen door zoekmachines en gebruikers met een visuele beperking.\n" +
+    "        </p>\n" +
     "      </div>\n" +
     "\n" +
     "      <div class=\"form-group\">\n" +
@@ -12982,7 +13052,9 @@ $templateCache.put('templates/time-autocomplete.html',
     "  <div class=\"modal-footer\">\n" +
     "\n" +
     "    <button type=\"button\" class=\"btn btn-default\" ng-click=\"cancel()\">Annuleren</button>\n" +
-    "    <button type=\"button\" class=\"btn btn-primary\" ng-hide=\"showAgreements\" ng-click=\"uploadImages()\">Opladen <i ng-show=\"saving\" class=\"fa fa-circle-o-notch fa-spin\"></i></button>\n" +
+    "    <button type=\"button\" class=\"btn btn-primary\" ng-hide=\"showAgreements\" ng-click=\"uploadImages()\">\n" +
+    "      Opladen <i ng-show=\"saving\" class=\"fa fa-circle-o-notch fa-spin\"></i>\n" +
+    "    </button>\n" +
     "    <button class=\"btn btn-primary\" ng-show=\"showAgreements\" ng-click=\"acceptAgreements()\">Akkoord</button>\n" +
     "\n" +
     "  </div>\n" +
@@ -13001,12 +13073,18 @@ $templateCache.put('templates/time-autocomplete.html',
     "    <table class=\"table table-condensed \">\n" +
     "      <thead>\n" +
     "      <th>Openingsuren</th>\n" +
-    "      <th><a href=\"#\" data-toggle=\"modal\" data-target=\"#wanneer-openingsuren-toevoegen\" class=\"btn btn-default\">Wijzigen</a></th>\n" +
+    "      <th>\n" +
+    "        <a href=\"#\" data-toggle=\"modal\" data-target=\"#wanneer-openingsuren-toevoegen\" class=\"btn btn-default\">\n" +
+    "          Wijzigen\n" +
+    "        </a>\n" +
+    "      </th>\n" +
     "      </thead>\n" +
     "      <tbody>\n" +
     "        <tr ng-repeat=\"openingHour in eventFormData.openingHours\">\n" +
-    "          <td>{{ openingHour.label }}</td>\n" +
-    "          <td>{{ openingHour.opens }} – {{ openingHour.closes }}</td>\n" +
+    "          <td ng-bind=\"openingHour.label\"></td>\n" +
+    "          <td>\n" +
+    "            <span ng-bind=\"openingHour.opens\"></span> – <span ng-bind=\"openingHour.closes\"></span>\n" +
+    "          </td>\n" +
     "         </tr>\n" +
     "      </tbody>\n" +
     "    </table>\n" +
@@ -13039,7 +13117,12 @@ $templateCache.put('templates/time-autocomplete.html',
     "\n" +
     "          <tr ng-repeat=\"(i, openingHour) in eventFormData.openingHours\">\n" +
     "            <td>\n" +
-    "              <select class=\"selectpicker\" multiple udb-multiselect start-label=\"Kies dag(en)\" ng-model=\"openingHour.dayOfWeek\" ng-change=\"saveOpeningHourDaySelection(i, openingHour.dayOfWeek)\">\n" +
+    "              <select class=\"selectpicker\"\n" +
+    "                      multiple\n" +
+    "                      udb-multiselect\n" +
+    "                      start-label=\"Kies dag(en)\"\n" +
+    "                      ng-model=\"openingHour.dayOfWeek\"\n" +
+    "                      ng-change=\"saveOpeningHourDaySelection(i, openingHour.dayOfWeek)\">\n" +
     "                <option value=\"monday\">maandag</option>\n" +
     "                <option value=\"tuesday\">dinsdag</option>\n" +
     "                <option value=\"wednesday\">woensdag</option>\n" +
@@ -13050,25 +13133,33 @@ $templateCache.put('templates/time-autocomplete.html',
     "              </select>\n" +
     "            </td>\n" +
     "            <td>\n" +
-    "              <udb-time-autocomplete ng-model=\"openingHour.opens\" css-class=\"form-control\" input-placeholder=\"\"></udb-time-autocomplete>\n" +
+    "              <udb-time-autocomplete ng-model=\"openingHour.opens\" css-class=\"form-control\" input-placeholder=\"\">\n" +
+    "              </udb-time-autocomplete>\n" +
     "            </td>\n" +
     "            <td>\n" +
     "              &nbsp;-&nbsp;\n" +
     "            </td>\n" +
     "            <td>\n" +
-    "              <udb-time-autocomplete ng-model=\"openingHour.closes\" css-class=\"form-control\" input-placeholder=\"\"></udb-time-autocomplete>\n" +
+    "              <udb-time-autocomplete ng-model=\"openingHour.closes\" css-class=\"form-control\" input-placeholder=\"\">\n" +
+    "              </udb-time-autocomplete>\n" +
     "            </td>\n" +
     "            <td>\n" +
-    "              <button type=\"button\" class=\"close\" aria-label=\"Close\" ng-click=\"eventFormData.removeOpeningHour(i)\"><span aria-hidden=\"true\">&times;</span>\n" +
+    "              <button type=\"button\" class=\"close\" aria-label=\"Close\" ng-click=\"eventFormData.removeOpeningHour(i)\">\n" +
+    "                <span aria-hidden=\"true\">&times;</span>\n" +
     "              </button>\n" +
     "            </td>\n" +
     "          </tr>\n" +
     "        </table>\n" +
-    "        <a class=\"btn btn-link btn-plus\" ng-click=\"eventFormData.addOpeningHour('', '' , '')\">Meer openingstijden toevoegen</a>\n" +
+    "        <a class=\"btn btn-link btn-plus\" ng-click=\"eventFormData.addOpeningHour('', '' , '')\">\n" +
+    "          Meer openingstijden toevoegen\n" +
+    "        </a>\n" +
     "      </div>\n" +
     "      <div class=\"modal-footer\">\n" +
     "        <button type=\"button\" class=\"btn btn-default\" data-dismiss=\"modal\">Annuleren</button>\n" +
-    "        <button type=\"button\" class=\"btn btn-primary openingsuren-toevoegen\" data-dismiss=\"modal\" ng-click=\"saveOpeningHours()\">Toevoegen</button>\n" +
+    "        <button type=\"button\" class=\"btn btn-primary openingsuren-toevoegen\" data-dismiss=\"modal\"\n" +
+    "                ng-click=\"saveOpeningHours()\">\n" +
+    "          Toevoegen\n" +
+    "        </button>\n" +
     "      </div>\n" +
     "    </div>\n" +
     "    <!-- /.modal-content -->\n" +
@@ -13094,7 +13185,9 @@ $templateCache.put('templates/time-autocomplete.html',
     "        <label>Naam</label>\n" +
     "        <input type=\"text\" name=\"name\" class=\"form-control\" ng-model=\"newOrganizer.name\" required>\n" +
     "        <p class=\"help-block\">De officiële publieke naam van de organisatie.</p>\n" +
-    "        <span class=\"help-block\" ng-show=\"showValidation && organizerForm.name.$error.required\">Gelieve een naam in te vullen</span>\n" +
+    "        <span class=\"help-block\" ng-show=\"showValidation && organizerForm.name.$error.required\">\n" +
+    "          Gelieve een naam in te vullen\n" +
+    "        </span>\n" +
     "      </div>\n" +
     "\n" +
     "      <div class=\"row\">\n" +
@@ -13110,7 +13203,9 @@ $templateCache.put('templates/time-autocomplete.html',
     "\n" +
     "      <div class=\"row\">\n" +
     "         <div class=\"col-xs-12\">\n" +
-    "          <label for=\"organizer-gemeente-autocomplete\" id=\"gemeente-label\" ng-hide=\"selectedCity !== ''\">Kies een gemeente</label>\n" +
+    "          <label for=\"organizer-gemeente-autocomplete\" id=\"gemeente-label\" ng-hide=\"selectedCity !== ''\">\n" +
+    "            Kies een gemeente\n" +
+    "          </label>\n" +
     "          <div id=\"gemeente-kiezer\" ng-hide=\"selectedCity !== ''\">\n" +
     "            <span style=\"position: relative; display: inline-block; direction: ltr;\" class=\"twitter-typeahead\">\n" +
     "              <input id=\"organizer-gemeente-autocomplete\"\n" +
@@ -13145,7 +13240,10 @@ $templateCache.put('templates/time-autocomplete.html',
     "      </div>\n" +
     "\n" +
     "      <table class=\"table\" ng-show=\"newOrganizer.contact.length\">\n" +
-    "        <tr ng-repeat=\"(key, info) in newOrganizer.contact\" ng-model=\"info\" udb-contact-info-validation ng-class=\"{'has-error' : infoErrorMessage !== '' }\">\n" +
+    "        <tr ng-repeat=\"(key, info) in newOrganizer.contact\"\n" +
+    "            ng-model=\"info\"\n" +
+    "            udb-contact-info-validation\n" +
+    "            ng-class=\"{'has-error' : infoErrorMessage !== '' }\">\n" +
     "          <td>\n" +
     "            <select class=\"form-control\" ng-model=\"info.type\" ng-change=\"clearInfo();\">\n" +
     "              <option value=\"url\">Website</option>\n" +
@@ -13154,11 +13252,18 @@ $templateCache.put('templates/time-autocomplete.html',
     "            </select>\n" +
     "          </td>\n" +
     "          <td>\n" +
-    "            <input type=\"text\" class=\"form-control\" ng-model=\"info.value\" name=\"contact[{{key}}]\" ng-change=\"validateInfo(key)\" ng-model-options=\"{ updateOn: 'blur' }\"/>\n" +
+    "            <input type=\"text\"\n" +
+    "                   class=\"form-control\"\n" +
+    "                   ng-model=\"info.value\"\n" +
+    "                   name=\"contact[{{key}}]\"\n" +
+    "                   ng-change=\"validateInfo(key)\"\n" +
+    "                   ng-model-options=\"{ updateOn: 'blur' }\"/>\n" +
     "            <span class=\"help-block\" ng-hide=\"infoErrorMessage === ''\" ng-bind=\"infoErrorMessage\"></span>\n" +
     "          </td>\n" +
     "          <td>\n" +
-    "            <button type=\"button\" class=\"close\" aria-label=\"Close\" ng-click=\"deleteOrganizerContactInfo(key)\"><span aria-hidden=\"true\">&times;</span></button>\n" +
+    "            <button type=\"button\" class=\"close\" aria-label=\"Close\" ng-click=\"deleteOrganizerContactInfo(key)\">\n" +
+    "              <span aria-hidden=\"true\">&times;</span>\n" +
+    "            </button>\n" +
     "          </td>\n" +
     "        </tr>\n" +
     "        <tr><td colspan=\"3\"><a ng-click=\"addOrganizerContactInfo('url')\">Meer contactgegevens toevoegen</a></td></tr>\n" +
@@ -13169,7 +13274,10 @@ $templateCache.put('templates/time-autocomplete.html',
     "  <section ng-show=\"organizersFound\">\n" +
     "\n" +
     "    <div class=\"alert alert-info\">\n" +
-    "      <p>Ben je zeker dat je \"{{ newOrganizer.name}}\" wil toevoegen als organisator? Dubbele invoer van organisaties is niet toegelaten.</p>\n" +
+    "      <p>\n" +
+    "        Ben je zeker dat je \"<span ng-bind=\"newOrganizer.name\"></span>\" wil toevoegen als organisator? Dubbele invoer\n" +
+    "         van organisaties is niet toegelaten.\n" +
+    "      </p>\n" +
     "    </div>\n" +
     "    <p>We vonden deze gelijkaardige items:</p>\n" +
     "    <table class=\"table\">\n" +
@@ -13178,14 +13286,22 @@ $templateCache.put('templates/time-autocomplete.html',
     "          <i class=\"fa fa-circle-o-notch fa-spin\"></i>\n" +
     "        </td>\n" +
     "        <td ng-hide=\"fetching\">\n" +
-    "          <strong>{{ organizer.name }} </strong>, {{ organizer.addresses[0].streetAddress }}, {{ organizer.addresses[0].postalCode }} {{ organizer.addresses[0].addressLocality }}</strong>\n" +
+    "          <strong ng-bind=\"organizer.name\"></strong>\n" +
+    "          , <span ng-bin=\"organizer.addresses[0].streetAddress\"></span>\n" +
+    "          , <span ng-bind=\"organizer.addresses[0].postalCode\"></span>\n" +
+    "           <span ng-bind=\"organizer.addresses[0].addressLocality\"></span>\n" +
     "        </td>\n" +
     "        <td ng-hide=\"fetching\"><a class=\"btn btn-default\" ng-click=\"selectOrganizer(organizer)\">Selecteren</a></td>\n" +
     "      </tr>\n" +
     "      <tr>\n" +
     "        <td>\n" +
-    "          Jij voerde in:<br/>\n" +
-    "          <strong>{{ newOrganizer.name}}</strong>, {{ newOrganizer.street }} {{ newOrganizer.number }} {{ newOrganizer.postalCode }} {{ newOrganizer.city }}</strong>\n" +
+    "          Jij voerde in:\n" +
+    "          <br/>\n" +
+    "          <strong ng-bind=\"newOrganizer.name\"></strong>\n" +
+    "          , <span ng-bind=\"newOrganizer.street\"></span>\n" +
+    "           <span ng-bind=\"newOrganizer.number\"></span>\n" +
+    "           <span ng-bind=\"newOrganizer.postalCode\"></span>\n" +
+    "           <span ng-bind=\"newOrganizer.city\"></span>\n" +
     "        </td>\n" +
     "        <td><a class=\"btn btn-default\" ng-click=\"saveOrganizer()\">Toch invoeren</a></td>\n" +
     "      </tr>\n" +
@@ -13221,15 +13337,24 @@ $templateCache.put('templates/time-autocomplete.html',
     "    <div class=\"form-group\" ng-class=\"{'has-error' : showValidation && placeForm.name.$error.required }\">\n" +
     "      <label>Titel</label>\n" +
     "      <input class=\"form-control\" type=\"text\" ng-model=\"newPlace.name\" name=\"name\" required>\n" +
-    "      <span class=\"help-block\" ng-show=\"showValidation && placeForm.name.$error.required\">Titel is een verplicht veld.</span>\n" +
+    "      <span class=\"help-block\" ng-show=\"showValidation && placeForm.name.$error.required\">\n" +
+    "        Titel is een verplicht veld.\n" +
+    "      </span>\n" +
     "    </div>\n" +
     "\n" +
     "    <div class=\"form-group\" ng-class=\"{'has-error' : showValidation && placeForm.eventType.$error.required }\">\n" +
     "      <label>Categorie</label>\n" +
-    "      <select class=\"form-control\" size=\"4\" name=\"eventType\" id=\"locatie-toevoegen-types\" ng-model=\"newPlace.eventType\" required>\n" +
-    "        <option ng-repeat=\"category in categories\" value=\"{{ category.id }}\">{{ category.label }}</option>\n" +
+    "      <select class=\"form-control\"\n" +
+    "              size=\"4\"\n" +
+    "              name=\"eventType\"\n" +
+    "              id=\"locatie-toevoegen-types\"\n" +
+    "              ng-model=\"newPlace.eventType\"\n" +
+    "              required\n" +
+    "              ng-options=\"category.id as category.label for category in categories track by category.id\">\n" +
     "      </select>\n" +
-    "      <span class=\"help-block\" ng-show=\"showValidation && placeForm.eventType.$error.required\">Categorie is een verplicht veld.</span>\n" +
+    "      <span class=\"help-block\" ng-show=\"showValidation && placeForm.eventType.$error.required\">\n" +
+    "        Categorie is een verplicht veld.\n" +
+    "      </span>\n" +
     "    </div>\n" +
     "\n" +
     "    <div class=\"row\">\n" +
@@ -13237,8 +13362,16 @@ $templateCache.put('templates/time-autocomplete.html',
     "      <div class=\"col-xs-12\">\n" +
     "        <div class=\"form-group\" ng-class=\"{'has-error' : showValidation && placeForm.address_streetAddress.$error.required }\">\n" +
     "          <label>Straat en nummer</label>\n" +
-    "          <input class=\"form-control\" id=\"locatie-straat\" placeholder=\"Straat en nummer\" name=\"address_streetAddress\" type=\"text\" ng-model=\"newPlace.address.streetAddress\" required>\n" +
-    "          <span class=\"help-block\" ng-show=\"showValidation && placeForm.address_streetAddress.$error.required\">Straat is een verplicht veld.</span>\n" +
+    "          <input class=\"form-control\"\n" +
+    "                 id=\"locatie-straat\"\n" +
+    "                 placeholder=\"Straat en nummer\"\n" +
+    "                 name=\"address_streetAddress\"\n" +
+    "                 type=\"text\"\n" +
+    "                 ng-model=\"newPlace.address.streetAddress\"\n" +
+    "                 required>\n" +
+    "          <span class=\"help-block\" ng-show=\"showValidation && placeForm.address_streetAddress.$error.required\">\n" +
+    "            Straat is een verplicht veld.\n" +
+    "          </span>\n" +
     "        </div>\n" +
     "      </div>\n" +
     "      <div class=\"col-xs-12\">\n" +
@@ -13258,7 +13391,9 @@ $templateCache.put('templates/time-autocomplete.html',
     "</div>\n" +
     "<div class=\"modal-footer\">\n" +
     "  <button type=\"button\" class=\"btn btn-default\" data-dismiss=\"modal\" ng-click=\"resetAddLocation()\">Annuleren</button>\n" +
-    "  <button type=\"button\" class=\"btn btn-primary\" ng-click=\"addLocation()\">Toevoegen <i class=\"fa fa-circle-o-notch fa-spin\" ng-show=\"saving\"></i></button>\n" +
+    "  <button type=\"button\" class=\"btn btn-primary\" ng-click=\"addLocation()\">\n" +
+    "    Toevoegen <i class=\"fa fa-circle-o-notch fa-spin\" ng-show=\"saving\"></i>\n" +
+    "  </button>\n" +
     "</div>"
   );
 
@@ -13284,16 +13419,30 @@ $templateCache.put('templates/time-autocomplete.html',
     "      <div class=\"form-group col-md-6 col-sm-12\" ng-class=\"{'has-error' : showStartDateRequired }\">\n" +
     "        <div class=\"add-date\">\n" +
     "          <label>Reserveren van</label>\n" +
-    "          <div ng-if=\"eventFormData.bookingInfo.availabilityStarts\" udb-datepicker highlight-date=\"2015-8-12\" ng-model=\"eventFormData.bookingInfo.availabilityStarts\" data-date=\"{{ eventFormData.bookingInfo.availabilityStarts|date:'dd/MM/yyyy' }}\"></div>\n" +
-    "          <div ng-if=\"!eventFormData.bookingInfo.availabilityStarts\" udb-datepicker highlight-date=\"2015-8-12\" ng-model=\"eventFormData.bookingInfo.availabilityStarts\"></div>\n" +
+    "          <div ng-if=\"eventFormData.bookingInfo.availabilityStarts\"\n" +
+    "               udb-datepicker\n" +
+    "               highlight-date=\"2015-8-12\"\n" +
+    "               ng-model=\"eventFormData.bookingInfo.availabilityStarts\"\n" +
+    "               data-date=\"{{ eventFormData.bookingInfo.availabilityStarts|date:'dd/MM/yyyy' }}\"></div>\n" +
+    "          <div ng-if=\"!eventFormData.bookingInfo.availabilityStarts\"\n" +
+    "               udb-datepicker\n" +
+    "               highlight-date=\"2015-8-12\"\n" +
+    "               ng-model=\"eventFormData.bookingInfo.availabilityStarts\"></div>\n" +
     "          <span class=\"help-block\" ng-show=\"showStartDateRequired\">Gelieve een start datum te kiezen</span>\n" +
     "        </div>\n" +
     "      </div>\n" +
     "      <div class=\"form-group col-md-6 col-sm-12\" ng-class=\"{'has-error' : showEndDateRequired }\">\n" +
     "        <div class=\"add-date\">\n" +
     "          <label>Tot</label>\n" +
-    "          <div ng-if=\"eventFormData.bookingInfo.availabilityEnds\" udb-datepicker highlight-date=\"2015-8-12\" ng-model=\"eventFormData.bookingInfo.availabilityEnds\" data-date=\"{{ eventFormData.bookingInfo.availabilityEnds|date:'dd/MM/yyyy' }}\"></div>\n" +
-    "          <div ng-if=\"!eventFormData.bookingInfo.availabilityEnds\" udb-datepicker highlight-date=\"2015-8-12\" ng-model=\"eventFormData.bookingInfo.availabilityEnds\"></div>\n" +
+    "          <div ng-if=\"eventFormData.bookingInfo.availabilityEnds\"\n" +
+    "               udb-datepicker\n" +
+    "               highlight-date=\"2015-8-12\"\n" +
+    "               ng-model=\"eventFormData.bookingInfo.availabilityEnds\"\n" +
+    "               data-date=\"{{ eventFormData.bookingInfo.availabilityEnds|date:'dd/MM/yyyy' }}\"></div>\n" +
+    "          <div ng-if=\"!eventFormData.bookingInfo.availabilityEnds\"\n" +
+    "               udb-datepicker\n" +
+    "               highlight-date=\"2015-8-12\"\n" +
+    "               ng-model=\"eventFormData.bookingInfo.availabilityEnds\"></div>\n" +
     "          <span class=\"help-block\" ng-show=\"showEndDateRequired\">Gelieve een eind datum te kiezen</span>\n" +
     "        </div>\n" +
     "      </div>\n" +
@@ -13305,7 +13454,9 @@ $templateCache.put('templates/time-autocomplete.html',
     "  </div>\n" +
     "  <div class=\"modal-footer\">\n" +
     "    <button type=\"button\" class=\"btn btn-default\" ng-click=\"cancel()\">Annuleren</button>\n" +
-    "    <button type=\"button\" class=\"btn btn-primary\" ng-click=\"save()\">Bevestigen <i class=\"fa fa-circle-o-notch fa-spin\" ng-show=\"saving\"></i></button>\n" +
+    "    <button type=\"button\" class=\"btn btn-primary\" ng-click=\"save()\">\n" +
+    "      Bevestigen <i class=\"fa fa-circle-o-notch fa-spin\" ng-show=\"saving\"></i>\n" +
+    "    </button>\n" +
     "  </div>\n" +
     "</div>"
   );
@@ -13441,6 +13592,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "        <div id=\"gemeente-kiezer\" ng-hide=\"selectedCity !== ''\">\n" +
     "          <span style=\"position: relative; display: inline-block; direction: ltr;\" class=\"twitter-typeahead\">\n" +
     "            <input type=\"text\"\n" +
+    "                   id=\"gemeente-autocomplete\"\n" +
     "                   class=\"form-control uib-typeahead\"\n" +
     "                   placeholder=\"Gemeente of postcode\"\n" +
     "                   ng-model=\"cityAutocompleteTextField\"\n" +
@@ -13510,8 +13662,16 @@ $templateCache.put('templates/time-autocomplete.html',
     "          <div class=\"col-xs-12\">\n" +
     "            <div class=\"form-group\" ng-class=\"{'has-error' : showValidation && step3Form.street.$error.required }\">\n" +
     "              <label>Straat en nummer</label>\n" +
-    "              <input class=\"form-control\" id=\"straat\" name=\"street\" ng-model=\"placeStreetAddress\" placeholder=\"\" type=\"text\" required>\n" +
-    "              <span class=\"help-block\" ng-show=\"showValidation && step3Form.street.$error.required\">Straat en nummer is een verplicht veld.</span>\n" +
+    "              <input class=\"form-control\"\n" +
+    "                     id=\"straat\"\n" +
+    "                     name=\"street\"\n" +
+    "                     ng-model=\"placeStreetAddress\"\n" +
+    "                     placeholder=\"\"\n" +
+    "                     type=\"text\"\n" +
+    "                     required>\n" +
+    "              <span class=\"help-block\" ng-show=\"showValidation && step3Form.street.$error.required\">\n" +
+    "                Straat en nummer is een verplicht veld.\n" +
+    "              </span>\n" +
     "            </div>\n" +
     "          </div>\n" +
     "        </div>\n" +
@@ -13519,10 +13679,10 @@ $templateCache.put('templates/time-autocomplete.html',
     "      </div>\n" +
     "\n" +
     "      <div class=\"plaats-adres-resultaat\" ng-show=\"selectedLocation.address.streetAddress\">\n" +
-    "        <p>\n" +
+    "        <span>\n" +
     "          <span class=\"btn-chosen\" ng-bind=\"selectedLocation.address.streetAddress\"></span>\n" +
     "          <a class=\"btn btn-link plaats-adres-wijzigen\" ng-click=\"changeStreetAddress()\">Wijzigen</a>\n" +
-    "        </p>\n" +
+    "        </span>\n" +
     "      </div>\n" +
     "\n" +
     "    </div>\n" +
@@ -13550,12 +13710,17 @@ $templateCache.put('templates/time-autocomplete.html',
     "      </div>\n" +
     "      <div class=\"col-xs-12 col-md-8\">\n" +
     "        <p class=\"text-block\">\n" +
-    "          Vb. Ontdek het Fort, Het geheim van het kasteel ontrafeld, Fietsen langs kapelletjes,… Geef een <strong>sprekende titel</strong> in (dus niet ‘Open Monumentendag’), begin met een <strong>hoofdletter</strong> en hou het <strong>kort & bondig</strong>. Een uitgebreide beschrijving vul je verder in stap 5 in.\n" +
+    "          Vb. Ontdek het Fort, Het geheim van het kasteel ontrafeld, Fietsen langs kapelletjes,… Geef een\n" +
+    "           <strong>sprekende titel</strong> in (dus niet ‘Open Monumentendag’), begin met een\n" +
+    "           <strong>hoofdletter</strong> en hou het <strong>kort & bondig</strong>.\n" +
+    "           Een uitgebreide beschrijving vul je verder in stap 5 in.\n" +
     "        </p>\n" +
     "      </div>\n" +
     "    </div>\n" +
     "    <p ng-show=\"eventFormData.id === '' && eventFormData.name.nl !== ''\">\n" +
-    "      <a class=\"btn btn-primary titel-doorgaan\" ng-click=\"validateEvent(true)\">Doorgaan <i class=\"fa fa-circle-o-notch fa-spin\" ng-show=\"saving\"></i></a>\n" +
+    "      <a class=\"btn btn-primary titel-doorgaan\" ng-click=\"validateEvent(true)\">\n" +
+    "        Doorgaan <i class=\"fa fa-circle-o-notch fa-spin\" ng-show=\"saving\"></i>\n" +
+    "      </a>\n" +
     "    </p>\n" +
     "\n" +
     "  </section>\n" +
@@ -13569,26 +13734,27 @@ $templateCache.put('templates/time-autocomplete.html',
     "\n" +
     "    <div class=\"alert alert-info\" ng-show=\"resultViewer.totalItems > 0\">\n" +
     "      <p class=\"h2\" style=\"margin-top: 0;\">Vermijd dubbel werk</p>\n" +
-    "      <p> We vonden gelijkaardige items. Controleer deze eerder ingevoerde items.</p><br />\n" +
-    "\n" +
+    "      <p>We vonden gelijkaardige items. Controleer deze eerder ingevoerde items.</p>\n" +
     "      <div class=\"row clearfix\">\n" +
     "        <div class=\"col-xs-12 col-sm-6 col-md-4 col-lg-3\"\n" +
     "             ng-repeat=\"event in resultViewer.events\"\n" +
     "             udb-event=\"event\"\n" +
     "             ng-hide=\"fetching\">\n" +
-    "          <a class=\"btn btn-tile\" ng-click=\"setActiveDuplicate(event.id)\" data-toggle=\"modal\" data-target=\"#dubbeldetectie-voorbeeld\">\n" +
+    "          <a class=\"btn btn-tile\"\n" +
+    "             ng-click=\"setActiveDuplicate(event.id)\"\n" +
+    "             data-toggle=\"modal\"\n" +
+    "             data-target=\"#dubbeldetectie-voorbeeld\">\n" +
     "            <small class=\"label label-default\" ng-bind=\"event.type.label\"></small><br>\n" +
     "            <strong class=\"title\" ng-bind=\"event.name\"></strong><br>\n" +
-    "             {{ event.location.name }} -\n" +
+    "             <span ng-bind=\"event.location.name\"></span> -\n" +
     "             <ng-switch on=\"event.calendarType\">\n" +
-    "               <span ng-switch-when=\"single\">\n" +
-    "                  {{ event.startDate | date: 'dd/MM' }}\n" +
+    "               <span ng-switch-when=\"single\" ng-bind=\"event.startDate | date: 'dd/MM'\">\n" +
     "               </span>\n" +
     "               <span ng-switch-when=\"multiple\">\n" +
-    "                  Van {{ event.startDate | date: 'dd/MM' }} tot {{ event.endDate | date: 'dd/MM' }}\n" +
+    "                  Van <span ng-bind=\"event.startDate | date: 'dd/MM'\"></span> tot <span ng-bind=\"event.endDate | date: 'dd/MM'\"></span>\n" +
     "               </span>\n" +
     "               <span ng-switch-when=\"periodic\">\n" +
-    "                  Van {{ event.startDate | date: 'dd/MM' }} tot {{ event.endDate | date: 'dd/MM' }}\n" +
+    "                  Van <span ng-bind=\"event.startDate | date: 'dd/MM'\"></span> tot <span ng-bind=\"event.endDate | date: 'dd/MM'\"></span>\n" +
     "               </span>\n" +
     "               <span ng-switch-when=\"permanent\">\n" +
     "                  Permanent\n" +
@@ -13599,17 +13765,20 @@ $templateCache.put('templates/time-autocomplete.html',
     "            <i class=\"fa fa-eye preview-icon\"></i>\n" +
     "          </a>\n" +
     "        </div>\n" +
-    "\n" +
     "      </div>\n" +
     "    </div>\n" +
     "\n" +
-    "    <h3 ng-show=\"duplicatesSearched && resultViewer.totalItems > 0\">Ben je zeker dat je \"{{ eventFormData.name.nl }}\" wil toevoegen?</h3>\n" +
+    "    <h3 ng-show=\"duplicatesSearched && resultViewer.totalItems > 0\">\n" +
+    "      Ben je zeker dat je \"<span ng-bind=\"eventFormData.name.nl\"></span>\" wil toevoegen?\n" +
+    "    </h3>\n" +
     "    <ul class=\"list-inline\" ng-show=\"duplicatesSearched && resultViewer.totalItems > 0\">\n" +
     "      <li>\n" +
-    "        <a class=\"btn btn-default\" href=\"{{ udb3DashboardUrl }}\">Nee, keer terug naar dashboard</a>\n" +
+    "        <a class=\"btn btn-default\" ng-href=\"{{ udb3DashboardUrl }}\">Nee, keer terug naar dashboard</a>\n" +
     "      </li>\n" +
     "      <li>\n" +
-    "        <a class=\"btn btn-primary dubbeldetectie-doorgaan\" ng-click=\"saveEvent()\">Ja, doorgaan met invoeren <i class=\"fa fa-circle-o-notch fa-spin\" ng-show=\"saving\"></i></a>\n" +
+    "        <a class=\"btn btn-primary dubbeldetectie-doorgaan\" ng-click=\"saveEvent()\">\n" +
+    "          Ja, doorgaan met invoeren <i class=\"fa fa-circle-o-notch fa-spin\" ng-show=\"saving\"></i>\n" +
+    "        </a>\n" +
     "      </li>\n" +
     "    </ul>\n" +
     "\n" +
@@ -13630,50 +13799,76 @@ $templateCache.put('templates/time-autocomplete.html',
     "           ng-show=\"event.id === currentDuplicateId\">\n" +
     "          <div class=\"modal-header\">\n" +
     "            <div class=\"pull-right\">\n" +
-    "              <button type=\"button\" class=\"btn btn-default\" ng-if=\"currentDuplicateDelta === 1\" data-dismiss=\"modal\">Vorige</button>\n" +
-    "              <button type=\"button\" class=\"btn btn-default\" ng-if=\"currentDuplicateDelta > 1\" ng-click=\"previousDuplicate()\">Vorige</button>\n" +
+    "              <button type=\"button\"\n" +
+    "                      class=\"btn btn-default\"\n" +
+    "                      ng-if=\"currentDuplicateDelta === 1\"\n" +
+    "                      data-dismiss=\"modal\">Vorige</button>\n" +
+    "              <button type=\"button\"\n" +
+    "                      class=\"btn btn-default\"\n" +
+    "                      ng-if=\"currentDuplicateDelta > 1\"\n" +
+    "                      ng-click=\"previousDuplicate()\">Vorige</button>\n" +
     "\n" +
-    "              <button type=\"button\" class=\"btn btn-default\" ng-if=\"currentDuplicateDelta === resultViewer.totalItems\" data-dismiss=\"modal\">Volgende</button>\n" +
-    "              <button type=\"button\" class=\"btn btn-default\" ng-if=\"currentDuplicateDelta < resultViewer.totalItems\" ng-click=\"nextDuplicate()\">Volgende</button>\n" +
+    "              <button type=\"button\"\n" +
+    "                      class=\"btn btn-default\"\n" +
+    "                      ng-if=\"currentDuplicateDelta === resultViewer.totalItems\"\n" +
+    "                      data-dismiss=\"modal\">Volgende</button>\n" +
+    "              <button type=\"button\"\n" +
+    "                      class=\"btn btn-default\"\n" +
+    "                      ng-if=\"currentDuplicateDelta < resultViewer.totalItems\"\n" +
+    "                      ng-click=\"nextDuplicate()\">Volgende</button>\n" +
     "\n" +
     "              <button type=\"button\" class=\"close\" data-dismiss=\"modal\" aria-label=\"Close\">\n" +
     "                <span aria-hidden=\"true\">×</span>\n" +
     "              </button>\n" +
     "            </div>\n" +
-    "            <h4 class=\"modal-title\">Gelijkaardige items <small>Evenement {{ currentDuplicateDelta }} van {{ resultViewer.totalItems }}</small></h4>\n" +
+    "            <h4 class=\"modal-title\">\n" +
+    "              Gelijkaardige items\n" +
+    "              <span> </span>\n" +
+    "              <small>\n" +
+    "                Evenement <span ng-bind=\"currentDuplicateDelta\"></span> van <span ng-bind=\"resultViewer.totalItems\"></span>\n" +
+    "              </small>\n" +
+    "            </h4>\n" +
     "          </div>\n" +
     "          <div class=\"modal-body\">\n" +
     "            <div class=\"panel panel-default preview\">\n" +
     "\n" +
-    "                <div class=\"panel-heading\" style=\"background-image: url({{ event.image }});\">\n" +
+    "                <div class=\"panel-heading\" ng-style=\"{'background-image': 'url(' + event.image + ')'}\">\n" +
     "                  <ul class=\"list-inline\">\n" +
-    "                    <li><small class=\"label label-default\">{{ event.type.label }}</small></li>\n" +
+    "                    <li><small class=\"label label-default\" ng-bind=\"event.type.label\"></small></li>\n" +
     "                  </ul>\n" +
-    "                  <p class=\"title\">{{ event.getName('nl') }}</p>\n" +
+    "                  <p class=\"title\" ng-bind=\"event.getName('nl')\"></p>\n" +
     "                </div>\n" +
     "\n" +
     "                <div class=\"panel-body\">\n" +
     "\n" +
-    "                  {{ event.getDescription('nl') }}\n" +
+    "                  <span ng-bind=\"event.getDescription('nl')\"></span>\n" +
     "\n" +
     "                  <table class=\"table table-condended\">\n" +
     "                    <tbody>\n" +
     "                      <tr>\n" +
-    "                        <td class=\"\"><strong class=\"hidden-xs hidden-sm\">Waar</strong><i class=\"fa fa-map-marker hidden-md hidden-lg\"></i></td>\n" +
-    "                        <td>{{ event.location.name }}</td>\n" +
+    "                        <td class=\"\">\n" +
+    "                          <strong class=\"hidden-xs hidden-sm\">Waar</strong>\n" +
+    "                          <i class=\"fa fa-map-marker hidden-md hidden-lg\"></i>\n" +
+    "                        </td>\n" +
+    "                        <td ng-bind=\"event.location.name\"></td>\n" +
     "                      </tr>\n" +
     "                      <tr>\n" +
-    "                        <td><strong class=\"hidden-xs hidden-sm\">Wanneer</strong><i class=\"fa fa-calendar hidden-md hidden-lg\"></i></td>\n" +
+    "                        <td>\n" +
+    "                          <strong class=\"hidden-xs hidden-sm\">Wanneer</strong>\n" +
+    "                          <i class=\"fa fa-calendar hidden-md hidden-lg\"></i>\n" +
+    "                        </td>\n" +
     "                        <td class=\"cf-when scroll scroll-150\">\n" +
     "                          <ng-switch on=\"event.calendarType\">\n" +
-    "                            <span ng-switch-when=\"single\">\n" +
-    "                               {{ event.startDate | date: 'dd/MM/yyyy' }}\n" +
-    "                            </span>\n" +
+    "                            <span ng-switch-when=\"single\" ng-bind=\"event.startDate | date: 'dd/MM/yyyy'\"></span>\n" +
     "                            <span ng-switch-when=\"multiple\">\n" +
-    "                               Van {{ event.startDate | date: 'dd/MM/yyyy' }} tot {{ event.endDate | date: 'dd/MM/yyyy' }}\n" +
+    "                              Van <span ng-bind=\"event.startDate | date: 'dd/MM/yyyy'\"></span>\n" +
+    "                              <span> tot </span>\n" +
+    "                              <span ng-bind=\"event.endDate | date: 'dd/MM/yyyy'\"></span>\n" +
     "                            </span>\n" +
     "                            <span ng-switch-when=\"periodic\">\n" +
-    "                               Van {{ event.startDate | date: 'dd/MM/yyyy' }} tot {{ event.endDate | date: 'dd/MM/yyyy' }}\n" +
+    "                              Van <span ng-bind=\"event.startDate | date: 'dd/MM/yyyy'\"></span>\n" +
+    "                              <span> tot </span>\n" +
+    "                              <span ng-bind=\"event.endDate | date: 'dd/MM/yyyy'\"></span>\n" +
     "                            </span>\n" +
     "                            <span ng-switch-when=\"permanent\">\n" +
     "                               Permanent\n" +
@@ -13682,8 +13877,11 @@ $templateCache.put('templates/time-autocomplete.html',
     "                        </td>\n" +
     "                      </tr>\n" +
     "                      <tr>\n" +
-    "                        <td><strong class=\"hidden-xs hidden-sm\">Organisatie</strong><i class=\"fa fa-building-o hidden-md hidden-lg\"></i></td>\n" +
-    "                        <td>{{ event.organizer.name }}</td>\n" +
+    "                        <td>\n" +
+    "                          <strong class=\"hidden-xs hidden-sm\">Organisatie</strong>\n" +
+    "                          <i class=\"fa fa-building-o hidden-md hidden-lg\"></i>\n" +
+    "                        </td>\n" +
+    "                        <td ng-bind=\"event.organizer.name\"></td>\n" +
     "                      </tr>\n" +
     "                      <tr>\n" +
     "                        <td><strong class=\"hidden-xs hidden-sm\">Prijs</strong><i class=\"fa fa-eur hidden-md hidden-lg\"></i></td>\n" +
@@ -13691,7 +13889,9 @@ $templateCache.put('templates/time-autocomplete.html',
     "                          <div ng-switch=\"event.pricing\">\n" +
     "                          <span ng-switch-when=\"free\">gratis</span>\n" +
     "                          <span ng-switch-when=\"payed\">\n" +
-    "                              <i class=\"fa fa-eur meta icon\"></i><span ng-if=\"event.price\" ng-bind=\"event.price | currency\"></span>\n" +
+    "                            <i class=\"fa fa-eur meta icon\"></i>\n" +
+    "                            <span ng-if=\"event.price\" ng-bind=\"event.price | currency\">\n" +
+    "                          </span>\n" +
     "                          </span>\n" +
     "                          <span ng-switch-when=\"unknown\">niet ingevoerd</span>\n" +
     "                      </div>\n" +
@@ -13702,7 +13902,13 @@ $templateCache.put('templates/time-autocomplete.html',
     "                </div>\n" +
     "            </div>\n" +
     "\n" +
-    "            <p><em>Ingevoerd door {{ event.organizer.name }} op {{ event.created | date : 'dd/MM/yyyy • HH:mm' }}</em></p>\n" +
+    "            <p>\n" +
+    "              <em>\n" +
+    "                Ingevoerd door <span ng-bind=\"event.organizer.name\"></span>\n" +
+    "                <span> op </span>\n" +
+    "                <span ng-bind=\"event.created | date : 'dd/MM/yyyy • HH:mm'\"></span>\n" +
+    "              </em>\n" +
+    "            </p>\n" +
     "\n" +
     "          </div>\n" +
     "        </div><!-- /.modal-content -->\n" +
@@ -13744,19 +13950,23 @@ $templateCache.put('templates/time-autocomplete.html',
     "        <div class=\"row extra-beschrijving\">\n" +
     "          <div class=\"extra-task\" ng-class=\"descriptionCssClass\">\n" +
     "            <div class=\"col-sm-3\">\n" +
-    "              <em class=\"extra-task-label\">Beschrijving</em> <i class=\"fa fa-circle-o-notch fa-spin\" ng-show=\"savingDescription\"></i>\n" +
+    "              <em class=\"extra-task-label\">Beschrijving</em>\n" +
+    "              <span> </span>\n" +
+    "              <i class=\"fa fa-circle-o-notch fa-spin\" ng-show=\"savingDescription\"></i>\n" +
     "            </div>\n" +
     "            <div class=\"col-sm-8\">\n" +
     "              <section class=\"state incomplete\">\n" +
     "                <div class=\"row\">\n" +
     "                  <div class=\"col-sm-6\">\n" +
-    "                    <a class=\"btn btn-default to-filling\" ng-click=\"descriptionCssClass = 'state-filling'\">Tekst toevoegen</a>\n" +
+    "                    <a class=\"btn btn-default to-filling\" ng-click=\"descriptionCssClass = 'state-filling'\">\n" +
+    "                      Tekst toevoegen\n" +
+    "                    </a>\n" +
     "                  </div>\n" +
     "                </div>\n" +
     "              </section>\n" +
     "              <section class=\"state complete\">\n" +
-    "                <p><span ng-bind-html=\"eventFormData.description.nl\"></span> <a class=\"btn btn-link\" ng-click=\"descriptionCssClass = 'state-filling'\">Wijzigen</a>\n" +
-    "                </p>\n" +
+    "                <div ng-bind-html=\"eventFormData.description.nl\"></div>\n" +
+    "                <a class=\"btn btn-link\" ng-click=\"descriptionCssClass = 'state-filling'\">Wijzigen</a>\n" +
     "              </section>\n" +
     "              <section class=\"state filling\">\n" +
     "                <div class=\"form-group\">\n" +
@@ -13764,13 +13974,20 @@ $templateCache.put('templates/time-autocomplete.html',
     "                  <textarea class=\"form-control\" ng-model=\"description\"></textarea>\n" +
     "                  <div class=\"tip\" ng-switch=\"eventFormData.eventType\">\n" +
     "                    <p ng-switch-when=\"0.17.0.0.0\">\n" +
-    "                      Geef hier een wervende omschrijving van de route. Vermeld in deze tekst <strong>hoe</strong> de route wordt afgelegd (per fiets, per boot, ...), de mogelijke tussenstops, de <strong>duur</strong>, <strong>afstand</strong> en hoe de route <strong>begeleid</strong> is (met gids, brochure of wegwijzers).\n" +
+    "                      Geef hier een wervende omschrijving van de route. Vermeld in deze tekst <strong>hoe</strong>\n" +
+    "                       de route wordt afgelegd (per fiets, per boot, ...), de mogelijke tussenstops,\n" +
+    "                       de <strong>duur</strong>, <strong>afstand</strong> en hoe de route <strong>begeleid</strong>\n" +
+    "                       is (met gids, brochure of wegwijzers).\n" +
     "                    </p>\n" +
     "                    <p ng-switch-when=\"0.7.0.0.0\">\n" +
-    "                      Geef hier een wervende omschrijving van de rondleiding. Vermeld het <strong>max. aantal personen</strong> per groepje, <strong>hoe</strong> de rondleiding wordt georganiseerd (doorlopend, met intervallen of op vaste tijdstippen) en of er <strong>speciale aandachtspunten</strong> zijn (vb. laarzen aangewezen).\n" +
+    "                      Geef hier een wervende omschrijving van de rondleiding. Vermeld het\n" +
+    "                       <strong>max. aantal personen</strong> per groepje, <strong>hoe</strong> de rondleiding wordt\n" +
+    "                       georganiseerd (doorlopend, met intervallen of op vaste tijdstippen) en of er\n" +
+    "                       <strong>speciale aandachtspunten</strong> zijn (vb. laarzen aangewezen).\n" +
     "                    </p>\n" +
     "                    <p ng-switch-when=\"0.14.0.0.0\">\n" +
-    "                      Geef hier een wervende omschrijving van het monument. Geef ook aan indien het monument slechts beperkt opengesteld is (vb. enkel salons).\n" +
+    "                      Geef hier een wervende omschrijving van het monument. Geef ook aan indien het monument slechts\n" +
+    "                       beperkt opengesteld is (vb. enkel salons).\n" +
     "                    </p>\n" +
     "                  </div>\n" +
     "\n" +
@@ -13791,7 +14008,8 @@ $templateCache.put('templates/time-autocomplete.html',
     "        <div class=\"row extra-leeftijd\">\n" +
     "          <div class=\"extra-task\" ng-class=\"ageCssClass\">\n" +
     "            <div class=\"col-sm-3\">\n" +
-    "              <em class=\"extra-task-label\">Geschikt voor</em><i class=\"fa fa-circle-o-notch fa-spin\" ng-show=\"savingAgeRange\"></i>\n" +
+    "              <em class=\"extra-task-label\">Geschikt voor</em>\n" +
+    "              <i class=\"fa fa-circle-o-notch fa-spin\" ng-show=\"savingAgeRange\"></i>\n" +
     "            </div>\n" +
     "            <div class=\"col-sm-8\">\n" +
     "              <section>\n" +
@@ -13808,12 +14026,22 @@ $templateCache.put('templates/time-autocomplete.html',
     "                <div class=\"form-inline form-group\" ng-show=\"ageRange && ageRange !== AgeRange.ALL\">\n" +
     "                  <div class=\"form-group\">\n" +
     "                    <label for=\"min-age\">Vanaf</label>\n" +
-    "                    <input type=\"text\" id=\"min-age\" class=\"form-control\" ng-model=\"minAge\" ng-model-options=\"{ updateOn: 'change' }\" ng-change=\"saveAgeRange()\">\n" +
+    "                    <input type=\"text\"\n" +
+    "                           id=\"min-age\"\n" +
+    "                           class=\"form-control\"\n" +
+    "                           ng-model=\"minAge\"\n" +
+    "                           ng-model-options=\"{updateOn: 'change'}\"\n" +
+    "                           ng-change=\"saveAgeRange()\">\n" +
     "                    <label for=\"min-age\">jaar</label>\n" +
     "                  </div>\n" +
     "                </div>\n" +
     "\n" +
-    "                <p ng-show=\"ageRange === AgeRange.ALL\">Alle leeftijden <a href=\"#\" class=\"btn btn-link btn-leeftijd-restore to-filling\" ng-click=\"resetAgeRange()\">Wijzigen</a></p>\n" +
+    "                <span ng-show=\"ageRange === AgeRange.ALL\">\n" +
+    "                  Alle leeftijden\n" +
+    "                  <a href=\"#\" class=\"btn btn-link btn-leeftijd-restore to-filling\" ng-click=\"resetAgeRange()\">\n" +
+    "                    Wijzigen\n" +
+    "                  </a>\n" +
+    "                </span>\n" +
     "\n" +
     "                <div ng-show=\"ageRangeError\" class=\"alert alert-danger\">\n" +
     "                  Er ging iets fout bij het opslaan van de leeftijd.\n" +
@@ -13830,18 +14058,29 @@ $templateCache.put('templates/time-autocomplete.html',
     "        <div class=\"row extra-organisator\">\n" +
     "          <div class=\"extra-task\" ng-class=\"organizerCssClass\">\n" +
     "            <div class=\"col-sm-3\">\n" +
-    "              <em class=\"extra-task-label\">Organisatie</em> <i class=\"fa fa-circle-o-notch fa-spin\" ng-show=\"savingOrganizer\"></i>\n" +
+    "              <em class=\"extra-task-label\">Organisatie</em>\n" +
+    "              <span> </span>\n" +
+    "              <i class=\"fa fa-circle-o-notch fa-spin\" ng-show=\"savingOrganizer\"></i>\n" +
     "            </div>\n" +
     "            <div class=\"col-sm-8\">\n" +
     "              <section class=\"state incomplete\">\n" +
-    "                <a class=\"btn btn-default to-filling\" ng-click=\"organizerCssClass = 'state-filling'\">Organisator toevoegen</a>\n" +
+    "                <a class=\"btn btn-default to-filling\" ng-click=\"organizerCssClass = 'state-filling'\">\n" +
+    "                  Organisator toevoegen\n" +
+    "                </a>\n" +
     "              </section>\n" +
     "              <section class=\"state complete\">\n" +
-    "                <p>{{ eventFormData.organizer.name}} <a class=\"btn btn-link to-filling\"><button type=\"button\" class=\"close\" ng-click=\"deleteOrganizer()\" data-dismiss=\"modal\" aria-label=\"Close\"><span aria-hidden=\"true\">&times;</span></button></a></p>\n" +
+    "                <span>\n" +
+    "                  <span ng-bind=\"eventFormData.organizer.name\"></span>\n" +
+    "                  <a class=\"btn btn-link close\" ng-click=\"deleteOrganizer()\" data-dismiss=\"modal\" aria-label=\"Close\">\n" +
+    "                    <span aria-hidden=\"true\"> &times;</span>\n" +
+    "                  </a>\n" +
+    "                </span>\n" +
     "              </section>\n" +
     "              <section class=\"state filling\">\n" +
     "                <div class=\"form-group\">\n" +
-    "                  <label>Kies een organisatie <i class=\"fa fa-circle-o-notch fa-spin\" ng-show=\"loadingOrganizers\"></i></label>\n" +
+    "                  <label>\n" +
+    "                    Kies een organisatie <i class=\"fa fa-circle-o-notch fa-spin\" ng-show=\"loadingOrganizers\"></i>\n" +
+    "                  </label>\n" +
     "                  <div id=\"organisator-kiezer\">\n" +
     "                    <span class=\"twitter-typeahead\" style=\"position: relative; display: inline-block; direction: ltr;\">\n" +
     "                      <input type=\"text\" class=\"form-control uib-typeahead\" id=\"organisator-autocomplete\"\n" +
@@ -13850,10 +14089,11 @@ $templateCache.put('templates/time-autocomplete.html',
     "                             typeahead-on-select=\"selectOrganizer(organizer)\"\n" +
     "                             typeahead-min-length=\"3\"\n" +
     "                             typeahead-template-url=\"templates/organizer-typeahead-template.html\"/>\n" +
-    "                      <div class=\"dropdown-menu-no-results\" ng-show=\"emptyOrganizerAutocomplete\">\n" +
-    "                        <p class='text-center'>Organisator niet gevonden?</br>\n" +
-    "                          <button type='button' class='btn btn-primary' ng-click=\"openOrganizerModal()\">Nieuwe organisator toevoegen</button>\n" +
-    "                        </p>\n" +
+    "                      <div class=\"dropdown-menu-no-results text-center\" ng-show=\"emptyOrganizerAutocomplete\">\n" +
+    "                        <span>Organisator niet gevonden?</span>\n" +
+    "                        <button type='button' class='btn btn-primary' ng-click=\"openOrganizerModal()\">\n" +
+    "                          Nieuwe organisator toevoegen\n" +
+    "                        </button>\n" +
     "                      </div>\n" +
     "                    </span>\n" +
     "                  </div>\n" +
@@ -13870,34 +14110,56 @@ $templateCache.put('templates/time-autocomplete.html',
     "          <div class=\"row extra-tickets-website\" ng-class=\"bookingInfoCssClass\">\n" +
     "            <div class=\"extra-task state-incomplete\">\n" +
     "              <div class=\"col-sm-3\">\n" +
-    "                <em class=\"extra-task-label\">Reservatie</em> <i class=\"fa fa-circle-o-notch fa-spin\" ng-show=\"savingBookingInfo\"></i>\n" +
+    "                <em class=\"extra-task-label\">Reservatie</em>\n" +
+    "                <span> </span>\n" +
+    "                <i class=\"fa fa-circle-o-notch fa-spin\" ng-show=\"savingBookingInfo\"></i>\n" +
     "              </div>\n" +
     "              <div class=\"col-sm-8\">\n" +
     "                <section class=\"state incomplete\">\n" +
     "\n" +
     "                  <div class=\"checkbox\">\n" +
     "                    <label>\n" +
-    "                      <input type=\"checkbox\" class=\"reservatie-website-check reservatie-check\" ng-model=\"viaWebsite\" ng-click=\"toggleBookingType('website')\">Via website</label>\n" +
+    "                      <input type=\"checkbox\"\n" +
+    "                             class=\"reservatie-website-check reservatie-check\"\n" +
+    "                             ng-model=\"viaWebsite\"\n" +
+    "                             ng-click=\"toggleBookingType('website')\">\n" +
+    "                      Via website\n" +
+    "                    </label>\n" +
     "                  </div>\n" +
     "                  <div class=\"reservatie-website-info reservatie-info\" ng-show=\"viaWebsite\">\n" +
     "                    <div class=\"reservatie-info-stap1\" ng-show=\"editBookingUrl\">\n" +
     "                      <div class=\"form-inline\">\n" +
     "                        <label>URL voor reservaties</label><br>\n" +
     "                        <div class=\"form-group\">\n" +
-    "                          <input type=\"text\" class=\"form-control\" ng-model-options=\"{ updateOn: 'blur' }\" ng-change=\"validateUrl()\" name=\"url\" ng-model=\"bookingModel.url\" ng-required=\"viaWebsite\">\n" +
-    "                          <span class=\"help-block\" ng-show=\"bookingModel.urlRequired && !step5TicketsForm.url.$valid\">Gelieve een geldig formaat te gebruiken</span>\n" +
+    "                          <input type=\"text\"\n" +
+    "                                 class=\"form-control\"\n" +
+    "                                 ng-model-options=\"{ updateOn: 'blur' }\"\n" +
+    "                                 ng-change=\"validateUrl()\"\n" +
+    "                                 name=\"url\"\n" +
+    "                                 ng-model=\"bookingModel.url\"\n" +
+    "                                 ng-required=\"viaWebsite\">\n" +
+    "                          <span class=\"help-block\" ng-show=\"bookingModel.urlRequired && !step5TicketsForm.url.$valid\">\n" +
+    "                            Gelieve een geldig formaat te gebruiken\n" +
+    "                          </span>\n" +
     "                        </div>\n" +
-    "                        <a class=\"btn btn-primary reservatie-info-stap1-controleren\" ng-click=\"validateBookingType('website')\">Opslaan</a>\n" +
+    "                        <a class=\"btn btn-primary reservatie-info-stap1-controleren\" ng-click=\"validateBookingType('website')\">\n" +
+    "                          Opslaan\n" +
+    "                        </a>\n" +
     "                      </div>\n" +
     "                    </div>\n" +
     "                    <div class=\"reservatie-info-stap2\" ng-hide=\"editBookingUrl\">\n" +
-    "                      <p>{{ eventFormData.bookingInfo.url}} <a href=\"\" class=\"btn btn-link\" ng-click=\"editBookingUrl = true\">Wijzigen</a></p>\n" +
+    "                      <span>\n" +
+    "                        <span ng-bind=\"eventFormData.bookingInfo.url\"></span>\n" +
+    "                        <a class=\"btn btn-link\" ng-click=\"editBookingUrl = true\">Wijzigen</a>\n" +
+    "                      </span>\n" +
     "                      <div class=\"weergave\">\n" +
     "                        <p><small class=\"text-muted\">VOORBEELDWEERGAVE</small></p>\n" +
-    "                        <p>\n" +
-    "                          <a class=\"btn btn-info\" target=\"_blank\" href=\"{{ bookingModel.url}}\">{{ bookingModel.urlLabel}}</a>\n" +
-    "                          <a class=\"btn btn-link\" href=\"#\" ng-click=\"enableWebsitePreview()\" data-toggle=\"modal\" data-target=\"#extra-tickets-website-weergave\">Wijzigen</a>\n" +
-    "                        </p>\n" +
+    "                        <span>\n" +
+    "                          <a class=\"btn btn-info\" target=\"_blank\" ng-href=\"{{bookingModel.url}}\"\n" +
+    "                             ng-bind=\"bookingModel.urlLabel\"></a>\n" +
+    "                          <a class=\"btn btn-link\" href=\"#\" ng-click=\"enableWebsitePreview()\" data-toggle=\"modal\"\n" +
+    "                             data-target=\"#extra-tickets-website-weergave\">Wijzigen</a>\n" +
+    "                        </span>\n" +
     "                      </div>\n" +
     "                    </div>\n" +
     "                  </div>\n" +
@@ -13909,56 +14171,93 @@ $templateCache.put('templates/time-autocomplete.html',
     "            <div class=\"modal-dialog\">\n" +
     "              <div class=\"modal-content\">\n" +
     "                <div class=\"modal-header\">\n" +
-    "                  <button type=\"button\" class=\"close\" data-dismiss=\"modal\"><span aria-hidden=\"true\">×</span><span class=\"sr-only\">Close</span></button>\n" +
+    "                  <button type=\"button\" class=\"close\" data-dismiss=\"modal\">\n" +
+    "                    <span aria-hidden=\"true\">×</span><span class=\"sr-only\">Close</span>\n" +
+    "                  </button>\n" +
     "                  <h4 class=\"modal-title\">Weergave</h4>\n" +
     "                </div>\n" +
     "                <div class=\"modal-body\">\n" +
     "                  <label>Kies een passend actie-label voor deze link</label>\n" +
+    "\n" +
     "                  <div class=\"radio\">\n" +
-    "                    <label><input type=\"radio\" ng-model=\"bookingModel.urlLabel\" name=\"optionsRadios\" id=\"optionsRadios1\" value=\"Koop tickets\" checked=\"\">Koop tickets</label>\n" +
+    "                    <label>\n" +
+    "                      <input type=\"radio\" ng-model=\"bookingModel.urlLabel\" name=\"optionsRadios\" id=\"optionsRadios1\"\n" +
+    "                             value=\"Koop tickets\" checked=\"\">\n" +
+    "                      Koop tickets\n" +
+    "                    </label>\n" +
     "                  </div>\n" +
     "                  <div class=\"radio\">\n" +
-    "                    <label><input type=\"radio\" ng-model=\"bookingModel.urlLabel\" name=\"optionsRadios\" id=\"optionsRadios2\" value=\"Reserveer plaatsen\">Reserveer plaatsen</label>\n" +
+    "                    <label>\n" +
+    "                      <input type=\"radio\" ng-model=\"bookingModel.urlLabel\" name=\"optionsRadios\" id=\"optionsRadios2\"\n" +
+    "                             value=\"Reserveer plaatsen\">\n" +
+    "                      Reserveer plaatsen\n" +
+    "                    </label>\n" +
     "                  </div>\n" +
     "                  <div class=\"radio\">\n" +
-    "                    <label><input type=\"radio\" ng-model=\"bookingModel.urlLabel\" name=\"optionsRadios\" id=\"optionsRadios3\" value=\"Controleer beschikbaarheid\">Controleer beschikbaarheid</label>\n" +
+    "                    <label>\n" +
+    "                      <input type=\"radio\" ng-model=\"bookingModel.urlLabel\" name=\"optionsRadios\" id=\"optionsRadios3\"\n" +
+    "                             value=\"Controleer beschikbaarheid\">\n" +
+    "                      Controleer beschikbaarheid\n" +
+    "                    </label>\n" +
     "                  </div>\n" +
     "                  <div class=\"radio\">\n" +
-    "                    <label><input type=\"radio\" ng-model=\"bookingModel.urlLabel\" name=\"optionsRadios\" id=\"optionsRadios4\" value=\"Schrijf je in\">Schrijf je in</label>\n" +
+    "                    <label>\n" +
+    "                      <input type=\"radio\" ng-model=\"bookingModel.urlLabel\" name=\"optionsRadios\" id=\"optionsRadios4\"\n" +
+    "                             value=\"Schrijf je in\">\n" +
+    "                      Schrijf je in\n" +
+    "                    </label>\n" +
     "                  </div>\n" +
     "                  <div class=\"radio\">\n" +
-    "                    <label><input type=\"radio\" ng-model=\"bookingModel.urlLabel\" name=\"optionsRadios\" id=\"optionsRadios5\" value=\"Andere\">Andere</label>\n" +
-    "                    <input type=\"text\" class=\"form-control\" ng-show=\"bookingModel.urlLabel === 'Andere'\" ng-model=\"bookingModel.urlLabelCustom\">\n" +
+    "                    <label><input type=\"radio\" ng-model=\"bookingModel.urlLabel\" name=\"optionsRadios\" id=\"optionsRadios5\"\n" +
+    "                                  value=\"Andere\">Andere</label>\n" +
+    "                    <input type=\"text\" class=\"form-control\" ng-show=\"bookingModel.urlLabel === 'Andere'\"\n" +
+    "                           ng-model=\"bookingModel.urlLabelCustom\">\n" +
     "                  </div>\n" +
     "                </div>\n" +
     "                <div class=\"modal-footer\">\n" +
-    "                  <button type=\"button\" class=\"btn btn-default\" data-dismiss=\"modal\">Annuleren</button>\n" +
-    "                  <button type=\"button\" class=\"btn btn-primary\" data-toggle=\"modal\" data-target=\"#extra-tickets-website-weergave\" ng-click=\"saveWebsitePreview()\">Bevestigen</button>\n" +
+    "                  <button type=\"button\" class=\"btn btn-default\" data-dismiss=\"modal\">\n" +
+    "                    Annuleren\n" +
+    "                  </button>\n" +
+    "                  <button type=\"button\" class=\"btn btn-primary\" data-toggle=\"modal\"\n" +
+    "                          data-target=\"#extra-tickets-website-weergave\" ng-click=\"saveWebsitePreview()\">\n" +
+    "                    Bevestigen\n" +
+    "                  </button>\n" +
     "                </div>\n" +
     "              </div><!-- /.modal-content -->\n" +
     "            </div><!-- /.modal-dialog -->\n" +
     "          </div>\n" +
     "          <div class=\"row extra-tickets-telefoon\">\n" +
     "            <div class=\"extra-task state-incomplete\">\n" +
-    "              <div class=\"col-sm-3\">\n" +
-    "                <!--<em class=\"extra-task-label\">Reservatie &amp; tickets</em>-->\n" +
-    "              </div>\n" +
-    "              <div class=\"col-sm-8\">\n" +
+    "              <div class=\"col-sm-8 col-sm-offset-3\">\n" +
     "                <div class=\"checkbox\">\n" +
-    "                  <label><input type=\"checkbox\" class=\"reservatie-telefoon-check reservatie-check\" ng-model=\"viaPhone\" ng-change=\"toggleBookingType('phone')\">Via telefoon</label>\n" +
+    "                  <label>\n" +
+    "                    <input type=\"checkbox\" class=\"reservatie-telefoon-check reservatie-check\" ng-model=\"viaPhone\"\n" +
+    "                           ng-change=\"toggleBookingType('phone')\">\n" +
+    "                    Via telefoon\n" +
+    "                  </label>\n" +
     "                </div>\n" +
     "                <div class=\"reservatie-telefoon-info reservatie-info\" ng-show=\"viaPhone\">\n" +
     "                  <div class=\"reservatie-telefoon-filling\" ng-show=\"editBookingPhone\">\n" +
     "\n" +
     "                    <label>Telefoonnummer voor reservaties</label><br>\n" +
+    "\n" +
     "                    <div class=\"form-inline\">\n" +
-    "                      <input type=\"text\" class=\"form-control\" name=\"phone\" ng-model=\"bookingModel.phone\" ng-required=\"viaPhone\">\n" +
-    "                      <span class=\"help-block\" ng-show=\"bookingModel.phoneRequired && step5TicketsForm.phone.$error.required\">Gelieve een geldig formaat te gebruiken</span>\n" +
-    "                      <a class=\"btn btn-primary reservatie-telefoon-opslaan\" ng-click=\"validateBookingType('phone')\">Opslaan</a>\n" +
+    "                      <input type=\"text\" class=\"form-control\" name=\"phone\" ng-model=\"bookingModel.phone\"\n" +
+    "                             ng-required=\"viaPhone\">\n" +
+    "                      <span class=\"help-block\"\n" +
+    "                            ng-show=\"bookingModel.phoneRequired && step5TicketsForm.phone.$error.required\">\n" +
+    "                        Gelieve een geldig formaat te gebruiken\n" +
+    "                      </span>\n" +
+    "                      <a class=\"btn btn-primary reservatie-telefoon-opslaan\" ng-click=\"validateBookingType('phone')\">\n" +
+    "                        Opslaan\n" +
+    "                      </a>\n" +
     "                    </div>\n" +
     "                  </div>\n" +
     "                  <div class=\"reservatie-telefoon-complete\" ng-hide=\"editBookingPhone\">\n" +
-    "                    <p>{{ bookingModel.phone}}  <a class=\"btn btn-link\" ng-click=\"editBookingPhone = true\">Wijzigen</a></p>\n" +
+    "                    <span>\n" +
+    "                      <span ng-bind=\"bookingModel.phone\"></span>\n" +
+    "                      <a class=\"btn btn-link\" ng-click=\"editBookingPhone = true\">Wijzigen</a>\n" +
+    "                    </span>\n" +
     "                  </div>\n" +
     "                </div>\n" +
     "              </div>\n" +
@@ -13966,25 +14265,37 @@ $templateCache.put('templates/time-autocomplete.html',
     "          </div>\n" +
     "          <div class=\"row extra-tickets-email\">\n" +
     "            <div class=\"extra-task state-incomplete\">\n" +
-    "              <div class=\"col-sm-3\">\n" +
-    "                <!--<em class=\"extra-task-label\">Reservatie &amp; tickets</em>-->\n" +
-    "              </div>\n" +
-    "              <div class=\"col-sm-8\">\n" +
+    "              <div class=\"col-sm-8 col-sm-offset-3\">\n" +
     "                <div class=\"checkbox\">\n" +
     "                  <label>\n" +
-    "                    <input type=\"checkbox\" class=\"reservatie-email-check reservatie-check\" ng-model=\"viaEmail\" ng-change=\"toggleBookingType('email')\">Via e-mail</label>\n" +
+    "                    <input type=\"checkbox\" class=\"reservatie-email-check reservatie-check\" ng-model=\"viaEmail\"\n" +
+    "                           ng-change=\"toggleBookingType('email')\">\n" +
+    "                    Via e-mail\n" +
+    "                  </label>\n" +
     "                </div>\n" +
     "                <div class=\"reservatie-email-info reservatie-info\" ng-show=\"viaEmail\">\n" +
     "                  <div class=\"reservatie-email-filling\" ng-show=\"editBookingEmail\">\n" +
     "                    <label>E-mailadres voor reservaties</label><br>\n" +
+    "\n" +
     "                    <div class=\"form-inline\">\n" +
-    "                      <input type=\"email\" class=\"form-control\" name=\"email\" ng-model=\"bookingModel.email\" ng-required=\"viaEmail\">\n" +
-    "                      <span class=\"help-block\" ng-show=\"bookingModel.emailRequired && !step5TicketsForm.email.$valid\">Gelieve een geldig formaat te gebruiken</span>\n" +
-    "                      <a class=\"btn btn-primary reservatie-email-opslaan\" ng-click=\"validateBookingType('email')\">Opslaan</a>\n" +
+    "                      <input type=\"email\"\n" +
+    "                             class=\"form-control\"\n" +
+    "                             name=\"email\"\n" +
+    "                             ng-model=\"bookingModel.email\"\n" +
+    "                             ng-required=\"viaEmail\">\n" +
+    "                      <span class=\"help-block\" ng-show=\"bookingModel.emailRequired && !step5TicketsForm.email.$valid\">\n" +
+    "                        Gelieve een geldig formaat te gebruiken\n" +
+    "                      </span>\n" +
+    "                      <a class=\"btn btn-primary reservatie-email-opslaan\" ng-click=\"validateBookingType('email')\">\n" +
+    "                        Opslaan\n" +
+    "                      </a>\n" +
     "                    </div>\n" +
     "                  </div>\n" +
     "                  <div class=\"reservatie-email-complete\" ng-hide=\"editBookingEmail\">\n" +
-    "                    <p>{{ bookingModel.email}}  <a class=\"btn btn-link\" ng-click=\"editBookingEmail = true\">Wijzigen</a></p>\n" +
+    "                    <span>\n" +
+    "                      <span ng-bind=\"bookingModel.email\"></span>\n" +
+    "                      <a class=\"btn btn-link\" ng-click=\"editBookingEmail = true\">Wijzigen</a>\n" +
+    "                    </span>\n" +
     "                  </div>\n" +
     "                </div>\n" +
     "              </div>\n" +
@@ -13992,14 +14303,21 @@ $templateCache.put('templates/time-autocomplete.html',
     "          </div>\n" +
     "          <div class=\"row extra-tickets-periode\">\n" +
     "            <div class=\"extra-task\">\n" +
-    "              <div class=\"col-sm-3\">\n" +
-    "                <!--<em class=\"extra-task-label\">Reservatie &amp; tickets</em>-->\n" +
+    "              <div class=\"col-sm-8 col-sm-offset-3\" ng-hide=\"eventFormData.bookingInfo.availabilityStarts\">\n" +
+    "                <a class=\"reservatie-periode-toevoegen\" href=\"#\" ng-click=\"openBookingPeriodModal()\">\n" +
+    "                  Reservatie-periode toevoegen\n" +
+    "                </a>\n" +
     "              </div>\n" +
-    "              <div class=\"col-sm-8\" ng-hide=\"eventFormData.bookingInfo.availabilityStarts\">\n" +
-    "                <p><a class=\"reservatie-periode-toevoegen\" href=\"#\" ng-click=\"openBookingPeriodModal()\">Reservatie-periode toevoegen</a></p>\n" +
-    "              </div>\n" +
-    "              <div class=\"col-sm-8\" ng-show=\"eventFormData.bookingInfo.availabilityStarts\">\n" +
-    "                <p>Van {{ eventFormData.bookingInfo.availabilityStarts | date:'dd-MM-yyyy' }} tot {{ eventFormData.bookingInfo.availabilityEnds | date:'dd-MM-yyyy'  }} <a class=\"reservatie-periode-toevoegen\" href=\"#\" ng-click=\"openBookingPeriodModal()\">Reservatie-periode wijzigen</a></p>\n" +
+    "              <div class=\"col-sm-8 col-sm-offset-3\" ng-show=\"eventFormData.bookingInfo.availabilityStarts\">\n" +
+    "                <span>\n" +
+    "                  <span>Van </span>\n" +
+    "                  <span ng-bind=\"eventFormData.bookingInfo.availabilityStarts | date:'dd-MM-yyyy'\"></span>\n" +
+    "                  <span> tot </span>\n" +
+    "                  <span ng-bind=\"eventFormData.bookingInfo.availabilityEnds | date:'dd-MM-yyyy'\"></span>\n" +
+    "                  <a class=\"reservatie-periode-toevoegen\" href=\"#\" ng-click=\"openBookingPeriodModal()\">\n" +
+    "                    Reservatie-periode wijzigen\n" +
+    "                  </a>\n" +
+    "                </span>\n" +
     "              </div>\n" +
     "            </div>\n" +
     "          </div>\n" +
@@ -14013,18 +14331,26 @@ $templateCache.put('templates/time-autocomplete.html',
     "        <div class=\"row extra-contact\">\n" +
     "          <div class=\"extra-task meer-info\" ng-class=\"contactInfoCssClass\">\n" +
     "            <div class=\"col-sm-3\">\n" +
-    "              <em class=\"extra-task-label\">Meer info &amp; contact</em> <i class=\"fa fa-circle-o-notch fa-spin\" ng-show=\"savingContactInfo\"></i>\n" +
+    "              <em class=\"extra-task-label\">Meer info &amp; contact</em>\n" +
+    "              <span> </span>\n" +
+    "              <i class=\"fa fa-circle-o-notch fa-spin\" ng-show=\"savingContactInfo\"></i>\n" +
     "            </div>\n" +
     "\n" +
     "            <div class=\"col-sm-8\">\n" +
     "              <section class=\"state incomplete\">\n" +
-    "                <a class=\"btn btn-default\" ng-click=\"contactInfoCssClass = 'state-filling'\">Contactinformatie toevoegen</a>\n" +
+    "                <a class=\"btn btn-default\" ng-click=\"contactInfoCssClass = 'state-filling'\">\n" +
+    "                  Contactinformatie toevoegen\n" +
+    "                </a>\n" +
     "              </section>\n" +
     "\n" +
     "              <section class=\"state filling complete\">\n" +
     "                <form name=\"contactInfoForm\">\n" +
     "                  <table class=\"table\">\n" +
-    "                    <tr ng-repeat=\"(key, info) in contactInfo\" ng-model=\"info\" udb-contact-info-validation ng-class=\"{'has-error' : infoErrorMessage !== '' }\" ng-change=\"saveContactInfo()\">\n" +
+    "                    <tr ng-repeat=\"(key, info) in contactInfo\"\n" +
+    "                        ng-model=\"info\"\n" +
+    "                        udb-contact-info-validation\n" +
+    "                        ng-class=\"{'has-error' : infoErrorMessage !== '' }\"\n" +
+    "                        ng-change=\"saveContactInfo()\">\n" +
     "                      <td>\n" +
     "                        <select class=\"form-control\" ng-model=\"info.type\" ng-change=\"clearInfo();\">\n" +
     "                          <option value=\"url\">Website</option>\n" +
@@ -14033,14 +14359,25 @@ $templateCache.put('templates/time-autocomplete.html',
     "                        </select>\n" +
     "                      </td>\n" +
     "                      <td>\n" +
-    "                        <input type=\"text\" class=\"form-control\" ng-model=\"info.value\" name=\"contact[{{key}}]\" ng-change=\"validateInfo(key); saveContactInfo();\" ng-model-options=\"{ updateOn: 'blur' }\"/>\n" +
+    "                        <input type=\"text\"\n" +
+    "                               class=\"form-control\"\n" +
+    "                               ng-model=\"info.value\"\n" +
+    "                               name=\"contact[{{key}}]\"\n" +
+    "                               ng-change=\"validateInfo(key); saveContactInfo();\"\n" +
+    "                               ng-model-options=\"{ updateOn: 'blur' }\"/>\n" +
     "                        <span class=\"help-block\" ng-hide=\"infoErrorMessage === ''\" ng-bind=\"infoErrorMessage\"></span>\n" +
     "                      </td>\n" +
     "                      <td>\n" +
-    "                        <button type=\"button\" class=\"close\" aria-label=\"Close\" ng-click=\"deleteContactInfo(key)\"><span aria-hidden=\"true\">&times;</span></button>\n" +
+    "                        <button type=\"button\" class=\"close\" aria-label=\"Close\" ng-click=\"deleteContactInfo(key)\">\n" +
+    "                          <span aria-hidden=\"true\">&times;</span>\n" +
+    "                        </button>\n" +
     "                      </td>\n" +
     "                    </tr>\n" +
-    "                    <tr><td colspan=\"3\"><a ng-click=\"addContactInfo('', '')\">Meer contactgegevens toevoegen</a></td></tr>\n" +
+    "                    <tr>\n" +
+    "                      <td colspan=\"3\">\n" +
+    "                        <a ng-click=\"addContactInfo('', '')\">Meer contactgegevens toevoegen</a>\n" +
+    "                      </td>\n" +
+    "                    </tr>\n" +
     "                  </table>\n" +
     "                </form>\n" +
     "              </section>\n" +
@@ -14066,9 +14403,12 @@ $templateCache.put('templates/time-autocomplete.html',
     "              </section>\n" +
     "              <section class=\"state complete\">\n" +
     "                <ul ng-if=\"selectedFacilities.length > 0\">\n" +
-    "                  <li ng-repeat=\"facility in selectedFacilities\">{{ facility.label}}</li>\n" +
+    "                  <li ng-repeat=\"facility in selectedFacilities\" ng-bind=\"facility.label\"></li>\n" +
     "                </ul>\n" +
-    "                <p><span ng-show=\"facilitiesInapplicable\">Niet van toepassing</span> <a href=\"#\" class=\"btn btn-link\" ng-click=\"openFacilitiesModal();\">Wijzigen</a></p>\n" +
+    "                <span>\n" +
+    "                  <span ng-show=\"facilitiesInapplicable\">Niet van toepassing</span>\n" +
+    "                  <a class=\"btn btn-link\" ng-click=\"openFacilitiesModal();\">Wijzigen</a>\n" +
+    "                </span>\n" +
     "              </section>\n" +
     "            </div>\n" +
     "          </div>\n" +
@@ -14079,7 +14419,6 @@ $templateCache.put('templates/time-autocomplete.html',
     "      <div class=\"col-sm-4\">\n" +
     "\n" +
     "        <div class=\"image-upload\" ng-class=\"imageCssClass\">\n" +
-    "\n" +
     "          <div class=\"image-upload-none state incomplete\">\n" +
     "            <span class=\"image-upload-icon\"></span>\n" +
     "            <p class=\"muted\">Voeg een afbeelding toe zodat je bezoekers je activiteit beter herkennen.</p>\n" +
@@ -14091,20 +14430,28 @@ $templateCache.put('templates/time-autocomplete.html',
     "              <div ng-if=\"mediaObject['@type'] === 'ImageObject'\" class=\"uploaded-image\">\n" +
     "                <div class=\"media\">\n" +
     "                  <a class=\"media-left\" href=\"#\">\n" +
-    "                    <img src=\"{{ mediaObject.thumbnailUrl }}\">\n" +
+    "                    <img ng-src=\"{{ mediaObject.thumbnailUrl }}\">\n" +
     "                  </a>\n" +
+    "\n" +
     "                  <div class=\"media-body\">\n" +
-    "                    <p>{{ mediaObject.description }}<br/><small ng-bind=\"mediaObject.copyrightHolder\">Copyright</small></p>\n" +
-    "                    <p><a href=\"#\" class=\"btn btn-link\" ng-click=\"openUploadImageModal(key)\">Wijzigen</a><a href=\"#\" class=\"btn btn-link\" ng-click=\"openDeleteImageModal(key)\">Verwijderen</a></p>\n" +
+    "                    <span>\n" +
+    "                      <span ng-bind=\"mediaObject.description\"></span>\n" +
+    "                      <br/>\n" +
+    "                      <small ng-bind=\"mediaObject.copyrightHolder\">Copyright</small>\n" +
+    "                    </span>\n" +
+    "                    <span>\n" +
+    "                      <a class=\"btn btn-link\" ng-click=\"openUploadImageModal(key)\">Wijzigen</a>\n" +
+    "                      <a class=\"btn btn-link\" ng-click=\"openDeleteImageModal(key)\">Verwijderen</a>\n" +
+    "                    </span>\n" +
     "                  </div>\n" +
     "                </div>\n" +
     "              </div>\n" +
     "            </div>\n" +
-    "\n" +
     "          </div>\n" +
     "\n" +
-    "          <a class=\"btn btn-default\" href=\"#\" ng-click=\"openUploadImageModal(-1)\">Afbeelding toevoegen</a>\n" +
-    "\n" +
+    "          <div class=\"text-center\">\n" +
+    "            <a class=\"btn btn-default\" href=\"#\" ng-click=\"openUploadImageModal(-1)\">Afbeelding toevoegen</a>\n" +
+    "          </div>\n" +
     "        </div>\n" +
     "\n" +
     "      </div>\n" +

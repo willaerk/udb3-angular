@@ -208,4 +208,23 @@ describe('Controller: event form step 5', function () {
     expect(scope.ageRange).toEqual(AgeRange.TEENS);
     expect(scope.minAge).toEqual(18);
   });
+
+  it('should fill out existing contact info when editing an event', function () {
+    EventFormData.contactPoint = {
+      email: ['foo@bar.com'],
+      phone: ['016985682'],
+      url: ['http://foo.com', 'http://bar.com'],
+      dude: ['sweet']
+    };
+    EventFormData.id = 1;
+    stepController = getController();
+    var expectedContactInfo = [
+      {type:'email', value:'foo@bar.com'},
+      {type:'phone', value:'016985682'},
+      {type:'url', value:'http://foo.com'},
+      {type:'url', value:'http://bar.com'}
+    ];
+
+    expect(scope.contactInfo).toEqual(expectedContactInfo);
+  });
 });

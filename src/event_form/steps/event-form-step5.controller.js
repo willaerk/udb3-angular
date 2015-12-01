@@ -22,6 +22,11 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
     'TEENS': {'value': 18, 'label': 'Jongeren tussen 12 en 18 jaar', min: 13, max: 18},
     'ADULTS': {'value': 99, 'label': 'Volwassenen (+18 jaar)', min: 19}
   };
+  var ContactInfoTypes = {
+    EMAIL: 'email',
+    PHONE: 'phone',
+    URL: 'url'
+  };
 
   // Scope vars.
   $scope.eventFormData = EventFormData; // main storage for event form.
@@ -136,9 +141,6 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
 
   // Init the controller for editing.
   initEditForm();
-
-  // Add empty contact.
-  addContactInfo('', '');
 
   /**
    * Save the description.
@@ -391,14 +393,14 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
   };
 
   /**
-   * Add contact info.
+   * Add an additional field to fill out contact info. Show the fields when none were shown before.
    */
-  function addContactInfo(type, value) {
-    $scope.contactInfo.push({
-      type : type,
-      value : value
-    });
+  function addContactInfo() {
+    if (_.isEmpty($scope.contactInfo)) {
+      $scope.contactInfoCssClass = 'state-filling';
+    }
 
+    $scope.contactInfo.push({type: ContactInfoTypes.PHONE, value: ''});
   }
 
   /**
@@ -770,27 +772,13 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
       }
     }
 
-    // Add websites.
-    var i = 0;
-    if (EventFormData.contactPoint.url) {
-      for (i = 0; i < EventFormData.contactPoint.url.length; i++) {
-        addContactInfo('url', EventFormData.contactPoint.url[i]);
-      }
-    }
-
-    // Add mails
-    if (EventFormData.contactPoint.email) {
-      for (i = 0; i < EventFormData.contactPoint.email.length; i++) {
-        addContactInfo('email', EventFormData.contactPoint.email[i]);
-      }
-    }
-
-    // Add phones
-    if (EventFormData.contactPoint.phone) {
-      for (i = 0; i < EventFormData.contactPoint.phone.length; i++) {
-        addContactInfo('phone', EventFormData.contactPoint.phone[i]);
-      }
-    }
+    $scope.contactInfo = _.flatten(
+      _.map(EventFormData.contactPoint, function (contactInfo, type) {
+        return _.contains(ContactInfoTypes, type) ? _.map(contactInfo, function (contactInfoItem) {
+          return {type: type, value: contactInfoItem};
+        }) : [];
+      })
+    );
 
     // Set correct css class for contact info.
     if ($scope.contactInfo.length > 0) {

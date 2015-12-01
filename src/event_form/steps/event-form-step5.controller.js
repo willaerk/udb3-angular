@@ -16,17 +16,17 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
 
   var controller = this;
   var URL_REGEXP = /^(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?$/;
-  var AgeRange = {
+  var AgeRangeEnum = Object.freeze({
     'ALL': {'value': 0, 'label': 'Alle leeftijden'},
     'KIDS': {'value': 12, 'label': 'Kinderen tot 12 jaar', min: 1, max: 12},
     'TEENS': {'value': 18, 'label': 'Jongeren tussen 12 en 18 jaar', min: 13, max: 18},
     'ADULTS': {'value': 99, 'label': 'Volwassenen (+18 jaar)', min: 19}
-  };
-  var ContactInfoTypes = {
+  });
+  var ContactInfoTypeEnum = Object.freeze({
     EMAIL: 'email',
     PHONE: 'phone',
     URL: 'url'
-  };
+  });
 
   // Scope vars.
   $scope.eventFormData = EventFormData; // main storage for event form.
@@ -42,7 +42,7 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
   $scope.ageRangeError = false;
   $scope.invalidAgeRange = false;
   /**
-   * @type {AgeRange|null}
+   * @type {AgeRangeEnum|null}
    */
   $scope.ageRange = null;
   $scope.ageCssClass = EventFormData.ageRange ? 'state-complete' : 'state-incomplete';
@@ -133,11 +133,11 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
   $scope.openUploadImageModal = openUploadImageModal;
   $scope.openDeleteImageModal = openDeleteImageModal;
 
-  $scope.ageRanges = _.map(AgeRange, function (range) {
+  $scope.ageRanges = _.map(AgeRangeEnum, function (range) {
     return range;
   });
 
-  $scope.AgeRange = AgeRange;
+  $scope.AgeRange = AgeRangeEnum;
 
   // Init the controller for editing.
   initEditForm();
@@ -177,13 +177,13 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
 
   /**
    * Listener on the age range selection.
-   * @param {AgeRange} ageRange
+   * @param {AgeRangeEnum} ageRange
    */
   function ageRangeChanged(ageRange) {
     $scope.minAge = null;
     $scope.ageCssClass = 'state-complete';
 
-    if (ageRange === AgeRange.ALL) {
+    if (ageRange === AgeRangeEnum.ALL) {
       $scope.saveAgeRange();
     }
   }
@@ -208,7 +208,7 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
 
   /**
    * @param {number} minAge
-   * @param {AgeRange} ageRange
+   * @param {AgeRangeEnum} ageRange
    *
    * @return {boolean}
    */
@@ -233,7 +233,7 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
 
     $scope.invalidAgeRange = false;
     //$scope.minAge = parseInt($scope.minAge); // should already be a number!
-    if ($scope.ageRange !== AgeRange.ALL) {
+    if ($scope.ageRange !== AgeRangeEnum.ALL) {
 
       if (isNaN($scope.minAge)) {
         $scope.invalidAgeRange = true;
@@ -263,7 +263,7 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
         $scope.ageCssClass = 'state-complete';
       };
 
-      if ($scope.ageRange === AgeRange.ALL) {
+      if ($scope.ageRange === AgeRangeEnum.ALL) {
         ageRangePersisted = eventCrud.deleteTypicalAgeRange(EventFormData);
       }
       else {
@@ -279,7 +279,7 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
    * Set to all ages.
    */
   function setAllAges() {
-    $scope.ageRange = AgeRange.ALL;
+    $scope.ageRange = AgeRangeEnum.ALL;
   }
 
   /**
@@ -400,7 +400,7 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
       $scope.contactInfoCssClass = 'state-filling';
     }
 
-    $scope.contactInfo.push({type: ContactInfoTypes.PHONE, value: ''});
+    $scope.contactInfo.push({type: ContactInfoTypeEnum.PHONE, value: ''});
   }
 
   /**
@@ -755,11 +755,11 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
           $scope.minAge = minAge;
 
           if (maxAge) {
-            $scope.ageRange = _.findWhere(AgeRange, {max: maxAge});
+            $scope.ageRange = _.findWhere(AgeRangeEnum, {max: maxAge});
           }
           else {
-            $scope.ageRange = _.find(AgeRange, function (ageRange) {
-              // ignore AgeRange.ALL which has value zero because it will match anything
+            $scope.ageRange = _.find(AgeRangeEnum, function (ageRange) {
+              // ignore AgeRangeEnum.ALL which has value zero because it will match anything
               return ageRange.value && isMinimumAgeInRange(minAge, ageRange);
             });
           }
@@ -768,13 +768,13 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
 
       if (!$scope.ageRange) {
         $scope.minAge = 1;
-        $scope.ageRange = AgeRange.ALL;
+        $scope.ageRange = AgeRangeEnum.ALL;
       }
     }
 
     $scope.contactInfo = _.flatten(
       _.map(EventFormData.contactPoint, function (contactInfo, type) {
-        return _.contains(ContactInfoTypes, type) ? _.map(contactInfo, function (contactInfoItem) {
+        return _.contains(ContactInfoTypeEnum, type) ? _.map(contactInfo, function (contactInfoItem) {
           return {type: type, value: contactInfoItem};
         }) : [];
       })

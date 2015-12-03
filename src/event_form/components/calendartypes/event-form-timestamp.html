@@ -4,14 +4,7 @@
     <section class="add-date">
 
       <div udb-datepicker
-           ng-if="timestamp.date"
-           ng-change="eventTimingChanged()"
-           highlight-date="2015-8-12"
-           ng-model="timestamp.date"
-           data-date="{{ timestamp.date|date:'dd/MM/yyyy' }}"></div>
-      <div udb-datepicker
-           ng-if="!timestamp.date"
-           ng-change="eventTimingChanged()"
+           ng-change="EventFormStep2.eventTimingChanged()"
            highlight-date="2015-8-12"
            ng-model="timestamp.date"></div>
 

@@ -9,13 +9,7 @@
       <div class="form-group col-md-6 col-sm-12" ng-class="{'has-error' : showStartDateRequired }">
         <div class="add-date">
           <label>Reserveren van</label>
-          <div ng-if="eventFormData.bookingInfo.availabilityStarts"
-               udb-datepicker
-               highlight-date="2015-8-12"
-               ng-model="eventFormData.bookingInfo.availabilityStarts"
-               data-date="{{ eventFormData.bookingInfo.availabilityStarts|date:'dd/MM/yyyy' }}"></div>
-          <div ng-if="!eventFormData.bookingInfo.availabilityStarts"
-               udb-datepicker
+          <div udb-datepicker
                highlight-date="2015-8-12"
                ng-model="eventFormData.bookingInfo.availabilityStarts"></div>
           <span class="help-block" ng-show="showStartDateRequired">Gelieve een start datum te kiezen</span>
@@ -24,13 +18,7 @@
       <div class="form-group col-md-6 col-sm-12" ng-class="{'has-error' : showEndDateRequired }">
         <div class="add-date">
           <label>Tot</label>
-          <div ng-if="eventFormData.bookingInfo.availabilityEnds"
-               udb-datepicker
-               highlight-date="2015-8-12"
-               ng-model="eventFormData.bookingInfo.availabilityEnds"
-               data-date="{{ eventFormData.bookingInfo.availabilityEnds|date:'dd/MM/yyyy' }}"></div>
-          <div ng-if="!eventFormData.bookingInfo.availabilityEnds"
-               udb-datepicker
+          <div udb-datepicker
                highlight-date="2015-8-12"
                ng-model="eventFormData.bookingInfo.availabilityEnds"></div>
           <span class="help-block" ng-show="showEndDateRequired">Gelieve een eind datum te kiezen</span>

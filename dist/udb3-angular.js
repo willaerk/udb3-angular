@@ -1927,7 +1927,8 @@ CityAutocomplete.$inject = ["$q", "$http", "appConfig", "UdbPlace"];
    * @ngdoc directive
    * @name udb.core.directive:udbDatepicker
    * @description
-   * # directive for datepicker integration
+   * # directive for datepicker integration.
+   * https://github.com/eternicode/bootstrap-datepicker
    */
   angular
   .module('udb.core')
@@ -1935,57 +1936,43 @@ CityAutocomplete.$inject = ["$q", "$http", "appConfig", "UdbPlace"];
 
   function udbDatepickerDirective() {
 
-    var datepicker = {
+    return {
       restrict: 'A',
       require: 'ngModel',
-      link: function (scope, elem, attrs, ngModel) {
-
-        var isLoaded = false;
-
-        // Default date given: wait till angular fills in the value before loading.
-        if (attrs.date) {
-          attrs.$observe('date', function(value) {
-            if (!isLoaded) {
-              loadDatePicker();
-            }
-          });
-        }
-        // No default date, load immediately.
-        else {
-          loadDatePicker();
-        }
-
-        /**
-         * Load the date picker.
-         */
-        function loadDatePicker() {
-
-          var options = {
-            format: 'd MM yyyy',
-            language: 'nl-BE',
-            startDate : new Date(),
-            beforeShowDay: function(date) {
-              var dateFormat = date.getUTCFullYear() + '-' + date.getUTCMonth() + '-' + date.getUTCDate();
-              if (attrs.highlightDate && dateFormat === attrs.highlightDate) {
-                return {classes: 'highlight'};
-              }
-            }
-          };
-
-          elem.datepicker(options).on('changeDate', function(e) {
-            ngModel.$setViewValue(e.date);
-          });
-
-          isLoaded = true;
-        }
-
-      }
+      link: link
     };
 
-    return datepicker;
+    function link (scope, elem, attrs, ngModel) {
 
+      loadDatePicker();
+
+      ngModel.$render = function () {
+        elem.datepicker('update', ngModel.$viewValue);
+      };
+
+      /**
+       * Load the date picker.
+       */
+      function loadDatePicker() {
+
+        var options = {
+          format: 'd MM yyyy',
+          language: 'nl-BE',
+          startDate: new Date(),
+          beforeShowDay: function (date) {
+            var dateFormat = date.getUTCFullYear() + '-' + date.getUTCMonth() + '-' + date.getUTCDate();
+            if (attrs.highlightDate && dateFormat === attrs.highlightDate) {
+              return {classes: 'highlight'};
+            }
+          }
+        };
+
+        elem.datepicker(options).on('changeDate', function (e) {
+          ngModel.$setViewValue(e.date);
+        });
+      }
+    }
   }
-
 })();
 
 // Source: src/core/components/multiselect/multiselect.directive.js
@@ -12784,16 +12771,9 @@ $templateCache.put('templates/unexpected-error-modal.html',
     "    <section class=\"add-date\">\n" +
     "      <div class=\"form-group\">\n" +
     "        <p class=\"module-title\">Vanaf</p>\n" +
-    "        <div ng-if=\"eventFormData.startDate\"\n" +
-    "             udb-datepicker\n" +
+    "        <div udb-datepicker\n" +
     "             highlight-date=\"2015-8-12\"\n" +
-    "             ng-change=\"eventTimingChanged()\"\n" +
-    "             ng-model=\"eventFormData.startDate\"\n" +
-    "             data-date=\"{{ eventFormData.startDate|date:'dd/MM/yyyy' }}\"></div>\n" +
-    "        <div ng-if=\"!eventFormData.startDate\"\n" +
-    "             udb-datepicker\n" +
-    "             highlight-date=\"2015-8-12\"\n" +
-    "             ng-change=\"eventTimingChanged()\"\n" +
+    "             ng-change=\"EventFormStep2.eventTimingChanged()\"\n" +
     "             ng-model=\"eventFormData.startDate\"></div>\n" +
     "      </div>\n" +
     "    </section>\n" +
@@ -12803,16 +12783,9 @@ $templateCache.put('templates/unexpected-error-modal.html',
     "    <section class=\"add-date\">\n" +
     "      <div class=\"form-group\">\n" +
     "        <p class=\"module-title\">Tot en met</p>\n" +
-    "        <div ng-if=\"eventFormData.endDate\"\n" +
-    "             udb-datepicker\n" +
+    "        <div udb-datepicker\n" +
     "             highlight-date=\"2015-8-12\"\n" +
-    "             ng-change=\"eventTimingChanged()\"\n" +
-    "             ng-model=\"eventFormData.endDate\"\n" +
-    "             data-date=\"{{ eventFormData.endDate|date:'dd/MM/yyyy' }}\"></div>\n" +
-    "        <div ng-if=\"!eventFormData.endDate\"\n" +
-    "             udb-datepicker\n" +
-    "             highlight-date=\"2015-8-12\"\n" +
-    "             ng-change=\"eventTimingChanged()\"\n" +
+    "             ng-change=\"EventFormStep2.eventTimingChanged()\"\n" +
     "             ng-model=\"eventFormData.endDate\"></div>\n" +
     "      </div>\n" +
     "    </section>\n" +
@@ -12829,14 +12802,7 @@ $templateCache.put('templates/unexpected-error-modal.html',
     "    <section class=\"add-date\">\n" +
     "\n" +
     "      <div udb-datepicker\n" +
-    "           ng-if=\"timestamp.date\"\n" +
-    "           ng-change=\"eventTimingChanged()\"\n" +
-    "           highlight-date=\"2015-8-12\"\n" +
-    "           ng-model=\"timestamp.date\"\n" +
-    "           data-date=\"{{ timestamp.date|date:'dd/MM/yyyy' }}\"></div>\n" +
-    "      <div udb-datepicker\n" +
-    "           ng-if=\"!timestamp.date\"\n" +
-    "           ng-change=\"eventTimingChanged()\"\n" +
+    "           ng-change=\"EventFormStep2.eventTimingChanged()\"\n" +
     "           highlight-date=\"2015-8-12\"\n" +
     "           ng-model=\"timestamp.date\"></div>\n" +
     "\n" +
@@ -13397,13 +13363,7 @@ $templateCache.put('templates/unexpected-error-modal.html',
     "      <div class=\"form-group col-md-6 col-sm-12\" ng-class=\"{'has-error' : showStartDateRequired }\">\n" +
     "        <div class=\"add-date\">\n" +
     "          <label>Reserveren van</label>\n" +
-    "          <div ng-if=\"eventFormData.bookingInfo.availabilityStarts\"\n" +
-    "               udb-datepicker\n" +
-    "               highlight-date=\"2015-8-12\"\n" +
-    "               ng-model=\"eventFormData.bookingInfo.availabilityStarts\"\n" +
-    "               data-date=\"{{ eventFormData.bookingInfo.availabilityStarts|date:'dd/MM/yyyy' }}\"></div>\n" +
-    "          <div ng-if=\"!eventFormData.bookingInfo.availabilityStarts\"\n" +
-    "               udb-datepicker\n" +
+    "          <div udb-datepicker\n" +
     "               highlight-date=\"2015-8-12\"\n" +
     "               ng-model=\"eventFormData.bookingInfo.availabilityStarts\"></div>\n" +
     "          <span class=\"help-block\" ng-show=\"showStartDateRequired\">Gelieve een start datum te kiezen</span>\n" +
@@ -13412,13 +13372,7 @@ $templateCache.put('templates/unexpected-error-modal.html',
     "      <div class=\"form-group col-md-6 col-sm-12\" ng-class=\"{'has-error' : showEndDateRequired }\">\n" +
     "        <div class=\"add-date\">\n" +
     "          <label>Tot</label>\n" +
-    "          <div ng-if=\"eventFormData.bookingInfo.availabilityEnds\"\n" +
-    "               udb-datepicker\n" +
-    "               highlight-date=\"2015-8-12\"\n" +
-    "               ng-model=\"eventFormData.bookingInfo.availabilityEnds\"\n" +
-    "               data-date=\"{{ eventFormData.bookingInfo.availabilityEnds|date:'dd/MM/yyyy' }}\"></div>\n" +
-    "          <div ng-if=\"!eventFormData.bookingInfo.availabilityEnds\"\n" +
-    "               udb-datepicker\n" +
+    "          <div udb-datepicker\n" +
     "               highlight-date=\"2015-8-12\"\n" +
     "               ng-model=\"eventFormData.bookingInfo.availabilityEnds\"></div>\n" +
     "          <span class=\"help-block\" ng-show=\"showEndDateRequired\">Gelieve een eind datum te kiezen</span>\n" +

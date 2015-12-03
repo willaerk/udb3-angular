@@ -3,16 +3,9 @@
     <section class="add-date">
       <div class="form-group">
         <p class="module-title">Vanaf</p>
-        <div ng-if="eventFormData.startDate"
-             udb-datepicker
+        <div udb-datepicker
              highlight-date="2015-8-12"
-             ng-change="eventTimingChanged()"
-             ng-model="eventFormData.startDate"
-             data-date="{{ eventFormData.startDate|date:'dd/MM/yyyy' }}"></div>
-        <div ng-if="!eventFormData.startDate"
-             udb-datepicker
-             highlight-date="2015-8-12"
-             ng-change="eventTimingChanged()"
+             ng-change="EventFormStep2.eventTimingChanged()"
              ng-model="eventFormData.startDate"></div>
       </div>
     </section>
@@ -22,16 +15,9 @@
     <section class="add-date">
       <div class="form-group">
         <p class="module-title">Tot en met</p>
-        <div ng-if="eventFormData.endDate"
-             udb-datepicker
+        <div udb-datepicker
              highlight-date="2015-8-12"
-             ng-change="eventTimingChanged()"
-             ng-model="eventFormData.endDate"
-             data-date="{{ eventFormData.endDate|date:'dd/MM/yyyy' }}"></div>
-        <div ng-if="!eventFormData.endDate"
-             udb-datepicker
-             highlight-date="2015-8-12"
-             ng-change="eventTimingChanged()"
+             ng-change="EventFormStep2.eventTimingChanged()"
              ng-model="eventFormData.endDate"></div>
       </div>
     </section>

@@ -14,18 +14,10 @@
   function udbTimeAutocompleteDirective() {
 
     return {
-      restrict: 'E',
-      require: 'ngModel',
-      scope : {
-        ngModel : '=',
-        cssClass : '@',
-        inputPlaceholder : '@'
-      },
-      templateUrl: 'templates/time-autocomplete.html',
-      link: function(scope, elem, attrs, ngModel) {
+      restrict: 'A',
+      link: function(scope) {
         scope.times = generateTimes();
-      },
-
+      }
     };
 
     /**

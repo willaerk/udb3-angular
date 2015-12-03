@@ -13,6 +13,7 @@ angular
 
 /* @ngInject */
 function EventFormStep2Controller($scope, $rootScope, EventFormData) {
+  var controller = this;
 
   // Scope vars.
   // main storage for event form.
@@ -29,11 +30,11 @@ function EventFormStep2Controller($scope, $rootScope, EventFormData) {
   $scope.setCalendarType = setCalendarType;
   $scope.resetCalendar = resetCalendar;
   $scope.addTimestamp = addTimestamp;
-  $scope.toggleStartHour = toggleStartHour;
+  $scope.toggleStartHour = controller.toggleStartHour;
   $scope.toggleEndHour = toggleEndHour;
   $scope.saveOpeningHourDaySelection = saveOpeningHourDaySelection;
   $scope.saveOpeningHours = saveOpeningHours;
-  $scope.eventTimingChanged = eventTimingChanged;
+  $scope.eventTimingChanged = controller.eventTimingChanged;
 
   // Mapping between machine name of days and real output.
   var dayNames = {
@@ -128,23 +129,24 @@ function EventFormStep2Controller($scope, $rootScope, EventFormData) {
 
   /**
    * Toggle the starthour field for given timestamp.
-   * @param {string} timestamp
+   * @param {Object} timestamp
    *   Timestamp to change
    */
-  function toggleStartHour(timestamp) {
+  controller.toggleStartHour = function (timestamp) {
 
     // If we hide the textfield, empty all other time fields.
     if (!timestamp.showStartHour) {
       timestamp.startHour = '';
       timestamp.endHour = '';
       timestamp.showEndHour = false;
+      controller.eventTimingChanged();
     }
 
-  }
+  };
 
   /**
    * Toggle the endhour field for given timestamp
-   * @param {string} timestamp
+   * @param {Object} timestamp
    *   Timestamp to change
    */
   function toggleEndHour(timestamp) {
@@ -152,6 +154,7 @@ function EventFormStep2Controller($scope, $rootScope, EventFormData) {
     // If we hide the textfield, empty also the input.
     if (!timestamp.showEndHour) {
       timestamp.endHour = '';
+      controller.eventTimingChanged();
     }
 
   }
@@ -178,15 +181,15 @@ function EventFormStep2Controller($scope, $rootScope, EventFormData) {
    */
   function saveOpeningHours() {
     $scope.hasOpeningHours = true;
-    eventTimingChanged();
+    controller.eventTimingChanged();
   }
 
   /**
    * Mark the major info as changed.
    */
-  function eventTimingChanged() {
+  controller.eventTimingChanged = function() {
     if (EventFormData.id) {
       $rootScope.$emit('eventTimingChanged', EventFormData);
     }
-  }
+  };
 }

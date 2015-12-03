@@ -20,36 +20,40 @@
           <label>
             <input type="checkbox"
                    value=""
-                   ng-change="eventTimingChanged()"
+                   ng-change="toggleStartHour(timestamp)"
                    ng-model="timestamp.showStartHour"
-                   class="beginuur-toevoegen"
-                   ng-click="toggleStartHour(timestamp)">
+                   class="beginuur-toevoegen">
             Beginuur
           </label>
           <div class="beginuur-invullen" ng-show="timestamp.showStartHour">
-            <udb-time-autocomplete
+            <input
+                udb-time-autocomplete
                 ng-model="timestamp.startHour"
-                ng-change="eventTimingChanged()"
-                css-class="form-control uur"
-                input-placeholder="Bv. 08:00"></udb-time-autocomplete>
+                class="form-control uur"
+                uib-typeahead="time for time in ::times | filter:$viewValue | limitTo:8"
+                typeahead-on-select="EventFormStep2.eventTimingChanged()"
+                typeahead-editable="false"
+                placeholder="Bv. 08:00">
           </div>
         </div>
         <div class="col-xs-6 einduur" ng-show="timestamp.showStartHour">
           <label>
             <input type="checkbox"
-                   ng-change="eventTimingChanged()"
+                   ng-change="toggleEndHour(timestamp)"
                    value=""
                    ng-model="timestamp.showEndHour"
-                   class="einduur-toevoegen"
-                   ng-click="toggleEndHour(timestamp)">
+                   class="einduur-toevoegen">
             Einduur
           </label>
           <div class="einduur-invullen" ng-show="timestamp.showEndHour">
-            <udb-time-autocomplete
-                ng-change="eventTimingChanged()"
+            <input
+                udb-time-autocomplete
                 ng-model="timestamp.endHour"
-                css-class="form-control uur"
-                input-placeholder="Bv. 23:00"></udb-time-autocomplete>
+                class="form-control uur"
+                uib-typeahead="time for time in ::times | filter:$viewValue | limitTo:8"
+                typeahead-on-select="EventFormStep2.eventTimingChanged()"
+                typeahead-editable="false"
+                placeholder="Bv. 23:00">
           </div>
         </div>
       </div>

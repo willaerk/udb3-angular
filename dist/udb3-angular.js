@@ -2043,18 +2043,10 @@ CityAutocomplete.$inject = ["$q", "$http", "appConfig", "UdbPlace"];
   function udbTimeAutocompleteDirective() {
 
     return {
-      restrict: 'E',
-      require: 'ngModel',
-      scope : {
-        ngModel : '=',
-        cssClass : '@',
-        inputPlaceholder : '@'
-      },
-      templateUrl: 'templates/time-autocomplete.html',
-      link: function(scope, elem, attrs, ngModel) {
+      restrict: 'A',
+      link: function(scope) {
         scope.times = generateTimes();
-      },
-
+      }
     };
 
     /**
@@ -7563,6 +7555,7 @@ angular
 
 /* @ngInject */
 function EventFormStep2Controller($scope, $rootScope, EventFormData) {
+  var controller = this;
 
   // Scope vars.
   // main storage for event form.
@@ -7579,11 +7572,11 @@ function EventFormStep2Controller($scope, $rootScope, EventFormData) {
   $scope.setCalendarType = setCalendarType;
   $scope.resetCalendar = resetCalendar;
   $scope.addTimestamp = addTimestamp;
-  $scope.toggleStartHour = toggleStartHour;
+  $scope.toggleStartHour = controller.toggleStartHour;
   $scope.toggleEndHour = toggleEndHour;
   $scope.saveOpeningHourDaySelection = saveOpeningHourDaySelection;
   $scope.saveOpeningHours = saveOpeningHours;
-  $scope.eventTimingChanged = eventTimingChanged;
+  $scope.eventTimingChanged = controller.eventTimingChanged;
 
   // Mapping between machine name of days and real output.
   var dayNames = {
@@ -7678,23 +7671,24 @@ function EventFormStep2Controller($scope, $rootScope, EventFormData) {
 
   /**
    * Toggle the starthour field for given timestamp.
-   * @param {string} timestamp
+   * @param {Object} timestamp
    *   Timestamp to change
    */
-  function toggleStartHour(timestamp) {
+  controller.toggleStartHour = function (timestamp) {
 
     // If we hide the textfield, empty all other time fields.
     if (!timestamp.showStartHour) {
       timestamp.startHour = '';
       timestamp.endHour = '';
       timestamp.showEndHour = false;
+      controller.eventTimingChanged();
     }
 
-  }
+  };
 
   /**
    * Toggle the endhour field for given timestamp
-   * @param {string} timestamp
+   * @param {Object} timestamp
    *   Timestamp to change
    */
   function toggleEndHour(timestamp) {
@@ -7702,6 +7696,7 @@ function EventFormStep2Controller($scope, $rootScope, EventFormData) {
     // If we hide the textfield, empty also the input.
     if (!timestamp.showEndHour) {
       timestamp.endHour = '';
+      controller.eventTimingChanged();
     }
 
   }
@@ -7728,17 +7723,17 @@ function EventFormStep2Controller($scope, $rootScope, EventFormData) {
    */
   function saveOpeningHours() {
     $scope.hasOpeningHours = true;
-    eventTimingChanged();
+    controller.eventTimingChanged();
   }
 
   /**
    * Mark the major info as changed.
    */
-  function eventTimingChanged() {
+  controller.eventTimingChanged = function() {
     if (EventFormData.id) {
       $rootScope.$emit('eventTimingChanged', EventFormData);
     }
-  }
+  };
 }
 EventFormStep2Controller.$inject = ["$scope", "$rootScope", "EventFormData"];
 
@@ -12302,16 +12297,7 @@ function searchDirective() {
 
 // Source: .tmp/udb3-angular.templates.js
 angular.module('udb.core').run(['$templateCache', function($templateCache) {
-$templateCache.put('templates/time-autocomplete.html',
-    "<input type=\"text\"\n" +
-    "       ng-model=\"ngModel\"\n" +
-    "       class=\"{{cssClass}}\"\n" +
-    "       placeholder=\"{{inputPlaceholder}}\"\n" +
-    "       uib-typeahead=\"time for time in ::times | filter:$viewValue | limitTo:8\" />"
-  );
-
-
-  $templateCache.put('templates/unexpected-error-modal.html',
+$templateCache.put('templates/unexpected-error-modal.html',
     "<div class=\"modal-body\">\n" +
     "  <p ng-bind=\"errorMessage\"></p>\n" +
     "</div>\n" +
@@ -12859,36 +12845,40 @@ $templateCache.put('templates/time-autocomplete.html',
     "          <label>\n" +
     "            <input type=\"checkbox\"\n" +
     "                   value=\"\"\n" +
-    "                   ng-change=\"eventTimingChanged()\"\n" +
+    "                   ng-change=\"toggleStartHour(timestamp)\"\n" +
     "                   ng-model=\"timestamp.showStartHour\"\n" +
-    "                   class=\"beginuur-toevoegen\"\n" +
-    "                   ng-click=\"toggleStartHour(timestamp)\">\n" +
+    "                   class=\"beginuur-toevoegen\">\n" +
     "            Beginuur\n" +
     "          </label>\n" +
     "          <div class=\"beginuur-invullen\" ng-show=\"timestamp.showStartHour\">\n" +
-    "            <udb-time-autocomplete\n" +
+    "            <input\n" +
+    "                udb-time-autocomplete\n" +
     "                ng-model=\"timestamp.startHour\"\n" +
-    "                ng-change=\"eventTimingChanged()\"\n" +
-    "                css-class=\"form-control uur\"\n" +
-    "                input-placeholder=\"Bv. 08:00\"></udb-time-autocomplete>\n" +
+    "                class=\"form-control uur\"\n" +
+    "                uib-typeahead=\"time for time in ::times | filter:$viewValue | limitTo:8\"\n" +
+    "                typeahead-on-select=\"EventFormStep2.eventTimingChanged()\"\n" +
+    "                typeahead-editable=\"false\"\n" +
+    "                placeholder=\"Bv. 08:00\">\n" +
     "          </div>\n" +
     "        </div>\n" +
     "        <div class=\"col-xs-6 einduur\" ng-show=\"timestamp.showStartHour\">\n" +
     "          <label>\n" +
     "            <input type=\"checkbox\"\n" +
-    "                   ng-change=\"eventTimingChanged()\"\n" +
+    "                   ng-change=\"toggleEndHour(timestamp)\"\n" +
     "                   value=\"\"\n" +
     "                   ng-model=\"timestamp.showEndHour\"\n" +
-    "                   class=\"einduur-toevoegen\"\n" +
-    "                   ng-click=\"toggleEndHour(timestamp)\">\n" +
+    "                   class=\"einduur-toevoegen\">\n" +
     "            Einduur\n" +
     "          </label>\n" +
     "          <div class=\"einduur-invullen\" ng-show=\"timestamp.showEndHour\">\n" +
-    "            <udb-time-autocomplete\n" +
-    "                ng-change=\"eventTimingChanged()\"\n" +
+    "            <input\n" +
+    "                udb-time-autocomplete\n" +
     "                ng-model=\"timestamp.endHour\"\n" +
-    "                css-class=\"form-control uur\"\n" +
-    "                input-placeholder=\"Bv. 23:00\"></udb-time-autocomplete>\n" +
+    "                class=\"form-control uur\"\n" +
+    "                uib-typeahead=\"time for time in ::times | filter:$viewValue | limitTo:8\"\n" +
+    "                typeahead-on-select=\"EventFormStep2.eventTimingChanged()\"\n" +
+    "                typeahead-editable=\"false\"\n" +
+    "                placeholder=\"Bv. 23:00\">\n" +
     "          </div>\n" +
     "        </div>\n" +
     "      </div>\n" +

@@ -8,7 +8,11 @@
     <div class="row">
       <div class="col-xs-12 col-md-4">
         <div class="form-group-lg">
-          <input type="text" class="form-control" ng-model="eventFormData.name.nl" ng-change="setMajorInfoChanged()">
+          <input type="text"
+                 class="form-control"
+                 ng-model="eventFormData.name.nl"
+                 ng-model-options="titleInputOptions"
+                 ng-change="eventTitleChanged()">
         </div>
       </div>
       <div class="col-xs-12 col-md-8">

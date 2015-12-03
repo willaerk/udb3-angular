@@ -12,7 +12,7 @@ angular
   .controller('EventFormStep2Controller', EventFormStep2Controller);
 
 /* @ngInject */
-function EventFormStep2Controller($scope, EventFormData, UdbOpeningHours) {
+function EventFormStep2Controller($scope, $rootScope, EventFormData) {
 
   // Scope vars.
   // main storage for event form.
@@ -33,7 +33,7 @@ function EventFormStep2Controller($scope, EventFormData, UdbOpeningHours) {
   $scope.toggleEndHour = toggleEndHour;
   $scope.saveOpeningHourDaySelection = saveOpeningHourDaySelection;
   $scope.saveOpeningHours = saveOpeningHours;
-  $scope.setMajorInfoChanged = setMajorInfoChanged;
+  $scope.eventTimingChanged = eventTimingChanged;
 
   // Mapping between machine name of days and real output.
   var dayNames = {
@@ -178,16 +178,15 @@ function EventFormStep2Controller($scope, EventFormData, UdbOpeningHours) {
    */
   function saveOpeningHours() {
     $scope.hasOpeningHours = true;
-    setMajorInfoChanged();
+    eventTimingChanged();
   }
 
   /**
    * Mark the major info as changed.
    */
-  function setMajorInfoChanged() {
+  function eventTimingChanged() {
     if (EventFormData.id) {
-      EventFormData.majorInfoChanged = true;
+      $rootScope.$emit('eventTimingChanged', EventFormData);
     }
   }
-
 }

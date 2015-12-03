@@ -11,7 +11,9 @@ angular
   .service('eventCrud', EventCrud);
 
 /* @ngInject */
-function EventCrud(jobLogger, udbApi, EventCrudJob) {
+function EventCrud(jobLogger, udbApi, EventCrudJob, $rootScope) {
+
+  var service = this;
 
   /**
    * Creates a new event and add the job to the logger.
@@ -19,7 +21,7 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
    * @param {UdbEvent}  event
    * The event to be created
    */
-  this.createEvent = function (event) {
+  service.createEvent = function (event) {
 
     var jobPromise = null;
 
@@ -36,7 +38,7 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
   /**
    * Remove an event.
    */
-  this.removeEvent = function (item) {
+  service.removeEvent = function (item) {
     var jobPromise = udbApi.removeEvent(item.id);
     jobPromise.success(function (jobData) {
       var job = new EventCrudJob(jobData.commandId, item, 'removeEvent');
@@ -51,7 +53,7 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
    * @param {int} id
    *   Place Id to find events for
    */
-  this.findEventsForLocation = function(id) {
+  service.findEventsForLocation = function(id) {
     var jobPromise = udbApi.findEventsForLocation(id);
     return jobPromise;
   };
@@ -59,7 +61,7 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
   /**
    * Creates a new place.
    */
-  this.createPlace = function(place) {
+  service.createPlace = function(place) {
     return udbApi.createPlace(place);
   };
 
@@ -77,19 +79,20 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
 
   /**
    * Update the major info of an event / place.
+   * @param {EventFormData} eventFormData
    */
-  this.updateMajorInfo = function(item) {
+  service.updateMajorInfo = function(eventFormData) {
 
     var jobPromise;
-    if (item.isEvent) {
-      jobPromise = udbApi.updateMajorInfo(item.id, item.getType(), item);
+    if (eventFormData.isEvent) {
+      jobPromise = udbApi.updateMajorInfo(eventFormData.id, eventFormData.getType(), eventFormData);
     }
     else {
-      jobPromise = udbApi.updateMajorInfo(item.id, item.getType(), item);
+      jobPromise = udbApi.updateMajorInfo(eventFormData.id, eventFormData.getType(), eventFormData);
     }
 
     jobPromise.success(function (jobData) {
-      var job = new EventCrudJob(jobData.commandId, item, 'updateItem');
+      var job = new EventCrudJob(jobData.commandId, eventFormData, 'updateItem');
       jobLogger.addJob(job);
     });
 
@@ -100,7 +103,7 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
   /**
    * Creates a new organizer.
    */
-  this.createOrganizer = function(organizer) {
+  service.createOrganizer = function(organizer) {
 
     return udbApi.createOrganizer(organizer);
 
@@ -112,7 +115,7 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
    * @param {EventFormData} item
    * @returns {EventCrud.updateDescription.jobPromise}
    */
-  this.updateDescription = function(item) {
+  service.updateDescription = function(item) {
 
     var jobPromise = udbApi.translateProperty(
       item.id,
@@ -137,7 +140,7 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
    * @param {EventFormData} item
    * @returns {EventCrud.updateTypicalAgeRange.jobPromise}
    */
-  this.updateTypicalAgeRange = function(item) {
+  service.updateTypicalAgeRange = function(item) {
 
     var jobPromise = udbApi.updateProperty(item.id, item.getType(), 'typicalAgeRange', item.typicalAgeRange);
 
@@ -156,7 +159,7 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
    * @param {EventFormData} item
    * @returns {EventCrud.updateTypicalAgeRange.jobPromise}
    */
-  this.updateTypicalAgeRange = function(item) {
+  service.updateTypicalAgeRange = function(item) {
 
     var jobPromise = udbApi.updateProperty(item.id, item.getType(), 'typicalAgeRange', item.typicalAgeRange);
 
@@ -175,7 +178,7 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
    * @param {EventFormData} item
    * @returns {EventCrud.deleteTypicalAgeRange.jobPromise}
    */
-  this.deleteTypicalAgeRange = function(item) {
+  service.deleteTypicalAgeRange = function(item) {
 
     var jobPromise = udbApi.deleteTypicalAgeRange(item.id, item.getType());
 
@@ -194,7 +197,7 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
    * @param {EventFormData} item
    * @returns {EventCrud.updateOrganizer.jobPromise}
    */
-  this.updateOrganizer = function(item) {
+  service.updateOrganizer = function(item) {
 
     var jobPromise = udbApi.updateProperty(item.id, item.getType(), 'organizer', item.organizer.id);
 
@@ -213,7 +216,7 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
    * @param {EventFormData} item
    * @returns {EventCrud.updateOrganizer.jobPromise}
    */
-  this.deleteOfferOrganizer = function(item) {
+  service.deleteOfferOrganizer = function(item) {
 
     var jobPromise = udbApi.deleteOfferOrganizer(item.id, item.getType(), item.organizer.id);
 
@@ -232,7 +235,7 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
    * @param {EventFormData} item
    * @returns {EventCrud.updateContactPoint.jobPromise}
    */
-  this.updateContactPoint = function(item) {
+  service.updateContactPoint = function(item) {
 
     var jobPromise = udbApi.updateProperty(item.id, item.getType(), 'contactPoint', item.contactPoint);
 
@@ -251,7 +254,7 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
    * @param {EventFormData} item
    * @returns {EventCrud.updateFacilities.jobPromise}
    */
-  this.updateFacilities = function(item) {
+  service.updateFacilities = function(item) {
 
     var jobPromise = udbApi.updateProperty(item.id, item.getType(), 'facilities', item.facilities);
 
@@ -271,7 +274,7 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
    *  Type of item
    * @returns {EventCrud.updateBookingInfo.jobPromise}
    */
-  this.updateBookingInfo = function(item) {
+  service.updateBookingInfo = function(item) {
 
     var jobPromise = udbApi.updateProperty(item.id, item.getType(), 'bookingInfo', item.bookingInfo);
 
@@ -293,7 +296,7 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
    * @param {string} copyrightHolder
    * @returns {EventCrud.addImage.jobPromise}
    */
-  this.addImage = function(item, image, description, copyrightHolder) {
+  service.addImage = function(item, image, description, copyrightHolder) {
 
     var jobPromise = udbApi.addImage(item.id, item.getType(), image, description, copyrightHolder);
 
@@ -316,7 +319,7 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
    * @param {string} copyrightHolder
    * @returns {EventCrud.updateImage.jobPromise}
    */
-  this.updateImage = function(item, indexToUpdate, image, description, copyrightHolder) {
+  service.updateImage = function(item, indexToUpdate, image, description, copyrightHolder) {
 
     var jobPromise = udbApi.updateImage(item.id, item.getType(), indexToUpdate, image, description, copyrightHolder);
 
@@ -336,7 +339,7 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
    * @param {int} indexToDelete
    * @returns {EventCrud.deleteImage.jobPromise}
    */
-  this.deleteImage = function(item, indexToDelete) {
+  service.deleteImage = function(item, indexToDelete) {
 
     var jobPromise = udbApi.deleteImage(item.id, item.getType(), indexToDelete);
 
@@ -349,4 +352,16 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
 
   };
 
+  /**
+   * @param {Object} event
+   * @param {EventFormData} eventFormData
+   */
+  function updateMajorInfo(event, eventFormData) {
+    service.updateMajorInfo(eventFormData);
+  }
+
+  $rootScope.$on('eventTypeChanged', updateMajorInfo);
+  $rootScope.$on('eventThemeChanged', updateMajorInfo);
+  $rootScope.$on('eventTimingChanged', updateMajorInfo);
+  $rootScope.$on('eventTitleChanged', updateMajorInfo);
 }

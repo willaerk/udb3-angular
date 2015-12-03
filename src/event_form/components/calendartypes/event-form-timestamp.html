@@ -5,13 +5,13 @@
 
       <div udb-datepicker
            ng-if="timestamp.date"
-           ng-change="setMajorInfoChanged()"
+           ng-change="eventTimingChanged()"
            highlight-date="2015-8-12"
            ng-model="timestamp.date"
            data-date="{{ timestamp.date|date:'dd/MM/yyyy' }}"></div>
       <div udb-datepicker
            ng-if="!timestamp.date"
-           ng-change="setMajorInfoChanged()"
+           ng-change="eventTimingChanged()"
            highlight-date="2015-8-12"
            ng-model="timestamp.date"></div>
 
@@ -20,7 +20,7 @@
           <label>
             <input type="checkbox"
                    value=""
-                   ng-change="setMajorInfoChanged()"
+                   ng-change="eventTimingChanged()"
                    ng-model="timestamp.showStartHour"
                    class="beginuur-toevoegen"
                    ng-click="toggleStartHour(timestamp)">
@@ -29,7 +29,7 @@
           <div class="beginuur-invullen" ng-show="timestamp.showStartHour">
             <udb-time-autocomplete
                 ng-model="timestamp.startHour"
-                ng-change="setMajorInfoChanged()"
+                ng-change="eventTimingChanged()"
                 css-class="form-control uur"
                 input-placeholder="Bv. 08:00"></udb-time-autocomplete>
           </div>
@@ -37,7 +37,7 @@
         <div class="col-xs-6 einduur" ng-show="timestamp.showStartHour">
           <label>
             <input type="checkbox"
-                   ng-change="setMajorInfoChanged()"
+                   ng-change="eventTimingChanged()"
                    value=""
                    ng-model="timestamp.showEndHour"
                    class="einduur-toevoegen"
@@ -46,7 +46,7 @@
           </label>
           <div class="einduur-invullen" ng-show="timestamp.showEndHour">
             <udb-time-autocomplete
-                ng-change="setMajorInfoChanged()"
+                ng-change="eventTimingChanged()"
                 ng-model="timestamp.endHour"
                 css-class="form-control uur"
                 input-placeholder="Bv. 23:00"></udb-time-autocomplete>

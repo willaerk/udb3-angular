@@ -12,7 +12,7 @@ angular
   .controller('EventFormStep1Controller', EventFormStep1Controller);
 
 /* @ngInject */
-function EventFormStep1Controller($scope, EventFormData, eventCategories, placeCategories) {
+function EventFormStep1Controller($scope, $rootScope, EventFormData, eventCategories, placeCategories) {
 
   // main storage for event form.
   $scope.eventFormData = EventFormData;
@@ -109,7 +109,7 @@ function EventFormStep1Controller($scope, EventFormData, eventCategories, placeC
 
     // Keep track of changes.
     if (EventFormData.id) {
-      EventFormData.majorInfoChanged = true;
+      $rootScope.$emit('eventTypeChanged', EventFormData);
     }
 
     $scope.showEventSelection = false;
@@ -171,7 +171,7 @@ function EventFormStep1Controller($scope, EventFormData, eventCategories, placeC
     $scope.canRefine = false;
 
     if (EventFormData.id) {
-      EventFormData.majorInfoChanged = true;
+      $rootScope.$emit('eventThemeChanged', EventFormData);
     }
 
   }

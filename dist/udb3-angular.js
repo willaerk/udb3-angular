@@ -4340,7 +4340,9 @@ angular
   .service('eventCrud', EventCrud);
 
 /* @ngInject */
-function EventCrud(jobLogger, udbApi, EventCrudJob) {
+function EventCrud(jobLogger, udbApi, EventCrudJob, $rootScope) {
+
+  var service = this;
 
   /**
    * Creates a new event and add the job to the logger.
@@ -4348,7 +4350,7 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
    * @param {UdbEvent}  event
    * The event to be created
    */
-  this.createEvent = function (event) {
+  service.createEvent = function (event) {
 
     var jobPromise = null;
 
@@ -4365,7 +4367,7 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
   /**
    * Remove an event.
    */
-  this.removeEvent = function (item) {
+  service.removeEvent = function (item) {
     var jobPromise = udbApi.removeEvent(item.id);
     jobPromise.success(function (jobData) {
       var job = new EventCrudJob(jobData.commandId, item, 'removeEvent');
@@ -4380,7 +4382,7 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
    * @param {int} id
    *   Place Id to find events for
    */
-  this.findEventsForLocation = function(id) {
+  service.findEventsForLocation = function(id) {
     var jobPromise = udbApi.findEventsForLocation(id);
     return jobPromise;
   };
@@ -4388,7 +4390,7 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
   /**
    * Creates a new place.
    */
-  this.createPlace = function(place) {
+  service.createPlace = function(place) {
     return udbApi.createPlace(place);
   };
 
@@ -4406,19 +4408,20 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
 
   /**
    * Update the major info of an event / place.
+   * @param {EventFormData} eventFormData
    */
-  this.updateMajorInfo = function(item) {
+  service.updateMajorInfo = function(eventFormData) {
 
     var jobPromise;
-    if (item.isEvent) {
-      jobPromise = udbApi.updateMajorInfo(item.id, item.getType(), item);
+    if (eventFormData.isEvent) {
+      jobPromise = udbApi.updateMajorInfo(eventFormData.id, eventFormData.getType(), eventFormData);
     }
     else {
-      jobPromise = udbApi.updateMajorInfo(item.id, item.getType(), item);
+      jobPromise = udbApi.updateMajorInfo(eventFormData.id, eventFormData.getType(), eventFormData);
     }
 
     jobPromise.success(function (jobData) {
-      var job = new EventCrudJob(jobData.commandId, item, 'updateItem');
+      var job = new EventCrudJob(jobData.commandId, eventFormData, 'updateItem');
       jobLogger.addJob(job);
     });
 
@@ -4429,7 +4432,7 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
   /**
    * Creates a new organizer.
    */
-  this.createOrganizer = function(organizer) {
+  service.createOrganizer = function(organizer) {
 
     return udbApi.createOrganizer(organizer);
 
@@ -4441,7 +4444,7 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
    * @param {EventFormData} item
    * @returns {EventCrud.updateDescription.jobPromise}
    */
-  this.updateDescription = function(item) {
+  service.updateDescription = function(item) {
 
     var jobPromise = udbApi.translateProperty(
       item.id,
@@ -4466,7 +4469,7 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
    * @param {EventFormData} item
    * @returns {EventCrud.updateTypicalAgeRange.jobPromise}
    */
-  this.updateTypicalAgeRange = function(item) {
+  service.updateTypicalAgeRange = function(item) {
 
     var jobPromise = udbApi.updateProperty(item.id, item.getType(), 'typicalAgeRange', item.typicalAgeRange);
 
@@ -4485,7 +4488,7 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
    * @param {EventFormData} item
    * @returns {EventCrud.updateTypicalAgeRange.jobPromise}
    */
-  this.updateTypicalAgeRange = function(item) {
+  service.updateTypicalAgeRange = function(item) {
 
     var jobPromise = udbApi.updateProperty(item.id, item.getType(), 'typicalAgeRange', item.typicalAgeRange);
 
@@ -4504,7 +4507,7 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
    * @param {EventFormData} item
    * @returns {EventCrud.deleteTypicalAgeRange.jobPromise}
    */
-  this.deleteTypicalAgeRange = function(item) {
+  service.deleteTypicalAgeRange = function(item) {
 
     var jobPromise = udbApi.deleteTypicalAgeRange(item.id, item.getType());
 
@@ -4523,7 +4526,7 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
    * @param {EventFormData} item
    * @returns {EventCrud.updateOrganizer.jobPromise}
    */
-  this.updateOrganizer = function(item) {
+  service.updateOrganizer = function(item) {
 
     var jobPromise = udbApi.updateProperty(item.id, item.getType(), 'organizer', item.organizer.id);
 
@@ -4542,7 +4545,7 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
    * @param {EventFormData} item
    * @returns {EventCrud.updateOrganizer.jobPromise}
    */
-  this.deleteOfferOrganizer = function(item) {
+  service.deleteOfferOrganizer = function(item) {
 
     var jobPromise = udbApi.deleteOfferOrganizer(item.id, item.getType(), item.organizer.id);
 
@@ -4561,7 +4564,7 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
    * @param {EventFormData} item
    * @returns {EventCrud.updateContactPoint.jobPromise}
    */
-  this.updateContactPoint = function(item) {
+  service.updateContactPoint = function(item) {
 
     var jobPromise = udbApi.updateProperty(item.id, item.getType(), 'contactPoint', item.contactPoint);
 
@@ -4580,7 +4583,7 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
    * @param {EventFormData} item
    * @returns {EventCrud.updateFacilities.jobPromise}
    */
-  this.updateFacilities = function(item) {
+  service.updateFacilities = function(item) {
 
     var jobPromise = udbApi.updateProperty(item.id, item.getType(), 'facilities', item.facilities);
 
@@ -4600,7 +4603,7 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
    *  Type of item
    * @returns {EventCrud.updateBookingInfo.jobPromise}
    */
-  this.updateBookingInfo = function(item) {
+  service.updateBookingInfo = function(item) {
 
     var jobPromise = udbApi.updateProperty(item.id, item.getType(), 'bookingInfo', item.bookingInfo);
 
@@ -4622,7 +4625,7 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
    * @param {string} copyrightHolder
    * @returns {EventCrud.addImage.jobPromise}
    */
-  this.addImage = function(item, image, description, copyrightHolder) {
+  service.addImage = function(item, image, description, copyrightHolder) {
 
     var jobPromise = udbApi.addImage(item.id, item.getType(), image, description, copyrightHolder);
 
@@ -4645,7 +4648,7 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
    * @param {string} copyrightHolder
    * @returns {EventCrud.updateImage.jobPromise}
    */
-  this.updateImage = function(item, indexToUpdate, image, description, copyrightHolder) {
+  service.updateImage = function(item, indexToUpdate, image, description, copyrightHolder) {
 
     var jobPromise = udbApi.updateImage(item.id, item.getType(), indexToUpdate, image, description, copyrightHolder);
 
@@ -4665,7 +4668,7 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
    * @param {int} indexToDelete
    * @returns {EventCrud.deleteImage.jobPromise}
    */
-  this.deleteImage = function(item, indexToDelete) {
+  service.deleteImage = function(item, indexToDelete) {
 
     var jobPromise = udbApi.deleteImage(item.id, item.getType(), indexToDelete);
 
@@ -4678,8 +4681,20 @@ function EventCrud(jobLogger, udbApi, EventCrudJob) {
 
   };
 
+  /**
+   * @param {Object} event
+   * @param {EventFormData} eventFormData
+   */
+  function updateMajorInfo(event, eventFormData) {
+    service.updateMajorInfo(eventFormData);
+  }
+
+  $rootScope.$on('eventTypeChanged', updateMajorInfo);
+  $rootScope.$on('eventThemeChanged', updateMajorInfo);
+  $rootScope.$on('eventTimingChanged', updateMajorInfo);
+  $rootScope.$on('eventTitleChanged', updateMajorInfo);
 }
-EventCrud.$inject = ["jobLogger", "udbApi", "EventCrudJob"];
+EventCrud.$inject = ["jobLogger", "udbApi", "EventCrudJob", "$rootScope"];
 
 // Source: src/entry/editing/event-editor.service.js
 /**
@@ -7345,7 +7360,7 @@ angular
   .controller('EventFormStep1Controller', EventFormStep1Controller);
 
 /* @ngInject */
-function EventFormStep1Controller($scope, EventFormData, eventCategories, placeCategories) {
+function EventFormStep1Controller($scope, $rootScope, EventFormData, eventCategories, placeCategories) {
 
   // main storage for event form.
   $scope.eventFormData = EventFormData;
@@ -7442,7 +7457,7 @@ function EventFormStep1Controller($scope, EventFormData, eventCategories, placeC
 
     // Keep track of changes.
     if (EventFormData.id) {
-      EventFormData.majorInfoChanged = true;
+      $rootScope.$emit('eventTypeChanged', EventFormData);
     }
 
     $scope.showEventSelection = false;
@@ -7504,7 +7519,7 @@ function EventFormStep1Controller($scope, EventFormData, eventCategories, placeC
     $scope.canRefine = false;
 
     if (EventFormData.id) {
-      EventFormData.majorInfoChanged = true;
+      $rootScope.$emit('eventThemeChanged', EventFormData);
     }
 
   }
@@ -7532,7 +7547,7 @@ function EventFormStep1Controller($scope, EventFormData, eventCategories, placeC
   }
 
 }
-EventFormStep1Controller.$inject = ["$scope", "EventFormData", "eventCategories", "placeCategories"];
+EventFormStep1Controller.$inject = ["$scope", "$rootScope", "EventFormData", "eventCategories", "placeCategories"];
 
 // Source: src/event_form/steps/event-form-step2.controller.js
 /**
@@ -7547,7 +7562,7 @@ angular
   .controller('EventFormStep2Controller', EventFormStep2Controller);
 
 /* @ngInject */
-function EventFormStep2Controller($scope, EventFormData, UdbOpeningHours) {
+function EventFormStep2Controller($scope, $rootScope, EventFormData) {
 
   // Scope vars.
   // main storage for event form.
@@ -7568,7 +7583,7 @@ function EventFormStep2Controller($scope, EventFormData, UdbOpeningHours) {
   $scope.toggleEndHour = toggleEndHour;
   $scope.saveOpeningHourDaySelection = saveOpeningHourDaySelection;
   $scope.saveOpeningHours = saveOpeningHours;
-  $scope.setMajorInfoChanged = setMajorInfoChanged;
+  $scope.eventTimingChanged = eventTimingChanged;
 
   // Mapping between machine name of days and real output.
   var dayNames = {
@@ -7713,20 +7728,19 @@ function EventFormStep2Controller($scope, EventFormData, UdbOpeningHours) {
    */
   function saveOpeningHours() {
     $scope.hasOpeningHours = true;
-    setMajorInfoChanged();
+    eventTimingChanged();
   }
 
   /**
    * Mark the major info as changed.
    */
-  function setMajorInfoChanged() {
+  function eventTimingChanged() {
     if (EventFormData.id) {
-      EventFormData.majorInfoChanged = true;
+      $rootScope.$emit('eventTimingChanged', EventFormData);
     }
   }
-
 }
-EventFormStep2Controller.$inject = ["$scope", "EventFormData", "UdbOpeningHours"];
+EventFormStep2Controller.$inject = ["$scope", "$rootScope", "EventFormData"];
 
 // Source: src/event_form/steps/event-form-step3.controller.js
 /**
@@ -8110,6 +8124,10 @@ function EventFormStep4Controller($scope, EventFormData, udbApi, appConfig, Sear
   // main storage for event form.
   $scope.eventFormData = EventFormData;
 
+  $scope.titleInputOptions = {
+    updateOn: 'change blur'
+  };
+
   $scope.infoMissing = false;
   $scope.duplicatesSearched = false;
   $scope.saving = false;
@@ -8124,7 +8142,7 @@ function EventFormStep4Controller($scope, EventFormData, udbApi, appConfig, Sear
   $scope.previousDuplicate = previousDuplicate;
   $scope.nextDuplicate = nextDuplicate;
   $scope.resultViewer = new SearchResultViewer();
-  $scope.setMajorInfoChanged = setMajorInfoChanged;
+  $scope.eventTitleChanged = eventTitleChanged;
 
   // Check if we need to show the leave warning
   window.onbeforeunload = function (event) {
@@ -8329,11 +8347,11 @@ function EventFormStep4Controller($scope, EventFormData, udbApi, appConfig, Sear
   }
 
   /**
-   * Mark the major info as changed.
+   * Notify that the title of an event has changed.
    */
-  function setMajorInfoChanged() {
+  function eventTitleChanged() {
     if (EventFormData.id) {
-      EventFormData.majorInfoChanged = true;
+      $rootScope.$emit('eventTitleChanged', EventFormData);
     }
   }
 
@@ -8357,17 +8375,27 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
 
   var controller = this;
   var URL_REGEXP = /^(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?$/;
-  var AgeRange = {
+  /**
+   * Enum for age ranges.
+   * @readonly
+   * @enum {Object}
+   */
+  var AgeRangeEnum = Object.freeze({
     'ALL': {'value': 0, 'label': 'Alle leeftijden'},
     'KIDS': {'value': 12, 'label': 'Kinderen tot 12 jaar', min: 1, max: 12},
     'TEENS': {'value': 18, 'label': 'Jongeren tussen 12 en 18 jaar', min: 13, max: 18},
     'ADULTS': {'value': 99, 'label': 'Volwassenen (+18 jaar)', min: 19}
-  };
-  var ContactInfoTypes = {
+  });
+  /**
+   * Enum for contact info types.
+   * @readonly
+   * @enum {string}
+   */
+  var ContactInfoTypeEnum = Object.freeze({
     EMAIL: 'email',
     PHONE: 'phone',
     URL: 'url'
-  };
+  });
 
   // Scope vars.
   $scope.eventFormData = EventFormData; // main storage for event form.
@@ -8383,7 +8411,7 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
   $scope.ageRangeError = false;
   $scope.invalidAgeRange = false;
   /**
-   * @type {AgeRange|null}
+   * @type {AgeRangeEnum|null}
    */
   $scope.ageRange = null;
   $scope.ageCssClass = EventFormData.ageRange ? 'state-complete' : 'state-incomplete';
@@ -8474,11 +8502,11 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
   $scope.openUploadImageModal = openUploadImageModal;
   $scope.openDeleteImageModal = openDeleteImageModal;
 
-  $scope.ageRanges = _.map(AgeRange, function (range) {
+  $scope.ageRanges = _.map(AgeRangeEnum, function (range) {
     return range;
   });
 
-  $scope.AgeRange = AgeRange;
+  $scope.AgeRange = AgeRangeEnum;
 
   // Init the controller for editing.
   initEditForm();
@@ -8518,13 +8546,13 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
 
   /**
    * Listener on the age range selection.
-   * @param {AgeRange} ageRange
+   * @param {AgeRangeEnum} ageRange
    */
   function ageRangeChanged(ageRange) {
     $scope.minAge = null;
     $scope.ageCssClass = 'state-complete';
 
-    if (ageRange === AgeRange.ALL) {
+    if (ageRange === AgeRangeEnum.ALL) {
       $scope.saveAgeRange();
     }
   }
@@ -8549,7 +8577,7 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
 
   /**
    * @param {number} minAge
-   * @param {AgeRange} ageRange
+   * @param {AgeRangeEnum} ageRange
    *
    * @return {boolean}
    */
@@ -8574,7 +8602,7 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
 
     $scope.invalidAgeRange = false;
     //$scope.minAge = parseInt($scope.minAge); // should already be a number!
-    if ($scope.ageRange !== AgeRange.ALL) {
+    if ($scope.ageRange !== AgeRangeEnum.ALL) {
 
       if (isNaN($scope.minAge)) {
         $scope.invalidAgeRange = true;
@@ -8604,7 +8632,7 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
         $scope.ageCssClass = 'state-complete';
       };
 
-      if ($scope.ageRange === AgeRange.ALL) {
+      if ($scope.ageRange === AgeRangeEnum.ALL) {
         ageRangePersisted = eventCrud.deleteTypicalAgeRange(EventFormData);
       }
       else {
@@ -8620,7 +8648,7 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
    * Set to all ages.
    */
   function setAllAges() {
-    $scope.ageRange = AgeRange.ALL;
+    $scope.ageRange = AgeRangeEnum.ALL;
   }
 
   /**
@@ -8741,7 +8769,7 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
       $scope.contactInfoCssClass = 'state-filling';
     }
 
-    $scope.contactInfo.push({type: ContactInfoTypes.PHONE, value: ''});
+    $scope.contactInfo.push({type: ContactInfoTypeEnum.PHONE, value: ''});
   }
 
   /**
@@ -9096,11 +9124,11 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
           $scope.minAge = minAge;
 
           if (maxAge) {
-            $scope.ageRange = _.findWhere(AgeRange, {max: maxAge});
+            $scope.ageRange = _.findWhere(AgeRangeEnum, {max: maxAge});
           }
           else {
-            $scope.ageRange = _.find(AgeRange, function (ageRange) {
-              // ignore AgeRange.ALL which has value zero because it will match anything
+            $scope.ageRange = _.find(AgeRangeEnum, function (ageRange) {
+              // ignore AgeRangeEnum.ALL which has value zero because it will match anything
               return ageRange.value && isMinimumAgeInRange(minAge, ageRange);
             });
           }
@@ -9109,13 +9137,13 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
 
       if (!$scope.ageRange) {
         $scope.minAge = 1;
-        $scope.ageRange = AgeRange.ALL;
+        $scope.ageRange = AgeRangeEnum.ALL;
       }
     }
 
     $scope.contactInfo = _.flatten(
       _.map(EventFormData.contactPoint, function (contactInfo, type) {
-        return _.contains(ContactInfoTypes, type) ? _.map(contactInfo, function (contactInfoItem) {
+        return _.contains(ContactInfoTypeEnum, type) ? _.map(contactInfo, function (contactInfoItem) {
           return {type: type, value: contactInfoItem};
         }) : [];
       })
@@ -12773,13 +12801,13 @@ $templateCache.put('templates/time-autocomplete.html',
     "        <div ng-if=\"eventFormData.startDate\"\n" +
     "             udb-datepicker\n" +
     "             highlight-date=\"2015-8-12\"\n" +
-    "             ng-change=\"setMajorInfoChanged()\"\n" +
+    "             ng-change=\"eventTimingChanged()\"\n" +
     "             ng-model=\"eventFormData.startDate\"\n" +
     "             data-date=\"{{ eventFormData.startDate|date:'dd/MM/yyyy' }}\"></div>\n" +
     "        <div ng-if=\"!eventFormData.startDate\"\n" +
     "             udb-datepicker\n" +
     "             highlight-date=\"2015-8-12\"\n" +
-    "             ng-change=\"setMajorInfoChanged()\"\n" +
+    "             ng-change=\"eventTimingChanged()\"\n" +
     "             ng-model=\"eventFormData.startDate\"></div>\n" +
     "      </div>\n" +
     "    </section>\n" +
@@ -12792,13 +12820,13 @@ $templateCache.put('templates/time-autocomplete.html',
     "        <div ng-if=\"eventFormData.endDate\"\n" +
     "             udb-datepicker\n" +
     "             highlight-date=\"2015-8-12\"\n" +
-    "             ng-change=\"setMajorInfoChanged()\"\n" +
+    "             ng-change=\"eventTimingChanged()\"\n" +
     "             ng-model=\"eventFormData.endDate\"\n" +
     "             data-date=\"{{ eventFormData.endDate|date:'dd/MM/yyyy' }}\"></div>\n" +
     "        <div ng-if=\"!eventFormData.endDate\"\n" +
     "             udb-datepicker\n" +
     "             highlight-date=\"2015-8-12\"\n" +
-    "             ng-change=\"setMajorInfoChanged()\"\n" +
+    "             ng-change=\"eventTimingChanged()\"\n" +
     "             ng-model=\"eventFormData.endDate\"></div>\n" +
     "      </div>\n" +
     "    </section>\n" +
@@ -12816,13 +12844,13 @@ $templateCache.put('templates/time-autocomplete.html',
     "\n" +
     "      <div udb-datepicker\n" +
     "           ng-if=\"timestamp.date\"\n" +
-    "           ng-change=\"setMajorInfoChanged()\"\n" +
+    "           ng-change=\"eventTimingChanged()\"\n" +
     "           highlight-date=\"2015-8-12\"\n" +
     "           ng-model=\"timestamp.date\"\n" +
     "           data-date=\"{{ timestamp.date|date:'dd/MM/yyyy' }}\"></div>\n" +
     "      <div udb-datepicker\n" +
     "           ng-if=\"!timestamp.date\"\n" +
-    "           ng-change=\"setMajorInfoChanged()\"\n" +
+    "           ng-change=\"eventTimingChanged()\"\n" +
     "           highlight-date=\"2015-8-12\"\n" +
     "           ng-model=\"timestamp.date\"></div>\n" +
     "\n" +
@@ -12831,7 +12859,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "          <label>\n" +
     "            <input type=\"checkbox\"\n" +
     "                   value=\"\"\n" +
-    "                   ng-change=\"setMajorInfoChanged()\"\n" +
+    "                   ng-change=\"eventTimingChanged()\"\n" +
     "                   ng-model=\"timestamp.showStartHour\"\n" +
     "                   class=\"beginuur-toevoegen\"\n" +
     "                   ng-click=\"toggleStartHour(timestamp)\">\n" +
@@ -12840,7 +12868,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "          <div class=\"beginuur-invullen\" ng-show=\"timestamp.showStartHour\">\n" +
     "            <udb-time-autocomplete\n" +
     "                ng-model=\"timestamp.startHour\"\n" +
-    "                ng-change=\"setMajorInfoChanged()\"\n" +
+    "                ng-change=\"eventTimingChanged()\"\n" +
     "                css-class=\"form-control uur\"\n" +
     "                input-placeholder=\"Bv. 08:00\"></udb-time-autocomplete>\n" +
     "          </div>\n" +
@@ -12848,7 +12876,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "        <div class=\"col-xs-6 einduur\" ng-show=\"timestamp.showStartHour\">\n" +
     "          <label>\n" +
     "            <input type=\"checkbox\"\n" +
-    "                   ng-change=\"setMajorInfoChanged()\"\n" +
+    "                   ng-change=\"eventTimingChanged()\"\n" +
     "                   value=\"\"\n" +
     "                   ng-model=\"timestamp.showEndHour\"\n" +
     "                   class=\"einduur-toevoegen\"\n" +
@@ -12857,7 +12885,7 @@ $templateCache.put('templates/time-autocomplete.html',
     "          </label>\n" +
     "          <div class=\"einduur-invullen\" ng-show=\"timestamp.showEndHour\">\n" +
     "            <udb-time-autocomplete\n" +
-    "                ng-change=\"setMajorInfoChanged()\"\n" +
+    "                ng-change=\"eventTimingChanged()\"\n" +
     "                ng-model=\"timestamp.endHour\"\n" +
     "                css-class=\"form-control uur\"\n" +
     "                input-placeholder=\"Bv. 23:00\"></udb-time-autocomplete>\n" +
@@ -13672,7 +13700,11 @@ $templateCache.put('templates/time-autocomplete.html',
     "    <div class=\"row\">\n" +
     "      <div class=\"col-xs-12 col-md-4\">\n" +
     "        <div class=\"form-group-lg\">\n" +
-    "          <input type=\"text\" class=\"form-control\" ng-model=\"eventFormData.name.nl\" ng-change=\"setMajorInfoChanged()\">\n" +
+    "          <input type=\"text\"\n" +
+    "                 class=\"form-control\"\n" +
+    "                 ng-model=\"eventFormData.name.nl\"\n" +
+    "                 ng-model-options=\"titleInputOptions\"\n" +
+    "                 ng-change=\"eventTitleChanged()\">\n" +
     "        </div>\n" +
     "      </div>\n" +
     "      <div class=\"col-xs-12 col-md-8\">\n" +

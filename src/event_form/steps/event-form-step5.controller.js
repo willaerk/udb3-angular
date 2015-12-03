@@ -16,12 +16,22 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
 
   var controller = this;
   var URL_REGEXP = /^(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?$/;
+  /**
+   * Enum for age ranges.
+   * @readonly
+   * @enum {Object}
+   */
   var AgeRangeEnum = Object.freeze({
     'ALL': {'value': 0, 'label': 'Alle leeftijden'},
     'KIDS': {'value': 12, 'label': 'Kinderen tot 12 jaar', min: 1, max: 12},
     'TEENS': {'value': 18, 'label': 'Jongeren tussen 12 en 18 jaar', min: 13, max: 18},
     'ADULTS': {'value': 99, 'label': 'Volwassenen (+18 jaar)', min: 19}
   });
+  /**
+   * Enum for contact info types.
+   * @readonly
+   * @enum {string}
+   */
   var ContactInfoTypeEnum = Object.freeze({
     EMAIL: 'email',
     PHONE: 'phone',

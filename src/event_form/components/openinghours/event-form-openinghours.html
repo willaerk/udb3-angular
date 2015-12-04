@@ -1,8 +1,9 @@
 <div class="col-xs-12" ng-hide="hasOpeningHours">
-  <a href="#" class="btn btn-link btn-plus wanneer-openingsuren-link" data-toggle="modal" data-target="#wanneer-openingsuren-toevoegen">Openingsuren toevoegen</a>
+  <a href="#" class="btn btn-link btn-plus wanneer-openingsuren-link"
+     data-toggle="modal" data-target="#wanneer-openingsuren-toevoegen">Openingsuren toevoegen</a>
 </div>
 
-<div class="col-xs-12 col-sm-4" ng-show="hasOpeningHours">
+<div class="col-xs-12 col-sm-8" ng-show="hasOpeningHours">
   <section class="wanneer-openingsuren-resultaat">
     <table class="table table-condensed ">
       <thead>
@@ -35,18 +36,13 @@
       <div class="modal-body">
         <table class="table">
           <thead>
-            <tr>
-              <th> Dag(en)
-              </th>
-              <th> Van
-              </th>
-              <th>
-              </th>
-              <th> Tot
-              </th>
-              <th>
-              </th>
-            </tr>
+          <tr>
+            <th>Dag(en)</th>
+            <th>Van</th>
+            <th></th>
+            <th>Tot</th>
+            <th></th>
+          </tr>
           </thead>
 
           <tr ng-repeat="(i, openingHour) in eventFormData.openingHours">
@@ -67,15 +63,21 @@
               </select>
             </td>
             <td>
-              <udb-time-autocomplete ng-model="openingHour.opens" css-class="form-control" input-placeholder="">
-              </udb-time-autocomplete>
+              <input udb-time-autocomplete
+                  ng-model="openingHour.opens"
+                  class="form-control"
+                  uib-typeahead="time for time in ::times | filter:$viewValue | limitTo:8"
+                  typeahead-editable="false">
             </td>
             <td>
               &nbsp;-&nbsp;
             </td>
             <td>
-              <udb-time-autocomplete ng-model="openingHour.closes" css-class="form-control" input-placeholder="">
-              </udb-time-autocomplete>
+              <input udb-time-autocomplete
+                     ng-model="openingHour.closes"
+                     class="form-control"
+                     uib-typeahead="time for time in ::times | filter:$viewValue | limitTo:8"
+                     typeahead-editable="false">
             </td>
             <td>
               <button type="button" class="close" aria-label="Close" ng-click="eventFormData.removeOpeningHour(i)">

@@ -13009,10 +13009,11 @@ $templateCache.put('templates/unexpected-error-modal.html',
 
   $templateCache.put('templates/event-form-openinghours.html',
     "<div class=\"col-xs-12\" ng-hide=\"hasOpeningHours\">\n" +
-    "  <a href=\"#\" class=\"btn btn-link btn-plus wanneer-openingsuren-link\" data-toggle=\"modal\" data-target=\"#wanneer-openingsuren-toevoegen\">Openingsuren toevoegen</a>\n" +
+    "  <a href=\"#\" class=\"btn btn-link btn-plus wanneer-openingsuren-link\"\n" +
+    "     data-toggle=\"modal\" data-target=\"#wanneer-openingsuren-toevoegen\">Openingsuren toevoegen</a>\n" +
     "</div>\n" +
     "\n" +
-    "<div class=\"col-xs-12 col-sm-4\" ng-show=\"hasOpeningHours\">\n" +
+    "<div class=\"col-xs-12 col-sm-8\" ng-show=\"hasOpeningHours\">\n" +
     "  <section class=\"wanneer-openingsuren-resultaat\">\n" +
     "    <table class=\"table table-condensed \">\n" +
     "      <thead>\n" +
@@ -13045,18 +13046,13 @@ $templateCache.put('templates/unexpected-error-modal.html',
     "      <div class=\"modal-body\">\n" +
     "        <table class=\"table\">\n" +
     "          <thead>\n" +
-    "            <tr>\n" +
-    "              <th> Dag(en)\n" +
-    "              </th>\n" +
-    "              <th> Van\n" +
-    "              </th>\n" +
-    "              <th>\n" +
-    "              </th>\n" +
-    "              <th> Tot\n" +
-    "              </th>\n" +
-    "              <th>\n" +
-    "              </th>\n" +
-    "            </tr>\n" +
+    "          <tr>\n" +
+    "            <th>Dag(en)</th>\n" +
+    "            <th>Van</th>\n" +
+    "            <th></th>\n" +
+    "            <th>Tot</th>\n" +
+    "            <th></th>\n" +
+    "          </tr>\n" +
     "          </thead>\n" +
     "\n" +
     "          <tr ng-repeat=\"(i, openingHour) in eventFormData.openingHours\">\n" +
@@ -13077,15 +13073,21 @@ $templateCache.put('templates/unexpected-error-modal.html',
     "              </select>\n" +
     "            </td>\n" +
     "            <td>\n" +
-    "              <udb-time-autocomplete ng-model=\"openingHour.opens\" css-class=\"form-control\" input-placeholder=\"\">\n" +
-    "              </udb-time-autocomplete>\n" +
+    "              <input udb-time-autocomplete\n" +
+    "                  ng-model=\"openingHour.opens\"\n" +
+    "                  class=\"form-control\"\n" +
+    "                  uib-typeahead=\"time for time in ::times | filter:$viewValue | limitTo:8\"\n" +
+    "                  typeahead-editable=\"false\">\n" +
     "            </td>\n" +
     "            <td>\n" +
     "              &nbsp;-&nbsp;\n" +
     "            </td>\n" +
     "            <td>\n" +
-    "              <udb-time-autocomplete ng-model=\"openingHour.closes\" css-class=\"form-control\" input-placeholder=\"\">\n" +
-    "              </udb-time-autocomplete>\n" +
+    "              <input udb-time-autocomplete\n" +
+    "                     ng-model=\"openingHour.closes\"\n" +
+    "                     class=\"form-control\"\n" +
+    "                     uib-typeahead=\"time for time in ::times | filter:$viewValue | limitTo:8\"\n" +
+    "                     typeahead-editable=\"false\">\n" +
     "            </td>\n" +
     "            <td>\n" +
     "              <button type=\"button\" class=\"close\" aria-label=\"Close\" ng-click=\"eventFormData.removeOpeningHour(i)\">\n" +

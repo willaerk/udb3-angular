@@ -255,8 +255,8 @@ function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth,
    *   Id of item to check
    */
   this.hasPermission = function(id) {
-    return $http.get(appConfig.baseUrl + 'event/' + id + '/permission',
-      {},
+    return $http.get(
+      appConfig.baseUrl + 'event/' + id + '/permission',
       defaultApiConfig
     );
   };

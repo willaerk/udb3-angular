@@ -2694,8 +2694,8 @@ function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth,
    *   Id of item to check
    */
   this.hasPermission = function(id) {
-    return $http.get(appConfig.baseUrl + 'event/' + id + '/permission',
-      {},
+    return $http.get(
+      appConfig.baseUrl + 'event/' + id + '/permission',
       defaultApiConfig
     );
   };
@@ -5744,7 +5744,8 @@ function EventDetail(
   jsonLDLangFilter,
   locationTypes,
   variationRepository,
-  eventEditor
+  eventEditor,
+  $location
 ) {
   var activeTabId = 'data';
 
@@ -5858,8 +5859,12 @@ function EventDetail(
   $scope.makeTabActive = function (tabId) {
     activeTabId = tabId;
   };
+
+  $scope.openEditPage = function() {
+    $location.path('/event/' + eventId + '/edit');
+  };
 }
-EventDetail.$inject = ["$scope", "eventId", "udbApi", "jsonLDLangFilter", "locationTypes", "variationRepository", "eventEditor"];
+EventDetail.$inject = ["$scope", "eventId", "udbApi", "jsonLDLangFilter", "locationTypes", "variationRepository", "eventEditor", "$location"];
 
 // Source: src/event_form/components/calendartypes/event-form-period.directive.js
 /**
@@ -12630,6 +12635,23 @@ $templateCache.put('templates/unexpected-error-modal.html',
     "\n" +
     "    <div class=\"col-xs-9\">\n" +
     "      <div class=\"tab-pane\" role=\"tabpanel\" ng-show=\"isTabActive('data')\">\n" +
+    "\n" +
+    "        <div class=\"clearfix\">\n" +
+    "          <div class=\"btn-group pull-right\" ng-if=\"hasEditPermissions\">\n" +
+    "            <button type=\"button\" class=\"btn btn-primary\" ng-click=\"openEditPage()\">Bewerken</button>\n" +
+    "            <button type=\"button\" class=\"btn btn-primary dropdown-toggle\" data-toggle=\"dropdown\" aria-expanded=\"false\">\n" +
+    "              <span class=\"caret\"></span>\n" +
+    "              <span class=\"sr-only\">Toggle Dropdown</span>\n" +
+    "            </button>\n" +
+    "            <ul class=\"dropdown-menu\" role=\"menu\">\n" +
+    "              <li><a href=\"#\" ng-click=\"openDeleteConfirmModal()\">Verwijderen</a>\n" +
+    "              </li>\n" +
+    "            </ul>\n" +
+    "          </div>\n" +
+    "          <p class=\"block-header\">Voorbeeld</p>\n" +
+    "\n" +
+    "        </div>\n" +
+    "\n" +
     "        <div class=\"panel panel-default\">\n" +
     "          <table class=\"table udb3-data-table\">\n" +
     "            <colgroup>\n" +

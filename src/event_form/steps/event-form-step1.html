@@ -7,14 +7,14 @@
       </div>
     </section>
 
-    <div class="row">
-
-      <div class="col-xs-12" ng-class="eventSelectionClass" ng-show="showEventSelection">
+    <div class="row" ng-show="!activeEventType">
+      <div ng-class="splitTypes ? 'col-xs-6': 'col-xs-12'"
+           ng-show="splitTypes || eventFormData.getType() === 'event'">
         <label class="event-type-choser-label">Een activiteit of evenement</label>
         <ul class="list-inline" id="step1-events">
-          <li ng-repeat="eventTypeLabel in ::eventTypeLabels" ng-show="eventTypeLabel.primary === true || showAllEventTypes">
-            <button ng-bind="::eventTypeLabel.label" class="btn btn-default"
-                    ng-click="setEventType(eventTypeLabel.id, eventTypeLabel.label, true)"></button>
+          <li ng-repeat="eventType in ::eventTypeLabels" ng-show="eventType.primary === true || showAllEventTypes">
+            <button ng-bind="::eventType.label" class="btn btn-default"
+                    ng-click="setEventType(eventType, true)"></button>
           </li>
         </ul>
         <p ng-hide="showAllEventTypes">
@@ -22,23 +22,26 @@
         </p>
       </div>
 
-      <div class="col-xs-1 col-xs-12" ng-show="showEventSelection && showPlaceSelection">
+      <div class="col-xs-1 col-xs-12" ng-show="splitTypes">
         <p class="text-center">of</p>
       </div>
 
-      <div ng-class="placeSelectionClass" ng-show="showPlaceSelection">
+      <div ng-class="splitTypes ? 'col-xs-5': 'col-xs-12'"
+           ng-show="splitTypes || eventFormData.getType() === 'place'">
         <label class="event-type-choser-label">Een locatie of plaats</label>
         <ul class="list-inline" id="step1-places">
-          <li ng-repeat="placeLabel in ::placeLabels" ng-show="placeLabel.primary == true || showAllPlaces">
-            <button ng-bind="::placeLabel.label" class="btn btn-default"
-                    ng-click="setEventType(placeLabel.id, placeLabel.label, false)"></button>
+          <li ng-repeat="placeType in ::placeLabels" ng-show="placeType.primary == true || showAllPlaces">
+            <button ng-bind="::placeType.label" class="btn btn-default"
+                    ng-click="setEventType(placeType, false)"></button>
           </li>
         </ul>
         <p ng-hide="showAllPlaces">
           Niet gevonden wat je zocht? <a href="" ng-click="togglePlaces()">Toon alle mogelijkheden</a>
         </p>
       </div>
+    </div>
 
+    <div class="row">
       <p class="col-xs-12 col-md-12" ng-hide="activeEventType === ''">
         <span class="btn-chosen" ng-bind="activeEventTypeLabel"></span>
         <a class="btn btn-link btn-default" href="" ng-click="resetEventType()">Wijzigen</a>
@@ -47,9 +50,9 @@
       <div class="col-xs-12" ng-if="canRefine">
         <label class="event-theme-label" ng-show="eventThemeLabels.length">Verfijn</label>
         <ul class="list-inline" id="step2-list">
-          <li ng-repeat="eventThemeLabel in ::eventThemeLabels">
-            <button ng-bind="::eventThemeLabel.label" class="btn btn-default"
-                    ng-click="setTheme(eventThemeLabel.id, eventThemeLabel.label)"></button>
+          <li ng-repeat="eventTheme in ::eventThemeLabels">
+            <button ng-bind="::eventTheme.label" class="btn btn-default"
+                    ng-click="setTheme(eventTheme)"></button>
           </li>
         </ul>
       </div>
@@ -58,7 +61,6 @@
         <span class="btn-chosen" ng-bind="activeThemeLabel"></span>
         <a class="btn btn-link btn-default" href="" ng-click="resetTheme()">Wijzigen</a>
       </p>
-
     </div>
 
   </section>

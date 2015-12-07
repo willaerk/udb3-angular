@@ -11,10 +11,8 @@ describe('Controller: event form step 2', function () {
     scope = $rootScope;
     $q = $injector.get('$q');
     EventFormData = $injector.get('EventFormData');
-    eventCrud = jasmine.createSpyObj('eventCrud', ['updateMajorInfo']);
     stepController = $controller('EventFormStep2Controller', {
       $scope: scope,
-      eventCrud: eventCrud
     });
   }));
 

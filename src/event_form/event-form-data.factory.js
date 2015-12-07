@@ -1,6 +1,18 @@
 'use strict';
 
 /**
+ * @typedef {Object} EventType
+ * @property {string} id
+ * @property {string} label
+ */
+
+/**
+ * @typedef {Object} EventTheme
+ * @property {string} id
+ * @property {string} label
+ */
+
+/**
  * @ngdoc service
  * @name udb.core.EventFormData
  * @description
@@ -11,9 +23,12 @@ angular
   .factory('EventFormData', EventFormDataFactory);
 
 /* @ngInject */
-function EventFormDataFactory(UdbEvent, UdbPlace) {
-  return {
+function EventFormDataFactory() {
 
+  /**
+   * @class EventFormData
+   */
+  var eventFormData = {
     isEvent : true, // Is current item an event.
     isPlace : false, // Is current item a place.
     showStep1 : true,
@@ -39,7 +54,9 @@ function EventFormDataFactory(UdbEvent, UdbPlace) {
       }
     },
     place : {},
+    /** @type {EventType} */
     type : {},
+    /** @type {EventTheme} */
     theme : {},
     activeCalendarType : '', // only needed for the angular.
     activeCalendarLabel : '', // only needed for the angular.
@@ -106,18 +123,21 @@ function EventFormDataFactory(UdbEvent, UdbPlace) {
     },
 
     /**
-     * Set the event type.
+     * Set the event type and clear the selected theme.
+     * @param {EventType} eventType
      */
-    setEventType: function(id, label) {
-      this.type = {
-        'id' : id,
-        'label' : label,
-        'domain' : 'eventtype'
-      };
+    setEventType: function(eventType) {
+      this.type = eventType;
+      this.removeTheme();
+    },
+
+    removeType: function () {
+      this.type = {};
     },
 
     /**
      * Get the event type.
+     * @return {EventType}
      */
     getEventType: function() {
       return this.type;
@@ -132,17 +152,19 @@ function EventFormDataFactory(UdbEvent, UdbPlace) {
 
     /**
      * Set the theme.
+     * @param {EventTheme} theme
      */
-    setTheme: function(id, label) {
-      this.theme = {
-        'id' : id,
-        'label' : label,
-        'domain' : 'thema',
-      };
+    setTheme: function(theme) {
+      this.theme = theme;
+    },
+
+    removeTheme: function () {
+      this.theme = {};
     },
 
     /**
      * Get the theme.
+     * @return {EventTheme}
      */
     getTheme: function() {
       return this.theme;
@@ -338,4 +360,6 @@ function EventFormDataFactory(UdbEvent, UdbPlace) {
     }
 
   };
+
+  return eventFormData;
 }

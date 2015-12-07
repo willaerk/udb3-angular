@@ -6699,6 +6699,18 @@ function UdbContactInfoValidationDirective() {
 
 // Source: src/event_form/event-form-data.factory.js
 /**
+ * @typedef {Object} EventType
+ * @property {string} id
+ * @property {string} label
+ */
+
+/**
+ * @typedef {Object} EventTheme
+ * @property {string} id
+ * @property {string} label
+ */
+
+/**
  * @ngdoc service
  * @name udb.core.EventFormData
  * @description
@@ -6709,9 +6721,12 @@ angular
   .factory('EventFormData', EventFormDataFactory);
 
 /* @ngInject */
-function EventFormDataFactory(UdbEvent, UdbPlace) {
-  return {
+function EventFormDataFactory() {
 
+  /**
+   * @class EventFormData
+   */
+  var eventFormData = {
     isEvent : true, // Is current item an event.
     isPlace : false, // Is current item a place.
     showStep1 : true,
@@ -6737,7 +6752,9 @@ function EventFormDataFactory(UdbEvent, UdbPlace) {
       }
     },
     place : {},
+    /** @type {EventType} */
     type : {},
+    /** @type {EventTheme} */
     theme : {},
     activeCalendarType : '', // only needed for the angular.
     activeCalendarLabel : '', // only needed for the angular.
@@ -6804,18 +6821,21 @@ function EventFormDataFactory(UdbEvent, UdbPlace) {
     },
 
     /**
-     * Set the event type.
+     * Set the event type and clear the selected theme.
+     * @param {EventType} eventType
      */
-    setEventType: function(id, label) {
-      this.type = {
-        'id' : id,
-        'label' : label,
-        'domain' : 'eventtype'
-      };
+    setEventType: function(eventType) {
+      this.type = eventType;
+      this.removeTheme();
+    },
+
+    removeType: function () {
+      this.type = {};
     },
 
     /**
      * Get the event type.
+     * @return {EventType}
      */
     getEventType: function() {
       return this.type;
@@ -6830,17 +6850,19 @@ function EventFormDataFactory(UdbEvent, UdbPlace) {
 
     /**
      * Set the theme.
+     * @param {EventTheme} theme
      */
-    setTheme: function(id, label) {
-      this.theme = {
-        'id' : id,
-        'label' : label,
-        'domain' : 'thema',
-      };
+    setTheme: function(theme) {
+      this.theme = theme;
+    },
+
+    removeTheme: function () {
+      this.theme = {};
     },
 
     /**
      * Get the theme.
+     * @return {EventTheme}
      */
     getTheme: function() {
       return this.theme;
@@ -7036,8 +7058,9 @@ function EventFormDataFactory(UdbEvent, UdbPlace) {
     }
 
   };
+
+  return eventFormData;
 }
-EventFormDataFactory.$inject = ["UdbEvent", "UdbPlace"];
 
 // Source: src/event_form/event-form.controller.js
 /**
@@ -7346,6 +7369,8 @@ angular
 /* @ngInject */
 function EventFormStep1Controller($scope, $rootScope, EventFormData, eventCategories, placeCategories) {
 
+  var controller = this;
+
   // main storage for event form.
   $scope.eventFormData = EventFormData;
 
@@ -7353,45 +7378,78 @@ function EventFormStep1Controller($scope, $rootScope, EventFormData, eventCatego
   $scope.eventTypeLabels = eventCategories;
   $scope.placeLabels = placeCategories;
 
-  $scope.showEventSelection = EventFormData.id ? false : true;
-  $scope.showPlaceSelection = EventFormData.id ? false : true;
-  $scope.eventSelectionClass = $scope.showPlaceSelection ? 'col-xs-5' : 'col-xs-12';
-  $scope.placeSelectionClass = $scope.showEventSelection ? 'col-xs-6' : 'col-xs-12';
-
   $scope.canRefine = false;
   $scope.showAllEventTypes = false;
   $scope.showAllPlaces = false;
   $scope.eventThemeLabels = [];
 
-  $scope.activeEventType = EventFormData.type.id ? EventFormData.type.id : ''; // Current active event type.
-  $scope.activeEventTypeLabel = EventFormData.type.label ? EventFormData.type.label : ''; // Current active event type label
-  $scope.activeTheme = EventFormData.theme.id ? EventFormData.theme.id : '';
-  $scope.activeThemeLabel = EventFormData.theme.label ? EventFormData.theme.label : '';
+  $scope.activeEventType = '';
+  $scope.activeEventTypeLabel = '';
+  $scope.activeTheme = '';
+  $scope.activeThemeLabel = '';
 
-  $scope.setEventType = setEventType;
-  $scope.resetEventType = resetEventType;
-  $scope.toggleEventTypes = toggleEventTypes;
-  $scope.togglePlaces = togglePlaces;
-  $scope.setTheme = setTheme;
-  $scope.resetTheme = resetTheme;
+  $scope.splitTypes = true;
+
+  function init(EventFormData) {
+    if (EventFormData.id) {
+      controller.updateEventTypeAndThemePicker(EventFormData);
+      $scope.splitTypes = false;
+    }
+  }
+
+  init(EventFormData);
+
+  /**
+   * Update the event type and theme picker.
+   * @param {EventFormData} eventFormData
+   */
+  controller.updateEventTypeAndThemePicker = function (eventFormData) {
+    var eventTypeId = eventFormData.getEventType().id;
+    var eventThemeId = eventFormData.getTheme().id;
+
+    var eventTypes = _.union(eventCategories, placeCategories);
+    var type = _.findWhere(eventTypes, {id: eventTypeId});
+    var theme;
+
+    if (type) {
+      $scope.activeEventType = type.id;
+      $scope.activeEventTypeLabel = type.label;
+      $scope.eventThemeLabels = type.themes;
+
+      theme = _.findWhere(type.themes, {id: eventThemeId});
+    } else {
+      $scope.activeEventType = '';
+      $scope.activeEventTypeLabel = '';
+    }
+
+    if (theme) {
+      $scope.activeTheme = theme.id;
+      $scope.activeThemeLabel = theme.label;
+    } else {
+      $scope.activeTheme = '';
+      $scope.activeThemeLabel = '';
+    }
+
+    $scope.canRefine = type && !_.isEmpty(type.themes) && !theme;
+  };
 
   /**
    * Click listener on the event type buttons.
    * Activate the selected event type.
    */
-  function setEventType(type, label, isEvent) {
+  function setEventType(eventType, isEvent) {
+    // Check if previous event type was the same.
+    // If so, just show the previous entered data.
+    if (EventFormData.id === eventType.id) {
+      return;
+    }
 
-    $scope.activeEventType = type;
-    $scope.showEventSelection = false;
-    $scope.showPlaceSelection = false;
-    var eventTypes;
+    $scope.activeEventType = eventType.id;
 
     // User selected an event.
     if (isEvent) {
       EventFormData.isEvent = true;
       EventFormData.isPlace = false;
-
-      eventTypes = $scope.eventTypeLabels;
     }
     // User selected a place.
     else {
@@ -7404,8 +7462,6 @@ function EventFormStep1Controller($scope, $rootScope, EventFormData, eventCatego
       EventFormData.isEvent = false;
       EventFormData.isPlace = true;
 
-      eventTypes = $scope.placeLabels;
-
       // Places are default permanent. Users should not see a selection.
       EventFormData.calendarType = 'permanent';
       EventFormData.activeCalendarType = 'permanent';
@@ -7417,104 +7473,56 @@ function EventFormStep1Controller($scope, $rootScope, EventFormData, eventCatego
 
     }
 
-    var eventType = _.findWhere(eventTypes, {id: type});
-    if (eventType) {
-      $scope.activeEventType = eventType.id;
-      $scope.activeEventTypeLabel = eventType.label;
-
-      $scope.canRefine = !_.isEmpty(eventType.themes);
-
-      if ($scope.canRefine) {
-        $scope.eventThemeLabels = eventType.themes;
-      }
-    }
-
-    // Check if previous event type was the same.
-    // If so, just show the previous entered data.
-    if (EventFormData.eventType === type) {
-      return;
-    }
-
-    EventFormData.eventType = type;
-    EventFormData.setEventType(type, label);
-    EventFormData.theme = {};
+    EventFormData.setEventType(eventType);
 
     // Keep track of changes.
     if (EventFormData.id) {
       $rootScope.$emit('eventTypeChanged', EventFormData);
     }
 
-    $scope.showEventSelection = false;
-    $scope.showPlaceSelection = false;
-
+    controller.updateEventTypeAndThemePicker(EventFormData);
     EventFormData.showStep(2);
-
   }
 
   /**
    * Click listener to reset the event type. User can select a new event type.
    */
-  function resetEventType() {
-
-    $scope.canRefine = false;
-    $scope.activeEventType = '';
-    $scope.activeEventTypeLabel = '';
-    $scope.activeTheme = '';
-    $scope.activeThemeLabel = '';
-
-    if (EventFormData.id) {
-      $scope.showEventSelection = EventFormData.id && EventFormData.isEvent ? true : false;
-      $scope.showPlaceSelection = EventFormData.id && EventFormData.isPlace ? true : false;
-      $scope.eventSelectionClass = 'col-xs-12';
-      $scope.placeSelectionClass = 'col-xs-12';
-    }
-    else {
-      $scope.showEventSelection = true;
-      $scope.showPlaceSelection = true;
-    }
-
-  }
+  controller.resetEventType = function () {
+    EventFormData.removeType();
+    controller.updateEventTypeAndThemePicker(EventFormData);
+  };
 
   /**
    * Click listener to set the active theme.
-   * @param {string} id
-   * @param {string} label
+   * @param {EventTheme} theme
    */
-  function setTheme(id, label) {
-
-    $scope.activeTheme = id;
-
-    for (var i = 0; i < $scope.eventThemeLabels.length; i++) {
-      if ($scope.eventThemeLabels[i].id === id) {
-        $scope.activeThemeLabel = $scope.eventThemeLabels[i].label;
-        break;
-      }
-    }
-
+  function setTheme(theme) {
     // Check if previous event theme was the same.
     // If so, just show the previous entered data.
-    if (EventFormData.theme === id) {
+    if (EventFormData.getTheme().id === theme.id) {
       return;
     }
 
-    EventFormData.setTheme(id, label);
-
+    EventFormData.setTheme(theme);
     EventFormData.showStep(2);
-    $scope.canRefine = false;
-
-    if (EventFormData.id) {
-      $rootScope.$emit('eventThemeChanged', EventFormData);
-    }
-
+    controller.updateEventTypeAndThemePicker(EventFormData);
+    controller.eventThemeChanged(EventFormData);
   }
 
   /**
-   * Click listener to reset the active theme.
+   * Reset the active theme which in turns updates the data to render the picker and notifies other components.
    */
-  function resetTheme() {
-    $scope.canRefine = true;
-    $scope.activeTheme = '';
-  }
+  controller.resetTheme = function() {
+    EventFormData.removeTheme();
+    controller.updateEventTypeAndThemePicker(EventFormData);
+    controller.eventThemeChanged(EventFormData);
+  };
+
+  controller.eventThemeChanged = function(EventFormData) {
+    if (EventFormData.id) {
+      $rootScope.$emit('eventThemeChanged', EventFormData);
+    }
+  };
 
   /**
    * Click listener to toggle the event types list.
@@ -7529,6 +7537,13 @@ function EventFormStep1Controller($scope, $rootScope, EventFormData, eventCatego
   function togglePlaces() {
     $scope.showAllPlaces = !$scope.showAllPlaces;
   }
+
+  $scope.setEventType = setEventType;
+  $scope.resetEventType = controller.resetEventType;
+  $scope.toggleEventTypes = toggleEventTypes;
+  $scope.togglePlaces = togglePlaces;
+  $scope.setTheme = setTheme;
+  $scope.resetTheme = controller.resetTheme;
 
 }
 EventFormStep1Controller.$inject = ["$scope", "$rootScope", "EventFormData", "eventCategories", "placeCategories"];
@@ -13428,14 +13443,14 @@ $templateCache.put('templates/unexpected-error-modal.html',
     "      </div>\n" +
     "    </section>\n" +
     "\n" +
-    "    <div class=\"row\">\n" +
-    "\n" +
-    "      <div class=\"col-xs-12\" ng-class=\"eventSelectionClass\" ng-show=\"showEventSelection\">\n" +
+    "    <div class=\"row\" ng-show=\"!activeEventType\">\n" +
+    "      <div ng-class=\"splitTypes ? 'col-xs-6': 'col-xs-12'\"\n" +
+    "           ng-show=\"splitTypes || eventFormData.getType() === 'event'\">\n" +
     "        <label class=\"event-type-choser-label\">Een activiteit of evenement</label>\n" +
     "        <ul class=\"list-inline\" id=\"step1-events\">\n" +
-    "          <li ng-repeat=\"eventTypeLabel in ::eventTypeLabels\" ng-show=\"eventTypeLabel.primary === true || showAllEventTypes\">\n" +
-    "            <button ng-bind=\"::eventTypeLabel.label\" class=\"btn btn-default\"\n" +
-    "                    ng-click=\"setEventType(eventTypeLabel.id, eventTypeLabel.label, true)\"></button>\n" +
+    "          <li ng-repeat=\"eventType in ::eventTypeLabels\" ng-show=\"eventType.primary === true || showAllEventTypes\">\n" +
+    "            <button ng-bind=\"::eventType.label\" class=\"btn btn-default\"\n" +
+    "                    ng-click=\"setEventType(eventType, true)\"></button>\n" +
     "          </li>\n" +
     "        </ul>\n" +
     "        <p ng-hide=\"showAllEventTypes\">\n" +
@@ -13443,23 +13458,26 @@ $templateCache.put('templates/unexpected-error-modal.html',
     "        </p>\n" +
     "      </div>\n" +
     "\n" +
-    "      <div class=\"col-xs-1 col-xs-12\" ng-show=\"showEventSelection && showPlaceSelection\">\n" +
+    "      <div class=\"col-xs-1 col-xs-12\" ng-show=\"splitTypes\">\n" +
     "        <p class=\"text-center\">of</p>\n" +
     "      </div>\n" +
     "\n" +
-    "      <div ng-class=\"placeSelectionClass\" ng-show=\"showPlaceSelection\">\n" +
+    "      <div ng-class=\"splitTypes ? 'col-xs-5': 'col-xs-12'\"\n" +
+    "           ng-show=\"splitTypes || eventFormData.getType() === 'place'\">\n" +
     "        <label class=\"event-type-choser-label\">Een locatie of plaats</label>\n" +
     "        <ul class=\"list-inline\" id=\"step1-places\">\n" +
-    "          <li ng-repeat=\"placeLabel in ::placeLabels\" ng-show=\"placeLabel.primary == true || showAllPlaces\">\n" +
-    "            <button ng-bind=\"::placeLabel.label\" class=\"btn btn-default\"\n" +
-    "                    ng-click=\"setEventType(placeLabel.id, placeLabel.label, false)\"></button>\n" +
+    "          <li ng-repeat=\"placeType in ::placeLabels\" ng-show=\"placeType.primary == true || showAllPlaces\">\n" +
+    "            <button ng-bind=\"::placeType.label\" class=\"btn btn-default\"\n" +
+    "                    ng-click=\"setEventType(placeType, false)\"></button>\n" +
     "          </li>\n" +
     "        </ul>\n" +
     "        <p ng-hide=\"showAllPlaces\">\n" +
     "          Niet gevonden wat je zocht? <a href=\"\" ng-click=\"togglePlaces()\">Toon alle mogelijkheden</a>\n" +
     "        </p>\n" +
     "      </div>\n" +
+    "    </div>\n" +
     "\n" +
+    "    <div class=\"row\">\n" +
     "      <p class=\"col-xs-12 col-md-12\" ng-hide=\"activeEventType === ''\">\n" +
     "        <span class=\"btn-chosen\" ng-bind=\"activeEventTypeLabel\"></span>\n" +
     "        <a class=\"btn btn-link btn-default\" href=\"\" ng-click=\"resetEventType()\">Wijzigen</a>\n" +
@@ -13468,9 +13486,9 @@ $templateCache.put('templates/unexpected-error-modal.html',
     "      <div class=\"col-xs-12\" ng-if=\"canRefine\">\n" +
     "        <label class=\"event-theme-label\" ng-show=\"eventThemeLabels.length\">Verfijn</label>\n" +
     "        <ul class=\"list-inline\" id=\"step2-list\">\n" +
-    "          <li ng-repeat=\"eventThemeLabel in ::eventThemeLabels\">\n" +
-    "            <button ng-bind=\"::eventThemeLabel.label\" class=\"btn btn-default\"\n" +
-    "                    ng-click=\"setTheme(eventThemeLabel.id, eventThemeLabel.label)\"></button>\n" +
+    "          <li ng-repeat=\"eventTheme in ::eventThemeLabels\">\n" +
+    "            <button ng-bind=\"::eventTheme.label\" class=\"btn btn-default\"\n" +
+    "                    ng-click=\"setTheme(eventTheme)\"></button>\n" +
     "          </li>\n" +
     "        </ul>\n" +
     "      </div>\n" +
@@ -13479,7 +13497,6 @@ $templateCache.put('templates/unexpected-error-modal.html',
     "        <span class=\"btn-chosen\" ng-bind=\"activeThemeLabel\"></span>\n" +
     "        <a class=\"btn btn-link btn-default\" href=\"\" ng-click=\"resetTheme()\">Wijzigen</a>\n" +
     "      </p>\n" +
-    "\n" +
     "    </div>\n" +
     "\n" +
     "  </section>\n" +

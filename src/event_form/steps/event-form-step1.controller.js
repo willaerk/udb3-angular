@@ -14,6 +14,8 @@ angular
 /* @ngInject */
 function EventFormStep1Controller($scope, $rootScope, EventFormData, eventCategories, placeCategories) {
 
+  var controller = this;
+
   // main storage for event form.
   $scope.eventFormData = EventFormData;
 
@@ -21,45 +23,78 @@ function EventFormStep1Controller($scope, $rootScope, EventFormData, eventCatego
   $scope.eventTypeLabels = eventCategories;
   $scope.placeLabels = placeCategories;
 
-  $scope.showEventSelection = EventFormData.id ? false : true;
-  $scope.showPlaceSelection = EventFormData.id ? false : true;
-  $scope.eventSelectionClass = $scope.showPlaceSelection ? 'col-xs-5' : 'col-xs-12';
-  $scope.placeSelectionClass = $scope.showEventSelection ? 'col-xs-6' : 'col-xs-12';
-
   $scope.canRefine = false;
   $scope.showAllEventTypes = false;
   $scope.showAllPlaces = false;
   $scope.eventThemeLabels = [];
 
-  $scope.activeEventType = EventFormData.type.id ? EventFormData.type.id : ''; // Current active event type.
-  $scope.activeEventTypeLabel = EventFormData.type.label ? EventFormData.type.label : ''; // Current active event type label
-  $scope.activeTheme = EventFormData.theme.id ? EventFormData.theme.id : '';
-  $scope.activeThemeLabel = EventFormData.theme.label ? EventFormData.theme.label : '';
+  $scope.activeEventType = '';
+  $scope.activeEventTypeLabel = '';
+  $scope.activeTheme = '';
+  $scope.activeThemeLabel = '';
 
-  $scope.setEventType = setEventType;
-  $scope.resetEventType = resetEventType;
-  $scope.toggleEventTypes = toggleEventTypes;
-  $scope.togglePlaces = togglePlaces;
-  $scope.setTheme = setTheme;
-  $scope.resetTheme = resetTheme;
+  $scope.splitTypes = true;
+
+  function init(EventFormData) {
+    if (EventFormData.id) {
+      controller.updateEventTypeAndThemePicker(EventFormData);
+      $scope.splitTypes = false;
+    }
+  }
+
+  init(EventFormData);
+
+  /**
+   * Update the event type and theme picker.
+   * @param {EventFormData} eventFormData
+   */
+  controller.updateEventTypeAndThemePicker = function (eventFormData) {
+    var eventTypeId = eventFormData.getEventType().id;
+    var eventThemeId = eventFormData.getTheme().id;
+
+    var eventTypes = _.union(eventCategories, placeCategories);
+    var type = _.findWhere(eventTypes, {id: eventTypeId});
+    var theme;
+
+    if (type) {
+      $scope.activeEventType = type.id;
+      $scope.activeEventTypeLabel = type.label;
+      $scope.eventThemeLabels = type.themes;
+
+      theme = _.findWhere(type.themes, {id: eventThemeId});
+    } else {
+      $scope.activeEventType = '';
+      $scope.activeEventTypeLabel = '';
+    }
+
+    if (theme) {
+      $scope.activeTheme = theme.id;
+      $scope.activeThemeLabel = theme.label;
+    } else {
+      $scope.activeTheme = '';
+      $scope.activeThemeLabel = '';
+    }
+
+    $scope.canRefine = type && !_.isEmpty(type.themes) && !theme;
+  };
 
   /**
    * Click listener on the event type buttons.
    * Activate the selected event type.
    */
-  function setEventType(type, label, isEvent) {
+  function setEventType(eventType, isEvent) {
+    // Check if previous event type was the same.
+    // If so, just show the previous entered data.
+    if (EventFormData.id === eventType.id) {
+      return;
+    }
 
-    $scope.activeEventType = type;
-    $scope.showEventSelection = false;
-    $scope.showPlaceSelection = false;
-    var eventTypes;
+    $scope.activeEventType = eventType.id;
 
     // User selected an event.
     if (isEvent) {
       EventFormData.isEvent = true;
       EventFormData.isPlace = false;
-
-      eventTypes = $scope.eventTypeLabels;
     }
     // User selected a place.
     else {
@@ -72,8 +107,6 @@ function EventFormStep1Controller($scope, $rootScope, EventFormData, eventCatego
       EventFormData.isEvent = false;
       EventFormData.isPlace = true;
 
-      eventTypes = $scope.placeLabels;
-
       // Places are default permanent. Users should not see a selection.
       EventFormData.calendarType = 'permanent';
       EventFormData.activeCalendarType = 'permanent';
@@ -85,104 +118,56 @@ function EventFormStep1Controller($scope, $rootScope, EventFormData, eventCatego
 
     }
 
-    var eventType = _.findWhere(eventTypes, {id: type});
-    if (eventType) {
-      $scope.activeEventType = eventType.id;
-      $scope.activeEventTypeLabel = eventType.label;
-
-      $scope.canRefine = !_.isEmpty(eventType.themes);
-
-      if ($scope.canRefine) {
-        $scope.eventThemeLabels = eventType.themes;
-      }
-    }
-
-    // Check if previous event type was the same.
-    // If so, just show the previous entered data.
-    if (EventFormData.eventType === type) {
-      return;
-    }
-
-    EventFormData.eventType = type;
-    EventFormData.setEventType(type, label);
-    EventFormData.theme = {};
+    EventFormData.setEventType(eventType);
 
     // Keep track of changes.
     if (EventFormData.id) {
       $rootScope.$emit('eventTypeChanged', EventFormData);
     }
 
-    $scope.showEventSelection = false;
-    $scope.showPlaceSelection = false;
-
+    controller.updateEventTypeAndThemePicker(EventFormData);
     EventFormData.showStep(2);
-
   }
 
   /**
    * Click listener to reset the event type. User can select a new event type.
    */
-  function resetEventType() {
-
-    $scope.canRefine = false;
-    $scope.activeEventType = '';
-    $scope.activeEventTypeLabel = '';
-    $scope.activeTheme = '';
-    $scope.activeThemeLabel = '';
-
-    if (EventFormData.id) {
-      $scope.showEventSelection = EventFormData.id && EventFormData.isEvent ? true : false;
-      $scope.showPlaceSelection = EventFormData.id && EventFormData.isPlace ? true : false;
-      $scope.eventSelectionClass = 'col-xs-12';
-      $scope.placeSelectionClass = 'col-xs-12';
-    }
-    else {
-      $scope.showEventSelection = true;
-      $scope.showPlaceSelection = true;
-    }
-
-  }
+  controller.resetEventType = function () {
+    EventFormData.removeType();
+    controller.updateEventTypeAndThemePicker(EventFormData);
+  };
 
   /**
    * Click listener to set the active theme.
-   * @param {string} id
-   * @param {string} label
+   * @param {EventTheme} theme
    */
-  function setTheme(id, label) {
-
-    $scope.activeTheme = id;
-
-    for (var i = 0; i < $scope.eventThemeLabels.length; i++) {
-      if ($scope.eventThemeLabels[i].id === id) {
-        $scope.activeThemeLabel = $scope.eventThemeLabels[i].label;
-        break;
-      }
-    }
-
+  function setTheme(theme) {
     // Check if previous event theme was the same.
     // If so, just show the previous entered data.
-    if (EventFormData.theme === id) {
+    if (EventFormData.getTheme().id === theme.id) {
       return;
     }
 
-    EventFormData.setTheme(id, label);
-
+    EventFormData.setTheme(theme);
     EventFormData.showStep(2);
-    $scope.canRefine = false;
-
-    if (EventFormData.id) {
-      $rootScope.$emit('eventThemeChanged', EventFormData);
-    }
-
+    controller.updateEventTypeAndThemePicker(EventFormData);
+    controller.eventThemeChanged(EventFormData);
   }
 
   /**
-   * Click listener to reset the active theme.
+   * Reset the active theme which in turns updates the data to render the picker and notifies other components.
    */
-  function resetTheme() {
-    $scope.canRefine = true;
-    $scope.activeTheme = '';
-  }
+  controller.resetTheme = function() {
+    EventFormData.removeTheme();
+    controller.updateEventTypeAndThemePicker(EventFormData);
+    controller.eventThemeChanged(EventFormData);
+  };
+
+  controller.eventThemeChanged = function(EventFormData) {
+    if (EventFormData.id) {
+      $rootScope.$emit('eventThemeChanged', EventFormData);
+    }
+  };
 
   /**
    * Click listener to toggle the event types list.
@@ -197,5 +182,12 @@ function EventFormStep1Controller($scope, $rootScope, EventFormData, eventCatego
   function togglePlaces() {
     $scope.showAllPlaces = !$scope.showAllPlaces;
   }
+
+  $scope.setEventType = setEventType;
+  $scope.resetEventType = controller.resetEventType;
+  $scope.toggleEventTypes = toggleEventTypes;
+  $scope.togglePlaces = togglePlaces;
+  $scope.setTheme = setTheme;
+  $scope.resetTheme = controller.resetTheme;
 
 }

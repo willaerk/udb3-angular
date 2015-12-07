@@ -360,14 +360,14 @@ function EventFormDataFactory() {
     },
 
     /**
-     * Check if the timing of the event periodic and has a valid range.
+     * Check if the timing of the event is periodic and has a valid range.
      * @return {boolean}
      */
-    hasPeriodicRange: function () {
+    hasValidPeriodicRange: function () {
       var startDate = this.getStartDate();
       var endDate = this.getEndDate();
 
-      return this.calendarType === 'periodic' && startDate && endDate && startDate < endDate;
+      return this.calendarType === 'periodic' && !!startDate && !!endDate && startDate < endDate;
     }
 
   };

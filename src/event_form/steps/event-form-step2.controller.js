@@ -200,7 +200,7 @@ function EventFormStep2Controller($scope, $rootScope, EventFormData) {
   };
 
   controller.periodicEventTimingChanged = function () {
-    if (EventFormData.id && EventFormData.hasPeriodicRange()) {
+    if (EventFormData.id && EventFormData.hasValidPeriodicRange()) {
       $rootScope.$emit('eventTimingChanged', EventFormData);
     }
   };

@@ -35,15 +35,6 @@ function EventFormStep1Controller($scope, $rootScope, EventFormData, eventCatego
 
   $scope.splitTypes = true;
 
-  function init(EventFormData) {
-    if (EventFormData.id) {
-      controller.updateEventTypeAndThemePicker(EventFormData);
-      $scope.splitTypes = false;
-    }
-  }
-
-  init(EventFormData);
-
   /**
    * Update the event type and theme picker.
    * @param {EventFormData} eventFormData
@@ -190,4 +181,12 @@ function EventFormStep1Controller($scope, $rootScope, EventFormData, eventCatego
   $scope.setTheme = setTheme;
   $scope.resetTheme = controller.resetTheme;
 
+  controller.init = function (EventFormData) {
+    if (EventFormData.id) {
+      controller.updateEventTypeAndThemePicker(EventFormData);
+      $scope.splitTypes = false;
+    }
+  };
+
+  controller.init(EventFormData);
 }

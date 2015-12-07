@@ -1968,7 +1968,9 @@ CityAutocomplete.$inject = ["$q", "$http", "appConfig", "UdbPlace"];
         };
 
         elem.datepicker(options).on('changeDate', function (e) {
-          ngModel.$setViewValue(e.date);
+          if (ngModel.$viewValue && ngModel.$viewValue.getTime() !== e.date.getTime()) {
+            ngModel.$setViewValue(e.date);
+          }
         });
       }
     }
@@ -7055,6 +7057,17 @@ function EventFormDataFactory() {
      */
     deleteMediaObject : function(index) {
       this.mediaObject.splice(index, 1);
+    },
+
+    /**
+     * Check if the timing of the event periodic and has a valid range.
+     * @return {boolean}
+     */
+    hasPeriodicRange: function () {
+      var startDate = this.getStartDate();
+      var endDate = this.getEndDate();
+
+      return this.calendarType === 'periodic' && startDate && endDate && startDate < endDate;
     }
 
   };
@@ -7614,12 +7627,12 @@ function EventFormStep2Controller($scope, $rootScope, EventFormData) {
     EventFormData.showStep(3);
 
     // Check if previous calendar type was the same.
-    // If so, we don't need to create new openinghours. Just show the previous entered data.
+    // If so, we don't need to create new opening hours. Just show the previous entered data.
     if (EventFormData.calendarType === type) {
       return;
     }
 
-    // A type is choosen, start a complet new calendar, removing old dat
+    // A type is chosen, start a complete new calendar, removing old data
     $scope.hasOpeningHours = false;
     EventFormData.resetCalendar();
     EventFormData.calendarType = type;
@@ -7627,8 +7640,14 @@ function EventFormStep2Controller($scope, $rootScope, EventFormData) {
     if (EventFormData.calendarType === 'single') {
       addTimestamp();
     }
-    else if (EventFormData.calendarType === 'periodic' || EventFormData.calendarType === 'permanent') {
+
+    if (EventFormData.calendarType === 'periodic') {
       EventFormData.addOpeningHour('', '', '');
+    }
+
+    if (EventFormData.calendarType === 'permanent') {
+      EventFormData.addOpeningHour('', '', '');
+      controller.eventTimingChanged();
     }
 
     initCalendar();
@@ -7737,6 +7756,12 @@ function EventFormStep2Controller($scope, $rootScope, EventFormData) {
    */
   controller.eventTimingChanged = function() {
     if (EventFormData.id) {
+      $rootScope.$emit('eventTimingChanged', EventFormData);
+    }
+  };
+
+  controller.periodicEventTimingChanged = function () {
+    if (EventFormData.id && EventFormData.hasPeriodicRange()) {
       $rootScope.$emit('eventTimingChanged', EventFormData);
     }
   };
@@ -12809,7 +12834,7 @@ $templateCache.put('templates/unexpected-error-modal.html',
     "        <p class=\"module-title\">Vanaf</p>\n" +
     "        <div udb-datepicker\n" +
     "             highlight-date=\"2015-8-12\"\n" +
-    "             ng-change=\"EventFormStep2.eventTimingChanged()\"\n" +
+    "             ng-change=\"EventFormStep2.periodicEventTimingChanged()\"\n" +
     "             ng-model=\"eventFormData.startDate\"></div>\n" +
     "      </div>\n" +
     "    </section>\n" +
@@ -12821,7 +12846,7 @@ $templateCache.put('templates/unexpected-error-modal.html',
     "        <p class=\"module-title\">Tot en met</p>\n" +
     "        <div udb-datepicker\n" +
     "             highlight-date=\"2015-8-12\"\n" +
-    "             ng-change=\"EventFormStep2.eventTimingChanged()\"\n" +
+    "             ng-change=\"EventFormStep2.periodicEventTimingChanged()\"\n" +
     "             ng-model=\"eventFormData.endDate\"></div>\n" +
     "      </div>\n" +
     "    </section>\n" +

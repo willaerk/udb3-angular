@@ -4,7 +4,7 @@ describe('Controller: event form step 2', function () {
 
   beforeEach(module('udb.event-form'));
 
-  var $controller, stepController, scope, $q, EventFormData, eventCrud;
+  var $controller, stepController, scope, $q, EventFormData;
 
   beforeEach(inject(function ($rootScope, $injector) {
     $controller = $injector.get('$controller');
@@ -12,7 +12,7 @@ describe('Controller: event form step 2', function () {
     $q = $injector.get('$q');
     EventFormData = $injector.get('EventFormData');
     stepController = $controller('EventFormStep2Controller', {
-      $scope: scope,
+      $scope: scope
     });
   }));
 
@@ -41,6 +41,14 @@ describe('Controller: event form step 2', function () {
     };
 
     stepController.toggleStartHour(timestamp);
+    expect(stepController.eventTimingChanged).toHaveBeenCalled();
+  });
+
+  it('should update timing when the calendar type is set to permanent', function () {
+    spyOn(stepController, 'eventTimingChanged');
+
+    scope.setCalendarType('permanent');
+
     expect(stepController.eventTimingChanged).toHaveBeenCalled();
   });
 

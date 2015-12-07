@@ -66,12 +66,12 @@ function EventFormStep2Controller($scope, $rootScope, EventFormData) {
     EventFormData.showStep(3);
 
     // Check if previous calendar type was the same.
-    // If so, we don't need to create new openinghours. Just show the previous entered data.
+    // If so, we don't need to create new opening hours. Just show the previous entered data.
     if (EventFormData.calendarType === type) {
       return;
     }
 
-    // A type is choosen, start a complet new calendar, removing old dat
+    // A type is chosen, start a complete new calendar, removing old data
     $scope.hasOpeningHours = false;
     EventFormData.resetCalendar();
     EventFormData.calendarType = type;
@@ -79,8 +79,14 @@ function EventFormStep2Controller($scope, $rootScope, EventFormData) {
     if (EventFormData.calendarType === 'single') {
       addTimestamp();
     }
-    else if (EventFormData.calendarType === 'periodic' || EventFormData.calendarType === 'permanent') {
+
+    if (EventFormData.calendarType === 'periodic') {
       EventFormData.addOpeningHour('', '', '');
+    }
+
+    if (EventFormData.calendarType === 'permanent') {
+      EventFormData.addOpeningHour('', '', '');
+      controller.eventTimingChanged();
     }
 
     initCalendar();
@@ -189,6 +195,12 @@ function EventFormStep2Controller($scope, $rootScope, EventFormData) {
    */
   controller.eventTimingChanged = function() {
     if (EventFormData.id) {
+      $rootScope.$emit('eventTimingChanged', EventFormData);
+    }
+  };
+
+  controller.periodicEventTimingChanged = function () {
+    if (EventFormData.id && EventFormData.hasPeriodicRange()) {
       $rootScope.$emit('eventTimingChanged', EventFormData);
     }
   };

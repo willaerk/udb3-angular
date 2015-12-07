@@ -46,7 +46,9 @@
         };
 
         elem.datepicker(options).on('changeDate', function (e) {
-          ngModel.$setViewValue(e.date);
+          if (ngModel.$viewValue && ngModel.$viewValue.getTime() !== e.date.getTime()) {
+            ngModel.$setViewValue(e.date);
+          }
         });
       }
     }

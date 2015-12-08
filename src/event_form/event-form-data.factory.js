@@ -336,17 +336,13 @@ function EventFormDataFactory() {
 
     /**
      * Add a new image.
+     *
+     * @param {MediaObject} mediaObject
      */
-    addImage : function(url, thumbnailUrl, description, copyrightHolder) {
-      var image = {
-        url : url,
-        thumbnailUrl : thumbnailUrl,
-        description : description,
-        copyrightHolder : copyrightHolder
-      };
-      image['@type'] = 'ImageObject';
-      this.mediaObjects.push(image);
-      this.image.push(image);
+    addImage : function(mediaObject) {
+      mediaObject['@type'] = 'ImageObject';
+      this.mediaObjects.push(mediaObject);
+      this.image.push(mediaObject);
     },
 
     /**
@@ -386,7 +382,7 @@ function EventFormDataFactory() {
      *@param {MediaObject} deletedMediaObject
      */
     deleteMediaObject : function(deletedMediaObject) {
-      this.mediaObjects = _.reject(this.mediaObjects, { id: deletedMediaObject.id });
+      this.mediaObjects = _.reject(this.mediaObjects, {id: deletedMediaObject.id});
     },
 
     /**

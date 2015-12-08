@@ -17,7 +17,6 @@ function EventFormImageUploadController(
   $uibModalInstance,
   EventFormData,
   eventCrud,
-  indexToEdit,
   appConfig
 ) {
 
@@ -31,15 +30,6 @@ function EventFormImageUploadController(
   $scope.imagesToUpload = [];
   $scope.description = '';
   $scope.copyright = '';
-
-  var mediaObject = null;
-  // An object to edit was given.
-  if (indexToEdit >= 0) {
-    mediaObject = EventFormData.mediaObject[indexToEdit];
-    $scope.description = mediaObject.description;
-    $scope.copyright = mediaObject.copyrightHolder;
-    acceptAgreements();
-  }
 
   // Scope functions.
   $scope.acceptAgreements = acceptAgreements;
@@ -65,22 +55,16 @@ function EventFormImageUploadController(
    * Upload the images and save it to db.
    */
   function uploadImages() {
+    startUploading();
 
+    _.forEach($scope.imagesToUpload, function (image) {
+      addImage(image);
+    });
+  }
+
+  function startUploading() {
     $scope.saving = true;
     $scope.error = false;
-
-    // If we are editing, imagesToUpload is not required.
-    if (mediaObject) {
-      // Will be undefined if no upload was done in edit.
-      updateImage($scope.imagesToUpload[0]);
-    }
-    else {
-      // IE8/9 can't handle array. Upload 1 by 1.
-      for (var i = 0; i < $scope.imagesToUpload.length; i++) {
-        addImage($scope.imagesToUpload[i]);
-      }
-    }
-
   }
 
   /**
@@ -90,53 +74,30 @@ function EventFormImageUploadController(
 
     var uploaded = 0;
 
+    function displayUploadError() {
+      $scope.saving = false;
+      $scope.error = true;
+    }
+
     eventCrud.addImage(
       EventFormData,
       image,
       $scope.description,
       $scope.copyright
     ).then(function (jsonResponse) {
-      EventFormData.addImage(
-        jsonResponse.data.url,
-        jsonResponse.data.thumbnailUrl,
-        $scope.description,
-        $scope.copyright
-      );
+      var image = {
+        id: _.uniqueId(),
+        url : jsonResponse.data.url,
+        thumbnailUrl : jsonResponse.data.thumbnailUrl,
+        description : $scope.description,
+        copyrightHolder : $scope.copyright
+      };
+      EventFormData.addImage(image);
       uploaded++;
       if (uploaded === $scope.imagesToUpload.length) {
         $uibModalInstance.close();
       }
-    }, function() {
-      $scope.saving = false;
-      $scope.error = true;
-    });
-
-  }
-
-  /**
-   * Update an image or the description.
-   */
-  function updateImage(image) {
-
-    eventCrud.updateImage(
-      EventFormData,
-      indexToEdit,
-      image,
-      $scope.description,
-      $scope.copyright
-    ).then(function (jsonResponse) {
-      EventFormData.editMediaObject(
-        indexToEdit,
-        jsonResponse.data.url,
-        jsonResponse.data.thumbnailUrl,
-        $scope.description,
-        $scope.copyright
-      );
-      $uibModalInstance.close();
-    }, function() {
-      $scope.saving = false;
-      $scope.error = true;
-    });
+    },displayUploadError);
 
   }
 

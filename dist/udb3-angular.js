@@ -5981,7 +5981,7 @@ angular
   .controller('EventFormImageDeleteController', EventFormImageDeleteController);
 
 /* @ngInject */
-function EventFormImageDeleteController($scope, $modalInstance, EventFormData, eventCrud, indexToDelete) {
+function EventFormImageDeleteController($scope, $uibModalInstance, EventFormData, eventCrud, indexToDelete) {
 
   // Scope vars.
   $scope.saving = false;
@@ -5995,7 +5995,7 @@ function EventFormImageDeleteController($scope, $modalInstance, EventFormData, e
    * Cancel the modal.
    */
   function cancel() {
-    $modalInstance.dismiss('cancel');
+    $uibModalInstance.dismiss('cancel');
   }
 
   /**
@@ -6009,7 +6009,7 @@ function EventFormImageDeleteController($scope, $modalInstance, EventFormData, e
     eventCrud.deleteImage(EventFormData, indexToDelete).then(function() {
       EventFormData.deleteMediaObject(indexToDelete);
       $scope.saving = false;
-      $modalInstance.close();
+      $uibModalInstance.close();
     }, function() {
       $scope.error = true;
       $scope.saving = false;
@@ -6018,7 +6018,7 @@ function EventFormImageDeleteController($scope, $modalInstance, EventFormData, e
   }
 
 }
-EventFormImageDeleteController.$inject = ["$scope", "$modalInstance", "EventFormData", "eventCrud", "indexToDelete"];
+EventFormImageDeleteController.$inject = ["$scope", "$uibModalInstance", "EventFormData", "eventCrud", "indexToDelete"];
 
 // Source: src/event_form/components/image-upload/event-form-image-upload.controller.js
 /**
@@ -6033,7 +6033,7 @@ angular
   .controller('EventFormImageUploadController', EventFormImageUploadController);
 
 /* @ngInject */
-function EventFormImageUploadController($scope, $modalInstance, EventFormData, eventCrud, indexToEdit,
+function EventFormImageUploadController($scope, $uibModalInstance, EventFormData, eventCrud, indexToEdit,
   appConfig) {
 
   // Scope vars.
@@ -6073,7 +6073,7 @@ function EventFormImageUploadController($scope, $modalInstance, EventFormData, e
    * Cancel the modal.
    */
   function cancel() {
-    $modalInstance.dismiss('cancel');
+    $uibModalInstance.dismiss('cancel');
   }
 
   /**
@@ -6119,7 +6119,7 @@ function EventFormImageUploadController($scope, $modalInstance, EventFormData, e
       );
       uploaded++;
       if (uploaded === $scope.imagesToUpload.length) {
-        $modalInstance.close();
+        $uibModalInstance.close();
       }
     }, function() {
       $scope.saving = false;
@@ -6147,7 +6147,7 @@ function EventFormImageUploadController($scope, $modalInstance, EventFormData, e
         $scope.description,
         $scope.copyright
       );
-      $modalInstance.close();
+      $uibModalInstance.close();
     }, function() {
       $scope.saving = false;
       $scope.error = true;
@@ -6156,7 +6156,7 @@ function EventFormImageUploadController($scope, $modalInstance, EventFormData, e
   }
 
 }
-EventFormImageUploadController.$inject = ["$scope", "$modalInstance", "EventFormData", "eventCrud", "indexToEdit", "appConfig"];
+EventFormImageUploadController.$inject = ["$scope", "$uibModalInstance", "EventFormData", "eventCrud", "indexToEdit", "appConfig"];
 
 // Source: src/event_form/components/openinghours/openinghours.directive.js
 /**

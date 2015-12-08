@@ -12,7 +12,7 @@ angular
   .controller('EventFormImageUploadController', EventFormImageUploadController);
 
 /* @ngInject */
-function EventFormImageUploadController($scope, $modalInstance, EventFormData, eventCrud, indexToEdit,
+function EventFormImageUploadController($scope, $uibModalInstance, EventFormData, eventCrud, indexToEdit,
   appConfig) {
 
   // Scope vars.
@@ -52,7 +52,7 @@ function EventFormImageUploadController($scope, $modalInstance, EventFormData, e
    * Cancel the modal.
    */
   function cancel() {
-    $modalInstance.dismiss('cancel');
+    $uibModalInstance.dismiss('cancel');
   }
 
   /**
@@ -98,7 +98,7 @@ function EventFormImageUploadController($scope, $modalInstance, EventFormData, e
       );
       uploaded++;
       if (uploaded === $scope.imagesToUpload.length) {
-        $modalInstance.close();
+        $uibModalInstance.close();
       }
     }, function() {
       $scope.saving = false;
@@ -126,7 +126,7 @@ function EventFormImageUploadController($scope, $modalInstance, EventFormData, e
         $scope.description,
         $scope.copyright
       );
-      $modalInstance.close();
+      $uibModalInstance.close();
     }, function() {
       $scope.saving = false;
       $scope.error = true;

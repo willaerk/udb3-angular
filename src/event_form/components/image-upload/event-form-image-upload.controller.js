@@ -12,8 +12,14 @@ angular
   .controller('EventFormImageUploadController', EventFormImageUploadController);
 
 /* @ngInject */
-function EventFormImageUploadController($scope, $uibModalInstance, EventFormData, eventCrud, indexToEdit,
-  appConfig) {
+function EventFormImageUploadController(
+  $scope,
+  $uibModalInstance,
+  EventFormData,
+  eventCrud,
+  indexToEdit,
+  appConfig
+) {
 
   // Scope vars.
   $scope.uploadTermsConditionsUrl = appConfig.uploadTermsConditionsUrl;

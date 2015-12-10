@@ -1937,7 +1937,7 @@ CityAutocomplete.$inject = ["$q", "$http", "appConfig", "UdbPlace"];
   function udbDatepickerDirective() {
 
     return {
-      restrict: 'A',
+      restrict: 'EA',
       require: 'ngModel',
       link: link
     };
@@ -1967,9 +1967,9 @@ CityAutocomplete.$inject = ["$q", "$http", "appConfig", "UdbPlace"];
           }
         };
 
-        elem.datepicker(options).on('changeDate', function (e) {
-          if (ngModel.$viewValue && ngModel.$viewValue.getTime() !== e.date.getTime()) {
-            ngModel.$setViewValue(e.date);
+        elem.datepicker(options).on('changeDate', function (newValue) {
+          if (!ngModel.$viewValue || ngModel.$viewValue.getTime() !== newValue.date.getTime()) {
+            ngModel.$setViewValue(newValue.date);
           }
         });
       }

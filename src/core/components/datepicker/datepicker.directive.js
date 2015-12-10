@@ -15,7 +15,7 @@
   function udbDatepickerDirective() {
 
     return {
-      restrict: 'A',
+      restrict: 'EA',
       require: 'ngModel',
       link: link
     };
@@ -45,9 +45,9 @@
           }
         };
 
-        elem.datepicker(options).on('changeDate', function (e) {
-          if (ngModel.$viewValue && ngModel.$viewValue.getTime() !== e.date.getTime()) {
-            ngModel.$setViewValue(e.date);
+        elem.datepicker(options).on('changeDate', function (newValue) {
+          if (!ngModel.$viewValue || ngModel.$viewValue.getTime() !== newValue.date.getTime()) {
+            ngModel.$setViewValue(newValue.date);
           }
         });
       }

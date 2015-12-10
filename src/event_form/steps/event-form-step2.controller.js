@@ -200,8 +200,21 @@ function EventFormStep2Controller($scope, $rootScope, EventFormData) {
   };
 
   controller.periodicEventTimingChanged = function () {
-    if (EventFormData.id && EventFormData.hasValidPeriodicRange()) {
-      $rootScope.$emit('eventTimingChanged', EventFormData);
+    if (EventFormData.id) {
+      if (EventFormData.hasValidPeriodicRange()) {
+        controller.clearPeriodicRangeError();
+        $rootScope.$emit('eventTimingChanged', EventFormData);
+      } else {
+        controller.displayPeriodicRangeError();
+      }
     }
+  };
+
+  controller.displayPeriodicRangeError = function () {
+    controller.periodicRangeError = true;
+  };
+
+  controller.clearPeriodicRangeError = function () {
+    controller.periodicRangeError = false;
   };
 }

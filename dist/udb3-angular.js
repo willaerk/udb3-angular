@@ -7761,9 +7761,22 @@ function EventFormStep2Controller($scope, $rootScope, EventFormData) {
   };
 
   controller.periodicEventTimingChanged = function () {
-    if (EventFormData.id && EventFormData.hasValidPeriodicRange()) {
-      $rootScope.$emit('eventTimingChanged', EventFormData);
+    if (EventFormData.id) {
+      if (EventFormData.hasValidPeriodicRange()) {
+        controller.clearPeriodicRangeError();
+        $rootScope.$emit('eventTimingChanged', EventFormData);
+      } else {
+        controller.displayPeriodicRangeError();
+      }
     }
+  };
+
+  controller.displayPeriodicRangeError = function () {
+    controller.periodicRangeError = true;
+  };
+
+  controller.clearPeriodicRangeError = function () {
+    controller.periodicRangeError = false;
   };
 }
 EventFormStep2Controller.$inject = ["$scope", "$rootScope", "EventFormData"];
@@ -12852,6 +12865,11 @@ $templateCache.put('templates/unexpected-error-modal.html',
     "    </section>\n" +
     "  </div>\n" +
     "\n" +
+    "  <div class=\"col-xs-12\">\n" +
+    "    <div ng-show=\"EventFormStep2.periodicRangeError\" class=\"alert alert-warning\" role=\"alert\">\n" +
+    "      Selecteer een geldige start en eind datum datum.\n" +
+    "    </div>\n" +
+    "  </div>\n" +
     "</div>"
   );
 

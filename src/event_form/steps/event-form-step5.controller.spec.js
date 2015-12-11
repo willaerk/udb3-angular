@@ -5,6 +5,12 @@ describe('Controller: event form step 5', function () {
   beforeEach(module('udb.event-form'));
 
   var $controller, stepController, scope, EventFormData, udbOrganizers, UdbOrganizer, $q, eventCrud;
+  var AgeRange = {
+    'ALL': {'value': 0, 'label': 'Alle leeftijden'},
+    'KIDS': {'value': 12, 'label': 'Kinderen tot 12 jaar', min: 1, max: 12},
+    'TEENS': {'value': 18, 'label': 'Jongeren tussen 12 en 18 jaar', min: 13, max: 18},
+    'ADULTS': {'value': 99, 'label': 'Volwassenen (+18 jaar)', min: 19}
+  };
 
   beforeEach(inject(function ($rootScope, $injector) {
     $controller = $injector.get('$controller');
@@ -19,13 +25,17 @@ describe('Controller: event form step 5', function () {
       'deleteTypicalAgeRange',
       'deleteOfferOrganizer'
     ]);
-    stepController = $controller('EventFormStep5Controller', {
+    stepController = getController();
+  }));
+
+  function getController() {
+    return $controller('EventFormStep5Controller', {
       $scope: scope,
       EventFormData: EventFormData,
       udbOrganizers: udbOrganizers,
       eventCrud: eventCrud
     });
-  }));
+  }
 
   it('should set the right form data and save it when all ages is selected', function () {
     spyOn(scope, 'saveAgeRange');
@@ -170,5 +180,51 @@ describe('Controller: event form step 5', function () {
 
     expect(eventCrud.deleteOfferOrganizer).toHaveBeenCalled();
     expect(stepController.showAsyncOrganizerError).toHaveBeenCalled();
-  })
+  });
+
+  it('should initialize with an "adult" age range when the min age is over 18', function () {
+    EventFormData.typicalAgeRange = '21-';
+    EventFormData.id = 1;
+    stepController = getController();
+
+    expect(scope.ageRange).toEqual(AgeRange.ADULTS);
+    expect(scope.minAge).toEqual(21);
+  });
+
+  it('should initialize with an "all" age range when no specific age range is included', function () {
+    EventFormData.typicalAgeRange = '';
+    EventFormData.id = 1;
+    stepController = getController();
+
+    expect(scope.ageRange).toEqual(AgeRange.ALL);
+    expect(scope.minAge).toEqual(1);
+  });
+
+  it('should initialize with an "teens" age range when only for 18 year olds', function () {
+    EventFormData.typicalAgeRange = 18;
+    EventFormData.id = 1;
+    stepController = getController();
+
+    expect(scope.ageRange).toEqual(AgeRange.TEENS);
+    expect(scope.minAge).toEqual(18);
+  });
+
+  it('should fill out existing contact info when editing an event', function () {
+    EventFormData.contactPoint = {
+      email: ['foo@bar.com'],
+      phone: ['016985682'],
+      url: ['http://foo.com', 'http://bar.com'],
+      dude: ['sweet']
+    };
+    EventFormData.id = 1;
+    stepController = getController();
+    var expectedContactInfo = [
+      {type:'email', value:'foo@bar.com'},
+      {type:'phone', value:'016985682'},
+      {type:'url', value:'http://foo.com'},
+      {type:'url', value:'http://bar.com'}
+    ];
+
+    expect(scope.contactInfo).toEqual(expectedContactInfo);
+  });
 });

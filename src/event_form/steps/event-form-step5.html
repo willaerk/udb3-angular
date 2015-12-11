@@ -25,19 +25,23 @@
         <div class="row extra-beschrijving">
           <div class="extra-task" ng-class="descriptionCssClass">
             <div class="col-sm-3">
-              <em class="extra-task-label">Beschrijving</em> <i class="fa fa-circle-o-notch fa-spin" ng-show="savingDescription"></i>
+              <em class="extra-task-label">Beschrijving</em>
+              <span> </span>
+              <i class="fa fa-circle-o-notch fa-spin" ng-show="savingDescription"></i>
             </div>
             <div class="col-sm-8">
               <section class="state incomplete">
                 <div class="row">
                   <div class="col-sm-6">
-                    <a class="btn btn-default to-filling" ng-click="descriptionCssClass = 'state-filling'">Tekst toevoegen</a>
+                    <a class="btn btn-default to-filling" ng-click="descriptionCssClass = 'state-filling'">
+                      Tekst toevoegen
+                    </a>
                   </div>
                 </div>
               </section>
               <section class="state complete">
-                <p><span ng-bind-html="eventFormData.description.nl"></span> <a class="btn btn-link" ng-click="descriptionCssClass = 'state-filling'">Wijzigen</a>
-                </p>
+                <div ng-bind-html="eventFormData.description.nl"></div>
+                <a class="btn btn-link" ng-click="descriptionCssClass = 'state-filling'">Wijzigen</a>
               </section>
               <section class="state filling">
                 <div class="form-group">
@@ -45,13 +49,20 @@
                   <textarea class="form-control" ng-model="description"></textarea>
                   <div class="tip" ng-switch="eventFormData.eventType">
                     <p ng-switch-when="0.17.0.0.0">
-                      Geef hier een wervende omschrijving van de route. Vermeld in deze tekst <strong>hoe</strong> de route wordt afgelegd (per fiets, per boot, ...), de mogelijke tussenstops, de <strong>duur</strong>, <strong>afstand</strong> en hoe de route <strong>begeleid</strong> is (met gids, brochure of wegwijzers).
+                      Geef hier een wervende omschrijving van de route. Vermeld in deze tekst <strong>hoe</strong>
+                       de route wordt afgelegd (per fiets, per boot, ...), de mogelijke tussenstops,
+                       de <strong>duur</strong>, <strong>afstand</strong> en hoe de route <strong>begeleid</strong>
+                       is (met gids, brochure of wegwijzers).
                     </p>
                     <p ng-switch-when="0.7.0.0.0">
-                      Geef hier een wervende omschrijving van de rondleiding. Vermeld het <strong>max. aantal personen</strong> per groepje, <strong>hoe</strong> de rondleiding wordt georganiseerd (doorlopend, met intervallen of op vaste tijdstippen) en of er <strong>speciale aandachtspunten</strong> zijn (vb. laarzen aangewezen).
+                      Geef hier een wervende omschrijving van de rondleiding. Vermeld het
+                       <strong>max. aantal personen</strong> per groepje, <strong>hoe</strong> de rondleiding wordt
+                       georganiseerd (doorlopend, met intervallen of op vaste tijdstippen) en of er
+                       <strong>speciale aandachtspunten</strong> zijn (vb. laarzen aangewezen).
                     </p>
                     <p ng-switch-when="0.14.0.0.0">
-                      Geef hier een wervende omschrijving van het monument. Geef ook aan indien het monument slechts beperkt opengesteld is (vb. enkel salons).
+                      Geef hier een wervende omschrijving van het monument. Geef ook aan indien het monument slechts
+                       beperkt opengesteld is (vb. enkel salons).
                     </p>
                   </div>
 
@@ -72,7 +83,8 @@
         <div class="row extra-leeftijd">
           <div class="extra-task" ng-class="ageCssClass">
             <div class="col-sm-3">
-              <em class="extra-task-label">Geschikt voor</em><i class="fa fa-circle-o-notch fa-spin" ng-show="savingAgeRange"></i>
+              <em class="extra-task-label">Geschikt voor</em>
+              <i class="fa fa-circle-o-notch fa-spin" ng-show="savingAgeRange"></i>
             </div>
             <div class="col-sm-8">
               <section>
@@ -89,12 +101,22 @@
                 <div class="form-inline form-group" ng-show="ageRange && ageRange !== AgeRange.ALL">
                   <div class="form-group">
                     <label for="min-age">Vanaf</label>
-                    <input type="text" id="min-age" class="form-control" ng-model="minAge" ng-model-options="{ updateOn: 'change' }" ng-change="saveAgeRange()">
+                    <input type="text"
+                           id="min-age"
+                           class="form-control"
+                           ng-model="minAge"
+                           ng-model-options="{updateOn: 'change'}"
+                           ng-change="saveAgeRange()">
                     <label for="min-age">jaar</label>
                   </div>
                 </div>
 
-                <p ng-show="ageRange === AgeRange.ALL">Alle leeftijden <a href="#" class="btn btn-link btn-leeftijd-restore to-filling" ng-click="resetAgeRange()">Wijzigen</a></p>
+                <span ng-show="ageRange === AgeRange.ALL">
+                  Alle leeftijden
+                  <a href="#" class="btn btn-link btn-leeftijd-restore to-filling" ng-click="resetAgeRange()">
+                    Wijzigen
+                  </a>
+                </span>
 
                 <div ng-show="ageRangeError" class="alert alert-danger">
                   Er ging iets fout bij het opslaan van de leeftijd.
@@ -111,18 +133,29 @@
         <div class="row extra-organisator">
           <div class="extra-task" ng-class="organizerCssClass">
             <div class="col-sm-3">
-              <em class="extra-task-label">Organisatie</em> <i class="fa fa-circle-o-notch fa-spin" ng-show="savingOrganizer"></i>
+              <em class="extra-task-label">Organisatie</em>
+              <span> </span>
+              <i class="fa fa-circle-o-notch fa-spin" ng-show="savingOrganizer"></i>
             </div>
             <div class="col-sm-8">
               <section class="state incomplete">
-                <a class="btn btn-default to-filling" ng-click="organizerCssClass = 'state-filling'">Organisator toevoegen</a>
+                <a class="btn btn-default to-filling" ng-click="organizerCssClass = 'state-filling'">
+                  Organisator toevoegen
+                </a>
               </section>
               <section class="state complete">
-                <p>{{ eventFormData.organizer.name}} <a class="btn btn-link to-filling"><button type="button" class="close" ng-click="deleteOrganizer()" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button></a></p>
+                <span>
+                  <span ng-bind="eventFormData.organizer.name"></span>
+                  <a class="btn btn-link close" ng-click="deleteOrganizer()" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true"> &times;</span>
+                  </a>
+                </span>
               </section>
               <section class="state filling">
                 <div class="form-group">
-                  <label>Kies een organisatie <i class="fa fa-circle-o-notch fa-spin" ng-show="loadingOrganizers"></i></label>
+                  <label>
+                    Kies een organisatie <i class="fa fa-circle-o-notch fa-spin" ng-show="loadingOrganizers"></i>
+                  </label>
                   <div id="organisator-kiezer">
                     <span class="twitter-typeahead" style="position: relative; display: inline-block; direction: ltr;">
                       <input type="text" class="form-control uib-typeahead" id="organisator-autocomplete"
@@ -131,10 +164,11 @@
                              typeahead-on-select="selectOrganizer(organizer)"
                              typeahead-min-length="3"
                              typeahead-template-url="templates/organizer-typeahead-template.html"/>
-                      <div class="dropdown-menu-no-results" ng-show="emptyOrganizerAutocomplete">
-                        <p class='text-center'>Organisator niet gevonden?</br>
-                          <button type='button' class='btn btn-primary' ng-click="openOrganizerModal()">Nieuwe organisator toevoegen</button>
-                        </p>
+                      <div class="dropdown-menu-no-results text-center" ng-show="emptyOrganizerAutocomplete">
+                        <span>Organisator niet gevonden?</span>
+                        <button type='button' class='btn btn-primary' ng-click="openOrganizerModal()">
+                          Nieuwe organisator toevoegen
+                        </button>
                       </div>
                     </span>
                   </div>
@@ -151,34 +185,56 @@
           <div class="row extra-tickets-website" ng-class="bookingInfoCssClass">
             <div class="extra-task state-incomplete">
               <div class="col-sm-3">
-                <em class="extra-task-label">Reservatie</em> <i class="fa fa-circle-o-notch fa-spin" ng-show="savingBookingInfo"></i>
+                <em class="extra-task-label">Reservatie</em>
+                <span> </span>
+                <i class="fa fa-circle-o-notch fa-spin" ng-show="savingBookingInfo"></i>
               </div>
               <div class="col-sm-8">
                 <section class="state incomplete">
 
                   <div class="checkbox">
                     <label>
-                      <input type="checkbox" class="reservatie-website-check reservatie-check" ng-model="viaWebsite" ng-click="toggleBookingType('website')">Via website</label>
+                      <input type="checkbox"
+                             class="reservatie-website-check reservatie-check"
+                             ng-model="viaWebsite"
+                             ng-click="toggleBookingType('website')">
+                      Via website
+                    </label>
                   </div>
                   <div class="reservatie-website-info reservatie-info" ng-show="viaWebsite">
                     <div class="reservatie-info-stap1" ng-show="editBookingUrl">
                       <div class="form-inline">
                         <label>URL voor reservaties</label><br>
                         <div class="form-group">
-                          <input type="text" class="form-control" ng-model-options="{ updateOn: 'blur' }" ng-change="validateUrl()" name="url" ng-model="bookingModel.url" ng-required="viaWebsite">
-                          <span class="help-block" ng-show="bookingModel.urlRequired && !step5TicketsForm.url.$valid">Gelieve een geldig formaat te gebruiken</span>
+                          <input type="text"
+                                 class="form-control"
+                                 ng-model-options="{ updateOn: 'blur' }"
+                                 ng-change="validateUrl()"
+                                 name="url"
+                                 ng-model="bookingModel.url"
+                                 ng-required="viaWebsite">
+                          <span class="help-block" ng-show="bookingModel.urlRequired && !step5TicketsForm.url.$valid">
+                            Gelieve een geldig formaat te gebruiken
+                          </span>
                         </div>
-                        <a class="btn btn-primary reservatie-info-stap1-controleren" ng-click="validateBookingType('website')">Opslaan</a>
+                        <a class="btn btn-primary reservatie-info-stap1-controleren" ng-click="validateBookingType('website')">
+                          Opslaan
+                        </a>
                       </div>
                     </div>
                     <div class="reservatie-info-stap2" ng-hide="editBookingUrl">
-                      <p>{{ eventFormData.bookingInfo.url}} <a href="" class="btn btn-link" ng-click="editBookingUrl = true">Wijzigen</a></p>
+                      <span>
+                        <span ng-bind="eventFormData.bookingInfo.url"></span>
+                        <a class="btn btn-link" ng-click="editBookingUrl = true">Wijzigen</a>
+                      </span>
                       <div class="weergave">
                         <p><small class="text-muted">VOORBEELDWEERGAVE</small></p>
-                        <p>
-                          <a class="btn btn-info" target="_blank" href="{{ bookingModel.url}}">{{ bookingModel.urlLabel}}</a>
-                          <a class="btn btn-link" href="#" ng-click="enableWebsitePreview()" data-toggle="modal" data-target="#extra-tickets-website-weergave">Wijzigen</a>
-                        </p>
+                        <span>
+                          <a class="btn btn-info" target="_blank" ng-href="{{bookingModel.url}}"
+                             ng-bind="bookingModel.urlLabel"></a>
+                          <a class="btn btn-link" href="#" ng-click="enableWebsitePreview()" data-toggle="modal"
+                             data-target="#extra-tickets-website-weergave">Wijzigen</a>
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -190,56 +246,93 @@
             <div class="modal-dialog">
               <div class="modal-content">
                 <div class="modal-header">
-                  <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">×</span><span class="sr-only">Close</span></button>
+                  <button type="button" class="close" data-dismiss="modal">
+                    <span aria-hidden="true">×</span><span class="sr-only">Close</span>
+                  </button>
                   <h4 class="modal-title">Weergave</h4>
                 </div>
                 <div class="modal-body">
                   <label>Kies een passend actie-label voor deze link</label>
+
                   <div class="radio">
-                    <label><input type="radio" ng-model="bookingModel.urlLabel" name="optionsRadios" id="optionsRadios1" value="Koop tickets" checked="">Koop tickets</label>
+                    <label>
+                      <input type="radio" ng-model="bookingModel.urlLabel" name="optionsRadios" id="optionsRadios1"
+                             value="Koop tickets" checked="">
+                      Koop tickets
+                    </label>
                   </div>
                   <div class="radio">
-                    <label><input type="radio" ng-model="bookingModel.urlLabel" name="optionsRadios" id="optionsRadios2" value="Reserveer plaatsen">Reserveer plaatsen</label>
+                    <label>
+                      <input type="radio" ng-model="bookingModel.urlLabel" name="optionsRadios" id="optionsRadios2"
+                             value="Reserveer plaatsen">
+                      Reserveer plaatsen
+                    </label>
                   </div>
                   <div class="radio">
-                    <label><input type="radio" ng-model="bookingModel.urlLabel" name="optionsRadios" id="optionsRadios3" value="Controleer beschikbaarheid">Controleer beschikbaarheid</label>
+                    <label>
+                      <input type="radio" ng-model="bookingModel.urlLabel" name="optionsRadios" id="optionsRadios3"
+                             value="Controleer beschikbaarheid">
+                      Controleer beschikbaarheid
+                    </label>
                   </div>
                   <div class="radio">
-                    <label><input type="radio" ng-model="bookingModel.urlLabel" name="optionsRadios" id="optionsRadios4" value="Schrijf je in">Schrijf je in</label>
+                    <label>
+                      <input type="radio" ng-model="bookingModel.urlLabel" name="optionsRadios" id="optionsRadios4"
+                             value="Schrijf je in">
+                      Schrijf je in
+                    </label>
                   </div>
                   <div class="radio">
-                    <label><input type="radio" ng-model="bookingModel.urlLabel" name="optionsRadios" id="optionsRadios5" value="Andere">Andere</label>
-                    <input type="text" class="form-control" ng-show="bookingModel.urlLabel === 'Andere'" ng-model="bookingModel.urlLabelCustom">
+                    <label><input type="radio" ng-model="bookingModel.urlLabel" name="optionsRadios" id="optionsRadios5"
+                                  value="Andere">Andere</label>
+                    <input type="text" class="form-control" ng-show="bookingModel.urlLabel === 'Andere'"
+                           ng-model="bookingModel.urlLabelCustom">
                   </div>
                 </div>
                 <div class="modal-footer">
-                  <button type="button" class="btn btn-default" data-dismiss="modal">Annuleren</button>
-                  <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#extra-tickets-website-weergave" ng-click="saveWebsitePreview()">Bevestigen</button>
+                  <button type="button" class="btn btn-default" data-dismiss="modal">
+                    Annuleren
+                  </button>
+                  <button type="button" class="btn btn-primary" data-toggle="modal"
+                          data-target="#extra-tickets-website-weergave" ng-click="saveWebsitePreview()">
+                    Bevestigen
+                  </button>
                 </div>
               </div><!-- /.modal-content -->
             </div><!-- /.modal-dialog -->
           </div>
           <div class="row extra-tickets-telefoon">
             <div class="extra-task state-incomplete">
-              <div class="col-sm-3">
-                <!--<em class="extra-task-label">Reservatie &amp; tickets</em>-->
-              </div>
-              <div class="col-sm-8">
+              <div class="col-sm-8 col-sm-offset-3">
                 <div class="checkbox">
-                  <label><input type="checkbox" class="reservatie-telefoon-check reservatie-check" ng-model="viaPhone" ng-change="toggleBookingType('phone')">Via telefoon</label>
+                  <label>
+                    <input type="checkbox" class="reservatie-telefoon-check reservatie-check" ng-model="viaPhone"
+                           ng-change="toggleBookingType('phone')">
+                    Via telefoon
+                  </label>
                 </div>
                 <div class="reservatie-telefoon-info reservatie-info" ng-show="viaPhone">
                   <div class="reservatie-telefoon-filling" ng-show="editBookingPhone">
 
                     <label>Telefoonnummer voor reservaties</label><br>
+
                     <div class="form-inline">
-                      <input type="text" class="form-control" name="phone" ng-model="bookingModel.phone" ng-required="viaPhone">
-                      <span class="help-block" ng-show="bookingModel.phoneRequired && step5TicketsForm.phone.$error.required">Gelieve een geldig formaat te gebruiken</span>
-                      <a class="btn btn-primary reservatie-telefoon-opslaan" ng-click="validateBookingType('phone')">Opslaan</a>
+                      <input type="text" class="form-control" name="phone" ng-model="bookingModel.phone"
+                             ng-required="viaPhone">
+                      <span class="help-block"
+                            ng-show="bookingModel.phoneRequired && step5TicketsForm.phone.$error.required">
+                        Gelieve een geldig formaat te gebruiken
+                      </span>
+                      <a class="btn btn-primary reservatie-telefoon-opslaan" ng-click="validateBookingType('phone')">
+                        Opslaan
+                      </a>
                     </div>
                   </div>
                   <div class="reservatie-telefoon-complete" ng-hide="editBookingPhone">
-                    <p>{{ bookingModel.phone}}  <a class="btn btn-link" ng-click="editBookingPhone = true">Wijzigen</a></p>
+                    <span>
+                      <span ng-bind="bookingModel.phone"></span>
+                      <a class="btn btn-link" ng-click="editBookingPhone = true">Wijzigen</a>
+                    </span>
                   </div>
                 </div>
               </div>
@@ -247,25 +340,37 @@
           </div>
           <div class="row extra-tickets-email">
             <div class="extra-task state-incomplete">
-              <div class="col-sm-3">
-                <!--<em class="extra-task-label">Reservatie &amp; tickets</em>-->
-              </div>
-              <div class="col-sm-8">
+              <div class="col-sm-8 col-sm-offset-3">
                 <div class="checkbox">
                   <label>
-                    <input type="checkbox" class="reservatie-email-check reservatie-check" ng-model="viaEmail" ng-change="toggleBookingType('email')">Via e-mail</label>
+                    <input type="checkbox" class="reservatie-email-check reservatie-check" ng-model="viaEmail"
+                           ng-change="toggleBookingType('email')">
+                    Via e-mail
+                  </label>
                 </div>
                 <div class="reservatie-email-info reservatie-info" ng-show="viaEmail">
                   <div class="reservatie-email-filling" ng-show="editBookingEmail">
                     <label>E-mailadres voor reservaties</label><br>
+
                     <div class="form-inline">
-                      <input type="email" class="form-control" name="email" ng-model="bookingModel.email" ng-required="viaEmail">
-                      <span class="help-block" ng-show="bookingModel.emailRequired && !step5TicketsForm.email.$valid">Gelieve een geldig formaat te gebruiken</span>
-                      <a class="btn btn-primary reservatie-email-opslaan" ng-click="validateBookingType('email')">Opslaan</a>
+                      <input type="email"
+                             class="form-control"
+                             name="email"
+                             ng-model="bookingModel.email"
+                             ng-required="viaEmail">
+                      <span class="help-block" ng-show="bookingModel.emailRequired && !step5TicketsForm.email.$valid">
+                        Gelieve een geldig formaat te gebruiken
+                      </span>
+                      <a class="btn btn-primary reservatie-email-opslaan" ng-click="validateBookingType('email')">
+                        Opslaan
+                      </a>
                     </div>
                   </div>
                   <div class="reservatie-email-complete" ng-hide="editBookingEmail">
-                    <p>{{ bookingModel.email}}  <a class="btn btn-link" ng-click="editBookingEmail = true">Wijzigen</a></p>
+                    <span>
+                      <span ng-bind="bookingModel.email"></span>
+                      <a class="btn btn-link" ng-click="editBookingEmail = true">Wijzigen</a>
+                    </span>
                   </div>
                 </div>
               </div>
@@ -273,14 +378,21 @@
           </div>
           <div class="row extra-tickets-periode">
             <div class="extra-task">
-              <div class="col-sm-3">
-                <!--<em class="extra-task-label">Reservatie &amp; tickets</em>-->
+              <div class="col-sm-8 col-sm-offset-3" ng-hide="eventFormData.bookingInfo.availabilityStarts">
+                <a class="reservatie-periode-toevoegen" href="#" ng-click="openBookingPeriodModal()">
+                  Reservatie-periode toevoegen
+                </a>
               </div>
-              <div class="col-sm-8" ng-hide="eventFormData.bookingInfo.availabilityStarts">
-                <p><a class="reservatie-periode-toevoegen" href="#" ng-click="openBookingPeriodModal()">Reservatie-periode toevoegen</a></p>
-              </div>
-              <div class="col-sm-8" ng-show="eventFormData.bookingInfo.availabilityStarts">
-                <p>Van {{ eventFormData.bookingInfo.availabilityStarts | date:'dd-MM-yyyy' }} tot {{ eventFormData.bookingInfo.availabilityEnds | date:'dd-MM-yyyy'  }} <a class="reservatie-periode-toevoegen" href="#" ng-click="openBookingPeriodModal()">Reservatie-periode wijzigen</a></p>
+              <div class="col-sm-8 col-sm-offset-3" ng-show="eventFormData.bookingInfo.availabilityStarts">
+                <span>
+                  <span>Van </span>
+                  <span ng-bind="eventFormData.bookingInfo.availabilityStarts | date:'dd-MM-yyyy'"></span>
+                  <span> tot </span>
+                  <span ng-bind="eventFormData.bookingInfo.availabilityEnds | date:'dd-MM-yyyy'"></span>
+                  <a class="reservatie-periode-toevoegen" href="#" ng-click="openBookingPeriodModal()">
+                    Reservatie-periode wijzigen
+                  </a>
+                </span>
               </div>
             </div>
           </div>
@@ -294,18 +406,26 @@
         <div class="row extra-contact">
           <div class="extra-task meer-info" ng-class="contactInfoCssClass">
             <div class="col-sm-3">
-              <em class="extra-task-label">Meer info &amp; contact</em> <i class="fa fa-circle-o-notch fa-spin" ng-show="savingContactInfo"></i>
+              <em class="extra-task-label">Meer info &amp; contact</em>
+              <span> </span>
+              <i class="fa fa-circle-o-notch fa-spin" ng-show="savingContactInfo"></i>
             </div>
 
             <div class="col-sm-8">
               <section class="state incomplete">
-                <a class="btn btn-default" ng-click="contactInfoCssClass = 'state-filling'">Contactinformatie toevoegen</a>
+                <a class="btn btn-default" ng-click="addContactInfo()">
+                  Contactinformatie toevoegen
+                </a>
               </section>
 
               <section class="state filling complete">
                 <form name="contactInfoForm">
                   <table class="table">
-                    <tr ng-repeat="(key, info) in contactInfo" ng-model="info" udb-contact-info-validation ng-class="{'has-error' : infoErrorMessage !== '' }" ng-change="saveContactInfo()">
+                    <tr ng-repeat="(key, info) in contactInfo"
+                        ng-model="info"
+                        udb-contact-info-validation
+                        ng-class="{'has-error' : infoErrorMessage !== '' }"
+                        ng-change="saveContactInfo()">
                       <td>
                         <select class="form-control" ng-model="info.type" ng-change="clearInfo();">
                           <option value="url">Website</option>
@@ -314,14 +434,25 @@
                         </select>
                       </td>
                       <td>
-                        <input type="text" class="form-control" ng-model="info.value" name="contact[{{key}}]" ng-change="validateInfo(key); saveContactInfo();" ng-model-options="{ updateOn: 'blur' }"/>
+                        <input type="text"
+                               class="form-control"
+                               ng-model="info.value"
+                               name="contact[{{key}}]"
+                               ng-change="validateInfo(key); saveContactInfo();"
+                               ng-model-options="{ updateOn: 'blur' }"/>
                         <span class="help-block" ng-hide="infoErrorMessage === ''" ng-bind="infoErrorMessage"></span>
                       </td>
                       <td>
-                        <button type="button" class="close" aria-label="Close" ng-click="deleteContactInfo(key)"><span aria-hidden="true">&times;</span></button>
+                        <button type="button" class="close" aria-label="Close" ng-click="deleteContactInfo(key)">
+                          <span aria-hidden="true">&times;</span>
+                        </button>
                       </td>
                     </tr>
-                    <tr><td colspan="3"><a ng-click="addContactInfo('', '')">Meer contactgegevens toevoegen</a></td></tr>
+                    <tr>
+                      <td colspan="3">
+                        <a ng-click="addContactInfo()">Meer contactgegevens toevoegen</a>
+                      </td>
+                    </tr>
                   </table>
                 </form>
               </section>
@@ -347,9 +478,12 @@
               </section>
               <section class="state complete">
                 <ul ng-if="selectedFacilities.length > 0">
-                  <li ng-repeat="facility in selectedFacilities">{{ facility.label}}</li>
+                  <li ng-repeat="facility in selectedFacilities" ng-bind="::facility.label"></li>
                 </ul>
-                <p><span ng-show="facilitiesInapplicable">Niet van toepassing</span> <a href="#" class="btn btn-link" ng-click="openFacilitiesModal();">Wijzigen</a></p>
+                <span>
+                  <span ng-show="facilitiesInapplicable">Niet van toepassing</span>
+                  <a class="btn btn-link" ng-click="openFacilitiesModal();">Wijzigen</a>
+                </span>
               </section>
             </div>
           </div>
@@ -360,7 +494,6 @@
       <div class="col-sm-4">
 
         <div class="image-upload" ng-class="imageCssClass">
-
           <div class="image-upload-none state incomplete">
             <span class="image-upload-icon"></span>
             <p class="muted">Voeg een afbeelding toe zodat je bezoekers je activiteit beter herkennen.</p>
@@ -372,20 +505,28 @@
               <div ng-if="mediaObject['@type'] === 'ImageObject'" class="uploaded-image">
                 <div class="media">
                   <a class="media-left" href="#">
-                    <img src="{{ mediaObject.thumbnailUrl }}">
+                    <img ng-src="{{ mediaObject.thumbnailUrl }}">
                   </a>
+
                   <div class="media-body">
-                    <p>{{ mediaObject.description }}<br/><small ng-bind="mediaObject.copyrightHolder">Copyright</small></p>
-                    <p><a href="#" class="btn btn-link" ng-click="openUploadImageModal(key)">Wijzigen</a><a href="#" class="btn btn-link" ng-click="openDeleteImageModal(key)">Verwijderen</a></p>
+                    <span>
+                      <span ng-bind="mediaObject.description"></span>
+                      <br/>
+                      <small ng-bind="mediaObject.copyrightHolder">Copyright</small>
+                    </span>
+                    <span>
+                      <a class="btn btn-link" ng-click="openUploadImageModal(key)">Wijzigen</a>
+                      <a class="btn btn-link" ng-click="openDeleteImageModal(key)">Verwijderen</a>
+                    </span>
                   </div>
                 </div>
               </div>
             </div>
-
           </div>
 
-          <a class="btn btn-default" href="#" ng-click="openUploadImageModal(-1)">Afbeelding toevoegen</a>
-
+          <div class="text-center">
+            <a class="btn btn-default" href="#" ng-click="openUploadImageModal(-1)">Afbeelding toevoegen</a>
+          </div>
         </div>
 
       </div>

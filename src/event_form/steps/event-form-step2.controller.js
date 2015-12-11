@@ -12,7 +12,8 @@ angular
   .controller('EventFormStep2Controller', EventFormStep2Controller);
 
 /* @ngInject */
-function EventFormStep2Controller($scope, EventFormData, UdbOpeningHours) {
+function EventFormStep2Controller($scope, $rootScope, EventFormData) {
+  var controller = this;
 
   // Scope vars.
   // main storage for event form.
@@ -29,11 +30,11 @@ function EventFormStep2Controller($scope, EventFormData, UdbOpeningHours) {
   $scope.setCalendarType = setCalendarType;
   $scope.resetCalendar = resetCalendar;
   $scope.addTimestamp = addTimestamp;
-  $scope.toggleStartHour = toggleStartHour;
+  $scope.toggleStartHour = controller.toggleStartHour;
   $scope.toggleEndHour = toggleEndHour;
   $scope.saveOpeningHourDaySelection = saveOpeningHourDaySelection;
   $scope.saveOpeningHours = saveOpeningHours;
-  $scope.setMajorInfoChanged = setMajorInfoChanged;
+  $scope.eventTimingChanged = controller.eventTimingChanged;
 
   // Mapping between machine name of days and real output.
   var dayNames = {
@@ -65,12 +66,12 @@ function EventFormStep2Controller($scope, EventFormData, UdbOpeningHours) {
     EventFormData.showStep(3);
 
     // Check if previous calendar type was the same.
-    // If so, we don't need to create new openinghours. Just show the previous entered data.
+    // If so, we don't need to create new opening hours. Just show the previous entered data.
     if (EventFormData.calendarType === type) {
       return;
     }
 
-    // A type is choosen, start a complet new calendar, removing old dat
+    // A type is chosen, start a complete new calendar, removing old data
     $scope.hasOpeningHours = false;
     EventFormData.resetCalendar();
     EventFormData.calendarType = type;
@@ -78,8 +79,14 @@ function EventFormStep2Controller($scope, EventFormData, UdbOpeningHours) {
     if (EventFormData.calendarType === 'single') {
       addTimestamp();
     }
-    else if (EventFormData.calendarType === 'periodic' || EventFormData.calendarType === 'permanent') {
+
+    if (EventFormData.calendarType === 'periodic') {
       EventFormData.addOpeningHour('', '', '');
+    }
+
+    if (EventFormData.calendarType === 'permanent') {
+      EventFormData.addOpeningHour('', '', '');
+      controller.eventTimingChanged();
     }
 
     initCalendar();
@@ -95,16 +102,12 @@ function EventFormStep2Controller($scope, EventFormData, UdbOpeningHours) {
    */
   function initCalendar() {
 
-    var calendarLabel = '';
-    for (var i = 0; i < $scope.calendarLabels.length; i++) {
-      if ($scope.calendarLabels[i].id === EventFormData.calendarType) {
-        calendarLabel = $scope.calendarLabels[i].label;
-        break;
-      }
-    }
-    EventFormData.activeCalendarType = EventFormData.calendarType;
-    EventFormData.activeCalendarLabel = calendarLabel;
+    var calendarType = _.findWhere($scope.calendarLabels, {id: EventFormData.calendarType});
 
+    if (calendarType) {
+      EventFormData.activeCalendarLabel = calendarType.label;
+      EventFormData.activeCalendarType = EventFormData.calendarType;
+    }
   }
 
   /**
@@ -132,23 +135,24 @@ function EventFormStep2Controller($scope, EventFormData, UdbOpeningHours) {
 
   /**
    * Toggle the starthour field for given timestamp.
-   * @param {string} timestamp
+   * @param {Object} timestamp
    *   Timestamp to change
    */
-  function toggleStartHour(timestamp) {
+  controller.toggleStartHour = function (timestamp) {
 
     // If we hide the textfield, empty all other time fields.
     if (!timestamp.showStartHour) {
       timestamp.startHour = '';
       timestamp.endHour = '';
       timestamp.showEndHour = false;
+      controller.eventTimingChanged();
     }
 
-  }
+  };
 
   /**
    * Toggle the endhour field for given timestamp
-   * @param {string} timestamp
+   * @param {Object} timestamp
    *   Timestamp to change
    */
   function toggleEndHour(timestamp) {
@@ -156,6 +160,7 @@ function EventFormStep2Controller($scope, EventFormData, UdbOpeningHours) {
     // If we hide the textfield, empty also the input.
     if (!timestamp.showEndHour) {
       timestamp.endHour = '';
+      controller.eventTimingChanged();
     }
 
   }
@@ -182,16 +187,34 @@ function EventFormStep2Controller($scope, EventFormData, UdbOpeningHours) {
    */
   function saveOpeningHours() {
     $scope.hasOpeningHours = true;
-    setMajorInfoChanged();
+    controller.eventTimingChanged();
   }
 
   /**
    * Mark the major info as changed.
    */
-  function setMajorInfoChanged() {
+  controller.eventTimingChanged = function() {
     if (EventFormData.id) {
-      EventFormData.majorInfoChanged = true;
+      $rootScope.$emit('eventTimingChanged', EventFormData);
     }
-  }
+  };
 
+  controller.periodicEventTimingChanged = function () {
+    if (EventFormData.id) {
+      if (EventFormData.hasValidPeriodicRange()) {
+        controller.clearPeriodicRangeError();
+        $rootScope.$emit('eventTimingChanged', EventFormData);
+      } else {
+        controller.displayPeriodicRangeError();
+      }
+    }
+  };
+
+  controller.displayPeriodicRangeError = function () {
+    controller.periodicRangeError = true;
+  };
+
+  controller.clearPeriodicRangeError = function () {
+    controller.periodicRangeError = false;
+  };
 }

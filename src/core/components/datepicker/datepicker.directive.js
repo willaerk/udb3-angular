@@ -5,7 +5,8 @@
    * @ngdoc directive
    * @name udb.core.directive:udbDatepicker
    * @description
-   * # directive for datepicker integration
+   * # directive for datepicker integration.
+   * https://github.com/eternicode/bootstrap-datepicker
    */
   angular
   .module('udb.core')
@@ -13,55 +14,43 @@
 
   function udbDatepickerDirective() {
 
-    var datepicker = {
-      restrict: 'A',
+    return {
+      restrict: 'EA',
       require: 'ngModel',
-      link: function (scope, elem, attrs, ngModel) {
-
-        var isLoaded = false;
-
-        // Default date given: wait till angular fills in the value before loading.
-        if (attrs.date) {
-          attrs.$observe('date', function(value) {
-            if (!isLoaded) {
-              loadDatePicker();
-            }
-          });
-        }
-        // No default date, load immediately.
-        else {
-          loadDatePicker();
-        }
-
-        /**
-         * Load the date picker.
-         */
-        function loadDatePicker() {
-
-          var options = {
-            format: 'd MM yyyy',
-            language: 'nl-BE',
-            startDate : new Date(),
-            beforeShowDay: function(date) {
-              var dateFormat = date.getUTCFullYear() + '-' + date.getUTCMonth() + '-' + date.getUTCDate();
-              if (attrs.highlightDate && dateFormat === attrs.highlightDate) {
-                return {classes: 'highlight'};
-              }
-            }
-          };
-
-          elem.datepicker(options).on('changeDate', function(e) {
-            ngModel.$setViewValue(e.date);
-          });
-
-          isLoaded = true;
-        }
-
-      }
+      link: link
     };
 
-    return datepicker;
+    function link (scope, elem, attrs, ngModel) {
 
+      loadDatePicker();
+
+      ngModel.$render = function () {
+        elem.datepicker('update', ngModel.$viewValue);
+      };
+
+      /**
+       * Load the date picker.
+       */
+      function loadDatePicker() {
+
+        var options = {
+          format: 'd MM yyyy',
+          language: 'nl-BE',
+          startDate: new Date(),
+          beforeShowDay: function (date) {
+            var dateFormat = date.getUTCFullYear() + '-' + date.getUTCMonth() + '-' + date.getUTCDate();
+            if (attrs.highlightDate && dateFormat === attrs.highlightDate) {
+              return {classes: 'highlight'};
+            }
+          }
+        };
+
+        elem.datepicker(options).on('changeDate', function (newValue) {
+          if (!ngModel.$viewValue || ngModel.$viewValue.getTime() !== newValue.date.getTime()) {
+            ngModel.$setViewValue(newValue.date);
+          }
+        });
+      }
+    }
   }
-
 })();

@@ -19,7 +19,8 @@ function EventFormStep3Controller(
     placeCategories,
     $uibModal,
     cities,
-    Levenshtein
+    Levenshtein,
+    eventCrud
 ) {
 
   var controller = this;
@@ -94,7 +95,6 @@ function EventFormStep3Controller(
       $scope.placeStreetAddress = EventFormData.location.address.streetAddress;
       $scope.selectedLocation = EventFormData.location;
     }
-
   }
 
   /**
@@ -125,15 +125,13 @@ function EventFormStep3Controller(
    * Change a city selection.
    */
   function changeCitySelection() {
-
     EventFormData.resetLocation();
     $scope.selectedCity = '';
     $scope.selectedLocation = undefined;
     $scope.cityAutocompleteTextField = '';
     $scope.locationsSearched = false;
     $scope.locationAutocompleteTextField = '';
-    EventFormData.showStep4 = false;
-
+    controller.stepUncompleted();
   }
 
   /**
@@ -155,7 +153,7 @@ function EventFormStep3Controller(
     location.name = $label;
     EventFormData.setLocation(location);
 
-    EventFormData.showStep4 = true;
+    controller.stepCompleted();
     setMajorInfoChanged();
 
   };
@@ -178,8 +176,7 @@ function EventFormStep3Controller(
     $scope.locationAutocompleteTextField = '';
     $scope.locationsSearched = false;
 
-    EventFormData.showStep4 = false;
-
+    controller.stepUncompleted();
   }
 
   /**
@@ -285,10 +282,9 @@ function EventFormStep3Controller(
       EventFormData.setLocation(location);
       $scope.selectedLocation = location;
 
-      EventFormData.showStep4 = true;
+      controller.stepCompleted();
 
     });
-
   }
 
   function setStreetAddress() {
@@ -305,7 +301,7 @@ function EventFormStep3Controller(
 
     $scope.selectedLocation = location;
 
-    EventFormData.showStep4 = true;
+    controller.stepCompleted();
   }
 
   /**
@@ -321,7 +317,7 @@ function EventFormStep3Controller(
 
     $scope.selectedLocation = undefined;
 
-    EventFormData.showStep4 = false;
+    controller.stepUncompleted();
 
     setMajorInfoChanged();
   }
@@ -335,4 +331,30 @@ function EventFormStep3Controller(
     }
   }
 
+  controller.stepCompleted = function () {
+    EventFormData.showStep(4);
+
+    if (EventFormData.id) {
+      eventCrud.updateMajorInfo(EventFormData);
+    }
+  };
+
+  controller.stepUncompleted = function () {
+    if (!EventFormData.id) {
+      EventFormData.hideStep(4);
+    }
+  };
+
+  controller.init = function (EventFormData) {
+    if (EventFormData.location.address.addressCountry) {
+      var location = EventFormData.location;
+
+      $scope.selectedCity = location.address.addressLocality;
+      controller.getLocations(location.address.postalCode);
+      $scope.placeStreetAddress = location.address.streetAddress;
+      $scope.selectedLocation = location;
+    }
+  };
+
+  controller.init(EventFormData);
 }

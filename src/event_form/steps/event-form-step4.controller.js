@@ -20,6 +20,10 @@ function EventFormStep4Controller($scope, EventFormData, udbApi, appConfig, Sear
   // main storage for event form.
   $scope.eventFormData = EventFormData;
 
+  $scope.titleInputOptions = {
+    updateOn: 'change blur'
+  };
+
   $scope.infoMissing = false;
   $scope.duplicatesSearched = false;
   $scope.saving = false;
@@ -34,7 +38,7 @@ function EventFormStep4Controller($scope, EventFormData, udbApi, appConfig, Sear
   $scope.previousDuplicate = previousDuplicate;
   $scope.nextDuplicate = nextDuplicate;
   $scope.resultViewer = new SearchResultViewer();
-  $scope.setMajorInfoChanged = setMajorInfoChanged;
+  $scope.eventTitleChanged = eventTitleChanged;
 
   // Check if we need to show the leave warning
   window.onbeforeunload = function (event) {
@@ -239,11 +243,11 @@ function EventFormStep4Controller($scope, EventFormData, udbApi, appConfig, Sear
   }
 
   /**
-   * Mark the major info as changed.
+   * Notify that the title of an event has changed.
    */
-  function setMajorInfoChanged() {
+  function eventTitleChanged() {
     if (EventFormData.id) {
-      EventFormData.majorInfoChanged = true;
+      $rootScope.$emit('eventTitleChanged', EventFormData);
     }
   }
 

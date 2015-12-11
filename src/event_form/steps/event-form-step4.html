@@ -8,17 +8,26 @@
     <div class="row">
       <div class="col-xs-12 col-md-4">
         <div class="form-group-lg">
-          <input type="text" class="form-control" ng-model="eventFormData.name.nl" ng-change="setMajorInfoChanged()">
+          <input type="text"
+                 class="form-control"
+                 ng-model="eventFormData.name.nl"
+                 ng-model-options="titleInputOptions"
+                 ng-change="eventTitleChanged()">
         </div>
       </div>
       <div class="col-xs-12 col-md-8">
         <p class="text-block">
-          Vb. Ontdek het Fort, Het geheim van het kasteel ontrafeld, Fietsen langs kapelletjes,… Geef een <strong>sprekende titel</strong> in (dus niet ‘Open Monumentendag’), begin met een <strong>hoofdletter</strong> en hou het <strong>kort & bondig</strong>. Een uitgebreide beschrijving vul je verder in stap 5 in.
+          Vb. Ontdek het Fort, Het geheim van het kasteel ontrafeld, Fietsen langs kapelletjes,… Geef een
+           <strong>sprekende titel</strong> in (dus niet ‘Open Monumentendag’), begin met een
+           <strong>hoofdletter</strong> en hou het <strong>kort & bondig</strong>.
+           Een uitgebreide beschrijving vul je verder in stap 5 in.
         </p>
       </div>
     </div>
     <p ng-show="eventFormData.id === '' && eventFormData.name.nl !== ''">
-      <a class="btn btn-primary titel-doorgaan" ng-click="validateEvent(true)">Doorgaan <i class="fa fa-circle-o-notch fa-spin" ng-show="saving"></i></a>
+      <a class="btn btn-primary titel-doorgaan" ng-click="validateEvent(true)">
+        Doorgaan <i class="fa fa-circle-o-notch fa-spin" ng-show="saving"></i>
+      </a>
     </p>
 
   </section>
@@ -32,26 +41,27 @@
 
     <div class="alert alert-info" ng-show="resultViewer.totalItems > 0">
       <p class="h2" style="margin-top: 0;">Vermijd dubbel werk</p>
-      <p> We vonden gelijkaardige items. Controleer deze eerder ingevoerde items.</p><br />
-
+      <p>We vonden gelijkaardige items. Controleer deze eerder ingevoerde items.</p>
       <div class="row clearfix">
         <div class="col-xs-12 col-sm-6 col-md-4 col-lg-3"
              ng-repeat="event in resultViewer.events"
              udb-event="event"
              ng-hide="fetching">
-          <a class="btn btn-tile" ng-click="setActiveDuplicate(event.id)" data-toggle="modal" data-target="#dubbeldetectie-voorbeeld">
-            <small class="label label-default" ng-bind="event.type.label"></small><br>
-            <strong class="title" ng-bind="event.name"></strong><br>
-             {{ event.location.name }} -
+          <a class="btn btn-tile"
+             ng-click="setActiveDuplicate(event.id)"
+             data-toggle="modal"
+             data-target="#dubbeldetectie-voorbeeld">
+            <small class="label label-default" ng-bind="::event.type.label"></small><br>
+            <strong class="title" ng-bind="::event.name"></strong><br>
+             <span ng-bind="::event.location.name"></span> -
              <ng-switch on="event.calendarType">
-               <span ng-switch-when="single">
-                  {{ event.startDate | date: 'dd/MM' }}
+               <span ng-switch-when="single" ng-bind="::event.startDate | date: 'dd/MM'">
                </span>
                <span ng-switch-when="multiple">
-                  Van {{ event.startDate | date: 'dd/MM' }} tot {{ event.endDate | date: 'dd/MM' }}
+                  Van <span ng-bind="::event.startDate | date: 'dd/MM'"></span> tot <span ng-bind="::event.endDate | date: 'dd/MM'"></span>
                </span>
                <span ng-switch-when="periodic">
-                  Van {{ event.startDate | date: 'dd/MM' }} tot {{ event.endDate | date: 'dd/MM' }}
+                  Van <span ng-bind="::event.startDate | date: 'dd/MM'"></span> tot <span ng-bind="::event.endDate | date: 'dd/MM'"></span>
                </span>
                <span ng-switch-when="permanent">
                   Permanent
@@ -62,17 +72,20 @@
             <i class="fa fa-eye preview-icon"></i>
           </a>
         </div>
-
       </div>
     </div>
 
-    <h3 ng-show="duplicatesSearched && resultViewer.totalItems > 0">Ben je zeker dat je "{{ eventFormData.name.nl }}" wil toevoegen?</h3>
+    <h3 ng-show="duplicatesSearched && resultViewer.totalItems > 0">
+      Ben je zeker dat je "<span ng-bind="eventFormData.name.nl"></span>" wil toevoegen?
+    </h3>
     <ul class="list-inline" ng-show="duplicatesSearched && resultViewer.totalItems > 0">
       <li>
-        <a class="btn btn-default" href="{{ udb3DashboardUrl }}">Nee, keer terug naar dashboard</a>
+        <a class="btn btn-default" ng-href="{{ udb3DashboardUrl }}">Nee, keer terug naar dashboard</a>
       </li>
       <li>
-        <a class="btn btn-primary dubbeldetectie-doorgaan" ng-click="saveEvent()">Ja, doorgaan met invoeren <i class="fa fa-circle-o-notch fa-spin" ng-show="saving"></i></a>
+        <a class="btn btn-primary dubbeldetectie-doorgaan" ng-click="saveEvent()">
+          Ja, doorgaan met invoeren <i class="fa fa-circle-o-notch fa-spin" ng-show="saving"></i>
+        </a>
       </li>
     </ul>
 
@@ -93,50 +106,76 @@
            ng-show="event.id === currentDuplicateId">
           <div class="modal-header">
             <div class="pull-right">
-              <button type="button" class="btn btn-default" ng-if="currentDuplicateDelta === 1" data-dismiss="modal">Vorige</button>
-              <button type="button" class="btn btn-default" ng-if="currentDuplicateDelta > 1" ng-click="previousDuplicate()">Vorige</button>
+              <button type="button"
+                      class="btn btn-default"
+                      ng-if="currentDuplicateDelta === 1"
+                      data-dismiss="modal">Vorige</button>
+              <button type="button"
+                      class="btn btn-default"
+                      ng-if="currentDuplicateDelta > 1"
+                      ng-click="previousDuplicate()">Vorige</button>
 
-              <button type="button" class="btn btn-default" ng-if="currentDuplicateDelta === resultViewer.totalItems" data-dismiss="modal">Volgende</button>
-              <button type="button" class="btn btn-default" ng-if="currentDuplicateDelta < resultViewer.totalItems" ng-click="nextDuplicate()">Volgende</button>
+              <button type="button"
+                      class="btn btn-default"
+                      ng-if="currentDuplicateDelta === resultViewer.totalItems"
+                      data-dismiss="modal">Volgende</button>
+              <button type="button"
+                      class="btn btn-default"
+                      ng-if="currentDuplicateDelta < resultViewer.totalItems"
+                      ng-click="nextDuplicate()">Volgende</button>
 
               <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                 <span aria-hidden="true">×</span>
               </button>
             </div>
-            <h4 class="modal-title">Gelijkaardige items <small>Evenement {{ currentDuplicateDelta }} van {{ resultViewer.totalItems }}</small></h4>
+            <h4 class="modal-title">
+              Gelijkaardige items
+              <span> </span>
+              <small>
+                Evenement <span ng-bind="currentDuplicateDelta"></span> van <span ng-bind="resultViewer.totalItems"></span>
+              </small>
+            </h4>
           </div>
           <div class="modal-body">
             <div class="panel panel-default preview">
 
-                <div class="panel-heading" style="background-image: url({{ event.image }});">
+                <div class="panel-heading" ng-style="{'background-image': 'url(' + event.image + ')'}">
                   <ul class="list-inline">
-                    <li><small class="label label-default">{{ event.type.label }}</small></li>
+                    <li><small class="label label-default" ng-bind="::event.type.label"></small></li>
                   </ul>
-                  <p class="title">{{ event.getName('nl') }}</p>
+                  <p class="title" ng-bind="::event.getName('nl')"></p>
                 </div>
 
                 <div class="panel-body">
 
-                  {{ event.getDescription('nl') }}
+                  <span ng-bind="::event.getDescription('nl')"></span>
 
                   <table class="table table-condended">
                     <tbody>
                       <tr>
-                        <td class=""><strong class="hidden-xs hidden-sm">Waar</strong><i class="fa fa-map-marker hidden-md hidden-lg"></i></td>
-                        <td>{{ event.location.name }}</td>
+                        <td class="">
+                          <strong class="hidden-xs hidden-sm">Waar</strong>
+                          <i class="fa fa-map-marker hidden-md hidden-lg"></i>
+                        </td>
+                        <td ng-bind="::event.location.name"></td>
                       </tr>
                       <tr>
-                        <td><strong class="hidden-xs hidden-sm">Wanneer</strong><i class="fa fa-calendar hidden-md hidden-lg"></i></td>
+                        <td>
+                          <strong class="hidden-xs hidden-sm">Wanneer</strong>
+                          <i class="fa fa-calendar hidden-md hidden-lg"></i>
+                        </td>
                         <td class="cf-when scroll scroll-150">
-                          <ng-switch on="event.calendarType">
-                            <span ng-switch-when="single">
-                               {{ event.startDate | date: 'dd/MM/yyyy' }}
-                            </span>
+                          <ng-switch on="::event.calendarType">
+                            <span ng-switch-when="single" ng-bind="::event.startDate | date: 'dd/MM/yyyy'"></span>
                             <span ng-switch-when="multiple">
-                               Van {{ event.startDate | date: 'dd/MM/yyyy' }} tot {{ event.endDate | date: 'dd/MM/yyyy' }}
+                              Van <span ng-bind="::event.startDate | date: 'dd/MM/yyyy'"></span>
+                              <span> tot </span>
+                              <span ng-bind="::event.endDate | date: 'dd/MM/yyyy'"></span>
                             </span>
                             <span ng-switch-when="periodic">
-                               Van {{ event.startDate | date: 'dd/MM/yyyy' }} tot {{ event.endDate | date: 'dd/MM/yyyy' }}
+                              Van <span ng-bind="::event.startDate | date: 'dd/MM/yyyy'"></span>
+                              <span> tot </span>
+                              <span ng-bind="::event.endDate | date: 'dd/MM/yyyy'"></span>
                             </span>
                             <span ng-switch-when="permanent">
                                Permanent
@@ -145,16 +184,21 @@
                         </td>
                       </tr>
                       <tr>
-                        <td><strong class="hidden-xs hidden-sm">Organisatie</strong><i class="fa fa-building-o hidden-md hidden-lg"></i></td>
-                        <td>{{ event.organizer.name }}</td>
+                        <td>
+                          <strong class="hidden-xs hidden-sm">Organisatie</strong>
+                          <i class="fa fa-building-o hidden-md hidden-lg"></i>
+                        </td>
+                        <td ng-bind="::event.organizer.name"></td>
                       </tr>
                       <tr>
                         <td><strong class="hidden-xs hidden-sm">Prijs</strong><i class="fa fa-eur hidden-md hidden-lg"></i></td>
                         <td>
-                          <div ng-switch="event.pricing">
+                          <div ng-switch="::event.pricing">
                           <span ng-switch-when="free">gratis</span>
                           <span ng-switch-when="payed">
-                              <i class="fa fa-eur meta icon"></i><span ng-if="event.price" ng-bind="event.price | currency"></span>
+                            <i class="fa fa-eur meta icon"></i>
+                            <span ng-if="::event.price" ng-bind="::event.price | currency">
+                          </span>
                           </span>
                           <span ng-switch-when="unknown">niet ingevoerd</span>
                       </div>
@@ -165,7 +209,13 @@
                 </div>
             </div>
 
-            <p><em>Ingevoerd door {{ event.organizer.name }} op {{ event.created | date : 'dd/MM/yyyy • HH:mm' }}</em></p>
+            <div>
+              <em>
+                Ingevoerd door <span ng-bind="::event.organizer.name"></span>
+                <span> op </span>
+                <span ng-bind="::event.created | date : 'dd/MM/yyyy • HH:mm'"></span>
+              </em>
+            </div>
 
           </div>
         </div><!-- /.modal-content -->

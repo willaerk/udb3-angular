@@ -20,24 +20,24 @@ describe('Directive: Save time tracker', function () {
 
   it('should not show the time tracker when no form has been saved', function () {
     var element = getElement();
-    expect(element.children().hasClass('ng-hide')).toBe(true);
+    expect(element.children('.save-time-tracker').length).toEqual(0);
   });
 
   it('should show the time tracker after an event form is saved', function () {
     var element = getElement();
     $rootScope.$emit('eventFormSaved', {});
     $rootScope.$apply();
-    expect(element.children().hasClass('ng-hide')).toBe(false);
+    expect(element.children('.save-time-tracker').length).toEqual(1);
   });
 
   it('should indicate the time when a event form was last saved', function () {
     var trackerElement = getElement();
-    var timeLastSavedElement = trackerElement.find('span');
     var baseTime = moment('2015-11-16T22:23:48').toDate();
     jasmine.clock().mockDate(baseTime);
 
     $rootScope.$emit('eventFormSaved', {});
     $rootScope.$apply();
+    var timeLastSavedElement = trackerElement.find('span');
     expect(timeLastSavedElement.html()).toEqual('22:23');
   });
 });

@@ -3,8 +3,10 @@
     <section class="add-date">
       <div class="form-group">
         <p class="module-title">Vanaf</p>
-        <div ng-if="eventFormData.startDate" udb-datepicker highlight-date="2015-8-12" ng-change="setMajorInfoChanged()" ng-model="eventFormData.startDate" data-date="{{ eventFormData.startDate|date:'dd/MM/yyyy' }}"></div>
-        <div ng-if="!eventFormData.startDate" udb-datepicker highlight-date="2015-8-12" ng-change="setMajorInfoChanged()" ng-model="eventFormData.startDate"></div>
+        <div udb-datepicker
+             highlight-date="2015-8-12"
+             ng-change="EventFormStep2.periodicEventTimingChanged()"
+             ng-model="eventFormData.startDate"></div>
       </div>
     </section>
   </div>
@@ -13,10 +15,17 @@
     <section class="add-date">
       <div class="form-group">
         <p class="module-title">Tot en met</p>
-        <div ng-if="eventFormData.endDate" udb-datepicker highlight-date="2015-8-12" ng-change="setMajorInfoChanged()" ng-model="eventFormData.endDate" data-date="{{ eventFormData.endDate|date:'dd/MM/yyyy' }}"></div>
-        <div ng-if="!eventFormData.endDate" udb-datepicker highlight-date="2015-8-12" ng-change="setMajorInfoChanged()" ng-model="eventFormData.endDate"></div>
+        <div udb-datepicker
+             highlight-date="2015-8-12"
+             ng-change="EventFormStep2.periodicEventTimingChanged()"
+             ng-model="eventFormData.endDate"></div>
       </div>
     </section>
   </div>
 
+  <div class="col-xs-12">
+    <div ng-show="EventFormStep2.periodicRangeError" class="alert alert-warning" role="alert">
+      Selecteer een geldige start en eind datum datum.
+    </div>
+  </div>
 </div>

@@ -19,7 +19,8 @@ function EventDetail(
   jsonLDLangFilter,
   locationTypes,
   variationRepository,
-  eventEditor
+  eventEditor,
+  $location
 ) {
   var activeTabId = 'data';
 
@@ -132,5 +133,9 @@ function EventDetail(
 
   $scope.makeTabActive = function (tabId) {
     activeTabId = tabId;
+  };
+
+  $scope.openEditPage = function() {
+    $location.path('/event/' + eventId + '/edit');
   };
 }

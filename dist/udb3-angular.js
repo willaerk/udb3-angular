@@ -2919,7 +2919,7 @@ function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth,
     // Don't use defaultApiConfig, $upload adds custom stuff to it.
     var options = {};
     options.withCredentials = true;
-    options.url = appConfig.baseApiUrl + type + '/' + id + '/image';
+    options.url = appConfig.baseUrl + 'images';
     options.fields = {
       description: description,
       copyrightHolder : copyrightHolder
@@ -6020,6 +6020,70 @@ function EventFormImageDeleteController($scope, $uibModalInstance, EventFormData
 }
 EventFormImageDeleteController.$inject = ["$scope", "$uibModalInstance", "EventFormData", "eventCrud", "indexToDelete"];
 
+// Source: src/event_form/components/image-edit/event-form-image-edit.controller.js
+/**
+ * @ngdoc function
+ * @name udbApp.controller:EventFormImageEditController
+ * @description
+ * # EventFormImageEditController
+ * Modal for uploading images.
+ */
+angular
+  .module('udb.event-form')
+  .controller('EventFormImageEditController', EventFormImageEditController);
+
+/* @ngInject */
+function EventFormImageEditController(
+  $scope,
+  $uibModalInstance,
+  EventFormData,
+  eventCrud,
+  /** @type {MediaObject} **/
+  mediaObject
+) {
+
+  // Scope vars.
+  $scope.saving = false;
+  $scope.error = false;
+  $scope.description = mediaObject.description || '';
+  $scope.copyrightHolder = mediaObject.copyrightHolder || '';
+
+  // Scope functions.
+  $scope.cancel = cancel;
+  $scope.updateImageInfo = updateImageInfo;
+
+  /**
+   * Cancel the modal.
+   */
+  function cancel() {
+    $uibModalInstance.dismiss('cancel');
+  }
+
+  /**
+   * Update the
+   */
+  function updateImageInfo() {
+    var description = $scope.description,
+        copyrightHolder = $scope.copyrightHolder;
+
+    function displayErrors() {
+      $scope.saving = false;
+      $scope.error = true;
+    }
+
+    function updateEventFormDataAndClose(updateResponse) {
+      EventFormData.updateMediaObject(updateResponse.data);
+      $uibModalInstance.close();
+    }
+
+    eventCrud
+      .updateImageInfo(mediaObject, description, copyrightHolder)
+      .then(updateEventFormDataAndClose, displayErrors);
+  }
+
+}
+EventFormImageEditController.$inject = ["$scope", "$uibModalInstance", "EventFormData", "eventCrud", "mediaObject"];
+
 // Source: src/event_form/components/image-upload/event-form-image-upload.controller.js
 /**
  * @ngdoc function
@@ -6033,8 +6097,13 @@ angular
   .controller('EventFormImageUploadController', EventFormImageUploadController);
 
 /* @ngInject */
-function EventFormImageUploadController($scope, $uibModalInstance, EventFormData, eventCrud, indexToEdit,
-  appConfig) {
+function EventFormImageUploadController(
+  $scope,
+  $uibModalInstance,
+  EventFormData,
+  eventCrud,
+  appConfig
+) {
 
   // Scope vars.
   $scope.uploadTermsConditionsUrl = appConfig.uploadTermsConditionsUrl;
@@ -6046,15 +6115,6 @@ function EventFormImageUploadController($scope, $uibModalInstance, EventFormData
   $scope.imagesToUpload = [];
   $scope.description = '';
   $scope.copyright = '';
-
-  var mediaObject = null;
-  // An object to edit was given.
-  if (indexToEdit >= 0) {
-    mediaObject = EventFormData.mediaObject[indexToEdit];
-    $scope.description = mediaObject.description;
-    $scope.copyright = mediaObject.copyrightHolder;
-    acceptAgreements();
-  }
 
   // Scope functions.
   $scope.acceptAgreements = acceptAgreements;
@@ -6080,22 +6140,16 @@ function EventFormImageUploadController($scope, $uibModalInstance, EventFormData
    * Upload the images and save it to db.
    */
   function uploadImages() {
+    startUploading();
 
+    _.forEach($scope.imagesToUpload, function (image) {
+      addImage(image);
+    });
+  }
+
+  function startUploading() {
     $scope.saving = true;
     $scope.error = false;
-
-    // If we are editing, imagesToUpload is not required.
-    if (mediaObject) {
-      // Will be undefined if no upload was done in edit.
-      updateImage($scope.imagesToUpload[0]);
-    }
-    else {
-      // IE8/9 can't handle array. Upload 1 by 1.
-      for (var i = 0; i < $scope.imagesToUpload.length; i++) {
-        addImage($scope.imagesToUpload[i]);
-      }
-    }
-
   }
 
   /**
@@ -6105,58 +6159,35 @@ function EventFormImageUploadController($scope, $uibModalInstance, EventFormData
 
     var uploaded = 0;
 
+    function displayUploadError() {
+      $scope.saving = false;
+      $scope.error = true;
+    }
+
     eventCrud.addImage(
       EventFormData,
       image,
       $scope.description,
       $scope.copyright
     ).then(function (jsonResponse) {
-      EventFormData.addImage(
-        jsonResponse.data.url,
-        jsonResponse.data.thumbnailUrl,
-        $scope.description,
-        $scope.copyright
-      );
+      var image = {
+        id: _.uniqueId(),
+        url : jsonResponse.data.url,
+        thumbnailUrl : jsonResponse.data.thumbnailUrl,
+        description : $scope.description,
+        copyrightHolder : $scope.copyright
+      };
+      EventFormData.addImage(image);
       uploaded++;
       if (uploaded === $scope.imagesToUpload.length) {
         $uibModalInstance.close();
       }
-    }, function() {
-      $scope.saving = false;
-      $scope.error = true;
-    });
-
-  }
-
-  /**
-   * Update an image or the description.
-   */
-  function updateImage(image) {
-
-    eventCrud.updateImage(
-      EventFormData,
-      indexToEdit,
-      image,
-      $scope.description,
-      $scope.copyright
-    ).then(function (jsonResponse) {
-      EventFormData.editMediaObject(
-        indexToEdit,
-        jsonResponse.data.url,
-        jsonResponse.data.thumbnailUrl,
-        $scope.description,
-        $scope.copyright
-      );
-      $uibModalInstance.close();
-    }, function() {
-      $scope.saving = false;
-      $scope.error = true;
-    });
+    }, displayUploadError);
 
   }
 
 }
-EventFormImageUploadController.$inject = ["$scope", "$uibModalInstance", "EventFormData", "eventCrud", "indexToEdit", "appConfig"];
+EventFormImageUploadController.$inject = ["$scope", "$uibModalInstance", "EventFormData", "eventCrud", "appConfig"];
 
 // Source: src/event_form/components/openinghours/openinghours.directive.js
 /**
@@ -6713,6 +6744,15 @@ function UdbContactInfoValidationDirective() {
  */
 
 /**
+ * @typedef {Object} MediaObject
+ * @property {string} id
+ * @property {string} url
+ * @property {string} thumbnailUrl
+ * @property {string} description
+ * @property {string} copyrightHolder
+ */
+
+/**
  * @ngdoc service
  * @name udb.core.EventFormData
  * @description
@@ -6774,7 +6814,8 @@ function EventFormDataFactory() {
     },
     facilities : [],
     bookingInfo : {},
-    mediaObject : [],
+    /** @type {MediaObject[]} **/
+    mediaObjects : [],
     image : [],
     additionalData : {},
 
@@ -7026,17 +7067,13 @@ function EventFormDataFactory() {
 
     /**
      * Add a new image.
+     *
+     * @param {MediaObject} mediaObject
      */
-    addImage : function(url, thumbnailUrl, description, copyrightHolder) {
-      var image = {
-        url : url,
-        thumbnailUrl : thumbnailUrl,
-        description : description,
-        copyrightHolder : copyrightHolder
-      };
-      image['@type'] = 'ImageObject';
-      this.mediaObject.push(image);
-      this.image.push(image);
+    addImage : function(mediaObject) {
+      mediaObject['@type'] = 'ImageObject';
+      this.mediaObjects.push(mediaObject);
+      this.image.push(mediaObject);
     },
 
     /**
@@ -7047,16 +7084,36 @@ function EventFormDataFactory() {
         url : url,
         thumbnailUrl : thumbnailUrl,
         description : description,
-        copyrightHolder : copyrightHolder,
+        copyrightHolder : copyrightHolder
       };
       this.image[indexToEdit]['@type'] = 'ImageObject';
     },
 
     /**
-     * Delete a given media object.
+     * Update the info of the given media object.
+     * @param {MediaObject} updatedMediaObject
      */
-    deleteMediaObject : function(index) {
-      this.mediaObject.splice(index, 1);
+    updateMediaObject: function (updatedMediaObject)  {
+      this.mediaObjects = _.map(this.mediaObjects, function (existingMediaObject) {
+        var mediaObject;
+
+        if (existingMediaObject.id === updatedMediaObject) {
+          mediaObject = updatedMediaObject;
+        } else {
+          mediaObject = existingMediaObject;
+        }
+
+        return mediaObject;
+      });
+    },
+
+    /**
+     * Delete a given media object.
+     *
+     *@param {MediaObject} deletedMediaObject
+     */
+    deleteMediaObject : function(deletedMediaObject) {
+      this.mediaObjects = _.reject(this.mediaObjects, {id: deletedMediaObject.id});
     },
 
     /**
@@ -8497,7 +8554,7 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
   $scope.selectedFacilities = [];
 
   // Image upload vars.
-  $scope.imageCssClass = EventFormData.mediaObject.length > 0 ? 'state-complete' : 'state-incomplete';
+  $scope.imageCssClass = EventFormData.mediaObjects.length > 0 ? 'state-complete' : 'state-incomplete';
 
   // Scope functions.
   // Description functions.
@@ -9082,7 +9139,7 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
       $scope.imageCssClass = 'state-complete';
     }, function () {
       // modal dismissed.
-      if (EventFormData.mediaObject.length > 0) {
+      if (EventFormData.mediaObjects.length > 0) {
         $scope.imageCssClass = 'state-complete';
       }
       else {
@@ -9108,7 +9165,7 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
     });
 
     modalInstance.result.then(function () {
-      if (EventFormData.mediaObject.length > 0) {
+      if (EventFormData.mediaObjects.length > 0) {
         $scope.imageCssClass = 'state-complete';
       }
       else {
@@ -9116,7 +9173,7 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
       }
     }, function () {
       // modal dismissed.
-      if (EventFormData.mediaObject.length > 0) {
+      if (EventFormData.mediaObjects.length > 0) {
         $scope.imageCssClass = 'state-complete';
       }
       else {
@@ -13001,6 +13058,49 @@ $templateCache.put('templates/unexpected-error-modal.html',
     "\n" +
     "  </div>\n" +
     "</div><!-- /.modal-content -->\n" +
+    "\n"
+  );
+
+
+  $templateCache.put('templates/event-form-image-edit.html',
+    "<div class=\"modal-content\">\n" +
+    "  <div class=\"modal-header\">\n" +
+    "    <button type=\"button\" class=\"close\" ng-click=\"cancel()\">\n" +
+    "      <span aria-hidden=\"true\">&times;</span><span class=\"sr-only\">Close</span>\n" +
+    "    </button>\n" +
+    "    <h4 class=\"modal-title\">Afbeelding info bewerken</h4>\n" +
+    "  </div>\n" +
+    "  <div class=\"modal-body\">\n" +
+    "\n" +
+    "    <div>\n" +
+    "      <div class=\"form-group\">\n" +
+    "        <label>Beschrijving</label>\n" +
+    "        <input type=\"text\" class=\"form-control\" ng-model=\"description\">\n" +
+    "        <p class=\"help-block\">\n" +
+    "          Een goede beschrijving van je afbeelding wordt gelezen door zoekmachines en gebruikers met een visuele beperking.\n" +
+    "        </p>\n" +
+    "      </div>\n" +
+    "\n" +
+    "      <div class=\"form-group\">\n" +
+    "        <label>Copyright</label>\n" +
+    "        <input type=\"text\" class=\"form-control\" ng-model=\"copyrightHolder\">\n" +
+    "        <p class=\"help-block\">\n" +
+    "          Vermeld de naam van de rechtenhoudende fotograaf.</p>\n" +
+    "      </div>\n" +
+    "    </div>\n" +
+    "\n" +
+    "    <div ng-show=\"error\" class=\"alert alert-danger\">Er ging iets mis bij het opslaan van de afbeelding.</div>\n" +
+    "\n" +
+    "  </div>\n" +
+    "  <div class=\"modal-footer\">\n" +
+    "\n" +
+    "    <button type=\"button\" class=\"btn btn-default\" ng-click=\"cancel()\">Annuleren</button>\n" +
+    "    <button type=\"button\" class=\"btn btn-primary\" ng-click=\"updateImageInfo()\">\n" +
+    "      Bijwerken <i ng-show=\"saving\" class=\"fa fa-circle-o-notch fa-spin\"></i>\n" +
+    "    </button>\n" +
+    "\n" +
+    "  </div>\n" +
+    "</div>\n" +
     "\n"
   );
 

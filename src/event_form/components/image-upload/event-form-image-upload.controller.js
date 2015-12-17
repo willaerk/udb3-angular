@@ -97,7 +97,7 @@ function EventFormImageUploadController(
       if (uploaded === $scope.imagesToUpload.length) {
         $uibModalInstance.close();
       }
-    },displayUploadError);
+    }, displayUploadError);
 
   }
 

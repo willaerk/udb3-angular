@@ -478,7 +478,7 @@ function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth,
     // Don't use defaultApiConfig, $upload adds custom stuff to it.
     var options = {};
     options.withCredentials = true;
-    options.url = appConfig.baseApiUrl + type + '/' + id + '/image';
+    options.url = appConfig.baseUrl + 'images';
     options.fields = {
       description: description,
       copyrightHolder : copyrightHolder

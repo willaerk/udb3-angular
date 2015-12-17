@@ -684,7 +684,7 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
   function openUploadImageModal(indexToEdit) {
 
     var modalInstance = $uibModal.open({
-      templateUrl: 'templates/event-form-image-edit.html',
+      templateUrl: 'templates/event-form-image-upload.html',
       controller: 'EventFormImageUploadController',
       resolve: {
         indexToEdit: function () {

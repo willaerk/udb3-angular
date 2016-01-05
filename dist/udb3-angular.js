@@ -2554,7 +2554,7 @@ function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth,
       deferredEvent.resolve(place);
     } else {
       var placeRequest  = $http.get(
-        appConfig.baseApiUrl + 'place/' + placeId,
+        appConfig.baseUrl + 'place/' + placeId,
         {
           headers: {
             'Accept': 'application/ld+json'
@@ -9666,19 +9666,19 @@ function PlaceDetail($scope, placeId, udbApi) {
   ];
 
   // Check if user has permissions.
-  udbApi.hasPermission(placeId).then(function(result) {
+  /*udbApi.hasPermission(placeId).then(function(result) {
     $scope.hasEditPermissions = result.data.hasPermission;
-  });
+  });*/
 
   var placeLoaded = udbApi.getPlaceById($scope.placeId);
 
   placeLoaded.then(
       function (place) {
-        var placeHistoryLoaded = udbApi.getEventHistoryById($scope.placeId);
+        /*var placeHistoryLoaded = udbApi.getEventHistoryById($scope.placeId);
 
         placeHistoryLoaded.then(function(placeHistory) {
           $scope.placeHistory = placeHistory;
-        });
+        });*/
         $scope.place = place;
         $scope.placeIdIsInvalid = false;
 

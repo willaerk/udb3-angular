@@ -43,13 +43,15 @@
               </tr>
               <tr>
                 <td><strong>Beschrijving</strong></td>
-                <td ng-bind-html="place.description.nl"></td>
+                <td ng-bind-html="place.description"></td>
               </tr>
               <tr>
                 <td><strong>Waar</strong></td>
-                <td>{{placeLocation(place)}}</td>
+                <td>{{place.address.streetAddress}}<br />
+                  {{place.address.postalCode}} {{place.address.addressLocality}}<br />
+                  {{place.address.addressCountry}}</td>
               </tr>
-              <tr ng-class="{muted: !place.organizer}">
+              <tr>
                 <td><strong>Organisator</strong></td>
                 <td>{{place.organizer.name}}</td>
               </tr>

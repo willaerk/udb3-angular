@@ -88,7 +88,7 @@ function UdbPlaceFactory() {
       this.id = jsonPlace['@id'].split('/').pop();
       this.name = jsonPlace.name || '';
       this.address = jsonPlace.address || this.address;
-      this.type = getCategoryByType(jsonPlace, 'eventtype') || {};
+      this.type = getCategoryByType(jsonPlace, 'actortype') || {};
       this.theme = getCategoryByType(jsonPlace, 'theme') || {};
       this.description = jsonPlace.description || {};
       this.calendarType = jsonPlace.calendarType || '';

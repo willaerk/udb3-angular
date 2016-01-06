@@ -24,10 +24,10 @@ function PlaceDetail($scope, placeId, udbApi) {
       id: 'data',
       header: 'Gegevens'
     },
-    {
+    /*{
       id: 'history',
       header: 'Historiek'
-    },
+    },*/
     {
       id: 'publication',
       header: 'Publicatie'

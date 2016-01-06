@@ -3621,7 +3621,7 @@ function UdbPlaceFactory() {
       this.id = jsonPlace['@id'].split('/').pop();
       this.name = jsonPlace.name || '';
       this.address = jsonPlace.address || this.address;
-      this.type = getCategoryByType(jsonPlace, 'eventtype') || {};
+      this.type = getCategoryByType(jsonPlace, 'actortype') || {};
       this.theme = getCategoryByType(jsonPlace, 'theme') || {};
       this.description = jsonPlace.description || {};
       this.calendarType = jsonPlace.calendarType || '';
@@ -9655,10 +9655,10 @@ function PlaceDetail($scope, placeId, udbApi) {
       id: 'data',
       header: 'Gegevens'
     },
-    {
+    /*{
       id: 'history',
       header: 'Historiek'
-    },
+    },*/
     {
       id: 'publication',
       header: 'Publicatie'
@@ -14695,13 +14695,15 @@ $templateCache.put('templates/unexpected-error-modal.html',
     "              </tr>\n" +
     "              <tr>\n" +
     "                <td><strong>Beschrijving</strong></td>\n" +
-    "                <td ng-bind-html=\"place.description.nl\"></td>\n" +
+    "                <td ng-bind-html=\"place.description\"></td>\n" +
     "              </tr>\n" +
     "              <tr>\n" +
     "                <td><strong>Waar</strong></td>\n" +
-    "                <td>{{placeLocation(place)}}</td>\n" +
+    "                <td>{{place.address.streetAddress}}<br />\n" +
+    "                  {{place.address.postalCode}} {{place.address.addressLocality}}<br />\n" +
+    "                  {{place.address.addressCountry}}</td>\n" +
     "              </tr>\n" +
-    "              <tr ng-class=\"{muted: !place.organizer}\">\n" +
+    "              <tr>\n" +
     "                <td><strong>Organisator</strong></td>\n" +
     "                <td>{{place.organizer.name}}</td>\n" +
     "              </tr>\n" +
@@ -14770,51 +14772,6 @@ $templateCache.put('templates/unexpected-error-modal.html',
     "                      <span ng-switch-when=\"false\" ng-bind=\"id\"></span>\n" +
     "                    </li>\n" +
     "                  </ul>\n" +
-    "                </td>\n" +
-    "              </tr>\n" +
-    "            </tbody>\n" +
-    "          </table>\n" +
-    "        </div>\n" +
-    "      </div>\n" +
-    "\n" +
-    "      <div class=\"tab-pane\" role=\"tabpanel\" ng-show=\"isTabActive('omd')\" ng-if=\"place.omdEvent\">\n" +
-    "        <div class=\"panel panel-default\">\n" +
-    "          <table class=\"table\">\n" +
-    "            <tbody>\n" +
-    "              <tr>\n" +
-    "                <td><strong>Deelname</strong></td>\n" +
-    "                <td>\n" +
-    "                  Ja\n" +
-    "                </td>\n" +
-    "              </tr>\n" +
-    "              <tr>\n" +
-    "                <td><strong>Categorieën</strong></td>\n" +
-    "                <td>\n" +
-    "                  {{ place.additionalData.omdInfo.categoryList }}\n" +
-    "                </td>\n" +
-    "              </tr>\n" +
-    "              <tr>\n" +
-    "                <td><strong>Motivatie</strong></td>\n" +
-    "                <td>\n" +
-    "                  {{ place.additionalData.omdInfo.reasonOfParticipation }}\n" +
-    "                </td>\n" +
-    "              </tr>\n" +
-    "              <tr>\n" +
-    "                <td><strong>Eerste deelname</strong></td>\n" +
-    "                <td>\n" +
-    "                  {{ place.additionalData.omdInfo.firstParticipation }}\n" +
-    "                </td>\n" +
-    "              </tr>\n" +
-    "              <tr>\n" +
-    "                <td><strong>Brochure beschikbaar</strong></td>\n" +
-    "                <td>\n" +
-    "                  {{ place.additionalData.omdInfo.brochure }}\n" +
-    "                </td>\n" +
-    "              </tr>\n" +
-    "              <tr>\n" +
-    "                <td><strong>Infopunt</strong></td>\n" +
-    "                <td>\n" +
-    "                  {{ place.additionalData.omdInfo.infoOffice }}\n" +
     "                </td>\n" +
     "              </tr>\n" +
     "            </tbody>\n" +

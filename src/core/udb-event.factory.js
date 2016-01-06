@@ -12,7 +12,7 @@ angular
   .factory('UdbEvent', UdbEventFactory);
 
 /* @ngInject */
-function UdbEventFactory(EventTranslationState) {
+function UdbEventFactory(EventTranslationState, UdbPlace) {
 
   var EventPricing = {
     FREE: 'free',
@@ -121,7 +121,7 @@ function UdbEventFactory(EventTranslationState) {
       this.name = jsonEvent.name || {};
       this.description = angular.copy(jsonEvent.description) || {};
       this.calendarSummary = jsonEvent.calendarSummary;
-      this.location = jsonEvent.location;
+      this.location = new UdbPlace(jsonEvent.location);
       // @todo Use getImages() later on.
       this.image = jsonEvent.image;
       this.labels = _.map(jsonEvent.labels, function (label) {

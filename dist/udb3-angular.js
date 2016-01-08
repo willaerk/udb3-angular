@@ -2554,7 +2554,7 @@ function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth,
       deferredEvent.resolve(place);
     } else {
       var placeRequest  = $http.get(
-        appConfig.baseApiUrl + 'place/' + placeId,
+        appConfig.baseUrl + 'place/' + placeId,
         {
           headers: {
             'Accept': 'application/ld+json'
@@ -3038,7 +3038,7 @@ angular
   .factory('UdbEvent', UdbEventFactory);
 
 /* @ngInject */
-function UdbEventFactory(EventTranslationState) {
+function UdbEventFactory(EventTranslationState, UdbPlace) {
 
   var EventPricing = {
     FREE: 'free',
@@ -3147,7 +3147,7 @@ function UdbEventFactory(EventTranslationState) {
       this.name = jsonEvent.name || {};
       this.description = angular.copy(jsonEvent.description) || {};
       this.calendarSummary = jsonEvent.calendarSummary;
-      this.location = jsonEvent.location;
+      this.location = new UdbPlace(jsonEvent.location);
       // @todo Use getImages() later on.
       this.image = jsonEvent.image;
       this.labels = _.map(jsonEvent.labels, function (label) {
@@ -3325,7 +3325,7 @@ function UdbEventFactory(EventTranslationState) {
 
   return (UdbEvent);
 }
-UdbEventFactory.$inject = ["EventTranslationState"];
+UdbEventFactory.$inject = ["EventTranslationState", "UdbPlace"];
 
 // Source: src/core/udb-openinghours.factory.js
 /**
@@ -3545,7 +3545,7 @@ angular
   .factory('UdbPlace', UdbPlaceFactory);
 
 /* @ngInject */
-function UdbPlaceFactory() {
+function UdbPlaceFactory(locationTypes) {
 
   function getCategoryByType(jsonPlace, domain) {
     var category = _.find(jsonPlace.terms, function (category) {
@@ -3599,7 +3599,7 @@ function UdbPlaceFactory() {
   var UdbPlace = function (placeJson) {
     this.id = '';
     this.name = {};
-    this.type = {};
+    this.type = '';
     this.theme = {};
     this.calendarType = '';
     this.openinghours = [];
@@ -3621,7 +3621,6 @@ function UdbPlaceFactory() {
       this.id = jsonPlace['@id'].split('/').pop();
       this.name = jsonPlace.name || '';
       this.address = jsonPlace.address || this.address;
-      this.type = getCategoryByType(jsonPlace, 'eventtype') || {};
       this.theme = getCategoryByType(jsonPlace, 'theme') || {};
       this.description = jsonPlace.description || {};
       this.calendarType = jsonPlace.calendarType || '';
@@ -3636,6 +3635,17 @@ function UdbPlaceFactory() {
       this.mediaObject = jsonPlace.mediaObject || [];
       this.facilities = getCategoriesByType(jsonPlace, 'facility') || [];
       this.additionalData = jsonPlace.additionalData || {};
+
+      if (jsonPlace.terms) {
+        var place = this;
+        angular.forEach(jsonPlace.terms, function (term) {
+          // Only add terms related to locations.
+          if (locationTypes.indexOf(term.id) !== -1) {
+            place.type = term;
+            return;
+          }
+        });
+      }
 
     },
 
@@ -3746,6 +3756,7 @@ function UdbPlaceFactory() {
 
   return (UdbPlace);
 }
+UdbPlaceFactory.$inject = ["locationTypes"];
 
 // Source: src/core/udb3-content.service.js
 /**
@@ -5815,13 +5826,8 @@ function EventDetail(
       event.location.name
     ];
 
-    if (event.location.terms) {
-      angular.forEach(event.location.terms, function (term) {
-        // Only add terms related to locations.
-        if (locationTypes.indexOf(term.id) !== -1) {
-          eventLocation.push(term.label);
-        }
-      });
+    if (event.location.type) {
+      eventLocation.push(event.location.type.label);
     }
 
     if (event.location.address.addressLocality) {
@@ -9655,10 +9661,10 @@ function PlaceDetail($scope, placeId, udbApi) {
       id: 'data',
       header: 'Gegevens'
     },
-    {
+    /*{
       id: 'history',
       header: 'Historiek'
-    },
+    },*/
     {
       id: 'publication',
       header: 'Publicatie'
@@ -9666,19 +9672,19 @@ function PlaceDetail($scope, placeId, udbApi) {
   ];
 
   // Check if user has permissions.
-  udbApi.hasPermission(placeId).then(function(result) {
+  /*udbApi.hasPermission(placeId).then(function(result) {
     $scope.hasEditPermissions = result.data.hasPermission;
-  });
+  });*/
 
   var placeLoaded = udbApi.getPlaceById($scope.placeId);
 
   placeLoaded.then(
       function (place) {
-        var placeHistoryLoaded = udbApi.getEventHistoryById($scope.placeId);
+        /*var placeHistoryLoaded = udbApi.getEventHistoryById($scope.placeId);
 
         placeHistoryLoaded.then(function(placeHistory) {
           $scope.placeHistory = placeHistory;
-        });
+        });*/
         $scope.place = place;
         $scope.placeIdIsInvalid = false;
 
@@ -12730,7 +12736,7 @@ $templateCache.put('templates/unexpected-error-modal.html',
     "            </tr>\n" +
     "            <tr>\n" +
     "              <td><strong>Waar</strong></td>\n" +
-    "              <td>{{eventLocation(event)}}</td>\n" +
+    "              <td><a href=\"/place/{{event.location.id}}\">{{eventLocation(event)}}</a></td>\n" +
     "            </tr>\n" +
     "            <tr>\n" +
     "              <td><strong>Wanneer</strong></td>\n" +
@@ -14695,13 +14701,15 @@ $templateCache.put('templates/unexpected-error-modal.html',
     "              </tr>\n" +
     "              <tr>\n" +
     "                <td><strong>Beschrijving</strong></td>\n" +
-    "                <td ng-bind-html=\"place.description.nl\"></td>\n" +
+    "                <td ng-bind-html=\"place.description\"></td>\n" +
     "              </tr>\n" +
     "              <tr>\n" +
     "                <td><strong>Waar</strong></td>\n" +
-    "                <td>{{placeLocation(place)}}</td>\n" +
+    "                <td>{{place.address.streetAddress}}<br />\n" +
+    "                  {{place.address.postalCode}} {{place.address.addressLocality}}<br />\n" +
+    "                  {{place.address.addressCountry}}</td>\n" +
     "              </tr>\n" +
-    "              <tr ng-class=\"{muted: !place.organizer}\">\n" +
+    "              <tr>\n" +
     "                <td><strong>Organisator</strong></td>\n" +
     "                <td>{{place.organizer.name}}</td>\n" +
     "              </tr>\n" +
@@ -14770,51 +14778,6 @@ $templateCache.put('templates/unexpected-error-modal.html',
     "                      <span ng-switch-when=\"false\" ng-bind=\"id\"></span>\n" +
     "                    </li>\n" +
     "                  </ul>\n" +
-    "                </td>\n" +
-    "              </tr>\n" +
-    "            </tbody>\n" +
-    "          </table>\n" +
-    "        </div>\n" +
-    "      </div>\n" +
-    "\n" +
-    "      <div class=\"tab-pane\" role=\"tabpanel\" ng-show=\"isTabActive('omd')\" ng-if=\"place.omdEvent\">\n" +
-    "        <div class=\"panel panel-default\">\n" +
-    "          <table class=\"table\">\n" +
-    "            <tbody>\n" +
-    "              <tr>\n" +
-    "                <td><strong>Deelname</strong></td>\n" +
-    "                <td>\n" +
-    "                  Ja\n" +
-    "                </td>\n" +
-    "              </tr>\n" +
-    "              <tr>\n" +
-    "                <td><strong>Categorieën</strong></td>\n" +
-    "                <td>\n" +
-    "                  {{ place.additionalData.omdInfo.categoryList }}\n" +
-    "                </td>\n" +
-    "              </tr>\n" +
-    "              <tr>\n" +
-    "                <td><strong>Motivatie</strong></td>\n" +
-    "                <td>\n" +
-    "                  {{ place.additionalData.omdInfo.reasonOfParticipation }}\n" +
-    "                </td>\n" +
-    "              </tr>\n" +
-    "              <tr>\n" +
-    "                <td><strong>Eerste deelname</strong></td>\n" +
-    "                <td>\n" +
-    "                  {{ place.additionalData.omdInfo.firstParticipation }}\n" +
-    "                </td>\n" +
-    "              </tr>\n" +
-    "              <tr>\n" +
-    "                <td><strong>Brochure beschikbaar</strong></td>\n" +
-    "                <td>\n" +
-    "                  {{ place.additionalData.omdInfo.brochure }}\n" +
-    "                </td>\n" +
-    "              </tr>\n" +
-    "              <tr>\n" +
-    "                <td><strong>Infopunt</strong></td>\n" +
-    "                <td>\n" +
-    "                  {{ place.additionalData.omdInfo.infoOffice }}\n" +
     "                </td>\n" +
     "              </tr>\n" +
     "            </tbody>\n" +

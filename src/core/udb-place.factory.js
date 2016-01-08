@@ -12,7 +12,7 @@ angular
   .factory('UdbPlace', UdbPlaceFactory);
 
 /* @ngInject */
-function UdbPlaceFactory() {
+function UdbPlaceFactory(locationTypes) {
 
   function getCategoryByType(jsonPlace, domain) {
     var category = _.find(jsonPlace.terms, function (category) {
@@ -66,7 +66,7 @@ function UdbPlaceFactory() {
   var UdbPlace = function (placeJson) {
     this.id = '';
     this.name = {};
-    this.type = {};
+    this.type = '';
     this.theme = {};
     this.calendarType = '';
     this.openinghours = [];
@@ -88,7 +88,6 @@ function UdbPlaceFactory() {
       this.id = jsonPlace['@id'].split('/').pop();
       this.name = jsonPlace.name || '';
       this.address = jsonPlace.address || this.address;
-      this.type = getCategoryByType(jsonPlace, 'eventtype') || {};
       this.theme = getCategoryByType(jsonPlace, 'theme') || {};
       this.description = jsonPlace.description || {};
       this.calendarType = jsonPlace.calendarType || '';
@@ -103,6 +102,17 @@ function UdbPlaceFactory() {
       this.mediaObject = jsonPlace.mediaObject || [];
       this.facilities = getCategoriesByType(jsonPlace, 'facility') || [];
       this.additionalData = jsonPlace.additionalData || {};
+
+      if (jsonPlace.terms) {
+        var place = this;
+        angular.forEach(jsonPlace.terms, function (term) {
+          // Only add terms related to locations.
+          if (locationTypes.indexOf(term.id) !== -1) {
+            place.type = term;
+            return;
+          }
+        });
+      }
 
     },
 

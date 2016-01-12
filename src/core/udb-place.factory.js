@@ -89,7 +89,7 @@ function UdbPlaceFactory(locationTypes) {
       this.name = jsonPlace.name || '';
       this.address = jsonPlace.address || this.address;
       this.theme = getCategoryByType(jsonPlace, 'theme') || {};
-      this.description = jsonPlace.description || {};
+      this.description = jsonPlace.description || '';
       this.calendarType = jsonPlace.calendarType || '';
       this.startDate = jsonPlace.startDate;
       this.endDate = jsonPlace.endDate;

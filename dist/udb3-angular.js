@@ -3622,7 +3622,7 @@ function UdbPlaceFactory(locationTypes) {
       this.name = jsonPlace.name || '';
       this.address = jsonPlace.address || this.address;
       this.theme = getCategoryByType(jsonPlace, 'theme') || {};
-      this.description = jsonPlace.description || {};
+      this.description = jsonPlace.description || '';
       this.calendarType = jsonPlace.calendarType || '';
       this.startDate = jsonPlace.startDate;
       this.endDate = jsonPlace.endDate;
@@ -14709,14 +14709,6 @@ $templateCache.put('templates/unexpected-error-modal.html',
     "                  {{place.address.postalCode}} {{place.address.addressLocality}}<br />\n" +
     "                  {{place.address.addressCountry}}</td>\n" +
     "              </tr>\n" +
-    "              <tr>\n" +
-    "                <td><strong>Organisator</strong></td>\n" +
-    "                <td>{{place.organizer.name}}</td>\n" +
-    "              </tr>\n" +
-    "              <!--<tr>\n" +
-    "                <td><strong>Prijs</strong></td>\n" +
-    "                <td></td>\n" +
-    "              </tr>-->\n" +
     "              <tr ng-class=\"{muted: !place.typicalAgeRange}\">\n" +
     "                <td><strong>Geschikt voor</strong></td>\n" +
     "                <td>\n" +

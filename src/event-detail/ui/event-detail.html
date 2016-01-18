@@ -70,7 +70,8 @@
             </tr>
             <tr>
               <td><strong>Waar</strong></td>
-              <td><a href="/place/{{event.location.id}}">{{eventLocation(event)}}</a></td>
+              <td ng-show="event.location.url"><a href="{{event.location.url}}">{{eventLocation(event)}}</a></td>
+              <td ng-hide="event.location.url">{{eventLocation(event)}}</td>
             </tr>
             <tr>
               <td><strong>Wanneer</strong></td>

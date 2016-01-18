@@ -689,11 +689,11 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
       resolve: {
         indexToEdit: function () {
           return indexToEdit;
-        },
+        }
       }
     });
 
-    modalInstance.result.then(function () {
+    modalInstance.result.then(function (mediaObject) {
       $scope.imageCssClass = 'state-complete';
     }, function () {
       // modal dismissed.

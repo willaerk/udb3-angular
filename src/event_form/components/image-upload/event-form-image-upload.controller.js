@@ -17,7 +17,9 @@ function EventFormImageUploadController(
   $uibModalInstance,
   EventFormData,
   eventCrud,
-  appConfig
+  appConfig,
+  MediaManager,
+  $q
 ) {
 
   // Scope vars.
@@ -34,7 +36,7 @@ function EventFormImageUploadController(
   // Scope functions.
   $scope.acceptAgreements = acceptAgreements;
   $scope.cancel = cancel;
-  $scope.uploadImages = uploadImages;
+  $scope.uploadImages = uploadAndAddImage;
 
   /**
    * Accept the agreements.
@@ -51,54 +53,37 @@ function EventFormImageUploadController(
     $uibModalInstance.dismiss('cancel');
   }
 
-  /**
-   * Upload the images and save it to db.
-   */
-  function uploadImages() {
-    startUploading();
+  function uploadAndAddImage() {
+    var file = $scope.imagesToUpload[0],
+        description = $scope.description,
+        copyrightHolder = $scope.copyright;
 
-    _.forEach($scope.imagesToUpload, function (image) {
-      addImage(image);
-    });
-  }
+    var deferredAddition = $q.defer();
 
-  function startUploading() {
-    $scope.saving = true;
-    $scope.error = false;
-  }
-
-  /**
-   * Upload and add an image.
-   */
-  function addImage(image) {
-
-    var uploaded = 0;
-
-    function displayUploadError() {
+    function displayError(error) {
       $scope.saving = false;
-      $scope.error = true;
+      $scope.error = error;
     }
 
-    eventCrud.addImage(
-      EventFormData,
-      image,
-      $scope.description,
-      $scope.copyright
-    ).then(function (jsonResponse) {
-      var image = {
-        id: _.uniqueId(),
-        url : jsonResponse.data.url,
-        thumbnailUrl : jsonResponse.data.thumbnailUrl,
-        description : $scope.description,
-        copyrightHolder : $scope.copyright
-      };
-      EventFormData.addImage(image);
-      uploaded++;
-      if (uploaded === $scope.imagesToUpload.length) {
-        $uibModalInstance.close();
+    /**
+     * @param {MediaObject} mediaObject
+     */
+    function addImageToEvent(mediaObject) {
+      function updateEventFormAndResolve() {
+        EventFormData.addImage(mediaObject);
+        deferredAddition.resolve(mediaObject);
+        $uibModalInstance.close(mediaObject);
       }
-    }, displayUploadError);
 
+      eventCrud
+        .addImage(EventFormData, mediaObject)
+        .then(updateEventFormAndResolve, displayError);
+    }
+
+    MediaManager
+      .createImage(file, description, copyrightHolder)
+      .then(addImageToEvent, displayError);
+
+    return deferredAddition.promise;
   }
-
 }

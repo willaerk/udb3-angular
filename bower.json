@@ -34,7 +34,7 @@
     "angular-bootstrap": "~0.14.3",
     "angular-socket-io": "~0.7.0",
     "bootstrap": "~3.3.1",
-    "lodash": "~2.4.1",
+    "lodash": "~3.10.1",
     "socket.io-client": "~1.2.0",
     "components-font-awesome": "~4.2.0",
     "moment": "~2.9.0",

@@ -340,9 +340,8 @@ function EventFormDataFactory() {
      * @param {MediaObject} mediaObject
      */
     addImage : function(mediaObject) {
-      mediaObject['@type'] = 'ImageObject';
       this.mediaObjects.push(mediaObject);
-      this.image.push(mediaObject);
+      console.log(this.mediaObjects);
     },
 
     /**

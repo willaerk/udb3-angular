@@ -499,24 +499,24 @@
             <p class="muted">Voeg een afbeelding toe zodat je bezoekers je activiteit beter herkennen.</p>
           </div>
 
-          <div class="image-upload-list state complete" ng-if="eventFormData.image.length > 0">
+          <div class="image-upload-list state complete" ng-if="eventFormData.mediaObjects.length > 0">
             <h4>Afbeeldingen</h4>
-            <div ng-repeat="(key, mediaObject) in eventFormData.mediaObject">
-              <div ng-if="mediaObject['@type'] === 'ImageObject'" class="uploaded-image">
+            <div ng-repeat="image in eventFormData.mediaObjects | filter:{'@type': 'schema:ImageObject'} track by image.contentUrl">
+              <div class="uploaded-image">
                 <div class="media">
                   <a class="media-left" href="#">
-                    <img ng-src="{{ mediaObject.thumbnailUrl }}">
+                    <img ng-src="{{ image.thumbnailUrl }}" style="max-width: 50px; max-height: 50px;">
                   </a>
 
                   <div class="media-body">
                     <span>
-                      <span ng-bind="mediaObject.description"></span>
+                      <span ng-bind="image.description"></span>
                       <br/>
-                      <small ng-bind="mediaObject.copyrightHolder">Copyright</small>
+                      <small ng-bind="image.copyrightHolder">Copyright</small>
                     </span>
                     <span>
-                      <a class="btn btn-link" ng-click="openUploadImageModal(key)">Wijzigen</a>
-                      <a class="btn btn-link" ng-click="openDeleteImageModal(key)">Verwijderen</a>
+                      <a class="btn btn-link" ng-click="openUploadImageModal(1)">Wijzigen</a>
+                      <a class="btn btn-link" ng-click="openDeleteImageModal(1)">Verwijderen</a>
                     </span>
                   </div>
                 </div>

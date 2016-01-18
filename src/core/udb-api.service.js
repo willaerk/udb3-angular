@@ -20,7 +20,7 @@ angular
   .service('udbApi', UdbApi);
 
 /* @ngInject */
-function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth,
+function UdbApi($q, $http, appConfig, $cookieStore, uitidAuth,
   $cacheFactory, UdbEvent, UdbPlace, UdbOrganizer) {
   var apiUrl = appConfig.baseApiUrl;
   var defaultApiConfig = {
@@ -473,20 +473,21 @@ function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth,
   /**
    * Add a new image.
    */
-  this.addImage = function(id, type, image, description, copyrightHolder) {
-
-    // Don't use defaultApiConfig, $upload adds custom stuff to it.
-    var options = {};
-    options.withCredentials = true;
-    options.url = appConfig.baseUrl + 'images';
-    options.fields = {
-      description: description,
-      copyrightHolder : copyrightHolder
+  this.addImage = function(eventId, imageId) {
+    var postData = {
+      mediaObjectId: imageId
     };
-    options.file = image;
 
-    return $upload.upload(options);
+    function returnJobData(response) {
+      return $q.resolve(response.data);
+    }
 
+    return $http
+      .post(
+        appConfig.baseUrl + 'event/' + eventId + '/images',
+        postData,
+        defaultApiConfig
+      ).then(returnJobData);
   };
 
   /**
@@ -507,7 +508,7 @@ function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth,
       };
       options.file = image;
 
-      return $upload.upload(options);
+      //return $upload.upload(options);
 
     }
     // Only the textfields change.

@@ -22,6 +22,7 @@ angular
     'udb.place-detail',
     'udb.dashboard',
     'udb.saved-searches',
+    'udb.media',
     'btford.socket-io',
     'pascalprecht.translate'
   ])
@@ -162,6 +163,20 @@ angular
     'ui.bootstrap',
     'udb.config',
     'udb.search'
+  ]);
+
+/**
+ * @ngdoc module
+ * @name udb.media
+ * @description
+ * The udb media module
+ */
+angular
+  .module('udb.media', [
+    'ngSanitize',
+    'ui.bootstrap',
+    'udb.core',
+    'udb.config'
   ]);
 
 angular.module('peg', []).factory('LuceneQueryParser', function () {
@@ -2461,7 +2476,7 @@ angular
   .service('udbApi', UdbApi);
 
 /* @ngInject */
-function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth,
+function UdbApi($q, $http, appConfig, $cookieStore, uitidAuth,
   $cacheFactory, UdbEvent, UdbPlace, UdbOrganizer) {
   var apiUrl = appConfig.baseApiUrl;
   var defaultApiConfig = {
@@ -2914,20 +2929,21 @@ function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth,
   /**
    * Add a new image.
    */
-  this.addImage = function(id, type, image, description, copyrightHolder) {
-
-    // Don't use defaultApiConfig, $upload adds custom stuff to it.
-    var options = {};
-    options.withCredentials = true;
-    options.url = appConfig.baseUrl + 'images';
-    options.fields = {
-      description: description,
-      copyrightHolder : copyrightHolder
+  this.addImage = function(eventId, imageId) {
+    var postData = {
+      mediaObjectId: imageId
     };
-    options.file = image;
 
-    return $upload.upload(options);
+    function returnJobData(response) {
+      return $q.resolve(response.data);
+    }
 
+    return $http
+      .post(
+        appConfig.baseUrl + 'event/' + eventId + '/images',
+        postData,
+        defaultApiConfig
+      ).then(returnJobData);
   };
 
   /**
@@ -2948,7 +2964,7 @@ function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth,
       };
       options.file = image;
 
-      return $upload.upload(options);
+      //return $upload.upload(options);
 
     }
     // Only the textfields change.
@@ -3024,7 +3040,7 @@ function UdbApi($q, $http, $upload, appConfig, $cookieStore, uitidAuth,
     return deferredVariation.promise;
   };
 }
-UdbApi.$inject = ["$q", "$http", "$upload", "appConfig", "$cookieStore", "uitidAuth", "$cacheFactory", "UdbEvent", "UdbPlace", "UdbOrganizer"];
+UdbApi.$inject = ["$q", "$http", "appConfig", "$cookieStore", "uitidAuth", "$cacheFactory", "UdbEvent", "UdbPlace", "UdbOrganizer"];
 
 // Source: src/core/udb-event.factory.js
 /**
@@ -4321,7 +4337,7 @@ angular
   .service('eventCrud', EventCrud);
 
 /* @ngInject */
-function EventCrud(jobLogger, udbApi, EventCrudJob, $rootScope) {
+function EventCrud(jobLogger, udbApi, EventCrudJob, $rootScope , $q) {
 
   var service = this;
 
@@ -4601,22 +4617,19 @@ function EventCrud(jobLogger, udbApi, EventCrudJob, $rootScope) {
    * Add a new image to the item.
    *
    * @param {EventFormData} item
-   * @param {File} image
-   * @param {string} description
-   * @param {string} copyrightHolder
+   * @param {MediaObject} image
    * @returns {EventCrud.addImage.jobPromise}
    */
-  service.addImage = function(item, image, description, copyrightHolder) {
-
-    var jobPromise = udbApi.addImage(item.id, item.getType(), image, description, copyrightHolder);
-
-    jobPromise.success(function (jobData) {
+  service.addImage = function(item, image) {
+    function logJob(jobData) {
       var job = new EventCrudJob(jobData.commandId, item, 'addImage');
       jobLogger.addJob(job);
-    });
+      return $q.resolve(job);
+    }
 
-    return jobPromise;
-
+    return udbApi
+      .addImage(item.id, image.id)
+      .then(logJob);
   };
 
   /**
@@ -4675,7 +4688,7 @@ function EventCrud(jobLogger, udbApi, EventCrudJob, $rootScope) {
   $rootScope.$on('eventTimingChanged', updateMajorInfo);
   $rootScope.$on('eventTitleChanged', updateMajorInfo);
 }
-EventCrud.$inject = ["jobLogger", "udbApi", "EventCrudJob", "$rootScope"];
+EventCrud.$inject = ["jobLogger", "udbApi", "EventCrudJob", "$rootScope", "$q"];
 
 // Source: src/entry/editing/event-editor.service.js
 /**
@@ -6102,7 +6115,9 @@ function EventFormImageUploadController(
   $uibModalInstance,
   EventFormData,
   eventCrud,
-  appConfig
+  appConfig,
+  MediaManager,
+  $q
 ) {
 
   // Scope vars.
@@ -6119,7 +6134,7 @@ function EventFormImageUploadController(
   // Scope functions.
   $scope.acceptAgreements = acceptAgreements;
   $scope.cancel = cancel;
-  $scope.uploadImages = uploadImages;
+  $scope.uploadImages = uploadAndAddImage;
 
   /**
    * Accept the agreements.
@@ -6136,58 +6151,41 @@ function EventFormImageUploadController(
     $uibModalInstance.dismiss('cancel');
   }
 
-  /**
-   * Upload the images and save it to db.
-   */
-  function uploadImages() {
-    startUploading();
+  function uploadAndAddImage() {
+    var file = $scope.imagesToUpload[0],
+        description = $scope.description,
+        copyrightHolder = $scope.copyright;
 
-    _.forEach($scope.imagesToUpload, function (image) {
-      addImage(image);
-    });
-  }
+    var deferredAddition = $q.defer();
 
-  function startUploading() {
-    $scope.saving = true;
-    $scope.error = false;
-  }
-
-  /**
-   * Upload and add an image.
-   */
-  function addImage(image) {
-
-    var uploaded = 0;
-
-    function displayUploadError() {
+    function displayError(error) {
       $scope.saving = false;
-      $scope.error = true;
+      $scope.error = error;
     }
 
-    eventCrud.addImage(
-      EventFormData,
-      image,
-      $scope.description,
-      $scope.copyright
-    ).then(function (jsonResponse) {
-      var image = {
-        id: _.uniqueId(),
-        url : jsonResponse.data.url,
-        thumbnailUrl : jsonResponse.data.thumbnailUrl,
-        description : $scope.description,
-        copyrightHolder : $scope.copyright
-      };
-      EventFormData.addImage(image);
-      uploaded++;
-      if (uploaded === $scope.imagesToUpload.length) {
-        $uibModalInstance.close();
+    /**
+     * @param {MediaObject} mediaObject
+     */
+    function addImageToEvent(mediaObject) {
+      function updateEventFormAndResolve() {
+        EventFormData.addImage(mediaObject);
+        deferredAddition.resolve(mediaObject);
+        $uibModalInstance.close(mediaObject);
       }
-    }, displayUploadError);
 
+      eventCrud
+        .addImage(EventFormData, mediaObject)
+        .then(updateEventFormAndResolve, displayError);
+    }
+
+    MediaManager
+      .createImage(file, description, copyrightHolder)
+      .then(addImageToEvent, displayError);
+
+    return deferredAddition.promise;
   }
-
 }
-EventFormImageUploadController.$inject = ["$scope", "$uibModalInstance", "EventFormData", "eventCrud", "appConfig"];
+EventFormImageUploadController.$inject = ["$scope", "$uibModalInstance", "EventFormData", "eventCrud", "appConfig", "MediaManager", "$q"];
 
 // Source: src/event_form/components/openinghours/openinghours.directive.js
 /**
@@ -7071,9 +7069,8 @@ function EventFormDataFactory() {
      * @param {MediaObject} mediaObject
      */
     addImage : function(mediaObject) {
-      mediaObject['@type'] = 'ImageObject';
       this.mediaObjects.push(mediaObject);
-      this.image.push(mediaObject);
+      console.log(this.mediaObjects);
     },
 
     /**
@@ -7210,7 +7207,6 @@ function EventFormController($scope, eventId, placeId, offerType, EventFormData,
       'bookingInfo',
       'contactPoint',
       'facilities',
-      'mediaObject',
       'image',
       'additionalData'
     ];
@@ -7218,6 +7214,10 @@ function EventFormController($scope, eventId, placeId, offerType, EventFormData,
       if (item[sameProperties[i]]) {
         EventFormData[sameProperties[i]] = item[sameProperties[i]];
       }
+    }
+
+    if (item.mediaObject) {
+      EventFormData.mediaObjects = item.mediaObject || [];
     }
 
     // Places don't have nl.
@@ -9131,11 +9131,11 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
       resolve: {
         indexToEdit: function () {
           return indexToEdit;
-        },
+        }
       }
     });
 
-    modalInstance.result.then(function () {
+    modalInstance.result.then(function (mediaObject) {
       $scope.imageCssClass = 'state-complete';
     }, function () {
       // modal dismissed.
@@ -9654,6 +9654,157 @@ function udbExportModalButtons() {
     restrict: 'E'
   };
 }
+
+// Source: src/media/create-image-job.factory.js
+/**
+ * @ngdoc service
+ * @name udb.media.CreateImageJob
+ * @description
+ * # Image creation job
+ * This factory creates a job that tracks image creation.
+ */
+angular
+  .module('udb.media')
+  .factory('CreateImageJob', CreateImageJobFactory);
+
+/* @ngInject */
+function CreateImageJobFactory(BaseJob, JobStates, $q) {
+
+  /**
+   * @class CreateImageJob
+   * @constructor
+   * @param {string} commandId
+   */
+  var CreateImageJob = function (commandId) {
+    BaseJob.call(this, commandId);
+    this.task = $q.defer();
+  };
+
+  CreateImageJob.prototype = Object.create(BaseJob.prototype);
+  CreateImageJob.prototype.constructor = CreateImageJob;
+
+  CreateImageJob.prototype.finish = function () {
+    if (this.state !== JobStates.FAILED) {
+      this.state = JobStates.FINISHED;
+      this.finished = new Date();
+    }
+    this.progress = 100;
+  };
+
+  CreateImageJob.prototype.info = function (jobInfo) {
+    this.task.resolve(jobInfo);
+  };
+
+  CreateImageJob.prototype.fail = function () {
+    this.finished = new Date();
+    this.state = JobStates.FAILED;
+    this.progress = 100;
+    this.task.reject('Failed to create an image object');
+  };
+
+  return (CreateImageJob);
+}
+CreateImageJobFactory.$inject = ["BaseJob", "JobStates", "$q"];
+
+// Source: src/media/media-manager.service.js
+/**
+ * @typedef {Object} MediaObject
+ * @property {string}   @id
+ * @property {string}   @type
+ * @property {string}   contentUrl
+ * @property {string}   thumbnailUrl
+ * @property {string}   description
+ * @property {string}   copyrightHolder
+ */
+
+/**
+ * @ngdoc function
+ * @name udb.media.service:MediaManager
+ * @description
+ * # MediaManager
+ * Service to manage media.
+ */
+angular
+  .module('udb.media')
+  .service('MediaManager', MediaManager);
+
+/**
+ * @ngInject
+ */
+function MediaManager(jobLogger, appConfig, $upload, CreateImageJob, $q, $http) {
+  var service = this;
+  var baseUrl = appConfig.baseUrl;
+
+  /**
+   * @param {File} imageFile
+   * @param {string} description
+   * @param {string} copyrightHolder
+   *
+   * @return {Promise.<MediaObject>}
+   */
+  service.createImage = function(imageFile, description, copyrightHolder) {
+    var deferredMediaObject = $q.defer();
+    var uploadOptions = {
+      withCredentials: true,
+      url: baseUrl + 'images',
+      fields: {
+        description: description,
+        copyrightHolder: copyrightHolder
+      },
+      file: imageFile
+    };
+
+    function logCreateImageJob(uploadResponse) {
+      var jobData = uploadResponse.data;
+      var job = new CreateImageJob(jobData  .commandId);
+      jobLogger.addJob(job);
+
+      job.task.promise
+        .then(fetchAndReturnMedia);
+    }
+
+    function fetchAndReturnMedia(jobInfo) {
+      var imageId = _.get(jobInfo, 'file_id');
+      service
+        .getImage(imageId)
+        .then(deferredMediaObject.resolve, deferredMediaObject.reject);
+    }
+
+    $upload
+      .upload(uploadOptions)
+      .then(logCreateImageJob);
+
+    return deferredMediaObject.promise;
+  };
+
+  /**
+   * @param {string} imageId
+   *
+   * @return {Promise.<MediaObject>}
+   */
+  service.getImage = function (imageId) {
+    var requestConfig = {
+      headers: {
+        'Accept': 'application/ld+json'
+      }
+    };
+
+    function returnMediaObject(response) {
+      var mediaObject = response.data;
+      mediaObject.id = imageId;
+
+      return $q.resolve(mediaObject);
+    }
+
+    return $http
+      .get(
+        baseUrl + 'media/' + imageId,
+        requestConfig
+      )
+      .then(returnMediaObject);
+  };
+}
+MediaManager.$inject = ["jobLogger", "appConfig", "$upload", "CreateImageJob", "$q", "$http"];
 
 // Source: src/place-detail/place-detail.directive.js
 /**
@@ -14532,24 +14683,24 @@ $templateCache.put('templates/unexpected-error-modal.html',
     "            <p class=\"muted\">Voeg een afbeelding toe zodat je bezoekers je activiteit beter herkennen.</p>\n" +
     "          </div>\n" +
     "\n" +
-    "          <div class=\"image-upload-list state complete\" ng-if=\"eventFormData.image.length > 0\">\n" +
+    "          <div class=\"image-upload-list state complete\" ng-if=\"eventFormData.mediaObjects.length > 0\">\n" +
     "            <h4>Afbeeldingen</h4>\n" +
-    "            <div ng-repeat=\"(key, mediaObject) in eventFormData.mediaObject\">\n" +
-    "              <div ng-if=\"mediaObject['@type'] === 'ImageObject'\" class=\"uploaded-image\">\n" +
+    "            <div ng-repeat=\"image in eventFormData.mediaObjects | filter:{'@type': 'schema:ImageObject'} track by image.contentUrl\">\n" +
+    "              <div class=\"uploaded-image\">\n" +
     "                <div class=\"media\">\n" +
     "                  <a class=\"media-left\" href=\"#\">\n" +
-    "                    <img ng-src=\"{{ mediaObject.thumbnailUrl }}\">\n" +
+    "                    <img ng-src=\"{{ image.thumbnailUrl }}\" style=\"max-width: 50px; max-height: 50px;\">\n" +
     "                  </a>\n" +
     "\n" +
     "                  <div class=\"media-body\">\n" +
     "                    <span>\n" +
-    "                      <span ng-bind=\"mediaObject.description\"></span>\n" +
+    "                      <span ng-bind=\"image.description\"></span>\n" +
     "                      <br/>\n" +
-    "                      <small ng-bind=\"mediaObject.copyrightHolder\">Copyright</small>\n" +
+    "                      <small ng-bind=\"image.copyrightHolder\">Copyright</small>\n" +
     "                    </span>\n" +
     "                    <span>\n" +
-    "                      <a class=\"btn btn-link\" ng-click=\"openUploadImageModal(key)\">Wijzigen</a>\n" +
-    "                      <a class=\"btn btn-link\" ng-click=\"openDeleteImageModal(key)\">Verwijderen</a>\n" +
+    "                      <a class=\"btn btn-link\" ng-click=\"openUploadImageModal(1)\">Wijzigen</a>\n" +
+    "                      <a class=\"btn btn-link\" ng-click=\"openDeleteImageModal(1)\">Verwijderen</a>\n" +
     "                    </span>\n" +
     "                  </div>\n" +
     "                </div>\n" +

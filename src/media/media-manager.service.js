@@ -65,7 +65,7 @@ function MediaManager(jobLogger, appConfig, $upload, CreateImageJob, $q, $http) 
 
     $upload
       .upload(uploadOptions)
-      .then(logCreateImageJob);
+      .then(logCreateImageJob, deferredMediaObject.reject);
 
     return deferredMediaObject.promise;
   };

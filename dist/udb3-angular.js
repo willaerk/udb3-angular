@@ -3579,11 +3579,13 @@ function UdbPlaceFactory(locationTypes) {
    * Return all categories for a given type.
    */
   function getCategoriesByType(jsonPlace, domain) {
-
     var categories = [];
-    for (var i = 0; i < jsonPlace.terms.length; i++) {
-      if (jsonPlace.terms[i].domain === domain) {
-        categories.push(jsonPlace.terms[i]);
+
+    if (jsonPlace.terms) {
+      for (var i = 0; i < jsonPlace.terms.length; i++) {
+        if (jsonPlace.terms[i].domain === domain) {
+          categories.push(jsonPlace.terms[i]);
+        }
       }
     }
 
@@ -3634,7 +3636,7 @@ function UdbPlaceFactory(locationTypes) {
   UdbPlace.prototype = {
     parseJson: function (jsonPlace) {
 
-      this.id = jsonPlace['@id'].split('/').pop();
+      this.id = jsonPlace['@id'] ? jsonPlace['@id'].split('/').pop() : '';
       this.name = jsonPlace.name || '';
       this.address = jsonPlace.address || this.address;
       this.theme = getCategoryByType(jsonPlace, 'theme') || {};
@@ -3646,7 +3648,9 @@ function UdbPlaceFactory(locationTypes) {
       this.typicalAgeRange = jsonPlace.typicalAgeRange || '';
       this.bookingInfo = jsonPlace.bookingInfo || {};
       this.contactPoint = jsonPlace.contactPoint || {};
-      this.organizer = jsonPlace.organizer || {};
+      if (jsonPlace.organizer) {
+        this.organizer = jsonPlace.organizer;
+      }
       this.image = getImages(jsonPlace);
       this.mediaObject = jsonPlace.mediaObject || [];
       this.facilities = getCategoriesByType(jsonPlace, 'facility') || [];
@@ -6140,6 +6144,7 @@ function EventFormImageUploadController(
   $scope.acceptAgreements = acceptAgreements;
   $scope.cancel = cancel;
   $scope.uploadImages = uploadAndAddImage;
+  $scope.clearError = clearError;
 
   /**
    * Accept the agreements.
@@ -6156,6 +6161,10 @@ function EventFormImageUploadController(
     $uibModalInstance.dismiss('cancel');
   }
 
+  function clearError() {
+    $scope.error = false;
+  }
+
   function uploadAndAddImage() {
     var file = $scope.imagesToUpload[0],
         description = $scope.description,
@@ -6163,7 +6172,16 @@ function EventFormImageUploadController(
 
     var deferredAddition = $q.defer();
 
-    function displayError(error) {
+    function displayError(errorResponse) {
+      var errorMessage = errorResponse.data.title;
+      var error = 'Er ging iets mis bij het opslaan van de afbeelding.';
+
+      switch (errorMessage) {
+        case 'The uploaded file is not an image.':
+          error = 'Het geüpload bestand is geen afbeelding.';
+          break;
+      }
+
       $scope.saving = false;
       $scope.error = error;
     }
@@ -9790,7 +9808,7 @@ function MediaManager(jobLogger, appConfig, $upload, CreateImageJob, $q, $http) 
 
     $upload
       .upload(uploadOptions)
-      .then(logCreateImageJob);
+      .then(logCreateImageJob, deferredMediaObject.reject);
 
     return deferredMediaObject.promise;
   };
@@ -13304,7 +13322,8 @@ $templateCache.put('templates/unexpected-error-modal.html',
     "               multiple\n" +
     "               ng-file-select\n" +
     "               ng-multiple=\"true\"\n" +
-    "               accept=\"'image/*'\">\n" +
+    "               accept=\"'image/*'\"\n" +
+    "               ng-change=\"clearError()\">\n" +
     "        <p class=\"help-block\">\n" +
     "          De maximale grootte van je afbeelding is 5 MB en heeft als type .jpeg, .gif of .png</p>\n" +
     "      </div>\n" +
@@ -13325,7 +13344,9 @@ $templateCache.put('templates/unexpected-error-modal.html',
     "      </div>\n" +
     "    </div>\n" +
     "\n" +
-    "    <div ng-show=\"error\" class=\"alert alert-danger\">Er ging iets mis bij het opslaan van de afbeelding.</div>\n" +
+    "    <div ng-show=\"error\" class=\"alert alert-danger\">\n" +
+    "      <span ng-bind=\"error\"></span>\n" +
+    "    </div>\n" +
     "\n" +
     "  </div>\n" +
     "  <div class=\"modal-footer\">\n" +

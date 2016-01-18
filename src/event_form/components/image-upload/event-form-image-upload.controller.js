@@ -37,6 +37,7 @@ function EventFormImageUploadController(
   $scope.acceptAgreements = acceptAgreements;
   $scope.cancel = cancel;
   $scope.uploadImages = uploadAndAddImage;
+  $scope.clearError = clearError;
 
   /**
    * Accept the agreements.
@@ -53,6 +54,10 @@ function EventFormImageUploadController(
     $uibModalInstance.dismiss('cancel');
   }
 
+  function clearError() {
+    $scope.error = false;
+  }
+
   function uploadAndAddImage() {
     var file = $scope.imagesToUpload[0],
         description = $scope.description,
@@ -60,7 +65,16 @@ function EventFormImageUploadController(
 
     var deferredAddition = $q.defer();
 
-    function displayError(error) {
+    function displayError(errorResponse) {
+      var errorMessage = errorResponse.data.title;
+      var error = 'Er ging iets mis bij het opslaan van de afbeelding.';
+
+      switch (errorMessage) {
+        case 'The uploaded file is not an image.':
+          error = 'Het geüpload bestand is geen afbeelding.';
+          break;
+      }
+
       $scope.saving = false;
       $scope.error = error;
     }

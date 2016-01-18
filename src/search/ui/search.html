@@ -102,7 +102,7 @@
                        ng-class="{selected: resultViewer.isIdSelected(event.id)}">
             </udb-event>
 
-            <udb-place class="row rv-item" ng-hide="eventCtrl.fetching" ng-if="event['@type'] == 'Place'"
+            <udb-place class="row rv-item" ng-hide="placeCtrl.fetching" ng-if="event['@type'] == 'Place'"
                        ng-class="{selected: resultViewer.isIdSelected(event.id)}">
             </udb-place>
         </div>

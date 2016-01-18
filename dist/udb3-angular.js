@@ -15552,7 +15552,7 @@ $templateCache.put('templates/unexpected-error-modal.html',
     "                       ng-class=\"{selected: resultViewer.isIdSelected(event.id)}\">\n" +
     "            </udb-event>\n" +
     "\n" +
-    "            <udb-place class=\"row rv-item\" ng-hide=\"eventCtrl.fetching\" ng-if=\"event['@type'] == 'Place'\"\n" +
+    "            <udb-place class=\"row rv-item\" ng-hide=\"placeCtrl.fetching\" ng-if=\"event['@type'] == 'Place'\"\n" +
     "                       ng-class=\"{selected: resultViewer.isIdSelected(event.id)}\">\n" +
     "            </udb-place>\n" +
     "        </div>\n" +

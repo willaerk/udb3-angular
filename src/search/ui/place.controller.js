@@ -13,22 +13,9 @@ angular
 /* @ngInject */
 function PlaceController(
   udbApi,
-  jsonLDLangFilter,
-  eventTranslator,
-  eventLabeller,
-  eventEditor,
-  EventTranslationState,
-  $scope,
-  variationRepository,
-  $window
+  $scope
 ) {
   var controller = this;
-  /* @type {UdbPlace} */
-  var cachedEvent;
-
-  // Translation
-  var defaultLanguage = 'nl';
-  controller.availableLabels = eventLabeller.recentLabels;
   initController();
 
   function initController() {
@@ -37,23 +24,11 @@ function PlaceController(
       var placePromise = udbApi.getPlaceByLDId($scope.event['@id']);
 
       placePromise.then(function (placeObject) {
-        cachedEvent = placeObject;
-        controller.availableLabels = _.union(cachedEvent.labels, eventLabeller.recentLabels);
-
-        $scope.event = cachedEvent;
+        $scope.event = placeObject;
         controller.fetching = false;
-        watchLabels();
       });
     } else {
       controller.fetching = false;
-    }
-
-    function watchLabels() {
-      $scope.$watch(function () {
-        return cachedEvent.labels;
-      }, function (labels) {
-        $scope.event.labels = angular.copy(labels);
-      });
     }
   }
 

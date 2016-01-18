@@ -3632,11 +3632,18 @@ function UdbPlaceFactory(locationTypes) {
       this.typicalAgeRange = jsonPlace.typicalAgeRange || '';
       this.bookingInfo = jsonPlace.bookingInfo || {};
       this.contactPoint = jsonPlace.contactPoint || {};
-      this.organizer = jsonPlace.organizer || {};
+      if (jsonPlace.organizer) {
+        this.organizer = jsonPlace.organizer;
+      }
       this.image = getImages(jsonPlace);
       this.mediaObject = jsonPlace.mediaObject || [];
       this.facilities = getCategoriesByType(jsonPlace, 'facility') || [];
       this.additionalData = jsonPlace.additionalData || {};
+      if (jsonPlace['@id']) {
+        this.url = '/place/' + this.id;
+      }
+      this.creator = jsonPlace.creator;
+      this.modified = jsonPlace.modified;
 
       if (jsonPlace.terms) {
         var place = this;
@@ -12036,6 +12043,90 @@ function udbEvent() {
   return eventDirective;
 }
 
+// Source: src/search/ui/place.controller.js
+/**
+ * @ngdoc directive
+ * @name udb.search.controller:PlaceController
+ * @description
+ * # EventController
+ */
+angular
+  .module('udb.search')
+  .controller('PlaceController', PlaceController);
+
+/* @ngInject */
+function PlaceController(
+  udbApi,
+  jsonLDLangFilter,
+  eventTranslator,
+  eventLabeller,
+  eventEditor,
+  EventTranslationState,
+  $scope,
+  variationRepository,
+  $window
+) {
+  var controller = this;
+  /* @type {UdbPlace} */
+  var cachedEvent;
+
+  // Translation
+  var defaultLanguage = 'nl';
+  controller.availableLabels = eventLabeller.recentLabels;
+  initController();
+
+  function initController() {
+    if (!$scope.event.title) {
+      controller.fetching = true;
+      var placePromise = udbApi.getPlaceByLDId($scope.event['@id']);
+
+      placePromise.then(function (placeObject) {
+        cachedEvent = placeObject;
+        controller.availableLabels = _.union(cachedEvent.labels, eventLabeller.recentLabels);
+
+        $scope.event = cachedEvent;
+        controller.fetching = false;
+        watchLabels();
+      });
+    } else {
+      controller.fetching = false;
+    }
+
+    function watchLabels() {
+      $scope.$watch(function () {
+        return cachedEvent.labels;
+      }, function (labels) {
+        $scope.event.labels = angular.copy(labels);
+      });
+    }
+  }
+
+}
+PlaceController.$inject = ["udbApi", "jsonLDLangFilter", "eventTranslator", "eventLabeller", "eventEditor", "EventTranslationState", "$scope", "variationRepository", "$window"];
+
+// Source: src/search/ui/place.directive.js
+/**
+ * @ngdoc directive
+ * @name udb.search.directive:udbEvent
+ * @description
+ * # udbEvent
+ */
+angular
+  .module('udb.search')
+  .directive('udbPlace', udbPlace);
+
+/* @ngInject */
+function udbPlace() {
+  var placeDirective = {
+    restrict: 'AE',
+    controller: 'PlaceController',
+    controllerAs: 'placeCtrl',
+    templateUrl: 'templates/place.directive.html'
+  };
+
+  return placeDirective;
+}
+
 // Source: src/search/ui/search.controller.js
 /**
  * @ngdoc function
@@ -15322,6 +15413,64 @@ $templateCache.put('templates/unexpected-error-modal.html',
   );
 
 
+  $templateCache.put('templates/place.directive.html',
+    "<div class=\"place-content\">\n" +
+    "  <div class=\"col-sm-5 rv-first-column\">\n" +
+    "    <div class=\"rv-item-sidebar\">\n" +
+    "      <div class=\"rv-selection-state\" ng-class=\"{'disabled': resultViewer.querySelected}\"\n" +
+    "           ng-click=\"resultViewer.toggleSelectId(event.id)\">\n" +
+    "        <span class=\"fa\" ng-class=\"resultViewer.isIdSelected(event.id) ? 'fa-check-square' : 'fa-square-o'\"></span>\n" +
+    "      </div>\n" +
+    "    </div>\n" +
+    "\n" +
+    "    <div class=\"udb-short-info\">\n" +
+    "      <span class=\"udb-category\" ng-bind=\"event.type.label\"></span>\n" +
+    "      <span class=\"udb-short-info-seperator\" ng-show=\"event.type && event.theme\"> • </span>\n" +
+    "      <span class=\"udb-theme\" ng-bind=\"event.theme.label\"></span>\n" +
+    "    </div>\n" +
+    "    <div class=\"udb-title\">\n" +
+    "      <a ng-href=\"{{ event.url }}\" ng-bind=\"event.name\"></a>\n" +
+    "    </div>\n" +
+    "  </div>\n" +
+    "\n" +
+    "  <div class=\"col-sm-2\">\n" +
+    "    <div class=\"udb-place-city\" ng-bind=\"event.address.addressLocality\"></div>\n" +
+    "  </div>\n" +
+    "\n" +
+    "  <div class=\"col-sm-2\">\n" +
+    "    <span>permanent</span>\n" +
+    "  </div>\n" +
+    "\n" +
+    "  <div class=\"col-sm-3 rv-specific-event-info\">\n" +
+    "    <div class=\"rv-event-info-input udb-organizer\"\n" +
+    "         ng-show=\"resultViewer.activeSpecific.id === 'input'\">\n" +
+    "      <div>\n" +
+    "        <span class=\"fa fa-clock-o\"></span>&nbsp;\n" +
+    "        <span ng-bind=\"event.modified | date : 'dd/MM/yyyy • HH:mm'\"></span>\n" +
+    "      </div>\n" +
+    "      <div class=\"udb-email\">\n" +
+    "        <span class=\"fa fa-user\"></span>&nbsp;\n" +
+    "        <span ng-bind=\"event.creator\"></span>\n" +
+    "      </div>\n" +
+    "      <div class=\"udb-organizer-name\">\n" +
+    "        <span class=\"fa fa-building-o\"></span>&nbsp;\n" +
+    "        <span ng-bind=\"event.organizer ? event.organizer.name : '-'\"></span>\n" +
+    "      </div>\n" +
+    "    </div>\n" +
+    "\n" +
+    "    <div class=\"rv-event-info-price\"\n" +
+    "         ng-show=\"resultViewer.activeSpecific.id === 'price'\" ng-switch=\"event.pricing\">\n" +
+    "      <span ng-switch-when=\"free\">gratis</span>\n" +
+    "      <span ng-switch-when=\"payed\">\n" +
+    "          <i class=\"fa fa-eur meta icon\"></i><span ng-if=\"event.price\" ng-bind=\"event.price | currency\"></span>\n" +
+    "      </span>\n" +
+    "      <span ng-switch-when=\"unknown\">niet ingevoerd</span>\n" +
+    "    </div>\n" +
+    "  </div>\n" +
+    "</div>"
+  );
+
+
   $templateCache.put('templates/search.html',
     "<div class=\"row rv-result-viewer\">\n" +
     "  <div class=\"col-sm-12 rv-search-results\" ng-class=\"{loading: resultViewer.loading}\">\n" +
@@ -15422,9 +15571,16 @@ $templateCache.put('templates/unexpected-error-modal.html',
     "            </div>\n" +
     "        </div>\n" +
     "\n" +
-    "      <udb-event class=\"row rv-item\" ng-repeat=\"event in resultViewer.events\" ng-hide=\"eventCtrl.fetching\"\n" +
-    "                 ng-class=\"{selected: resultViewer.isIdSelected(event.id)}\">\n" +
-    "      </udb-event>\n" +
+    "        <div ng-repeat=\"event in resultViewer.events\">\n" +
+    "            <udb-event class=\"row rv-item\" ng-hide=\"eventCtrl.fetching\" ng-if=\"event['@type'] == 'Event'\"\n" +
+    "                       ng-class=\"{selected: resultViewer.isIdSelected(event.id)}\">\n" +
+    "            </udb-event>\n" +
+    "\n" +
+    "            <udb-place class=\"row rv-item\" ng-hide=\"eventCtrl.fetching\" ng-if=\"event['@type'] == 'Place'\"\n" +
+    "                       ng-class=\"{selected: resultViewer.isIdSelected(event.id)}\">\n" +
+    "            </udb-place>\n" +
+    "        </div>\n" +
+    "\n" +
     "\n" +
     "      <uib-pagination total-items=\"resultViewer.totalItems\" ng-model=\"currentPage\" items-per-page=\"resultViewer.pageSize\"\n" +
     "                  ng-show=\"resultViewer.totalItems > 0\" max-size=\"10\" ng-change=\"pageChanged()\"></uib-pagination>\n" +

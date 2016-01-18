@@ -99,11 +99,18 @@ function UdbPlaceFactory(locationTypes) {
       this.typicalAgeRange = jsonPlace.typicalAgeRange || '';
       this.bookingInfo = jsonPlace.bookingInfo || {};
       this.contactPoint = jsonPlace.contactPoint || {};
-      this.organizer = jsonPlace.organizer || {};
+      if (jsonPlace.organizer) {
+        this.organizer = jsonPlace.organizer;
+      }
       this.image = getImages(jsonPlace);
       this.mediaObject = jsonPlace.mediaObject || [];
       this.facilities = getCategoriesByType(jsonPlace, 'facility') || [];
       this.additionalData = jsonPlace.additionalData || {};
+      if (jsonPlace['@id']) {
+        this.url = '/place/' + this.id;
+      }
+      this.creator = jsonPlace.creator;
+      this.modified = jsonPlace.modified;
 
       if (jsonPlace.terms) {
         var place = this;

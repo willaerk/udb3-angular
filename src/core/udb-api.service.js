@@ -114,7 +114,7 @@ function UdbApi($q, $http, appConfig, $cookieStore, uitidAuth,
       deferredEvent.resolve(place);
     } else {
       var placeRequest  = $http.get(
-        appConfig.baseApiUrl + 'place/' + placeId,
+        appConfig.baseUrl + 'place/' + placeId,
         {
           headers: {
             'Accept': 'application/ld+json'

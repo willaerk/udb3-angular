@@ -43,20 +43,14 @@
               </tr>
               <tr>
                 <td><strong>Beschrijving</strong></td>
-                <td ng-bind-html="place.description.nl"></td>
+                <td ng-bind-html="place.description"></td>
               </tr>
               <tr>
                 <td><strong>Waar</strong></td>
-                <td>{{placeLocation(place)}}</td>
+                <td>{{place.address.streetAddress}}<br />
+                  {{place.address.postalCode}} {{place.address.addressLocality}}<br />
+                  {{place.address.addressCountry}}</td>
               </tr>
-              <tr ng-class="{muted: !place.organizer}">
-                <td><strong>Organisator</strong></td>
-                <td>{{place.organizer.name}}</td>
-              </tr>
-              <!--<tr>
-                <td><strong>Prijs</strong></td>
-                <td></td>
-              </tr>-->
               <tr ng-class="{muted: !place.typicalAgeRange}">
                 <td><strong>Geschikt voor</strong></td>
                 <td>
@@ -118,51 +112,6 @@
                       <span ng-switch-when="false" ng-bind="id"></span>
                     </li>
                   </ul>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <div class="tab-pane" role="tabpanel" ng-show="isTabActive('omd')" ng-if="place.omdEvent">
-        <div class="panel panel-default">
-          <table class="table">
-            <tbody>
-              <tr>
-                <td><strong>Deelname</strong></td>
-                <td>
-                  Ja
-                </td>
-              </tr>
-              <tr>
-                <td><strong>Categorieën</strong></td>
-                <td>
-                  {{ place.additionalData.omdInfo.categoryList }}
-                </td>
-              </tr>
-              <tr>
-                <td><strong>Motivatie</strong></td>
-                <td>
-                  {{ place.additionalData.omdInfo.reasonOfParticipation }}
-                </td>
-              </tr>
-              <tr>
-                <td><strong>Eerste deelname</strong></td>
-                <td>
-                  {{ place.additionalData.omdInfo.firstParticipation }}
-                </td>
-              </tr>
-              <tr>
-                <td><strong>Brochure beschikbaar</strong></td>
-                <td>
-                  {{ place.additionalData.omdInfo.brochure }}
-                </td>
-              </tr>
-              <tr>
-                <td><strong>Infopunt</strong></td>
-                <td>
-                  {{ place.additionalData.omdInfo.infoOffice }}
                 </td>
               </tr>
             </tbody>

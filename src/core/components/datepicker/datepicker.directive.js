@@ -15,7 +15,7 @@
   function udbDatepickerDirective() {
 
     return {
-      restrict: 'A',
+      restrict: 'EA',
       require: 'ngModel',
       link: link
     };
@@ -36,7 +36,6 @@
         var options = {
           format: 'd MM yyyy',
           language: 'nl-BE',
-          startDate: new Date(),
           beforeShowDay: function (date) {
             var dateFormat = date.getUTCFullYear() + '-' + date.getUTCMonth() + '-' + date.getUTCDate();
             if (attrs.highlightDate && dateFormat === attrs.highlightDate) {
@@ -45,9 +44,9 @@
           }
         };
 
-        elem.datepicker(options).on('changeDate', function (e) {
-          if (ngModel.$viewValue && ngModel.$viewValue.getTime() !== e.date.getTime()) {
-            ngModel.$setViewValue(e.date);
+        elem.datepicker(options).on('changeDate', function (newValue) {
+          if (!ngModel.$viewValue || ngModel.$viewValue.getTime() !== newValue.date.getTime()) {
+            ngModel.$setViewValue(newValue.date);
           }
         });
       }

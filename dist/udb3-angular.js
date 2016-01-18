@@ -36,7 +36,7 @@ angular.module('udb.config', [])
 
 .constant('locationTypes', ['8.9.1.0.0','8.46.0.0.0','8.9.2.0.0','8.2.0.0.0','8.47.0.0.0','8.3.0.0.0','8.4.0.0.0','8.48.0.0.0','8.6.0.0.0','8.5.0.0.0','8.21.1.0.0','8.32.0.0.0','8.49.0.0.0','8.1.0.0.0','8.44.0.0.0','8.10.0.0.0','8.50.0.0.0','8.51.0.0.0','8.52.0.0.0','8.53.0.0.0','8.40.0.0.0'])
 
-.constant('eventCategories', [{label:'Begeleide rondleiding',id:'0.7.0.0.0',primary:true},{label:'Concert',id:'0.50.4.0.0',primary:true,themes:[{id:'1.8.1.0.0',label:'Klassieke muziek'},{id:'1.8.2.0.0',label:'Jazz en blues'},{id:'1.8.3.1.0',label:'Pop en rock'},{id:'1.8.3.2.0',label:'Hip hop, rnb en rap'},{id:'1.8.3.3.0',label:'Dance'},{id:'1.8.4.0.0',label:'Folk en wereldmuziek'},{id:'1.8.3.5.0',label:'Amusementsmuziek'}]},{label:'Cursus of workshop',id:'0.3.1.0.0',primary:true,themes:[{id:'1.42.0.0.0',label:'Creativiteit'},{id:'1.21.0.0.0',label:'Computer en techniek'},{id:'1.37.0.0.0',label:'Opvoeding'},{id:'1.61.0.0.0',label:'Persoon en relaties'},{id:'1.43.0.0.0',label:'Interculturele vorming'},{id:'1.41.0.0.0',label:'Kunst en kunsteducatie'},{id:'1.37.1.0.0',label:'Gezondheid en zorg'},{id:'1.65.0.0.0',label:'Voeding'},{id:'1.37.2.0.0',label:'Samenleving'},{id:'1.64.0.0.0',label:'Milieu en natuur'},{id:'1.25.0.0.0',label:'Wetenschap'},{id:'1.44.0.0.0',label:'Zingeving, filosofie en religie'}]},{label:'Route',id:'0.17.0.0.0',primary:true},{label:'Film',id:'0.50.6.0.0',primary:true,themes:[{id:'1.7.2.0.0',label:'Actie en avontuur'},{id:'1.7.12.0.0',label:'Animatie en kinderfilms'},{id:'1.7.1.0.0',label:'Documentaires en reportages'},{id:'1.7.6.0.0',label:'Griezelfilm of horror'},{id:'1.7.8.0.0',label:'Historische film'},{id:'1.7.3.0.0',label:'Komedie'},{id:'1.7.13.0.0',label:'Kortfilm'},{id:'1.7.10.0.0',label:'Filmmusical'},{id:'1.7.4.0.0',label:'Drama'},{id:'1.7.7.0.0',label:'Science fiction'},{id:'1.7.11.0.0',label:'Cinefiel'},{id:'1.7.15.0.0',label:'Thriller'}]},{label:'Lezing of congres',id:'0.3.2.0.0',primary:''},{label:'Openstelling',id:'0.12.0.0.0',primary:true},{label:'Tentoonstelling',id:'0.0.0.0.0',primary:true,themes:[{id:'1.1.0.0.0',label:'Audiovisuele kunst'},{id:'1.0.2.0.0',label:'Beeldhouwkunst'},{id:'1.0.6.0.0',label:'Fotografie'},{id:'1.0.4.0.0',label:'Grafiek'},{id:'1.0.3.0.0',label:'Installatiekunst'},{id:'1.0.1.0.0',label:'Schilderkunst'},{id:'1.0.5.0.0',label:'Decoratieve kunst'},{id:'1.2.2.0.0',label:'Design'},{id:'1.49.0.0.0',label:'Mode'}]},{label:'Beurs',id:'0.6.0.0.0',primary:false},{label:'Lezing of congres',id:'0.3.3.0.0',primary:false},{label:'Dansvoorstelling',id:'0.54.0.0.0',primary:false,themes:[{id:'1.9.1.0.0',label:'Ballet en klassieke dans'},{id:'1.9.3.0.0',label:'Volksdans en werelddans'},{id:'1.9.5.0.0',label:'Stijl en salondansen'},{id:'1.9.2.0.0',label:'Moderne dans'}]},{label:'Eten en drinken',id:'1.50.0.0.0',primary:false},{label:'Festival',id:'0.5.0.0.0',primary:false},{label:'Kamp of vakantie',id:'0.57.0.0.0',primary:false},{label:'Kermis of feestelijkheid',id:'0.28.0.0.0',primary:false},{label:'Markt of braderie',id:'0.37.0.0.0',primary:false},{label:'Party of fuif',id:'0.49.0.0.0',primary:false},{label:'Spel of quiz',id:'0.50.21.0.0',primary:false},{label:'Sport en beweging',id:'0.59.0.0.0',primary:false,themes:[{id:'1.51.13.0.0',label:'Bal en racketsport'},{id:'1.51.14.0.0',label:'Atletiek, wandelen en fietsen'},{id:'1.51.3.0.0',label:'Zwemmen en watersport'},{id:'1.51.6.0.0',label:'Fitness, gymnastiek, dans en vechtsport'},{id:'1.51.11.0.0',label:'Outdoor en adventure'},{id:'1.58.8.0.0',label:'Lucht en motorsport'},{id:'1.51.10.0.0',label:'Volkssporten'},{id:'1.51.12.0.0',label:'Omnisport en andere'}]},{label:'Sportwedstrijd bekijken',id:'0.19.0.0.0',primary:false},{label:'Theatervoorstelling',id:'0.55.0.0.0',primary:false,themes:[{id:'0.52.0.0.0',label:'Circus'},{id:'1.3.1.0.0',label:'Tekst en muziektheater'},{id:'1.3.10.0.0',label:'Humor comedy'},{id:'1.4.0.0.0',label:'Musical'},{id:'1.3.5.0.0',label:'Figuren en poppentheater'},{id:'1.5.0.0.0',label:'Opera en operette'},{id:'1.3.4.0.0',label:'Mime en bewegingstheater'}]}])
+.constant('eventCategories', [{label:'Begeleide rondleiding',id:'0.7.0.0.0',primary:true},{label:'Concert',id:'0.50.4.0.0',primary:true,themes:[{id:'1.8.1.0.0',label:'Klassieke muziek'},{id:'1.8.2.0.0',label:'Jazz en blues'},{id:'1.8.3.1.0',label:'Pop en rock'},{id:'1.8.3.2.0',label:'Hip hop, rnb en rap'},{id:'1.8.3.3.0',label:'Dance'},{id:'1.8.4.0.0',label:'Folk en wereldmuziek'},{id:'1.8.3.5.0',label:'Amusementsmuziek'}]},{label:'Cursus of workshop',id:'0.3.1.0.0',primary:true,themes:[{id:'1.42.0.0.0',label:'Creativiteit'},{id:'1.21.0.0.0',label:'Computer en techniek'},{id:'1.37.0.0.0',label:'Opvoeding'},{id:'1.61.0.0.0',label:'Persoon en relaties'},{id:'1.43.0.0.0',label:'Interculturele vorming'},{id:'1.41.0.0.0',label:'Kunst en kunsteducatie'},{id:'1.37.1.0.0',label:'Gezondheid en zorg'},{id:'1.65.0.0.0',label:'Voeding'},{id:'1.37.2.0.0',label:'Samenleving'},{id:'1.64.0.0.0',label:'Milieu en natuur'},{id:'1.25.0.0.0',label:'Wetenschap'},{id:'1.44.0.0.0',label:'Zingeving, filosofie en religie'}]},{label:'Route',id:'0.17.0.0.0',primary:true},{label:'Film',id:'0.50.6.0.0',primary:true,themes:[{id:'1.7.2.0.0',label:'Actie en avontuur'},{id:'1.7.12.0.0',label:'Animatie en kinderfilms'},{id:'1.7.1.0.0',label:'Documentaires en reportages'},{id:'1.7.6.0.0',label:'Griezelfilm of horror'},{id:'1.7.8.0.0',label:'Historische film'},{id:'1.7.3.0.0',label:'Komedie'},{id:'1.7.13.0.0',label:'Kortfilm'},{id:'1.7.10.0.0',label:'Filmmusical'},{id:'1.7.4.0.0',label:'Drama'},{id:'1.7.7.0.0',label:'Science fiction'},{id:'1.7.11.0.0',label:'Cinefiel'},{id:'1.7.15.0.0',label:'Thriller'}]},{label:'Lezing of congres',id:'0.3.2.0.0',primary:''},{label:'Openstelling',id:'0.12.0.0.0',primary:true},{label:'Tentoonstelling',id:'0.0.0.0.0',primary:true,themes:[{id:'1.1.0.0.0',label:'Audiovisuele kunst'},{id:'1.0.2.0.0',label:'Beeldhouwkunst'},{id:'1.0.6.0.0',label:'Fotografie'},{id:'1.0.4.0.0',label:'Grafiek'},{id:'1.0.3.0.0',label:'Installatiekunst'},{id:'1.0.1.0.0',label:'Schilderkunst'},{id:'1.0.5.0.0',label:'Decoratieve kunst'},{id:'1.2.2.0.0',label:'Design'},{id:'1.49.0.0.0',label:'Mode'}]},{label:'Beurs',id:'0.6.0.0.0',primary:false},{label:'Congres of studiedag',id:'0.3.3.0.0',primary:false},{label:'Dansvoorstelling',id:'0.54.0.0.0',primary:false,themes:[{id:'1.9.1.0.0',label:'Ballet en klassieke dans'},{id:'1.9.3.0.0',label:'Volksdans en werelddans'},{id:'1.9.5.0.0',label:'Stijl en salondansen'},{id:'1.9.2.0.0',label:'Moderne dans'}]},{label:'Eten en drinken',id:'1.50.0.0.0',primary:false},{label:'Festival',id:'0.5.0.0.0',primary:false},{label:'Kamp of vakantie',id:'0.57.0.0.0',primary:false},{label:'Kermis of feestelijkheid',id:'0.28.0.0.0',primary:false},{label:'Markt of braderie',id:'0.37.0.0.0',primary:false},{label:'Party of fuif',id:'0.49.0.0.0',primary:false},{label:'Spel of quiz',id:'0.50.21.0.0',primary:false},{label:'Sport en beweging',id:'0.59.0.0.0',primary:false,themes:[{id:'1.51.13.0.0',label:'Bal en racketsport'},{id:'1.51.14.0.0',label:'Atletiek, wandelen en fietsen'},{id:'1.51.3.0.0',label:'Zwemmen en watersport'},{id:'1.51.6.0.0',label:'Fitness, gymnastiek, dans en vechtsport'},{id:'1.51.11.0.0',label:'Outdoor en adventure'},{id:'1.58.8.0.0',label:'Lucht en motorsport'},{id:'1.51.10.0.0',label:'Volkssporten'},{id:'1.51.12.0.0',label:'Omnisport en andere'}]},{label:'Sportwedstrijd bekijken',id:'0.19.0.0.0',primary:false},{label:'Theatervoorstelling',id:'0.55.0.0.0',primary:false,themes:[{id:'0.52.0.0.0',label:'Circus'},{id:'1.3.1.0.0',label:'Tekst en muziektheater'},{id:'1.3.10.0.0',label:'Humor comedy'},{id:'1.4.0.0.0',label:'Musical'},{id:'1.3.5.0.0',label:'Figuren en poppentheater'},{id:'1.5.0.0.0',label:'Opera en operette'},{id:'1.3.4.0.0',label:'Mime en bewegingstheater'}]}])
 
 .constant('placeCategories', [{label:'Monument',id:'0.14.0.0.0',primary:true},{label:'Natuur, park of tuin',id:'0.15.0.0.0',primary:true},{label:'Archeologische Site',id:'3CuHvenJ+EGkcvhXLg9Ykg',primary:true},{label:'Museum of galerij',id:'GnPFp9uvOUyqhOckIFMKmg',primary:true},{label:'Bibliotheek of documentatiecentrum',id:'kI7uAyn2uUu9VV6Z3uWZTA',primary:true},{label:'Recreatiedomein of centrum',id:'0.53.0.0.0',primary:false},{label:'Thema of pretpark',id:'0.41.0.0.0',primary:false},{label:'School of onderwijscentrum',id:'rJRFUqmd6EiqTD4c7HS90w',primary:false},{label:'Sportcentrum',id:'eBwaUAAhw0ur0Z02i5ttnw',primary:false},{label:'Winkel',id:'VRC6HX0Wa063sq98G5ciqw',primary:false},{label:'Jeugdhuis of jeugdcentrum',id:'JCjA0i5COUmdjMwcyjNAFA',primary:false},{label:'Cultuur- of ontmoetingscentrum',id:'Yf4aZBfsUEu2NsQqsprngw',primary:false},{label:'Discotheek',id:'YVBc8KVdrU6XfTNvhMYUpg',primary:false},{label:'Bioscoop',id:'BtVNd33sR0WntjALVbyp3w',primary:false},{label:'Horeca',id:'ekdc4ATGoUitCa0e6me6xA',primary:false},{label:'Zaal of expohal',id:'OyaPaf64AEmEAYXHeLMAtA',primary:false}])
 
@@ -1952,7 +1952,7 @@ CityAutocomplete.$inject = ["$q", "$http", "appConfig", "UdbPlace"];
   function udbDatepickerDirective() {
 
     return {
-      restrict: 'A',
+      restrict: 'EA',
       require: 'ngModel',
       link: link
     };
@@ -1973,7 +1973,6 @@ CityAutocomplete.$inject = ["$q", "$http", "appConfig", "UdbPlace"];
         var options = {
           format: 'd MM yyyy',
           language: 'nl-BE',
-          startDate: new Date(),
           beforeShowDay: function (date) {
             var dateFormat = date.getUTCFullYear() + '-' + date.getUTCMonth() + '-' + date.getUTCDate();
             if (attrs.highlightDate && dateFormat === attrs.highlightDate) {
@@ -1982,9 +1981,9 @@ CityAutocomplete.$inject = ["$q", "$http", "appConfig", "UdbPlace"];
           }
         };
 
-        elem.datepicker(options).on('changeDate', function (e) {
-          if (ngModel.$viewValue && ngModel.$viewValue.getTime() !== e.date.getTime()) {
-            ngModel.$setViewValue(e.date);
+        elem.datepicker(options).on('changeDate', function (newValue) {
+          if (!ngModel.$viewValue || ngModel.$viewValue.getTime() !== newValue.date.getTime()) {
+            ngModel.$setViewValue(newValue.date);
           }
         });
       }
@@ -2570,7 +2569,7 @@ function UdbApi($q, $http, appConfig, $cookieStore, uitidAuth,
       deferredEvent.resolve(place);
     } else {
       var placeRequest  = $http.get(
-        appConfig.baseApiUrl + 'place/' + placeId,
+        appConfig.baseUrl + 'place/' + placeId,
         {
           headers: {
             'Accept': 'application/ld+json'
@@ -3055,7 +3054,7 @@ angular
   .factory('UdbEvent', UdbEventFactory);
 
 /* @ngInject */
-function UdbEventFactory(EventTranslationState) {
+function UdbEventFactory(EventTranslationState, UdbPlace) {
 
   var EventPricing = {
     FREE: 'free',
@@ -3164,7 +3163,7 @@ function UdbEventFactory(EventTranslationState) {
       this.name = jsonEvent.name || {};
       this.description = angular.copy(jsonEvent.description) || {};
       this.calendarSummary = jsonEvent.calendarSummary;
-      this.location = jsonEvent.location;
+      this.location = new UdbPlace(jsonEvent.location);
       // @todo Use getImages() later on.
       this.image = jsonEvent.image;
       this.labels = _.map(jsonEvent.labels, function (label) {
@@ -3342,7 +3341,7 @@ function UdbEventFactory(EventTranslationState) {
 
   return (UdbEvent);
 }
-UdbEventFactory.$inject = ["EventTranslationState"];
+UdbEventFactory.$inject = ["EventTranslationState", "UdbPlace"];
 
 // Source: src/core/udb-openinghours.factory.js
 /**
@@ -3562,7 +3561,7 @@ angular
   .factory('UdbPlace', UdbPlaceFactory);
 
 /* @ngInject */
-function UdbPlaceFactory() {
+function UdbPlaceFactory(locationTypes) {
 
   function getCategoryByType(jsonPlace, domain) {
     var category = _.find(jsonPlace.terms, function (category) {
@@ -3616,7 +3615,7 @@ function UdbPlaceFactory() {
   var UdbPlace = function (placeJson) {
     this.id = '';
     this.name = {};
-    this.type = {};
+    this.type = '';
     this.theme = {};
     this.calendarType = '';
     this.openinghours = [];
@@ -3638,9 +3637,8 @@ function UdbPlaceFactory() {
       this.id = jsonPlace['@id'].split('/').pop();
       this.name = jsonPlace.name || '';
       this.address = jsonPlace.address || this.address;
-      this.type = getCategoryByType(jsonPlace, 'eventtype') || {};
       this.theme = getCategoryByType(jsonPlace, 'theme') || {};
-      this.description = jsonPlace.description || {};
+      this.description = jsonPlace.description || '';
       this.calendarType = jsonPlace.calendarType || '';
       this.startDate = jsonPlace.startDate;
       this.endDate = jsonPlace.endDate;
@@ -3653,6 +3651,17 @@ function UdbPlaceFactory() {
       this.mediaObject = jsonPlace.mediaObject || [];
       this.facilities = getCategoriesByType(jsonPlace, 'facility') || [];
       this.additionalData = jsonPlace.additionalData || {};
+
+      if (jsonPlace.terms) {
+        var place = this;
+        angular.forEach(jsonPlace.terms, function (term) {
+          // Only add terms related to locations.
+          if (locationTypes.indexOf(term.id) !== -1) {
+            place.type = term;
+            return;
+          }
+        });
+      }
 
     },
 
@@ -3763,6 +3772,7 @@ function UdbPlaceFactory() {
 
   return (UdbPlace);
 }
+UdbPlaceFactory.$inject = ["locationTypes"];
 
 // Source: src/core/udb3-content.service.js
 /**
@@ -5829,13 +5839,8 @@ function EventDetail(
       event.location.name
     ];
 
-    if (event.location.terms) {
-      angular.forEach(event.location.terms, function (term) {
-        // Only add terms related to locations.
-        if (locationTypes.indexOf(term.id) !== -1) {
-          eventLocation.push(term.label);
-        }
-      });
+    if (event.location.type) {
+      eventLocation.push(event.location.type.label);
     }
 
     if (event.location.address.addressLocality) {
@@ -7818,9 +7823,22 @@ function EventFormStep2Controller($scope, $rootScope, EventFormData) {
   };
 
   controller.periodicEventTimingChanged = function () {
-    if (EventFormData.id && EventFormData.hasValidPeriodicRange()) {
-      $rootScope.$emit('eventTimingChanged', EventFormData);
+    if (EventFormData.id) {
+      if (EventFormData.hasValidPeriodicRange()) {
+        controller.clearPeriodicRangeError();
+        $rootScope.$emit('eventTimingChanged', EventFormData);
+      } else {
+        controller.displayPeriodicRangeError();
+      }
     }
+  };
+
+  controller.displayPeriodicRangeError = function () {
+    controller.periodicRangeError = true;
+  };
+
+  controller.clearPeriodicRangeError = function () {
+    controller.periodicRangeError = false;
   };
 }
 EventFormStep2Controller.$inject = ["$scope", "$rootScope", "EventFormData"];
@@ -9851,10 +9869,10 @@ function PlaceDetail($scope, placeId, udbApi) {
       id: 'data',
       header: 'Gegevens'
     },
-    {
+    /*{
       id: 'history',
       header: 'Historiek'
-    },
+    },*/
     {
       id: 'publication',
       header: 'Publicatie'
@@ -9862,19 +9880,19 @@ function PlaceDetail($scope, placeId, udbApi) {
   ];
 
   // Check if user has permissions.
-  udbApi.hasPermission(placeId).then(function(result) {
+  /*udbApi.hasPermission(placeId).then(function(result) {
     $scope.hasEditPermissions = result.data.hasPermission;
-  });
+  });*/
 
   var placeLoaded = udbApi.getPlaceById($scope.placeId);
 
   placeLoaded.then(
       function (place) {
-        var placeHistoryLoaded = udbApi.getEventHistoryById($scope.placeId);
+        /*var placeHistoryLoaded = udbApi.getEventHistoryById($scope.placeId);
 
         placeHistoryLoaded.then(function(placeHistory) {
           $scope.placeHistory = placeHistory;
-        });
+        });*/
         $scope.place = place;
         $scope.placeIdIsInvalid = false;
 
@@ -12926,7 +12944,7 @@ $templateCache.put('templates/unexpected-error-modal.html',
     "            </tr>\n" +
     "            <tr>\n" +
     "              <td><strong>Waar</strong></td>\n" +
-    "              <td>{{eventLocation(event)}}</td>\n" +
+    "              <td><a href=\"/place/{{event.location.id}}\">{{eventLocation(event)}}</a></td>\n" +
     "            </tr>\n" +
     "            <tr>\n" +
     "              <td><strong>Wanneer</strong></td>\n" +
@@ -13060,6 +13078,11 @@ $templateCache.put('templates/unexpected-error-modal.html',
     "    </section>\n" +
     "  </div>\n" +
     "\n" +
+    "  <div class=\"col-xs-12\">\n" +
+    "    <div ng-show=\"EventFormStep2.periodicRangeError\" class=\"alert alert-warning\" role=\"alert\">\n" +
+    "      Selecteer een geldige start en eind datum datum.\n" +
+    "    </div>\n" +
+    "  </div>\n" +
     "</div>"
   );
 
@@ -14929,20 +14952,14 @@ $templateCache.put('templates/unexpected-error-modal.html',
     "              </tr>\n" +
     "              <tr>\n" +
     "                <td><strong>Beschrijving</strong></td>\n" +
-    "                <td ng-bind-html=\"place.description.nl\"></td>\n" +
+    "                <td ng-bind-html=\"place.description\"></td>\n" +
     "              </tr>\n" +
     "              <tr>\n" +
     "                <td><strong>Waar</strong></td>\n" +
-    "                <td>{{placeLocation(place)}}</td>\n" +
+    "                <td>{{place.address.streetAddress}}<br />\n" +
+    "                  {{place.address.postalCode}} {{place.address.addressLocality}}<br />\n" +
+    "                  {{place.address.addressCountry}}</td>\n" +
     "              </tr>\n" +
-    "              <tr ng-class=\"{muted: !place.organizer}\">\n" +
-    "                <td><strong>Organisator</strong></td>\n" +
-    "                <td>{{place.organizer.name}}</td>\n" +
-    "              </tr>\n" +
-    "              <!--<tr>\n" +
-    "                <td><strong>Prijs</strong></td>\n" +
-    "                <td></td>\n" +
-    "              </tr>-->\n" +
     "              <tr ng-class=\"{muted: !place.typicalAgeRange}\">\n" +
     "                <td><strong>Geschikt voor</strong></td>\n" +
     "                <td>\n" +
@@ -15004,51 +15021,6 @@ $templateCache.put('templates/unexpected-error-modal.html',
     "                      <span ng-switch-when=\"false\" ng-bind=\"id\"></span>\n" +
     "                    </li>\n" +
     "                  </ul>\n" +
-    "                </td>\n" +
-    "              </tr>\n" +
-    "            </tbody>\n" +
-    "          </table>\n" +
-    "        </div>\n" +
-    "      </div>\n" +
-    "\n" +
-    "      <div class=\"tab-pane\" role=\"tabpanel\" ng-show=\"isTabActive('omd')\" ng-if=\"place.omdEvent\">\n" +
-    "        <div class=\"panel panel-default\">\n" +
-    "          <table class=\"table\">\n" +
-    "            <tbody>\n" +
-    "              <tr>\n" +
-    "                <td><strong>Deelname</strong></td>\n" +
-    "                <td>\n" +
-    "                  Ja\n" +
-    "                </td>\n" +
-    "              </tr>\n" +
-    "              <tr>\n" +
-    "                <td><strong>Categorieën</strong></td>\n" +
-    "                <td>\n" +
-    "                  {{ place.additionalData.omdInfo.categoryList }}\n" +
-    "                </td>\n" +
-    "              </tr>\n" +
-    "              <tr>\n" +
-    "                <td><strong>Motivatie</strong></td>\n" +
-    "                <td>\n" +
-    "                  {{ place.additionalData.omdInfo.reasonOfParticipation }}\n" +
-    "                </td>\n" +
-    "              </tr>\n" +
-    "              <tr>\n" +
-    "                <td><strong>Eerste deelname</strong></td>\n" +
-    "                <td>\n" +
-    "                  {{ place.additionalData.omdInfo.firstParticipation }}\n" +
-    "                </td>\n" +
-    "              </tr>\n" +
-    "              <tr>\n" +
-    "                <td><strong>Brochure beschikbaar</strong></td>\n" +
-    "                <td>\n" +
-    "                  {{ place.additionalData.omdInfo.brochure }}\n" +
-    "                </td>\n" +
-    "              </tr>\n" +
-    "              <tr>\n" +
-    "                <td><strong>Infopunt</strong></td>\n" +
-    "                <td>\n" +
-    "                  {{ place.additionalData.omdInfo.infoOffice }}\n" +
     "                </td>\n" +
     "              </tr>\n" +
     "            </tbody>\n" +

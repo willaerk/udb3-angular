@@ -89,13 +89,8 @@ function EventDetail(
       event.location.name
     ];
 
-    if (event.location.terms) {
-      angular.forEach(event.location.terms, function (term) {
-        // Only add terms related to locations.
-        if (locationTypes.indexOf(term.id) !== -1) {
-          eventLocation.push(term.label);
-        }
-      });
+    if (event.location.type) {
+      eventLocation.push(event.location.type.label);
     }
 
     if (event.location.address.addressLocality) {

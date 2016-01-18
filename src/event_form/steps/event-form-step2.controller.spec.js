@@ -52,4 +52,13 @@ describe('Controller: event form step 2', function () {
     expect(stepController.eventTimingChanged).toHaveBeenCalled();
   });
 
+  it('should display an error message when the range of periodic calendar is invalid', function (){
+    EventFormData.id = 1;
+    EventFormData.startDate = new Date('2015-12-12');
+    EventFormData.endDate = new Date('2015-12-10');
+    EventFormData.calendarType = 'periodic';
+    stepController.periodicEventTimingChanged();
+
+    expect(stepController.periodicRangeError).toEqual(true);
+  });
 });

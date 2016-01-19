@@ -12805,7 +12805,11 @@ $templateCache.put('templates/unexpected-error-modal.html',
     "            <tr>\n" +
     "              <td><strong>Waar</strong></td>\n" +
     "              <td ng-show=\"event.location.url\"><a href=\"{{event.location.url}}\">{{eventLocation(event)}}</a></td>\n" +
-    "              <td ng-hide=\"event.location.url\">{{eventLocation(event)}}</td>\n" +
+    "              <td ng-hide=\"event.location.url\">\n" +
+    "                {{event.location.name}},\n" +
+    "                {{event.location.address.streetAddress}},\n" +
+    "                {{event.location.address.postalCode}}\n" +
+    "                {{event.location.address.addressLocality}}</td>\n" +
     "            </tr>\n" +
     "            <tr>\n" +
     "              <td><strong>Wanneer</strong></td>\n" +

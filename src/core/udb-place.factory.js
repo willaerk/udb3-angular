@@ -30,11 +30,13 @@ function UdbPlaceFactory(locationTypes) {
    * Return all categories for a given type.
    */
   function getCategoriesByType(jsonPlace, domain) {
-
     var categories = [];
-    for (var i = 0; i < jsonPlace.terms.length; i++) {
-      if (jsonPlace.terms[i].domain === domain) {
-        categories.push(jsonPlace.terms[i]);
+
+    if (jsonPlace.terms) {
+      for (var i = 0; i < jsonPlace.terms.length; i++) {
+        if (jsonPlace.terms[i].domain === domain) {
+          categories.push(jsonPlace.terms[i]);
+        }
       }
     }
 
@@ -85,7 +87,7 @@ function UdbPlaceFactory(locationTypes) {
   UdbPlace.prototype = {
     parseJson: function (jsonPlace) {
 
-      this.id = jsonPlace['@id'].split('/').pop();
+      this.id = jsonPlace['@id'] ? jsonPlace['@id'].split('/').pop() : '';
       this.name = jsonPlace.name || '';
       this.address = jsonPlace.address || this.address;
       this.theme = getCategoryByType(jsonPlace, 'theme') || {};
@@ -102,6 +104,9 @@ function UdbPlaceFactory(locationTypes) {
       this.mediaObject = jsonPlace.mediaObject || [];
       this.facilities = getCategoriesByType(jsonPlace, 'facility') || [];
       this.additionalData = jsonPlace.additionalData || {};
+      if (jsonPlace['@id']) {
+        this.url = '/place/' + this.id;
+      }
 
       if (jsonPlace.terms) {
         var place = this;

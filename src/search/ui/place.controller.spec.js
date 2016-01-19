@@ -58,9 +58,11 @@ describe('Controller: Place', function() {
     UdbPlace = $injector.get('UdbPlace');
     $q = _$q_;
 
-    $scope.event = {};
     deferredEvent = $q.defer(); deferredVariation = $q.defer();
     spyOn(udbApi, 'getPlaceByLDId').and.returnValue(deferredEvent.promise);
+
+    $scope.event = {};
+    $scope.event['@id'] = examplePlaceEventJson['@id'];
 
     placeController = $controller(
       'PlaceController', {
@@ -74,6 +76,8 @@ describe('Controller: Place', function() {
     deferredEvent.resolve(new UdbPlace(examplePlaceEventJson));
     $scope.$digest();
 
-    expect($scope.event.name).toEqual('Villa 99, een art deco pareltje');
+    expect(udbApi.getPlaceByLDId).toHaveBeenCalledWith(
+        'http://culudb-silex.dev:8080/place/03458606-eb3f-462d-97f3-548710286702'
+    );
   });
 });

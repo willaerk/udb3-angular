@@ -12,7 +12,7 @@ angular
   .factory('UdbPlace', UdbPlaceFactory);
 
 /* @ngInject */
-function UdbPlaceFactory(locationTypes) {
+function UdbPlaceFactory(placeCategories) {
 
   function getCategoryByType(jsonPlace, domain) {
     var category = _.find(jsonPlace.terms, function (category) {
@@ -114,12 +114,15 @@ function UdbPlaceFactory(locationTypes) {
 
       if (jsonPlace.terms) {
         var place = this;
+
+        // Only add terms related to locations.
         angular.forEach(jsonPlace.terms, function (term) {
-          // Only add terms related to locations.
-          if (locationTypes.indexOf(term.id) !== -1) {
-            place.type = term;
-            return;
-          }
+          angular.forEach(placeCategories, function(category) {
+            if (term.id === category.id) {
+              place.type = term;
+              return;
+            }
+          });
         });
       }
 

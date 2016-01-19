@@ -17,7 +17,6 @@ function EventDetail(
   eventId,
   udbApi,
   jsonLDLangFilter,
-  locationTypes,
   variationRepository,
   eventEditor,
   $location

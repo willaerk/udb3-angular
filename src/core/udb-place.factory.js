@@ -104,6 +104,9 @@ function UdbPlaceFactory(locationTypes) {
       this.mediaObject = jsonPlace.mediaObject || [];
       this.facilities = getCategoriesByType(jsonPlace, 'facility') || [];
       this.additionalData = jsonPlace.additionalData || {};
+      if (jsonPlace['@id']) {
+        this.url = '/place/' + this.id;
+      }
 
       if (jsonPlace.terms) {
         var place = this;

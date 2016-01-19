@@ -12809,7 +12809,8 @@ $templateCache.put('templates/unexpected-error-modal.html',
     "                {{event.location.name}},\n" +
     "                {{event.location.address.streetAddress}},\n" +
     "                {{event.location.address.postalCode}}\n" +
-    "                {{event.location.address.addressLocality}}</td>\n" +
+    "                {{event.location.address.addressLocality}}\n" +
+    "              </td>\n" +
     "            </tr>\n" +
     "            <tr>\n" +
     "              <td><strong>Wanneer</strong></td>\n" +

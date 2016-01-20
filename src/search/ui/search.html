@@ -97,9 +97,16 @@
             </div>
         </div>
 
-      <udb-event class="row rv-item" ng-repeat="event in resultViewer.events" ng-hide="eventCtrl.fetching"
-                 ng-class="{selected: resultViewer.isIdSelected(event.id)}">
-      </udb-event>
+        <div ng-repeat="event in resultViewer.events">
+            <udb-event class="row rv-item" ng-hide="eventCtrl.fetching" ng-if="event['@type'] == 'Event'"
+                       ng-class="{selected: resultViewer.isIdSelected(event.id)}">
+            </udb-event>
+
+            <udb-place class="row rv-item" ng-hide="placeCtrl.fetching" ng-if="event['@type'] == 'Place'"
+                       ng-class="{selected: resultViewer.isIdSelected(event.id)}">
+            </udb-place>
+        </div>
+
 
       <uib-pagination total-items="resultViewer.totalItems" ng-model="currentPage" items-per-page="resultViewer.pageSize"
                   ng-show="resultViewer.totalItems > 0" max-size="10" ng-change="pageChanged()"></uib-pagination>

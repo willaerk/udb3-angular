@@ -55,27 +55,6 @@ module.exports = function (grunt) {
     return cities;
   };
 
-  var getLocationTypes = function () {
-    var parser = new xml2js.Parser({mergeAttrs: true, explicitArray: false});
-    var xmlBuffer = grunt.file.read('actor-types.xml');
-    var terms = [];
-    parser.parseString(xmlBuffer, function (err, result) {
-      terms = result.cdbxml.categorisation.term;
-    });
-
-    var locationTypes = [];
-    for (var i = 0; i < terms.length; i++) {
-      if (terms[i].id === '8.15.0.0.0') {
-        for (var j = 0; j < terms[i].term.length; j++) {
-          locationTypes.push(
-              terms[i].term[j].id
-          );
-        }
-      }
-    }
-    return locationTypes;
-  };
-
   var getEventFormCategories = function () {
     return require('./src/event_form/categories.json');
   };
@@ -380,7 +359,6 @@ module.exports = function (grunt) {
           return {
             appConfig: {},
             taxonomyTerms: getTaxonomyTerms(),
-            locationTypes: getLocationTypes(),
             eventCategories: getEventFormCategories().event,
             placeCategories: getEventFormCategories().place,
             facilities: getFacilities(),
@@ -393,7 +371,6 @@ module.exports = function (grunt) {
           return {
             appConfig: {},
             taxonomyTerms: getTaxonomyTerms(),
-            locationTypes: getLocationTypes(),
             eventCategories: getEventFormCategories().event,
             placeCategories: getEventFormCategories().place,
             facilities: getFacilities(),
@@ -411,10 +388,6 @@ module.exports = function (grunt) {
       'cities': {
         src: 'http://taxonomy.uitdatabank.be/api/city',
         dest: 'cities.xml'
-      },
-      'actor-types': {
-        src: 'http://taxonomy.uitdatabank.be/api/domain/actortype/classification',
-        dest: 'actor-types.xml'
       }
     },
 
@@ -473,7 +446,6 @@ module.exports = function (grunt) {
   grunt.registerTask('build', [
     'clean:dist',
     'curl:taxonomy-terms',
-    'curl:actor-types',
     'curl:cities',
     'ngconstant:dist',
     'peg',

@@ -2942,45 +2942,30 @@ function UdbApi($q, $http, appConfig, $cookieStore, uitidAuth,
         appConfig.baseUrl + 'event/' + eventId + '/images',
         postData,
         defaultApiConfig
-      ).then(returnJobData);
+      )
+      .then(returnJobData);
   };
 
   /**
    * Update an image.
    */
-  this.updateImage = function(id, type, indexToUpdate, image, description, copyrightHolder) {
+  this.updateImage = function(itemId, itemType, imageId, description, copyrightHolder) {
+    var postData = {
+      description: description,
+      copyrightHolder: copyrightHolder
+    };
 
-    // Image is also changed.
-    if (image) {
-
-      // Don't use defaultApiConfig, $upload adds custom stuff to it.
-      var options = {};
-      options.withCredentials = true;
-      options.url = appConfig.baseApiUrl + type + '/' + id + '/image/' + indexToUpdate;
-      options.fields = {
-        description: description,
-        copyrightHolder : copyrightHolder
-      };
-      options.file = image;
-
-      //return $upload.upload(options);
-
+    function returnJobData(response) {
+      return $q.resolve(response.data);
     }
-    // Only the textfields change.
-    else {
 
-      var postData = {
-        description: description,
-        copyrightHolder : copyrightHolder
-      };
-
-      return $http.post(
-        appConfig.baseApiUrl + type + '/' + id + '/image/' + indexToUpdate,
+    return $http
+      .post(
+        appConfig.baseUrl + itemType + '/' + itemId + '/images/' + imageId,
         postData,
         defaultApiConfig
-      );
-    }
-
+      )
+      .then(returnJobData);
   };
 
   /**
@@ -4650,23 +4635,23 @@ function EventCrud(jobLogger, udbApi, EventCrudJob, $rootScope , $q) {
    * Update an image of the item.
    *
    * @param {EventFormData} item
-   * @param {int} indexToUpdate
-   * @param {File|null} image
+   * @param {MediaObject} image
    * @param {string} description
    * @param {string} copyrightHolder
    * @returns {EventCrud.updateImage.jobPromise}
    */
-  service.updateImage = function(item, indexToUpdate, image, description, copyrightHolder) {
+  service.updateImage = function(item, image, description, copyrightHolder) {
+    var imageId = image['@id'].split('/').pop();
 
-    var jobPromise = udbApi.updateImage(item.id, item.getType(), indexToUpdate, image, description, copyrightHolder);
-
-    jobPromise.success(function (jobData) {
+    function logJob(jobData) {
       var job = new EventCrudJob(jobData.commandId, item, 'updateImage');
       jobLogger.addJob(job);
-    });
+      return $q.resolve(job);
+    }
 
-    return jobPromise;
-
+    return udbApi
+      .updateImage(item.id, item.getType(), imageId, description, copyrightHolder)
+      .then(logJob);
   };
 
   /**
@@ -6093,13 +6078,17 @@ function EventFormImageEditController(
       $scope.error = true;
     }
 
-    function updateEventFormDataAndClose(updateResponse) {
-      EventFormData.updateMediaObject(updateResponse.data);
-      $uibModalInstance.close();
+    function updateEventFormDataAndClose() {
+      var updatedMediaObject = angular.copy(mediaObject);
+      updatedMediaObject.description = description;
+      updatedMediaObject.copyrightHolder = copyrightHolder;
+
+      EventFormData.updateMediaObject(updatedMediaObject);
+      $uibModalInstance.close(updatedMediaObject);
     }
 
     eventCrud
-      .updateImageInfo(mediaObject, description, copyrightHolder)
+      .updateImage(EventFormData, mediaObject, description, copyrightHolder)
       .then(updateEventFormDataAndClose, displayErrors);
   }
 
@@ -7117,7 +7106,7 @@ function EventFormDataFactory() {
       this.mediaObjects = _.map(this.mediaObjects, function (existingMediaObject) {
         var mediaObject;
 
-        if (existingMediaObject.id === updatedMediaObject) {
+        if (existingMediaObject['@id'] === updatedMediaObject['@id']) {
           mediaObject = updatedMediaObject;
         } else {
           mediaObject = existingMediaObject;
@@ -8620,6 +8609,7 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
   // Image upload functions.
   $scope.openUploadImageModal = openUploadImageModal;
   $scope.openDeleteImageModal = openDeleteImageModal;
+  $scope.editImage = editImage;
 
   $scope.ageRanges = _.map(AgeRangeEnum, function (range) {
     return range;
@@ -9159,16 +9149,11 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
   /**
    * Open the upload modal.
    */
-  function openUploadImageModal(indexToEdit) {
+  function openUploadImageModal() {
 
     var modalInstance = $uibModal.open({
       templateUrl: 'templates/event-form-image-upload.html',
-      controller: 'EventFormImageUploadController',
-      resolve: {
-        indexToEdit: function () {
-          return indexToEdit;
-        }
-      }
+      controller: 'EventFormImageUploadController'
     });
 
     modalInstance.result.then(function (mediaObject) {
@@ -9185,6 +9170,18 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
 
   }
 
+  function editImage(mediaObject) {
+    $uibModal.open({
+      templateUrl: 'templates/event-form-image-edit.html',
+      controller: 'EventFormImageEditController',
+      resolve: {
+        mediaObject: function () {
+          return mediaObject;
+        }
+      }
+    });
+  }
+
   /**
    * Open the modal to delete an image.
    */
@@ -9196,7 +9193,7 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
       resolve: {
         indexToDelete: function () {
           return indexToDelete;
-        },
+        }
       }
     });
 
@@ -14743,7 +14740,7 @@ $templateCache.put('templates/unexpected-error-modal.html',
     "                      <small ng-bind=\"image.copyrightHolder\">Copyright</small>\n" +
     "                    </span>\n" +
     "                    <span>\n" +
-    "                      <a class=\"btn btn-link\" ng-click=\"openUploadImageModal(1)\">Wijzigen</a>\n" +
+    "                      <a class=\"btn btn-link\" ng-click=\"editImage(image)\">Wijzigen</a>\n" +
     "                      <a class=\"btn btn-link\" ng-click=\"openDeleteImageModal(1)\">Verwijderen</a>\n" +
     "                    </span>\n" +
     "                  </div>\n" +

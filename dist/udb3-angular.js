@@ -12663,9 +12663,9 @@ $templateCache.put('templates/unexpected-error-modal.html',
     "</div>\n" +
     "\n" +
     "<div class=\"modal-footer\">\n" +
+    "  <button class=\"btn btn-default\" ng-click=\"close()\">annuleren</button>\n" +
     "  <button class=\"btn btn-primary\" ng-click=\"ok()\">label</button>\n" +
-    "  <button class=\"btn btn-warning\" ng-click=\"close()\">annuleren</button>\n" +
-    "</div>"
+    "</div>\n"
   );
 
 
@@ -12773,7 +12773,7 @@ $templateCache.put('templates/unexpected-error-modal.html',
     "              </li>\n" +
     "            </ul>\n" +
     "          </div>\n" +
-    "          <p class=\"block-header\">Voorbeeld</p>\n" +
+    "          <h2 class=\"block-header\">Voorbeeld</h2>\n" +
     "\n" +
     "        </div>\n" +
     "\n" +
@@ -12866,6 +12866,7 @@ $templateCache.put('templates/unexpected-error-modal.html',
     "      </div>\n" +
     "\n" +
     "      <div role=\"tabpanel\" class=\"tab-pane\" ng-show=\"isTabActive('history')\">\n" +
+    "        <h2 class=\"block-header\">Geschiedenis</h2>\n" +
     "        <div class=\"timeline\">\n" +
     "          <dl ng-repeat=\"eventAction in eventHistory track by $index\">\n" +
     "            <dt ng-bind=\"eventAction.date | date:'dd/MM/yyyy H:mm'\"></dt>\n" +
@@ -12878,6 +12879,7 @@ $templateCache.put('templates/unexpected-error-modal.html',
     "      </div>\n" +
     "\n" +
     "      <div class=\"tab-pane\" role=\"tabpanel\" ng-show=\"isTabActive('publication')\">\n" +
+    "        <h2 class=\"block-header\">Publicatie-informatie</h2>\n" +
     "        <div class=\"panel panel-default\">\n" +
     "          <table class=\"table\">\n" +
     "            <colgroup>\n" +
@@ -13580,7 +13582,7 @@ $templateCache.put('templates/unexpected-error-modal.html',
     "      </div>\n" +
     "\n" +
     "      <div class=\"col-xs-1 col-xs-12\" ng-show=\"splitTypes\">\n" +
-    "        <p class=\"text-center\">of</p>\n" +
+    "        <p class=\"text-center\"><em>of</em></p>\n" +
     "      </div>\n" +
     "\n" +
     "      <div ng-class=\"splitTypes ? 'col-xs-5': 'col-xs-12'\"\n" +
@@ -13697,7 +13699,7 @@ $templateCache.put('templates/unexpected-error-modal.html',
     "                   uib-typeahead=\"city as city.zip + ' ' + city.name for city in cities | filter:filterCities($viewValue) | orderBy:orderByLevenshteinDistance($viewValue)\"\n" +
     "                   typeahead-on-select=\"selectCity($item, $label)\"\n" +
     "                   typeahead-min-length=\"3\"\n" +
-    "                   typeahead-template-url=\"templates/city-suggestion.html\">\n" +
+    "                   typeahead-template-url=\"templates/city-suggestion.html\"/>\n" +
     "          </span>\n" +
     "          <div class=\"alert alert-danger\" ng-show=\"cityAutoCompleteError\">\n" +
     "            <span class=\"help-block\">Er was een probleem tijdens het ophalen van de steden</span>\n" +
@@ -13710,14 +13712,14 @@ $templateCache.put('templates/unexpected-error-modal.html',
     "      </div>\n" +
     "    </div>\n" +
     "\n" +
-    "    <div id=\"waar-evenement\" ng-show=\"eventFormData.isEvent && selectedCity !== ''\">\n" +
+    "    <div id=\"waar-evenement\" class=\"clearfix\" ng-show=\"eventFormData.isEvent && selectedCity !== ''\">\n" +
     "      <div class=\"row\">\n" +
     "        <div class=\"col-xs-12\">\n" +
     "          <label id=\"locatie-label\" ng-show=\"!selectedLocation\">\n" +
     "            Kies een locatie <i class=\"fa fa-circle-o-notch fa-spin\" ng-show=\"loadingPlaces\"></i>\n" +
     "          </label>\n" +
     "          <div id=\"locatie-kiezer\" ng-hide=\"selectedLocation || loadingPlaces\">\n" +
-    "            <span style=\"position: relative; display: inline-block; direction: ltr;\" class=\"twitter-typeahead\">\n" +
+    "            <span style=\"position: relative; display: block; direction: ltr;\" class=\"twitter-typeahead\">\n" +
     "              <input type=\"text\" ng-change=\"locationSearched()\"\n" +
     "                     placeholder=\"Locatie\"\n" +
     "                     class=\"form-control typeahead\"\n" +
@@ -13728,19 +13730,22 @@ $templateCache.put('templates/unexpected-error-modal.html',
     "                     typeahead-template-url=\"templates/place-suggestion.html\"/>\n" +
     "              <div class=\"plaats-adres-resultaat dropdown-menu-no-results\"\n" +
     "                   ng-show=\"(!cityHasLocations() || filteredLocations.length === 0) && locationsSearched\">\n" +
-    "                <p class=\"text-center\">\n" +
-    "                  Locatie niet gevonden?<br />\n" +
-    "                  <button type=\"button\" class=\"btn btn-primary\" data-toggle=\"modal\"\n" +
-    "                          data-target=\"#waar-locatie-toevoegen\" ng-click=\"openPlaceModal()\">\n" +
-    "                    Een locatie toevoegen\n" +
-    "                  </button>\n" +
-    "                </p>\n" +
+    "                <div class=\"panel panel-default text-center\">\n" +
+    "                  <div class=\"panel-body\">\n" +
+    "                    <p>Locatie niet gevonden?</p>\n" +
+    "                    <button type=\"button\" class=\"btn btn-primary\" data-toggle=\"modal\"\n" +
+    "                            data-target=\"#waar-locatie-toevoegen\" ng-click=\"openPlaceModal()\">\n" +
+    "                      Een locatie toevoegen\n" +
+    "                    </button>\n" +
+    "                  </div>\n" +
+    "                </div>\n" +
     "              </div>\n" +
     "            </span>\n" +
     "            <div class=\"alert alert-danger\" ng-show=\"locationAutoCompleteError\">\n" +
     "              <span class=\"help-block\">Er was een probleem tijdens het ophalen van de locaties</span>\n" +
     "            </div>\n" +
     "          </div>\n" +
+    "\n" +
     "          <div id=\"locatie-gekozen\" ng-show=\"selectedLocation\" >\n" +
     "            <span ng-bind=\"selectedLocation.name\"></span>\n" +
     "            <button type=\"button\"\n" +
@@ -13751,14 +13756,13 @@ $templateCache.put('templates/unexpected-error-modal.html',
     "            <br>\n" +
     "            <span ng-bind=\"selectedLocation.address.streetAddress\"></span>\n" +
     "          </div>\n" +
+    "\n" +
     "        </div>\n" +
     "      </div>\n" +
-    "\n" +
-    "\n" +
     "    </div>\n" +
     "\n" +
-    "    <div id=\"waar-plaats\" ng-show=\"eventFormData.isPlace && selectedCity !== ''\">\n" +
-    "      <div class=\"plaats-adres-ingeven col-sm-6\" ng-hide=\"selectedLocation.address.streetAddress\">\n" +
+    "    <div id=\"waar-plaats\" class=\"clearfix\" ng-show=\"eventFormData.isPlace && selectedCity !== ''\">\n" +
+    "      <div class=\"plaats-adres-ingeven\" ng-hide=\"selectedLocation.address.streetAddress\">\n" +
     "        <div class=\"row\">\n" +
     "          <div class=\"col-xs-12\">\n" +
     "            <div class=\"form-group\" ng-class=\"{'has-error' : showValidation && step3Form.street.$error.required }\">\n" +
@@ -13769,7 +13773,7 @@ $templateCache.put('templates/unexpected-error-modal.html',
     "                     ng-model=\"placeStreetAddress\"\n" +
     "                     placeholder=\"\"\n" +
     "                     type=\"text\"\n" +
-    "                     required>\n" +
+    "                     required />\n" +
     "              <span class=\"help-block\" ng-show=\"showValidation && step3Form.street.$error.required\">\n" +
     "                Straat en nummer is een verplicht veld.\n" +
     "              </span>\n" +
@@ -14884,8 +14888,8 @@ $templateCache.put('templates/unexpected-error-modal.html',
     "</div>\n" +
     "\n" +
     "<div class=\"modal-footer\">\n" +
-    "    <button class=\"btn btn-primary udb-save-query-ok-button fa fa-check\" ng-click=\"ok()\">bewaren</button>\n" +
-    "    <button class=\"btn btn-warning udb-save-query-cancel-button fa fa-times\" ng-click=\"cancel()\">annuleren</button>\n" +
+    "  <button class=\"btn btn-default udb-save-query-cancel-button fa fa-times\" ng-click=\"cancel()\">annuleren</button>\n" +
+    "  <button class=\"btn btn-primary udb-save-query-ok-button fa fa-check\" ng-click=\"ok()\">bewaren</button>    \n" +
     "</div>\n" +
     "</form>\n"
   );
@@ -15110,7 +15114,7 @@ $templateCache.put('templates/unexpected-error-modal.html',
     "        Groep toevoegen\n" +
     "      </button>\n" +
     "      <div class=\"pull-right\">\n" +
-    "        <a type=\"button\" class=\"btn btn-link\" ng-click=\"qe.stopEditing()\">\n" +
+    "        <a type=\"button\" class=\"btn btn-default\" ng-click=\"qe.stopEditing()\">\n" +
     "          Annuleren\n" +
     "        </a>\n" +
     "        <button type=\"button\" class=\"btn btn-primary\" ng-click=\"qe.updateQueryString()\">\n" +
@@ -15170,7 +15174,7 @@ $templateCache.put('templates/unexpected-error-modal.html',
     "    Groep toevoegen\n" +
     "  </button>\n" +
     "  <div class=\"pull-right\">\n" +
-    "    <a type=\"button\" class=\"btn btn-link\" ng-click=\"qe.stopEditing()\">\n" +
+    "    <a type=\"button\" class=\"btn btn-default\" ng-click=\"qe.stopEditing()\">\n" +
     "      Annuleren\n" +
     "    </a>\n" +
     "    <button type=\"button\" class=\"btn btn-primary\" ng-click=\"qe.updateQueryString()\">\n" +

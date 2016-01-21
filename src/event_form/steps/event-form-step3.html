@@ -21,7 +21,7 @@
                    uib-typeahead="city as city.zip + ' ' + city.name for city in cities | filter:filterCities($viewValue) | orderBy:orderByLevenshteinDistance($viewValue)"
                    typeahead-on-select="selectCity($item, $label)"
                    typeahead-min-length="3"
-                   typeahead-template-url="templates/city-suggestion.html">
+                   typeahead-template-url="templates/city-suggestion.html"/>
           </span>
           <div class="alert alert-danger" ng-show="cityAutoCompleteError">
             <span class="help-block">Er was een probleem tijdens het ophalen van de steden</span>
@@ -34,14 +34,14 @@
       </div>
     </div>
 
-    <div id="waar-evenement" ng-show="eventFormData.isEvent && selectedCity !== ''">
+    <div id="waar-evenement" class="clearfix" ng-show="eventFormData.isEvent && selectedCity !== ''">
       <div class="row">
         <div class="col-xs-12">
           <label id="locatie-label" ng-show="!selectedLocation">
             Kies een locatie <i class="fa fa-circle-o-notch fa-spin" ng-show="loadingPlaces"></i>
           </label>
           <div id="locatie-kiezer" ng-hide="selectedLocation || loadingPlaces">
-            <span style="position: relative; display: inline-block; direction: ltr;" class="twitter-typeahead">
+            <span style="position: relative; display: block; direction: ltr;" class="twitter-typeahead">
               <input type="text" ng-change="locationSearched()"
                      placeholder="Locatie"
                      class="form-control typeahead"
@@ -52,19 +52,22 @@
                      typeahead-template-url="templates/place-suggestion.html"/>
               <div class="plaats-adres-resultaat dropdown-menu-no-results"
                    ng-show="(!cityHasLocations() || filteredLocations.length === 0) && locationsSearched">
-                <p class="text-center">
-                  Locatie niet gevonden?<br />
-                  <button type="button" class="btn btn-primary" data-toggle="modal"
-                          data-target="#waar-locatie-toevoegen" ng-click="openPlaceModal()">
-                    Een locatie toevoegen
-                  </button>
-                </p>
+                <div class="panel panel-default text-center">
+                  <div class="panel-body">
+                    <p>Locatie niet gevonden?</p>
+                    <button type="button" class="btn btn-primary" data-toggle="modal"
+                            data-target="#waar-locatie-toevoegen" ng-click="openPlaceModal()">
+                      Een locatie toevoegen
+                    </button>
+                  </div>
+                </div>
               </div>
             </span>
             <div class="alert alert-danger" ng-show="locationAutoCompleteError">
               <span class="help-block">Er was een probleem tijdens het ophalen van de locaties</span>
             </div>
           </div>
+
           <div id="locatie-gekozen" ng-show="selectedLocation" >
             <span ng-bind="selectedLocation.name"></span>
             <button type="button"
@@ -75,14 +78,13 @@
             <br>
             <span ng-bind="selectedLocation.address.streetAddress"></span>
           </div>
+
         </div>
       </div>
-
-
     </div>
 
-    <div id="waar-plaats" ng-show="eventFormData.isPlace && selectedCity !== ''">
-      <div class="plaats-adres-ingeven col-sm-6" ng-hide="selectedLocation.address.streetAddress">
+    <div id="waar-plaats" class="clearfix" ng-show="eventFormData.isPlace && selectedCity !== ''">
+      <div class="plaats-adres-ingeven" ng-hide="selectedLocation.address.streetAddress">
         <div class="row">
           <div class="col-xs-12">
             <div class="form-group" ng-class="{'has-error' : showValidation && step3Form.street.$error.required }">
@@ -93,7 +95,7 @@
                      ng-model="placeStreetAddress"
                      placeholder=""
                      type="text"
-                     required>
+                     required />
               <span class="help-block" ng-show="showValidation && step3Form.street.$error.required">
                 Straat en nummer is een verplicht veld.
               </span>

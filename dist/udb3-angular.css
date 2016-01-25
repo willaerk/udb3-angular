@@ -1690,16 +1690,27 @@ textarea.resize-vertical {
 .nav-pills a {
   cursor: pointer;
 }
-div:not(.modal-content) input[type="text"],
-div:not(.modal-content) input[type="email"],
-div:not(.modal-content) input[type="password"] {
-  max-width: 420px;
-}
+.checkbox label > [type="checkbox"],
 label.checkbox > [type="checkbox"] {
   margin-top: 6px;
 }
+.form-group input {
+  max-width: 450px;
+}
+input + .alert {
+  margin-top: .5em;
+}
+.save-time-tracker {
+  border-top: 1px solid #cccccc;
+  color: #777777;
+  padding-bottom: 1em;
+  padding-top: 1em;
+}
 .footer {
   padding-top: 3em;
+}
+.table td p {
+  margin: 0 0 6px 0;
 }
 .udb-query-editor {
   padding-top: 24px;
@@ -2289,7 +2300,6 @@ body {
   padding: 15px;
   background-color: #ffffff;
   margin: 15px;
-  border-top: 1px dotted #cccccc;
 }
 .rv-item .udb-description {
   color: #777777;
@@ -2355,6 +2365,9 @@ body {
 }
 .save-search-modal .alert {
   margin-top: 10px;
+}
+.table td.saved-search-query + td {
+  vertical-align: middle;
 }
 /* Tablist */
 .nav-pills > li[udb-save-search] {

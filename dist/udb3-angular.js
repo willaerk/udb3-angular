@@ -6619,7 +6619,7 @@ angular
 function TimeTrackerDirective($rootScope) {
 
   var template =
-    '<div class="save-time-tracker" ng-if="::timeLastSaved">' +
+    '<div class="save-time-tracker small" ng-if="::timeLastSaved">' +
     '  Automatisch bewaard om <span class="time-last-saved" ng-bind="timeLastSaved | date:\'HH:mm\'"></span> uur' +
     '</div>';
 
@@ -12663,8 +12663,8 @@ $templateCache.put('templates/unexpected-error-modal.html',
     "</div>\n" +
     "\n" +
     "<div class=\"modal-footer\">\n" +
-    "  <button class=\"btn btn-default\" ng-click=\"close()\">annuleren</button>\n" +
-    "  <button class=\"btn btn-primary\" ng-click=\"ok()\">label</button>\n" +
+    "  <button class=\"btn btn-default\" ng-click=\"close()\">Annuleren</button>\n" +
+    "  <button class=\"btn btn-primary\" ng-click=\"ok()\">Label</button>\n" +
     "</div>\n"
   );
 
@@ -14680,9 +14680,10 @@ $templateCache.put('templates/unexpected-error-modal.html',
     "  <form ng-switch-when=\"confirm\">\n" +
     "    <div class=\"modal-body\">\n" +
     "      <h5>Export versturen</h5>\n" +
-    "\n" +
-    "      <label>Email</label>\n" +
-    "      <input type=\"text\" ng-model=\"exporter.email\" name=\"eventExportEmail\"/>\n" +
+    "      <div class=\"form-group\">\n" +
+    "        <label>Email</label>\n" +
+    "        <input type=\"text\" ng-model=\"exporter.email\" name=\"eventExportEmail\"/>\n" +
+    "      </div>\n" +
     "    </div>\n" +
     "    <udb-export-modal-buttons></udb-export-modal-buttons>\n" +
     "  </form>\n" +
@@ -14725,10 +14726,10 @@ $templateCache.put('templates/unexpected-error-modal.html',
   $templateCache.put('templates/export-modal-buttons.directive.html',
     "<div class=\"modal-footer\" ng-hide=\"exporter.getActiveStepName() === 'finished'\">\n" +
     "  <button class=\"btn btn-default pull-left\" ng-click=\"exporter.previousStep()\"\n" +
-    "          ng-hide=\"exporter.isOnFirstStep()\">vorige stap</button>\n" +
+    "          ng-hide=\"exporter.isOnFirstStep()\">Vorige stap</button>\n" +
     "  <button ng-hide=\"exporter.onLastStep()\" class=\"btn btn-primary\"\n" +
-    "          ng-click=\"exporter.nextStep()\">volgende</button>\n" +
-    "  <button ng-show=\"exporter.onLastStep()\" class=\"btn btn-primary\" ng-click=\"exporter.export()\">exporteren</button>\n" +
+    "          ng-click=\"exporter.nextStep()\">Volgende</button>\n" +
+    "  <button ng-show=\"exporter.onLastStep()\" class=\"btn btn-primary\" ng-click=\"exporter.export()\">Exporteren</button>\n" +
     "</div>\n"
   );
 
@@ -14867,8 +14868,8 @@ $templateCache.put('templates/unexpected-error-modal.html',
     "</div>\n" +
     "\n" +
     "<div class=\"modal-footer\">\n" +
-    "    <button class=\"btn btn-primary udb-delete-query-cancel-button\" ng-click=\"cancel()\">annuleren</button>\n" +
-    "    <button class=\"btn btn-danger udb-delete-query-confirm-button\" ng-click=\"confirm()\">verwijderen</button>\n" +
+    "    <button class=\"btn btn-primary udb-delete-query-cancel-button\" ng-click=\"cancel()\">Annuleren</button>\n" +
+    "    <button class=\"btn btn-danger udb-delete-query-confirm-button\" ng-click=\"confirm()\">Verwijderen</button>\n" +
     "</div>\n"
   );
 
@@ -14888,8 +14889,8 @@ $templateCache.put('templates/unexpected-error-modal.html',
     "</div>\n" +
     "\n" +
     "<div class=\"modal-footer\">\n" +
-    "  <button class=\"btn btn-default udb-save-query-cancel-button fa fa-times\" ng-click=\"cancel()\">annuleren</button>\n" +
-    "  <button class=\"btn btn-primary udb-save-query-ok-button fa fa-check\" ng-click=\"ok()\">bewaren</button>    \n" +
+    "  <button class=\"btn btn-default udb-save-query-cancel-button\" ng-click=\"cancel()\">Annuleren</button>\n" +
+    "  <button class=\"btn btn-primary udb-save-query-ok-button\" ng-click=\"ok()\">Bewaren</button>    \n" +
     "</div>\n" +
     "</form>\n"
   );

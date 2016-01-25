@@ -112,7 +112,7 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
   $scope.selectedFacilities = [];
 
   // Image upload vars.
-  $scope.imageCssClass = EventFormData.mediaObject.length > 0 ? 'state-complete' : 'state-incomplete';
+  $scope.imageCssClass = EventFormData.mediaObjects.length > 0 ? 'state-complete' : 'state-incomplete';
 
   // Scope functions.
   // Description functions.
@@ -689,15 +689,15 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
       resolve: {
         indexToEdit: function () {
           return indexToEdit;
-        },
+        }
       }
     });
 
-    modalInstance.result.then(function () {
+    modalInstance.result.then(function (mediaObject) {
       $scope.imageCssClass = 'state-complete';
     }, function () {
       // modal dismissed.
-      if (EventFormData.mediaObject.length > 0) {
+      if (EventFormData.mediaObjects.length > 0) {
         $scope.imageCssClass = 'state-complete';
       }
       else {
@@ -723,7 +723,7 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
     });
 
     modalInstance.result.then(function () {
-      if (EventFormData.mediaObject.length > 0) {
+      if (EventFormData.mediaObjects.length > 0) {
         $scope.imageCssClass = 'state-complete';
       }
       else {
@@ -731,7 +731,7 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
       }
     }, function () {
       // modal dismissed.
-      if (EventFormData.mediaObject.length > 0) {
+      if (EventFormData.mediaObjects.length > 0) {
         $scope.imageCssClass = 'state-complete';
       }
       else {

@@ -47,4 +47,18 @@ describe('Factory: Event form data', function () {
     });
 
   }));
+
+  it('should update the list of media objects when adding an image', inject(function (EventFormData) {
+    var image = {
+      '@id': 'http://culudb-silex.dev:8080/media/d2efceac-46ec-49b1-903f-d73b4c69fe70',
+      '@type': 'schema:ImageObject',
+      'contentUrl': 'http://culudb-silex.dev:8080/media/d2efceac-46ec-49b1-903f-d73b4c69fe70.png',
+      'thumbnailUrl': 'http://culudb-silex.dev:8080/media/d2efceac-46ec-49b1-903f-d73b4c69fe70.png',
+      'description': 'desc',
+      'copyrightHolder': 'copy'
+    };
+
+    EventFormData.addImage(image);
+    expect(EventFormData.mediaObjects).toEqual([image]);
+  }));
 });

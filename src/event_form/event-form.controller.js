@@ -77,7 +77,6 @@ function EventFormController($scope, eventId, placeId, offerType, EventFormData,
       'bookingInfo',
       'contactPoint',
       'facilities',
-      'mediaObject',
       'image',
       'additionalData'
     ];
@@ -85,6 +84,10 @@ function EventFormController($scope, eventId, placeId, offerType, EventFormData,
       if (item[sameProperties[i]]) {
         EventFormData[sameProperties[i]] = item[sameProperties[i]];
       }
+    }
+
+    if (item.mediaObject) {
+      EventFormData.mediaObjects = item.mediaObject || [];
     }
 
     // Places don't have nl.

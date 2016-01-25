@@ -27,8 +27,8 @@ module.exports = function(config) {
     },
 
     coverageReporter: {
-      type: "lcov",
-      dir: "coverage/"
+      type: 'lcov',
+      dir: 'coverage/'
     },
 
     // enable / disable watching file and executing tests whenever any file changes
@@ -49,7 +49,7 @@ module.exports = function(config) {
       'bower_components/angular-cookies/angular-cookies.js',
       'bower_components/angular-sanitize/angular-sanitize.js',
       'bower_components/angular-bootstrap/ui-bootstrap-tpls.js',
-      'bower_components/lodash/dist/lodash.compat.js',
+      'bower_components/lodash/lodash.js',
       'bower_components/socket.io-client/socket.io.js',
       'bower_components/angular-socket-io/socket.js',
       'bower_components/angular-ui-select/dist/select.js',

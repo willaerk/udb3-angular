@@ -287,6 +287,7 @@ module.exports = function (grunt) {
           'src/place-detail/udb.place-detail.module.js',
           'src/saved-searches/udb.saved-searches.module.js',
           'src/export/udb.export.module.js',
+          'src/media/udb.media.module.js',
           'src/search/parsers/udb-query-parser.service.js'
         ],
         dest: '.tmp/udb3-angular.modules.js'

@@ -12,7 +12,7 @@ angular
   .controller('EventFormImageDeleteController', EventFormImageDeleteController);
 
 /* @ngInject */
-function EventFormImageDeleteController($scope, $modalInstance, EventFormData, eventCrud, indexToDelete) {
+function EventFormImageDeleteController($scope, $uibModalInstance, EventFormData, eventCrud, indexToDelete) {
 
   // Scope vars.
   $scope.saving = false;
@@ -26,7 +26,7 @@ function EventFormImageDeleteController($scope, $modalInstance, EventFormData, e
    * Cancel the modal.
    */
   function cancel() {
-    $modalInstance.dismiss('cancel');
+    $uibModalInstance.dismiss('cancel');
   }
 
   /**
@@ -40,7 +40,7 @@ function EventFormImageDeleteController($scope, $modalInstance, EventFormData, e
     eventCrud.deleteImage(EventFormData, indexToDelete).then(function() {
       EventFormData.deleteMediaObject(indexToDelete);
       $scope.saving = false;
-      $modalInstance.close();
+      $uibModalInstance.close();
     }, function() {
       $scope.error = true;
       $scope.saving = false;

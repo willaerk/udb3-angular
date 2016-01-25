@@ -12,8 +12,15 @@ angular
   .controller('EventFormImageUploadController', EventFormImageUploadController);
 
 /* @ngInject */
-function EventFormImageUploadController($scope, $modalInstance, EventFormData, eventCrud, indexToEdit,
-  appConfig) {
+function EventFormImageUploadController(
+  $scope,
+  $uibModalInstance,
+  EventFormData,
+  eventCrud,
+  appConfig,
+  MediaManager,
+  $q
+) {
 
   // Scope vars.
   $scope.uploadTermsConditionsUrl = appConfig.uploadTermsConditionsUrl;
@@ -26,19 +33,11 @@ function EventFormImageUploadController($scope, $modalInstance, EventFormData, e
   $scope.description = '';
   $scope.copyright = '';
 
-  var mediaObject = null;
-  // An object to edit was given.
-  if (indexToEdit >= 0) {
-    mediaObject = EventFormData.mediaObject[indexToEdit];
-    $scope.description = mediaObject.description;
-    $scope.copyright = mediaObject.copyrightHolder;
-    acceptAgreements();
-  }
-
   // Scope functions.
   $scope.acceptAgreements = acceptAgreements;
   $scope.cancel = cancel;
-  $scope.uploadImages = uploadImages;
+  $scope.uploadImages = uploadAndAddImage;
+  $scope.clearError = clearError;
 
   /**
    * Accept the agreements.
@@ -52,86 +51,53 @@ function EventFormImageUploadController($scope, $modalInstance, EventFormData, e
    * Cancel the modal.
    */
   function cancel() {
-    $modalInstance.dismiss('cancel');
+    $uibModalInstance.dismiss('cancel');
   }
 
-  /**
-   * Upload the images and save it to db.
-   */
-  function uploadImages() {
-
-    $scope.saving = true;
+  function clearError() {
     $scope.error = false;
+  }
 
-    // If we are editing, imagesToUpload is not required.
-    if (mediaObject) {
-      // Will be undefined if no upload was done in edit.
-      updateImage($scope.imagesToUpload[0]);
-    }
-    else {
-      // IE8/9 can't handle array. Upload 1 by 1.
-      for (var i = 0; i < $scope.imagesToUpload.length; i++) {
-        addImage($scope.imagesToUpload[i]);
+  function uploadAndAddImage() {
+    var file = $scope.imagesToUpload[0],
+        description = $scope.description,
+        copyrightHolder = $scope.copyright;
+
+    var deferredAddition = $q.defer();
+
+    function displayError(errorResponse) {
+      var errorMessage = errorResponse.data.title;
+      var error = 'Er ging iets mis bij het opslaan van de afbeelding.';
+
+      switch (errorMessage) {
+        case 'The uploaded file is not an image.':
+          error = 'Het geüpload bestand is geen afbeelding.';
+          break;
       }
+
+      $scope.saving = false;
+      $scope.error = error;
     }
 
-  }
-
-  /**
-   * Upload and add an image.
-   */
-  function addImage(image) {
-
-    var uploaded = 0;
-
-    eventCrud.addImage(
-      EventFormData,
-      image,
-      $scope.description,
-      $scope.copyright
-    ).then(function (jsonResponse) {
-      EventFormData.addImage(
-        jsonResponse.data.url,
-        jsonResponse.data.thumbnailUrl,
-        $scope.description,
-        $scope.copyright
-      );
-      uploaded++;
-      if (uploaded === $scope.imagesToUpload.length) {
-        $modalInstance.close();
+    /**
+     * @param {MediaObject} mediaObject
+     */
+    function addImageToEvent(mediaObject) {
+      function updateEventFormAndResolve() {
+        EventFormData.addImage(mediaObject);
+        deferredAddition.resolve(mediaObject);
+        $uibModalInstance.close(mediaObject);
       }
-    }, function() {
-      $scope.saving = false;
-      $scope.error = true;
-    });
 
+      eventCrud
+        .addImage(EventFormData, mediaObject)
+        .then(updateEventFormAndResolve, displayError);
+    }
+
+    MediaManager
+      .createImage(file, description, copyrightHolder)
+      .then(addImageToEvent, displayError);
+
+    return deferredAddition.promise;
   }
-
-  /**
-   * Update an image or the description.
-   */
-  function updateImage(image) {
-
-    eventCrud.updateImage(
-      EventFormData,
-      indexToEdit,
-      image,
-      $scope.description,
-      $scope.copyright
-    ).then(function (jsonResponse) {
-      EventFormData.editMediaObject(
-        indexToEdit,
-        jsonResponse.data.url,
-        jsonResponse.data.thumbnailUrl,
-        $scope.description,
-        $scope.copyright
-      );
-      $modalInstance.close();
-    }, function() {
-      $scope.saving = false;
-      $scope.error = true;
-    });
-
-  }
-
 }

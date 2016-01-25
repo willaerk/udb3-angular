@@ -13,6 +13,15 @@
  */
 
 /**
+ * @typedef {Object} MediaObject
+ * @property {string} id
+ * @property {string} url
+ * @property {string} thumbnailUrl
+ * @property {string} description
+ * @property {string} copyrightHolder
+ */
+
+/**
  * @ngdoc service
  * @name udb.core.EventFormData
  * @description
@@ -74,7 +83,8 @@ function EventFormDataFactory() {
     },
     facilities : [],
     bookingInfo : {},
-    mediaObject : [],
+    /** @type {MediaObject[]} **/
+    mediaObjects : [],
     image : [],
     additionalData : {},
 
@@ -326,17 +336,12 @@ function EventFormDataFactory() {
 
     /**
      * Add a new image.
+     *
+     * @param {MediaObject} mediaObject
      */
-    addImage : function(url, thumbnailUrl, description, copyrightHolder) {
-      var image = {
-        url : url,
-        thumbnailUrl : thumbnailUrl,
-        description : description,
-        copyrightHolder : copyrightHolder
-      };
-      image['@type'] = 'ImageObject';
-      this.mediaObject.push(image);
-      this.image.push(image);
+    addImage : function(mediaObject) {
+      this.mediaObjects.push(mediaObject);
+      console.log(this.mediaObjects);
     },
 
     /**
@@ -347,16 +352,36 @@ function EventFormDataFactory() {
         url : url,
         thumbnailUrl : thumbnailUrl,
         description : description,
-        copyrightHolder : copyrightHolder,
+        copyrightHolder : copyrightHolder
       };
       this.image[indexToEdit]['@type'] = 'ImageObject';
     },
 
     /**
-     * Delete a given media object.
+     * Update the info of the given media object.
+     * @param {MediaObject} updatedMediaObject
      */
-    deleteMediaObject : function(index) {
-      this.mediaObject.splice(index, 1);
+    updateMediaObject: function (updatedMediaObject)  {
+      this.mediaObjects = _.map(this.mediaObjects, function (existingMediaObject) {
+        var mediaObject;
+
+        if (existingMediaObject.id === updatedMediaObject) {
+          mediaObject = updatedMediaObject;
+        } else {
+          mediaObject = existingMediaObject;
+        }
+
+        return mediaObject;
+      });
+    },
+
+    /**
+     * Delete a given media object.
+     *
+     *@param {MediaObject} deletedMediaObject
+     */
+    deleteMediaObject : function(deletedMediaObject) {
+      this.mediaObjects = _.reject(this.mediaObjects, {id: deletedMediaObject.id});
     },
 
     /**

@@ -22,7 +22,8 @@
                multiple
                ng-file-select
                ng-multiple="true"
-               accept="'image/*'">
+               accept="'image/*'"
+               ng-change="clearError()">
         <p class="help-block">
           De maximale grootte van je afbeelding is 5 MB en heeft als type .jpeg, .gif of .png</p>
       </div>
@@ -43,7 +44,9 @@
       </div>
     </div>
 
-    <div ng-show="error" class="alert alert-danger">Er ging iets mis bij het opslaan van de afbeelding.</div>
+    <div ng-show="error" class="alert alert-danger">
+      <span ng-bind="error"></span>
+    </div>
 
   </div>
   <div class="modal-footer">

@@ -11,7 +11,7 @@ angular
   .service('eventCrud', EventCrud);
 
 /* @ngInject */
-function EventCrud(jobLogger, udbApi, EventCrudJob, $rootScope) {
+function EventCrud(jobLogger, udbApi, EventCrudJob, $rootScope , $q) {
 
   var service = this;
 
@@ -291,22 +291,19 @@ function EventCrud(jobLogger, udbApi, EventCrudJob, $rootScope) {
    * Add a new image to the item.
    *
    * @param {EventFormData} item
-   * @param {File} image
-   * @param {string} description
-   * @param {string} copyrightHolder
+   * @param {MediaObject} image
    * @returns {EventCrud.addImage.jobPromise}
    */
-  service.addImage = function(item, image, description, copyrightHolder) {
-
-    var jobPromise = udbApi.addImage(item.id, item.getType(), image, description, copyrightHolder);
-
-    jobPromise.success(function (jobData) {
+  service.addImage = function(item, image) {
+    function logJob(jobData) {
       var job = new EventCrudJob(jobData.commandId, item, 'addImage');
       jobLogger.addJob(job);
-    });
+      return $q.resolve(job);
+    }
 
-    return jobPromise;
-
+    return udbApi
+      .addImage(item.id, image.id)
+      .then(logJob);
   };
 
   /**

@@ -15161,7 +15161,7 @@ $templateCache.put('templates/unexpected-error-modal.html',
 
   $templateCache.put('templates/save-search.directive.html',
     "<p>\n" +
-    "    <strong>Jouw zoekdracht</strong>\n" +
+    "    <strong>Jouw zoekopdracht</strong>\n" +
     "    <a href=\"#\" ng-click=\"saveSearch()\" class=\"btn btn-sm btn-default\">\n" +
     "        <i class=\"fa fa-bookmark-o\"></i> Bewaren\n" +
     "    </a>\n" +

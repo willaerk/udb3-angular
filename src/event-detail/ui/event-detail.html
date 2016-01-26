@@ -70,7 +70,13 @@
             </tr>
             <tr>
               <td><strong>Waar</strong></td>
-              <td><a href="/place/{{event.location.id}}">{{eventLocation(event)}}</a></td>
+              <td ng-show="event.location.url"><a href="{{event.location.url}}">{{eventLocation(event)}}</a></td>
+              <td ng-hide="event.location.url">
+                {{event.location.name}},
+                {{event.location.address.streetAddress}},
+                {{event.location.address.postalCode}}
+                {{event.location.address.addressLocality}}
+              </td>
             </tr>
             <tr>
               <td><strong>Wanneer</strong></td>

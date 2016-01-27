@@ -365,7 +365,7 @@ function EventFormDataFactory() {
       this.mediaObjects = _.map(this.mediaObjects, function (existingMediaObject) {
         var mediaObject;
 
-        if (existingMediaObject.id === updatedMediaObject) {
+        if (existingMediaObject['@id'] === updatedMediaObject['@id']) {
           mediaObject = updatedMediaObject;
         } else {
           mediaObject = existingMediaObject;

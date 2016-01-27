@@ -50,13 +50,17 @@ function EventFormImageEditController(
       $scope.error = true;
     }
 
-    function updateEventFormDataAndClose(updateResponse) {
-      EventFormData.updateMediaObject(updateResponse.data);
-      $uibModalInstance.close();
+    function updateEventFormDataAndClose() {
+      var updatedMediaObject = angular.copy(mediaObject);
+      updatedMediaObject.description = description;
+      updatedMediaObject.copyrightHolder = copyrightHolder;
+
+      EventFormData.updateMediaObject(updatedMediaObject);
+      $uibModalInstance.close(updatedMediaObject);
     }
 
     eventCrud
-      .updateImageInfo(mediaObject, description, copyrightHolder)
+      .updateImage(EventFormData, mediaObject, description, copyrightHolder)
       .then(updateEventFormDataAndClose, displayErrors);
   }
 

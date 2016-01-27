@@ -1,8 +1,20 @@
 .muted {
   td {
     background-color: #EDEDED;
-    color: #777;
+    color: @gray-light;
   }
+}
+
+h2.block-header {
+  font-size: 1.067em;
+  font-weight: 500;
+  margin-bottom: 1em;
+  margin-top: .85em;
+  text-transform: uppercase;
+}
+
+.panel-default > .table:first-child tr:first-child > td {
+  border-top: none;
 }
 
 .timeline {
@@ -17,7 +29,7 @@
   left: 0;
   width: 2px;
   content: '';
-  background-color: #CCC;
+  background-color: @udb-gray;
   z-index: 100;
 }
 
@@ -30,8 +42,8 @@
   left: -24px;
   top: 9px;
   display: block;
-  border: 1px solid #FFF;
-  background-color: #CCC;
+  border: 1px solid @white;
+  background-color: @udb-gray;
   border-radius: 50%;
   -webkit-border-radius: 50%;
   width: 9px;

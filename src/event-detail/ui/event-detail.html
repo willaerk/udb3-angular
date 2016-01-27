@@ -39,7 +39,7 @@
               </li>
             </ul>
           </div>
-          <p class="block-header">Voorbeeld</p>
+          <h2 class="block-header">Voorbeeld</h2>
 
         </div>
 
@@ -132,6 +132,7 @@
       </div>
 
       <div role="tabpanel" class="tab-pane" ng-show="isTabActive('history')">
+        <h2 class="block-header">Geschiedenis</h2>
         <div class="timeline">
           <dl ng-repeat="eventAction in eventHistory track by $index">
             <dt ng-bind="eventAction.date | date:'dd/MM/yyyy H:mm'"></dt>
@@ -144,6 +145,7 @@
       </div>
 
       <div class="tab-pane" role="tabpanel" ng-show="isTabActive('publication')">
+        <h2 class="block-header">Publicatie-informatie</h2>
         <div class="panel panel-default">
           <table class="table">
             <colgroup>

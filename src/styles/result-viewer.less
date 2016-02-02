@@ -38,7 +38,7 @@
 }
 
 .rv-controls {
-  border-bottom: 1px solid #CCC;
+  border-bottom: 1px solid @udb-gray;
 }
 
 .rv-item-counter {
@@ -79,7 +79,7 @@
   margin: 0;
   position: relative;
   padding: 14px 0;
-  border-bottom: 2px solid #CCC;
+  border-bottom: 2px solid @udb-gray;
   overflow: hidden;
   display: block;
   background-color: #F0F0F0;
@@ -100,7 +100,7 @@
 }
 
 .rv-item-info {
-  border-bottom: 3px solid #CCC;
+  border-bottom: 3px solid @udb-gray;
   color: #777;
   padding-bottom: @rv-item-info-padding;
   padding-top: @rv-item-info-padding;
@@ -238,9 +238,8 @@
 
   .udb-details {
     padding: 15px;
-    background-color: #FFF;
+    background-color: @white;
     margin: 15px;
-    border-top: 1px dotted #CCC;
   }
 
   .udb-description {
@@ -283,7 +282,7 @@
   }
   > li > a,
   > li > span {
-    border-color: #ccc;
+    border-color: @udb-gray;
     &:hover,
     &:focus {
       background-color: @brand-primary;

@@ -2940,45 +2940,30 @@ function UdbApi($q, $http, appConfig, $cookieStore, uitidAuth,
         appConfig.baseUrl + 'event/' + eventId + '/images',
         postData,
         defaultApiConfig
-      ).then(returnJobData);
+      )
+      .then(returnJobData);
   };
 
   /**
    * Update an image.
    */
-  this.updateImage = function(id, type, indexToUpdate, image, description, copyrightHolder) {
+  this.updateImage = function(itemId, itemType, imageId, description, copyrightHolder) {
+    var postData = {
+      description: description,
+      copyrightHolder: copyrightHolder
+    };
 
-    // Image is also changed.
-    if (image) {
-
-      // Don't use defaultApiConfig, $upload adds custom stuff to it.
-      var options = {};
-      options.withCredentials = true;
-      options.url = appConfig.baseApiUrl + type + '/' + id + '/image/' + indexToUpdate;
-      options.fields = {
-        description: description,
-        copyrightHolder : copyrightHolder
-      };
-      options.file = image;
-
-      //return $upload.upload(options);
-
+    function returnJobData(response) {
+      return $q.resolve(response.data);
     }
-    // Only the textfields change.
-    else {
 
-      var postData = {
-        description: description,
-        copyrightHolder : copyrightHolder
-      };
-
-      return $http.post(
-        appConfig.baseApiUrl + type + '/' + id + '/image/' + indexToUpdate,
+    return $http
+      .post(
+        appConfig.baseUrl + itemType + '/' + itemId + '/images/' + imageId,
         postData,
         defaultApiConfig
-      );
-    }
-
+      )
+      .then(returnJobData);
   };
 
   /**
@@ -4656,23 +4641,23 @@ function EventCrud(jobLogger, udbApi, EventCrudJob, $rootScope , $q) {
    * Update an image of the item.
    *
    * @param {EventFormData} item
-   * @param {int} indexToUpdate
-   * @param {File|null} image
+   * @param {MediaObject} image
    * @param {string} description
    * @param {string} copyrightHolder
    * @returns {EventCrud.updateImage.jobPromise}
    */
-  service.updateImage = function(item, indexToUpdate, image, description, copyrightHolder) {
+  service.updateImage = function(item, image, description, copyrightHolder) {
+    var imageId = image['@id'].split('/').pop();
 
-    var jobPromise = udbApi.updateImage(item.id, item.getType(), indexToUpdate, image, description, copyrightHolder);
-
-    jobPromise.success(function (jobData) {
+    function logJob(jobData) {
       var job = new EventCrudJob(jobData.commandId, item, 'updateImage');
       jobLogger.addJob(job);
-    });
+      return $q.resolve(job);
+    }
 
-    return jobPromise;
-
+    return udbApi
+      .updateImage(item.id, item.getType(), imageId, description, copyrightHolder)
+      .then(logJob);
   };
 
   /**
@@ -6098,13 +6083,17 @@ function EventFormImageEditController(
       $scope.error = true;
     }
 
-    function updateEventFormDataAndClose(updateResponse) {
-      EventFormData.updateMediaObject(updateResponse.data);
-      $uibModalInstance.close();
+    function updateEventFormDataAndClose() {
+      var updatedMediaObject = angular.copy(mediaObject);
+      updatedMediaObject.description = description;
+      updatedMediaObject.copyrightHolder = copyrightHolder;
+
+      EventFormData.updateMediaObject(updatedMediaObject);
+      $uibModalInstance.close(updatedMediaObject);
     }
 
     eventCrud
-      .updateImageInfo(mediaObject, description, copyrightHolder)
+      .updateImage(EventFormData, mediaObject, description, copyrightHolder)
       .then(updateEventFormDataAndClose, displayErrors);
   }
 
@@ -6662,7 +6651,7 @@ angular
 function TimeTrackerDirective($rootScope) {
 
   var template =
-    '<div class="save-time-tracker" ng-if="::timeLastSaved">' +
+    '<div class="save-time-tracker small" ng-if="::timeLastSaved">' +
     '  Automatisch bewaard om <span class="time-last-saved" ng-bind="timeLastSaved | date:\'HH:mm\'"></span> uur' +
     '</div>';
 
@@ -7122,7 +7111,7 @@ function EventFormDataFactory() {
       this.mediaObjects = _.map(this.mediaObjects, function (existingMediaObject) {
         var mediaObject;
 
-        if (existingMediaObject.id === updatedMediaObject) {
+        if (existingMediaObject['@id'] === updatedMediaObject['@id']) {
           mediaObject = updatedMediaObject;
         } else {
           mediaObject = existingMediaObject;
@@ -8625,6 +8614,7 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
   // Image upload functions.
   $scope.openUploadImageModal = openUploadImageModal;
   $scope.openDeleteImageModal = openDeleteImageModal;
+  $scope.editImage = editImage;
 
   $scope.ageRanges = _.map(AgeRangeEnum, function (range) {
     return range;
@@ -9164,16 +9154,11 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
   /**
    * Open the upload modal.
    */
-  function openUploadImageModal(indexToEdit) {
+  function openUploadImageModal() {
 
     var modalInstance = $uibModal.open({
       templateUrl: 'templates/event-form-image-upload.html',
-      controller: 'EventFormImageUploadController',
-      resolve: {
-        indexToEdit: function () {
-          return indexToEdit;
-        }
-      }
+      controller: 'EventFormImageUploadController'
     });
 
     modalInstance.result.then(function (mediaObject) {
@@ -9190,6 +9175,18 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
 
   }
 
+  function editImage(mediaObject) {
+    $uibModal.open({
+      templateUrl: 'templates/event-form-image-edit.html',
+      controller: 'EventFormImageEditController',
+      resolve: {
+        mediaObject: function () {
+          return mediaObject;
+        }
+      }
+    });
+  }
+
   /**
    * Open the modal to delete an image.
    */
@@ -9201,7 +9198,7 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
       resolve: {
         indexToDelete: function () {
           return indexToDelete;
-        },
+        }
       }
     });
 
@@ -12885,9 +12882,9 @@ $templateCache.put('templates/unexpected-error-modal.html',
     "</div>\n" +
     "\n" +
     "<div class=\"modal-footer\">\n" +
-    "  <button class=\"btn btn-primary\" ng-click=\"ok()\">label</button>\n" +
-    "  <button class=\"btn btn-warning\" ng-click=\"close()\">annuleren</button>\n" +
-    "</div>"
+    "  <button class=\"btn btn-default\" ng-click=\"close()\">Annuleren</button>\n" +
+    "  <button class=\"btn btn-primary\" ng-click=\"ok()\">Label</button>\n" +
+    "</div>\n"
   );
 
 
@@ -12995,7 +12992,7 @@ $templateCache.put('templates/unexpected-error-modal.html',
     "              </li>\n" +
     "            </ul>\n" +
     "          </div>\n" +
-    "          <p class=\"block-header\">Voorbeeld</p>\n" +
+    "          <h2 class=\"block-header\">Voorbeeld</h2>\n" +
     "\n" +
     "        </div>\n" +
     "\n" +
@@ -13088,6 +13085,7 @@ $templateCache.put('templates/unexpected-error-modal.html',
     "      </div>\n" +
     "\n" +
     "      <div role=\"tabpanel\" class=\"tab-pane\" ng-show=\"isTabActive('history')\">\n" +
+    "        <h2 class=\"block-header\">Geschiedenis</h2>\n" +
     "        <div class=\"timeline\">\n" +
     "          <dl ng-repeat=\"eventAction in eventHistory track by $index\">\n" +
     "            <dt ng-bind=\"eventAction.date | date:'dd/MM/yyyy H:mm'\"></dt>\n" +
@@ -13100,6 +13098,7 @@ $templateCache.put('templates/unexpected-error-modal.html',
     "      </div>\n" +
     "\n" +
     "      <div class=\"tab-pane\" role=\"tabpanel\" ng-show=\"isTabActive('publication')\">\n" +
+    "        <h2 class=\"block-header\">Publicatie-informatie</h2>\n" +
     "        <div class=\"panel panel-default\">\n" +
     "          <table class=\"table\">\n" +
     "            <colgroup>\n" +
@@ -13848,7 +13847,7 @@ $templateCache.put('templates/unexpected-error-modal.html',
     "      </div>\n" +
     "\n" +
     "      <div class=\"col-xs-1 col-xs-12\" ng-show=\"splitTypes\">\n" +
-    "        <p class=\"text-center\">of</p>\n" +
+    "        <p class=\"text-center\"><em>of</em></p>\n" +
     "      </div>\n" +
     "\n" +
     "      <div ng-class=\"splitTypes ? 'col-xs-5': 'col-xs-12'\"\n" +
@@ -13965,7 +13964,7 @@ $templateCache.put('templates/unexpected-error-modal.html',
     "                   uib-typeahead=\"city as city.zip + ' ' + city.name for city in cities | filter:filterCities($viewValue) | orderBy:orderByLevenshteinDistance($viewValue)\"\n" +
     "                   typeahead-on-select=\"selectCity($item, $label)\"\n" +
     "                   typeahead-min-length=\"3\"\n" +
-    "                   typeahead-template-url=\"templates/city-suggestion.html\">\n" +
+    "                   typeahead-template-url=\"templates/city-suggestion.html\"/>\n" +
     "          </span>\n" +
     "          <div class=\"alert alert-danger\" ng-show=\"cityAutoCompleteError\">\n" +
     "            <span class=\"help-block\">Er was een probleem tijdens het ophalen van de steden</span>\n" +
@@ -13978,14 +13977,14 @@ $templateCache.put('templates/unexpected-error-modal.html',
     "      </div>\n" +
     "    </div>\n" +
     "\n" +
-    "    <div id=\"waar-evenement\" ng-show=\"eventFormData.isEvent && selectedCity !== ''\">\n" +
+    "    <div id=\"waar-evenement\" class=\"clearfix\" ng-show=\"eventFormData.isEvent && selectedCity !== ''\">\n" +
     "      <div class=\"row\">\n" +
     "        <div class=\"col-xs-12\">\n" +
     "          <label id=\"locatie-label\" ng-show=\"!selectedLocation\">\n" +
     "            Kies een locatie <i class=\"fa fa-circle-o-notch fa-spin\" ng-show=\"loadingPlaces\"></i>\n" +
     "          </label>\n" +
     "          <div id=\"locatie-kiezer\" ng-hide=\"selectedLocation || loadingPlaces\">\n" +
-    "            <span style=\"position: relative; display: inline-block; direction: ltr;\" class=\"twitter-typeahead\">\n" +
+    "            <span style=\"position: relative; display: block; direction: ltr;\" class=\"twitter-typeahead\">\n" +
     "              <input type=\"text\" ng-change=\"locationSearched()\"\n" +
     "                     placeholder=\"Locatie\"\n" +
     "                     class=\"form-control typeahead\"\n" +
@@ -13996,19 +13995,22 @@ $templateCache.put('templates/unexpected-error-modal.html',
     "                     typeahead-template-url=\"templates/place-suggestion.html\"/>\n" +
     "              <div class=\"plaats-adres-resultaat dropdown-menu-no-results\"\n" +
     "                   ng-show=\"(!cityHasLocations() || filteredLocations.length === 0) && locationsSearched\">\n" +
-    "                <p class=\"text-center\">\n" +
-    "                  Locatie niet gevonden?<br />\n" +
-    "                  <button type=\"button\" class=\"btn btn-primary\" data-toggle=\"modal\"\n" +
-    "                          data-target=\"#waar-locatie-toevoegen\" ng-click=\"openPlaceModal()\">\n" +
-    "                    Een locatie toevoegen\n" +
-    "                  </button>\n" +
-    "                </p>\n" +
+    "                <div class=\"panel panel-default text-center\">\n" +
+    "                  <div class=\"panel-body\">\n" +
+    "                    <p>Locatie niet gevonden?</p>\n" +
+    "                    <button type=\"button\" class=\"btn btn-primary\" data-toggle=\"modal\"\n" +
+    "                            data-target=\"#waar-locatie-toevoegen\" ng-click=\"openPlaceModal()\">\n" +
+    "                      Een locatie toevoegen\n" +
+    "                    </button>\n" +
+    "                  </div>\n" +
+    "                </div>\n" +
     "              </div>\n" +
     "            </span>\n" +
     "            <div class=\"alert alert-danger\" ng-show=\"locationAutoCompleteError\">\n" +
     "              <span class=\"help-block\">Er was een probleem tijdens het ophalen van de locaties</span>\n" +
     "            </div>\n" +
     "          </div>\n" +
+    "\n" +
     "          <div id=\"locatie-gekozen\" ng-show=\"selectedLocation\" >\n" +
     "            <span ng-bind=\"selectedLocation.name\"></span>\n" +
     "            <button type=\"button\"\n" +
@@ -14019,14 +14021,13 @@ $templateCache.put('templates/unexpected-error-modal.html',
     "            <br>\n" +
     "            <span ng-bind=\"selectedLocation.address.streetAddress\"></span>\n" +
     "          </div>\n" +
+    "\n" +
     "        </div>\n" +
     "      </div>\n" +
-    "\n" +
-    "\n" +
     "    </div>\n" +
     "\n" +
-    "    <div id=\"waar-plaats\" ng-show=\"eventFormData.isPlace && selectedCity !== ''\">\n" +
-    "      <div class=\"plaats-adres-ingeven col-sm-6\" ng-hide=\"selectedLocation.address.streetAddress\">\n" +
+    "    <div id=\"waar-plaats\" class=\"clearfix\" ng-show=\"eventFormData.isPlace && selectedCity !== ''\">\n" +
+    "      <div class=\"plaats-adres-ingeven\" ng-hide=\"selectedLocation.address.streetAddress\">\n" +
     "        <div class=\"row\">\n" +
     "          <div class=\"col-xs-12\">\n" +
     "            <div class=\"form-group\" ng-class=\"{'has-error' : showValidation && step3Form.street.$error.required }\">\n" +
@@ -14037,7 +14038,7 @@ $templateCache.put('templates/unexpected-error-modal.html',
     "                     ng-model=\"placeStreetAddress\"\n" +
     "                     placeholder=\"\"\n" +
     "                     type=\"text\"\n" +
-    "                     required>\n" +
+    "                     required />\n" +
     "              <span class=\"help-block\" ng-show=\"showValidation && step3Form.street.$error.required\">\n" +
     "                Straat en nummer is een verplicht veld.\n" +
     "              </span>\n" +
@@ -14813,7 +14814,7 @@ $templateCache.put('templates/unexpected-error-modal.html',
     "                      <small ng-bind=\"image.copyrightHolder\">Copyright</small>\n" +
     "                    </span>\n" +
     "                    <span>\n" +
-    "                      <a class=\"btn btn-link\" ng-click=\"openUploadImageModal(1)\">Wijzigen</a>\n" +
+    "                      <a class=\"btn btn-link\" ng-click=\"editImage(image)\">Wijzigen</a>\n" +
     "                      <a class=\"btn btn-link\" ng-click=\"openDeleteImageModal(1)\">Verwijderen</a>\n" +
     "                    </span>\n" +
     "                  </div>\n" +
@@ -14944,9 +14945,10 @@ $templateCache.put('templates/unexpected-error-modal.html',
     "  <form ng-switch-when=\"confirm\">\n" +
     "    <div class=\"modal-body\">\n" +
     "      <h5>Export versturen</h5>\n" +
-    "\n" +
-    "      <label>Email</label>\n" +
-    "      <input type=\"text\" ng-model=\"exporter.email\" name=\"eventExportEmail\"/>\n" +
+    "      <div class=\"form-group\">\n" +
+    "        <label>Email</label>\n" +
+    "        <input type=\"text\" ng-model=\"exporter.email\" name=\"eventExportEmail\"/>\n" +
+    "      </div>\n" +
     "    </div>\n" +
     "    <udb-export-modal-buttons></udb-export-modal-buttons>\n" +
     "  </form>\n" +
@@ -14989,10 +14991,10 @@ $templateCache.put('templates/unexpected-error-modal.html',
   $templateCache.put('templates/export-modal-buttons.directive.html',
     "<div class=\"modal-footer\" ng-hide=\"exporter.getActiveStepName() === 'finished'\">\n" +
     "  <button class=\"btn btn-default pull-left\" ng-click=\"exporter.previousStep()\"\n" +
-    "          ng-hide=\"exporter.isOnFirstStep()\">vorige stap</button>\n" +
+    "          ng-hide=\"exporter.isOnFirstStep()\">Vorige stap</button>\n" +
     "  <button ng-hide=\"exporter.onLastStep()\" class=\"btn btn-primary\"\n" +
-    "          ng-click=\"exporter.nextStep()\">volgende</button>\n" +
-    "  <button ng-show=\"exporter.onLastStep()\" class=\"btn btn-primary\" ng-click=\"exporter.export()\">exporteren</button>\n" +
+    "          ng-click=\"exporter.nextStep()\">Volgende</button>\n" +
+    "  <button ng-show=\"exporter.onLastStep()\" class=\"btn btn-primary\" ng-click=\"exporter.export()\">Exporteren</button>\n" +
     "</div>\n"
   );
 
@@ -15131,8 +15133,8 @@ $templateCache.put('templates/unexpected-error-modal.html',
     "</div>\n" +
     "\n" +
     "<div class=\"modal-footer\">\n" +
-    "    <button class=\"btn btn-primary udb-delete-query-cancel-button\" ng-click=\"cancel()\">annuleren</button>\n" +
-    "    <button class=\"btn btn-danger udb-delete-query-confirm-button\" ng-click=\"confirm()\">verwijderen</button>\n" +
+    "    <button class=\"btn btn-primary udb-delete-query-cancel-button\" ng-click=\"cancel()\">Annuleren</button>\n" +
+    "    <button class=\"btn btn-danger udb-delete-query-confirm-button\" ng-click=\"confirm()\">Verwijderen</button>\n" +
     "</div>\n"
   );
 
@@ -15152,8 +15154,8 @@ $templateCache.put('templates/unexpected-error-modal.html',
     "</div>\n" +
     "\n" +
     "<div class=\"modal-footer\">\n" +
-    "    <button class=\"btn btn-primary udb-save-query-ok-button fa fa-check\" ng-click=\"ok()\">bewaren</button>\n" +
-    "    <button class=\"btn btn-warning udb-save-query-cancel-button fa fa-times\" ng-click=\"cancel()\">annuleren</button>\n" +
+    "  <button class=\"btn btn-default udb-save-query-cancel-button\" ng-click=\"cancel()\">Annuleren</button>\n" +
+    "  <button class=\"btn btn-primary udb-save-query-ok-button\" ng-click=\"ok()\">Bewaren</button>    \n" +
     "</div>\n" +
     "</form>\n"
   );
@@ -15378,7 +15380,7 @@ $templateCache.put('templates/unexpected-error-modal.html',
     "        Groep toevoegen\n" +
     "      </button>\n" +
     "      <div class=\"pull-right\">\n" +
-    "        <a type=\"button\" class=\"btn btn-link\" ng-click=\"qe.stopEditing()\">\n" +
+    "        <a type=\"button\" class=\"btn btn-default\" ng-click=\"qe.stopEditing()\">\n" +
     "          Annuleren\n" +
     "        </a>\n" +
     "        <button type=\"button\" class=\"btn btn-primary\" ng-click=\"qe.updateQueryString()\">\n" +
@@ -15438,7 +15440,7 @@ $templateCache.put('templates/unexpected-error-modal.html',
     "    Groep toevoegen\n" +
     "  </button>\n" +
     "  <div class=\"pull-right\">\n" +
-    "    <a type=\"button\" class=\"btn btn-link\" ng-click=\"qe.stopEditing()\">\n" +
+    "    <a type=\"button\" class=\"btn btn-default\" ng-click=\"qe.stopEditing()\">\n" +
     "      Annuleren\n" +
     "    </a>\n" +
     "    <button type=\"button\" class=\"btn btn-primary\" ng-click=\"qe.updateQueryString()\">\n" +

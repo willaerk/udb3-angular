@@ -142,6 +142,7 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
   // Image upload functions.
   $scope.openUploadImageModal = openUploadImageModal;
   $scope.openDeleteImageModal = openDeleteImageModal;
+  $scope.editImage = editImage;
 
   $scope.ageRanges = _.map(AgeRangeEnum, function (range) {
     return range;
@@ -681,16 +682,11 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
   /**
    * Open the upload modal.
    */
-  function openUploadImageModal(indexToEdit) {
+  function openUploadImageModal() {
 
     var modalInstance = $uibModal.open({
       templateUrl: 'templates/event-form-image-upload.html',
-      controller: 'EventFormImageUploadController',
-      resolve: {
-        indexToEdit: function () {
-          return indexToEdit;
-        }
-      }
+      controller: 'EventFormImageUploadController'
     });
 
     modalInstance.result.then(function (mediaObject) {
@@ -707,6 +703,18 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
 
   }
 
+  function editImage(mediaObject) {
+    $uibModal.open({
+      templateUrl: 'templates/event-form-image-edit.html',
+      controller: 'EventFormImageEditController',
+      resolve: {
+        mediaObject: function () {
+          return mediaObject;
+        }
+      }
+    });
+  }
+
   /**
    * Open the modal to delete an image.
    */
@@ -718,7 +726,7 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
       resolve: {
         indexToDelete: function () {
           return indexToDelete;
-        },
+        }
       }
     });
 

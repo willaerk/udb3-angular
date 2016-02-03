@@ -310,23 +310,23 @@ function EventCrud(jobLogger, udbApi, EventCrudJob, $rootScope , $q) {
    * Update an image of the item.
    *
    * @param {EventFormData} item
-   * @param {int} indexToUpdate
-   * @param {File|null} image
+   * @param {MediaObject} image
    * @param {string} description
    * @param {string} copyrightHolder
    * @returns {EventCrud.updateImage.jobPromise}
    */
-  service.updateImage = function(item, indexToUpdate, image, description, copyrightHolder) {
+  service.updateImage = function(item, image, description, copyrightHolder) {
+    var imageId = image['@id'].split('/').pop();
 
-    var jobPromise = udbApi.updateImage(item.id, item.getType(), indexToUpdate, image, description, copyrightHolder);
-
-    jobPromise.success(function (jobData) {
+    function logJob(jobData) {
       var job = new EventCrudJob(jobData.commandId, item, 'updateImage');
       jobLogger.addJob(job);
-    });
+      return $q.resolve(job);
+    }
 
-    return jobPromise;
-
+    return udbApi
+      .updateImage(item.id, item.getType(), imageId, description, copyrightHolder)
+      .then(logJob);
   };
 
   /**

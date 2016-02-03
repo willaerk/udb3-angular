@@ -1,0 +1,42 @@
+.editable-click {
+  border: 1px solid @gray-lighter;
+  padding: 15px;
+  position: relative;
+  &:before {
+    .fa-icon();
+    content: @fa-var-pencil;
+    display: inline-block;
+    position: absolute;
+    right: 5px;
+    bottom: 5px;
+  }
+  &:hover {
+    border-color: @gray-light;
+    cursor: pointer;
+  }
+}
+
+.editable-wrap {
+  display: block;
+  max-width: 100%;
+  .editable-controls > textarea {
+    margin-bottom: 1em;
+    width: 100%;
+  }
+  .editable-buttons {
+    display: block;
+    button {
+      &:extend(.btn);
+      margin-left: 0;
+      + button {
+        margin-left: 10px;
+      }
+    }
+  }
+  button[type=button] {
+    &:extend(.btn-default);
+  }
+  button[type=submit] {
+    &:extend(.btn-primary);
+  }
+}

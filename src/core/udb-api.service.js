@@ -498,45 +498,30 @@ function UdbApi($q, $http, appConfig, $cookieStore, uitidAuth,
         appConfig.baseUrl + 'event/' + eventId + '/images',
         postData,
         defaultApiConfig
-      ).then(returnJobData);
+      )
+      .then(returnJobData);
   };
 
   /**
    * Update an image.
    */
-  this.updateImage = function(id, type, indexToUpdate, image, description, copyrightHolder) {
+  this.updateImage = function(itemId, itemType, imageId, description, copyrightHolder) {
+    var postData = {
+      description: description,
+      copyrightHolder: copyrightHolder
+    };
 
-    // Image is also changed.
-    if (image) {
-
-      // Don't use defaultApiConfig, $upload adds custom stuff to it.
-      var options = {};
-      options.withCredentials = true;
-      options.url = appConfig.baseApiUrl + type + '/' + id + '/image/' + indexToUpdate;
-      options.fields = {
-        description: description,
-        copyrightHolder : copyrightHolder
-      };
-      options.file = image;
-
-      //return $upload.upload(options);
-
+    function returnJobData(response) {
+      return $q.resolve(response.data);
     }
-    // Only the textfields change.
-    else {
 
-      var postData = {
-        description: description,
-        copyrightHolder : copyrightHolder
-      };
-
-      return $http.post(
-        appConfig.baseApiUrl + type + '/' + id + '/image/' + indexToUpdate,
+    return $http
+      .post(
+        appConfig.baseUrl + itemType + '/' + itemId + '/images/' + imageId,
         postData,
         defaultApiConfig
-      );
-    }
-
+      )
+      .then(returnJobData);
   };
 
   /**

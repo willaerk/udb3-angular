@@ -44,7 +44,7 @@
   .number {
     background-color: @gray;
     border-radius: 99px;
-    color: #fff;
+    color: @white;
     display: inline-block;
     font-size: 14px;
     font-weight: normal;
@@ -61,7 +61,7 @@
     min-height: 354px;
     width: 100%;
     margin-bottom: 1em;
-    background-color: #fff;
+    background-color: @white;
   }
   .add-date-teaser {
     color: #777;
@@ -70,6 +70,13 @@
   .datepicker-cpo {
     margin-bottom: 1em;
   }
+  .datepicker-inline {
+    margin-bottom: 5px;
+    width: auto;
+  }
+  .datepicker table {
+    width: 100%;
+  }
   .datepicker .table-condensed > thead > tr > th,
   .datepicker .table-condensed > tbody > tr > th,
   .datepicker .table-condensed > tfoot > tr > th,
@@ -77,10 +84,6 @@
   .datepicker .table-condensed > tbody > tr > td,
   .datepicker .table-condensed > tfoot > tr > td {
     padding: 0;
-
-  }
-  .datepicker-inline {
-    margin-bottom: 5px;
 
   }
   #add-date-plus {
@@ -126,6 +129,7 @@
   }
   .datepicker th,
   .datepicker td {
+    border-radius: 0;
     font-weight: normal;
   }
   .dow {
@@ -156,7 +160,7 @@
 
   }
   .openingsuren-toevoegen-section {
-    background-color: #fff;
+    background-color: @white;
     padding: 0.5em;
     border: 1px solid @border-color;
   }
@@ -295,7 +299,7 @@
   .btn-plus:before {
     content: "\f055";
     font-family: "FontAwesome";
-    color: #ccc;
+    color: @udb-gray;
     margin-right: 0.5em;
     text-decoration: none;
     position: absolute;
@@ -325,7 +329,7 @@
     text-transform: uppercase;
   }
   .image-upload {
-    background-color: #fff;
+    background-color: @white;
     padding: 1em;
   }
   .image-upload-list {
@@ -422,19 +426,16 @@
   .multiselect-container > li > a {
     padding: 0;
   }
-  .multiselect-container > li > a > label {
+/*  .multiselect-container > li > a > label {
     margin: 0;
     height: 100%;
     cursor: pointer;
     font-weight: 400;
     padding: 3px 20px 3px 40px;
-  }
+  }*/
   .multiselect-container > li > a > label.radio,
   .multiselect-container > li > a > label.checkbox {
     margin: 0;
-  }
-  .multiselect-container > li > a > label > input[type=checkbox] {
-    margin-bottom: 5px;
   }
   .filter .btn {
     padding: 6px 3px;
@@ -455,7 +456,7 @@
   .plaats-adres-ingeven {
     padding: 1em;
     margin-left: 1.5em;
-    background-color: #FFF;
+    background-color: @white;
     border: 1px solid @border-color;
   }
   .checkbox small {
@@ -482,7 +483,7 @@
   .btn-tile {
     display: inline-block;
     text-align: left;
-    background-color: #fff;
+    background-color: @white;
     margin-bottom: 1em;
     min-height: 10em;
     padding: 1em;
@@ -500,7 +501,7 @@
 
     &:hover {
       background-color: @link-color;
-      color: #fff;
+      color: @white;
 
       .title {
         text-decoration: underline;
@@ -552,7 +553,7 @@
     }
 
     .title {
-      color: #FFF;
+      color: @white;
       position: relative;
       margin-top: 12px;
       text-shadow: 1px 1px #000;
@@ -561,7 +562,7 @@
     }
 
     .list-inline {
-      color: #FFF;
+      color: @white;
       position: relative;
     }
 

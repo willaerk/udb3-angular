@@ -6120,7 +6120,8 @@ function EventFormImageUploadController(
   eventCrud,
   appConfig,
   MediaManager,
-  $q
+  $q,
+  copyrightNegotiator
 ) {
 
   // Scope vars.
@@ -6128,7 +6129,7 @@ function EventFormImageUploadController(
   $scope.uploadCopyRightInfoUrl = appConfig.uploadCopyRightInfoUrl;
   $scope.saving = false;
   $scope.error = false;
-  $scope.showAgreements = true;
+  $scope.showAgreements = !copyrightNegotiator.confirmed();
   $scope.modalTitle = 'Gebruiksvoorwaarden';
   $scope.imagesToUpload = [];
   $scope.description = '';
@@ -6146,6 +6147,7 @@ function EventFormImageUploadController(
   function acceptAgreements() {
     $scope.modalTitle = 'Nieuwe afbeelding toevoegen';
     $scope.showAgreements = false;
+    copyrightNegotiator.confirm();
   }
 
   /**
@@ -6202,7 +6204,7 @@ function EventFormImageUploadController(
     return deferredAddition.promise;
   }
 }
-EventFormImageUploadController.$inject = ["$scope", "$uibModalInstance", "EventFormData", "eventCrud", "appConfig", "MediaManager", "$q"];
+EventFormImageUploadController.$inject = ["$scope", "$uibModalInstance", "EventFormData", "eventCrud", "appConfig", "MediaManager", "$q", "copyrightNegotiator"];
 
 // Source: src/event_form/components/openinghours/openinghours.directive.js
 /**
@@ -6744,6 +6746,45 @@ function UdbContactInfoValidationDirective() {
   };
 
 }
+
+// Source: src/event_form/copyright-negotiator.service.js
+/**
+ * @ngdoc service
+ * @name udb.event-form.copyrightNegotiator
+ * @description
+ * # copyrightNegotiator
+ * Service in the udb.event-form.
+ */
+angular
+  .module('udb.event-form')
+  .service('copyrightNegotiator', CopyrightNegotiator);
+
+/* @ngInject */
+function CopyrightNegotiator($cookies) {
+  var service = this;
+  var CookieKey = 'copyright-agreement-confirmed';
+
+  service.confirm = function () {
+    var expirationDate = moment().add(1, 'year').toDate();
+    var agreement = {
+      confirmed: true
+    };
+
+    $cookies.putObject(
+      CookieKey,
+      agreement,
+      {
+        expires: expirationDate
+      }
+    );
+  };
+
+  service.confirmed = function () {
+    var agreement = $cookies.getObject(CookieKey);
+    return agreement ? agreement.confirmed : false;
+  };
+}
+CopyrightNegotiator.$inject = ["$cookies"];
 
 // Source: src/event_form/event-form-data.factory.js
 /**
@@ -13352,6 +13393,13 @@ $templateCache.put('templates/unexpected-error-modal.html',
     "\n" +
     "    <div ng-show=\"error\" class=\"alert alert-danger\">Er ging iets mis bij het opslaan van de afbeelding.</div>\n" +
     "\n" +
+    "    <p class=\"image-copyright-agreements\">\n" +
+    "      Je staat op het punt (een) afbeelding(en) toe te voegen en openbaar te verspreiden.\n" +
+    "      Je dient daartoe alle geldende auteurs- en portretrechten te respecteren, alsook alle andere toepasselijke\n" +
+    "      wetgeving. Je kan daarvoor aansprakelijk worden gehouden, zoals vastgelegd in de\n" +
+    "      <a ng-href=\"{{::uploadTermsConditionsUrl}}\" target=\"_blank\">algemene voorwaarden</a>.\n" +
+    "      <a ng-href=\"{{::uploadCopyRightInfoUrl}}\" target=\"_blank\">Meer informatie over copyright</a>\n" +
+    "    </p>\n" +
     "  </div>\n" +
     "  <div class=\"modal-footer\">\n" +
     "\n" +
@@ -13411,6 +13459,14 @@ $templateCache.put('templates/unexpected-error-modal.html',
     "        <p class=\"help-block\">\n" +
     "          Vermeld de naam van de rechtenhoudende fotograaf.</p>\n" +
     "      </div>\n" +
+    "\n" +
+    "      <p class=\"image-copyright-agreements\">\n" +
+    "        Je staat op het punt (een) afbeelding(en) toe te voegen en openbaar te verspreiden.\n" +
+    "        Je dient daartoe alle geldende auteurs- en portretrechten te respecteren, alsook alle andere toepasselijke\n" +
+    "        wetgeving. Je kan daarvoor aansprakelijk worden gehouden, zoals vastgelegd in de\n" +
+    "        <a ng-href=\"{{::uploadTermsConditionsUrl}}\" target=\"_blank\">algemene voorwaarden</a>.\n" +
+    "        <a ng-href=\"{{::uploadCopyRightInfoUrl}}\" target=\"_blank\">Meer informatie over copyright</a>\n" +
+    "      </p>\n" +
     "    </div>\n" +
     "\n" +
     "    <div ng-show=\"error\" class=\"alert alert-danger\">\n" +

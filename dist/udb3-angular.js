@@ -5055,7 +5055,7 @@ function EventLabeller(jobLogger, udbApi, EventLabelJob, EventLabelBatchJob, Que
     var labelPromise = udbApi.getRecentLabels();
 
     labelPromise.then(function (labels) {
-      //eventLabeller.recentLabels = labels;
+      eventLabeller.recentLabels = labels;
     });
   }
 

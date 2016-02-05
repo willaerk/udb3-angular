@@ -270,6 +270,17 @@ function UdbApi($q, $http, appConfig, $cookieStore, uitidAuth,
     );
   };
 
+  /**
+   * @param {string} id
+   *   Id of item to check
+   */
+  this.hasPlacePermission = function(id) {
+    return $http.get(
+        appConfig.baseUrl + 'place/' + id + '/permission',
+        defaultApiConfig
+    );
+  };
+
   this.labelEvents = function (eventIds, label) {
     return $http.post(appConfig.baseUrl + 'events/label',
       {

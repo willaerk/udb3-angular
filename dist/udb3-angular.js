@@ -2723,6 +2723,17 @@ function UdbApi($q, $http, appConfig, $cookieStore, uitidAuth,
     );
   };
 
+  /**
+   * @param {string} id
+   *   Id of item to check
+   */
+  this.hasPlacePermission = function(id) {
+    return $http.get(
+        appConfig.baseUrl + 'place/' + id + '/permission',
+        defaultApiConfig
+    );
+  };
+
   this.labelEvents = function (eventIds, label) {
     return $http.post(appConfig.baseUrl + 'events/label',
       {
@@ -5058,7 +5069,7 @@ function EventLabeller(jobLogger, udbApi, EventLabelJob, EventLabelBatchJob, Que
     var labelPromise = udbApi.getRecentLabels();
 
     labelPromise.then(function (labels) {
-      //eventLabeller.recentLabels = labels;
+      eventLabeller.recentLabels = labels;
     });
   }
 
@@ -9896,7 +9907,7 @@ angular
     .controller('PlaceDetailController', PlaceDetail);
 
 /* @ngInject */
-function PlaceDetail($scope, placeId, udbApi) {
+function PlaceDetail($scope, placeId, udbApi, $location) {
   var activeTabId = 'data';
 
   $scope.placeId = placeId;
@@ -9919,9 +9930,9 @@ function PlaceDetail($scope, placeId, udbApi) {
   ];
 
   // Check if user has permissions.
-  /*udbApi.hasPermission(placeId).then(function(result) {
+  udbApi.hasPlacePermission(placeId).then(function(result) {
     $scope.hasEditPermissions = result.data.hasPermission;
-  });*/
+  });
 
   var placeLoaded = udbApi.getPlaceById($scope.placeId);
 
@@ -9965,8 +9976,12 @@ function PlaceDetail($scope, placeId, udbApi) {
   $scope.makeTabActive = function (tabId) {
     activeTabId = tabId;
   };
+
+  $scope.openEditPage = function() {
+    $location.path('/place/' + placeId + '/edit');
+  };
 }
-PlaceDetail.$inject = ["$scope", "placeId", "udbApi"];
+PlaceDetail.$inject = ["$scope", "placeId", "udbApi", "$location"];
 
 // Source: src/saved-searches/components/delete-search-modal.controller.js
 /**
@@ -15045,6 +15060,23 @@ $templateCache.put('templates/unexpected-error-modal.html',
     "\n" +
     "    <div class=\"col-xs-9\">\n" +
     "      <div class=\"tab-pane\" role=\"tabpanel\" ng-show=\"isTabActive('data')\">\n" +
+    "\n" +
+    "        <div class=\"clearfix\">\n" +
+    "          <div class=\"btn-group pull-right\" ng-if=\"hasEditPermissions\">\n" +
+    "            <button type=\"button\" class=\"btn btn-primary\" ng-click=\"openEditPage()\">Bewerken</button>\n" +
+    "            <button type=\"button\" class=\"btn btn-primary dropdown-toggle\" data-toggle=\"dropdown\" aria-expanded=\"false\">\n" +
+    "              <span class=\"caret\"></span>\n" +
+    "              <span class=\"sr-only\">Toggle Dropdown</span>\n" +
+    "            </button>\n" +
+    "            <ul class=\"dropdown-menu\" role=\"menu\">\n" +
+    "              <li><a href=\"#\" ng-click=\"openDeleteConfirmModal()\">Verwijderen</a>\n" +
+    "              </li>\n" +
+    "            </ul>\n" +
+    "          </div>\n" +
+    "          <p class=\"block-header\">Voorbeeld</p>\n" +
+    "\n" +
+    "        </div>\n" +
+    "\n" +
     "        <div class=\"panel panel-default\">\n" +
     "          <table class=\"table udb3-data-table\">\n" +
     "            <colgroup>\n" +

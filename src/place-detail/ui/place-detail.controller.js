@@ -35,9 +35,9 @@ function PlaceDetail($scope, placeId, udbApi, $location) {
   ];
 
   // Check if user has permissions.
-  /*udbApi.hasPermission(placeId).then(function(result) {
+  udbApi.hasPlacePermission(placeId).then(function(result) {
     $scope.hasEditPermissions = result.data.hasPermission;
-  });*/
+  });
 
   var placeLoaded = udbApi.getPlaceById($scope.placeId);
 

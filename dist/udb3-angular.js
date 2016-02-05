@@ -9888,7 +9888,7 @@ angular
     .controller('PlaceDetailController', PlaceDetail);
 
 /* @ngInject */
-function PlaceDetail($scope, placeId, udbApi) {
+function PlaceDetail($scope, placeId, udbApi, $location) {
   var activeTabId = 'data';
 
   $scope.placeId = placeId;
@@ -9957,8 +9957,12 @@ function PlaceDetail($scope, placeId, udbApi) {
   $scope.makeTabActive = function (tabId) {
     activeTabId = tabId;
   };
+
+  $scope.openEditPage = function() {
+    $location.path('/place/' + placeId + '/edit');
+  };
 }
-PlaceDetail.$inject = ["$scope", "placeId", "udbApi"];
+PlaceDetail.$inject = ["$scope", "placeId", "udbApi", "$location"];
 
 // Source: src/saved-searches/components/delete-search-modal.controller.js
 /**

@@ -2462,6 +2462,15 @@ UnexpectedErrorModalController.$inject = ["$scope", "$modalInstance", "errorMess
  */
 
 /**
+ * @readonly
+ * @enum {string}
+ */
+var OfferTypes = {
+  EVENT: 'event',
+  PLACE: 'place'
+};
+
+/**
  * @ngdoc service
  * @name udb.core.udbApi
  * @description
@@ -2978,15 +2987,23 @@ function UdbApi($q, $http, appConfig, $cookieStore, uitidAuth,
   };
 
   /**
-   * Delete an image.
+   * Remove an image from an offer.
+   *
+   * @param {string} itemId
+   * @param {OfferTypes} itemType
+   * @param {string} imageId
+   *
+   * @return {Promise}
    */
-  this.deleteImage = function(id, type, indexToDelete) {
+  this.removeImage = function(itemId, itemType, imageId) {
+    function returnJobData(response) {
+      return $q.resolve(response.data);
+    }
 
     return $http['delete'](
-      appConfig.baseApiUrl + type + '/' + id + '/image/' + indexToDelete,
+      appConfig.baseUrl + itemType + '/' + itemId + '/images/' + imageId,
       defaultApiConfig
-    );
-
+    ).then(returnJobData);
   };
 
   this.getEventVariations = function (ownerId, purpose, eventUrl) {
@@ -4672,23 +4689,24 @@ function EventCrud(jobLogger, udbApi, EventCrudJob, $rootScope , $q) {
   };
 
   /**
-   * Delete an image of the item.
+   * Remove an image from an item.
    *
    * @param {EventFormData} item
-   * @param {int} indexToDelete
-   * @returns {EventCrud.deleteImage.jobPromise}
+   * @param {image} image
+   * @returns {Promise.<EventCrudJob>}
    */
-  service.deleteImage = function(item, indexToDelete) {
+  service.removeImage = function(item, image) {
+    var imageId = image['@id'].split('/').pop();
 
-    var jobPromise = udbApi.deleteImage(item.id, item.getType(), indexToDelete);
-
-    jobPromise.success(function (jobData) {
-      var job = new EventCrudJob(jobData.commandId, item, 'deleteImage');
+    function logJob(jobData) {
+      var job = new EventCrudJob(jobData.commandId, item, 'removeImage');
       jobLogger.addJob(job);
-    });
+      return $q.resolve(job);
+    }
 
-    return jobPromise;
-
+    return udbApi
+      .removeImage(item.id, item.getType(), imageId)
+      .then(logJob);
   };
 
   /**
@@ -5991,58 +6009,6 @@ function EventFormFacilitiesModalController($scope, $modalInstance, EventFormDat
 }
 EventFormFacilitiesModalController.$inject = ["$scope", "$modalInstance", "EventFormData", "eventCrud", "facilities"];
 
-// Source: src/event_form/components/image-delete/event-form-image-delete.controller.js
-/**
- * @ngdoc function
- * @name udbApp.controller:EventFormImageDeleteController
- * @description
- * # EventFormImageDeleteController
- * Modal for deleting images.
- */
-angular
-  .module('udb.event-form')
-  .controller('EventFormImageDeleteController', EventFormImageDeleteController);
-
-/* @ngInject */
-function EventFormImageDeleteController($scope, $uibModalInstance, EventFormData, eventCrud, indexToDelete) {
-
-  // Scope vars.
-  $scope.saving = false;
-  $scope.error = false;
-
-  // Scope functions.
-  $scope.cancel = cancel;
-  $scope.deleteImage = deleteImage;
-
-  /**
-   * Cancel the modal.
-   */
-  function cancel() {
-    $uibModalInstance.dismiss('cancel');
-  }
-
-  /**
-   * Upload the images and save it to db.
-   */
-  function deleteImage() {
-
-    $scope.saving = true;
-    $scope.error = false;
-
-    eventCrud.deleteImage(EventFormData, indexToDelete).then(function() {
-      EventFormData.deleteMediaObject(indexToDelete);
-      $scope.saving = false;
-      $uibModalInstance.close();
-    }, function() {
-      $scope.error = true;
-      $scope.saving = false;
-    });
-
-  }
-
-}
-EventFormImageDeleteController.$inject = ["$scope", "$uibModalInstance", "EventFormData", "eventCrud", "indexToDelete"];
-
 // Source: src/event_form/components/image-edit/event-form-image-edit.controller.js
 /**
  * @ngdoc function
@@ -6110,6 +6076,62 @@ function EventFormImageEditController(
 
 }
 EventFormImageEditController.$inject = ["$scope", "$uibModalInstance", "EventFormData", "eventCrud", "mediaObject"];
+
+// Source: src/event_form/components/image-remove/event-form-image-remove.controller.js
+/**
+ * @ngdoc function
+ * @name udbApp.controller:EventFormImageRemoveController
+ * @description
+ * # EventFormImageRemoveController
+ * Modal for removing images from an offer.
+ */
+angular
+  .module('udb.event-form')
+  .controller('EventFormImageRemoveController', EventFormImageRemoveController);
+
+/* @ngInject */
+function EventFormImageRemoveController($scope, $uibModalInstance, EventFormData, eventCrud, image) {
+
+  // Scope vars.
+  $scope.saving = false;
+  $scope.error = false;
+
+  // Scope functions.
+  $scope.cancel = cancel;
+  $scope.removeImage = removeImage;
+
+  /**
+   * Cancel the modal.
+   */
+  function cancel() {
+    $uibModalInstance.dismiss('cancel');
+  }
+
+  function showError() {
+    $scope.error = true;
+    $scope.saving = false;
+  }
+
+  function triggerLoadingState() {
+    $scope.saving = true;
+    $scope.error = false;
+  }
+
+  function removeImage() {
+    triggerLoadingState();
+
+    function updateEventFormDataAndCloseModal() {
+      EventFormData.removeMediaObject(image);
+      $scope.saving = false;
+      $uibModalInstance.close();
+    }
+
+    eventCrud
+      .removeImage(EventFormData, image)
+      .then(updateEventFormDataAndCloseModal, showError);
+  }
+}
+EventFormImageRemoveController.$inject = ["$scope", "$uibModalInstance", "EventFormData", "eventCrud", "image"];
 
 // Source: src/event_form/components/image-upload/event-form-image-upload.controller.js
 /**
@@ -6770,15 +6792,6 @@ function UdbContactInfoValidationDirective() {
  */
 
 /**
- * @typedef {Object} MediaObject
- * @property {string} id
- * @property {string} url
- * @property {string} thumbnailUrl
- * @property {string} description
- * @property {string} copyrightHolder
- */
-
-/**
  * @ngdoc service
  * @name udb.core.EventFormData
  * @description
@@ -6787,6 +6800,17 @@ function UdbContactInfoValidationDirective() {
 angular
   .module('udb.event-form')
   .factory('EventFormData', EventFormDataFactory);
+
+/**
+ * @typedef {Object} MediaObject
+ * @property {string} @id
+ * @property {string} @type
+ * @property {string} id
+ * @property {string} url
+ * @property {string} thumbnailUrl
+ * @property {string} description
+ * @property {string} copyrightHolder
+ */
 
 /* @ngInject */
 function EventFormDataFactory() {
@@ -7097,8 +7121,7 @@ function EventFormDataFactory() {
      * @param {MediaObject} mediaObject
      */
     addImage : function(mediaObject) {
-      this.mediaObjects.push(mediaObject);
-      console.log(this.mediaObjects);
+      this.mediaObjects = _.union(this.mediaObjects, [mediaObject]);
     },
 
     /**
@@ -7133,12 +7156,12 @@ function EventFormDataFactory() {
     },
 
     /**
-     * Delete a given media object.
+     * Remove a media object from this item.
      *
-     *@param {MediaObject} deletedMediaObject
+     *@param {MediaObject} mediaObject
      */
-    deleteMediaObject : function(deletedMediaObject) {
-      this.mediaObjects = _.reject(this.mediaObjects, {id: deletedMediaObject.id});
+    removeMediaObject : function(mediaObject) {
+      this.mediaObjects = _.reject(this.mediaObjects, {'@id': mediaObject['@id']});
     },
 
     /**
@@ -8624,7 +8647,7 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
 
   // Image upload functions.
   $scope.openUploadImageModal = openUploadImageModal;
-  $scope.openDeleteImageModal = openDeleteImageModal;
+  $scope.removeImage = removeImage;
   $scope.editImage = editImage;
 
   $scope.ageRanges = _.map(AgeRangeEnum, function (range) {
@@ -9199,16 +9222,16 @@ function EventFormStep5Controller($scope, EventFormData, eventCrud, udbOrganizer
   }
 
   /**
-   * Open the modal to delete an image.
+   * Open the modal to remove an image.
    */
-  function openDeleteImageModal(indexToDelete) {
+  function removeImage(image) {
 
     var modalInstance = $uibModal.open({
-      templateUrl: 'templates/event-form-image-delete.html',
-      controller: 'EventFormImageDeleteController',
+      templateUrl: 'templates/event-form-image-remove.html',
+      controller: 'EventFormImageRemoveController',
       resolve: {
-        indexToDelete: function () {
-          return indexToDelete;
+        image: function () {
+          return image;
         }
       }
     });
@@ -13309,35 +13332,6 @@ $templateCache.put('templates/unexpected-error-modal.html',
   );
 
 
-  $templateCache.put('templates/event-form-image-delete.html',
-    "\n" +
-    "<div class=\"modal-content\">\n" +
-    "  <div class=\"modal-header\">\n" +
-    "    <button type=\"button\" class=\"close\" ng-click=\"cancel()\">\n" +
-    "      <span aria-hidden=\"true\">&times;</span><span class=\"sr-only\">Close</span>\n" +
-    "    </button>\n" +
-    "    <h4 class=\"modal-title\">Afbeeldingen verwijderen</h4>\n" +
-    "  </div>\n" +
-    "  <div class=\"modal-body\">\n" +
-    "\n" +
-    "    <p>Ben je zeker dat je deze afbeelding wil verwijderen? Dit kan niet ongedaan gemaakt worden.</p>\n" +
-    "\n" +
-    "    <div ng-show=\"error\" class=\"alert alert-danger\">Er ging iets mis bij het verwijderen van de afbeelding.</div>\n" +
-    "\n" +
-    "  </div>\n" +
-    "  <div class=\"modal-footer\">\n" +
-    "\n" +
-    "    <button type=\"button\" class=\"btn btn-default\" ng-click=\"cancel()\">Annuleren</button>\n" +
-    "    <button class=\"btn btn-primary\" ng-click=\"deleteImage()\">\n" +
-    "      Akkoord <i ng-show=\"saving\" class=\"fa fa-circle-o-notch fa-spin\"></i>\n" +
-    "    </button>\n" +
-    "\n" +
-    "  </div>\n" +
-    "</div><!-- /.modal-content -->\n" +
-    "\n"
-  );
-
-
   $templateCache.put('templates/event-form-image-edit.html',
     "<div class=\"modal-content\">\n" +
     "  <div class=\"modal-header\">\n" +
@@ -13378,6 +13372,33 @@ $templateCache.put('templates/unexpected-error-modal.html',
     "  </div>\n" +
     "</div>\n" +
     "\n"
+  );
+
+
+  $templateCache.put('templates/event-form-image-remove.html',
+    "<div class=\"modal-content\">\n" +
+    "  <div class=\"modal-header\">\n" +
+    "    <button type=\"button\" class=\"close\" ng-click=\"cancel()\">\n" +
+    "      <span aria-hidden=\"true\">&times;</span><span class=\"sr-only\">Close</span>\n" +
+    "    </button>\n" +
+    "    <h4 class=\"modal-title\">Afbeeldingen verwijderen</h4>\n" +
+    "  </div>\n" +
+    "  <div class=\"modal-body\">\n" +
+    "\n" +
+    "    <p>Ben je zeker dat je deze afbeelding wil verwijderen?</p>\n" +
+    "\n" +
+    "    <div ng-show=\"error\" class=\"alert alert-danger\">Er ging iets mis bij het verwijderen van de afbeelding.</div>\n" +
+    "\n" +
+    "  </div>\n" +
+    "  <div class=\"modal-footer\">\n" +
+    "\n" +
+    "    <button type=\"button\" class=\"btn btn-default\" ng-click=\"cancel()\">Annuleren</button>\n" +
+    "    <button class=\"btn btn-primary\" ng-click=\"removeImage()\">\n" +
+    "      Akkoord <i ng-show=\"saving\" class=\"fa fa-circle-o-notch fa-spin\"></i>\n" +
+    "    </button>\n" +
+    "\n" +
+    "  </div>\n" +
+    "</div>\n"
   );
 
 
@@ -14830,7 +14851,7 @@ $templateCache.put('templates/unexpected-error-modal.html',
     "                    </span>\n" +
     "                    <span>\n" +
     "                      <a class=\"btn btn-link\" ng-click=\"editImage(image)\">Wijzigen</a>\n" +
-    "                      <a class=\"btn btn-link\" ng-click=\"openDeleteImageModal(1)\">Verwijderen</a>\n" +
+    "                      <a class=\"btn btn-link\" ng-click=\"removeImage(image)\">Verwijderen</a>\n" +
     "                    </span>\n" +
     "                  </div>\n" +
     "                </div>\n" +

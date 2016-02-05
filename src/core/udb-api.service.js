@@ -543,10 +543,14 @@ function UdbApi($q, $http, appConfig, $cookieStore, uitidAuth,
    * @return {Promise}
    */
   this.removeImage = function(itemId, itemType, imageId) {
+    function returnJobData(response) {
+      return $q.resolve(response.data);
+    }
+
     return $http['delete'](
       appConfig.baseUrl + itemType + '/' + itemId + '/images/' + imageId,
       defaultApiConfig
-    );
+    ).then(returnJobData);
   };
 
   this.getEventVariations = function (ownerId, purpose, eventUrl) {

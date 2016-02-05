@@ -29,15 +29,21 @@ function EventFormImageUploadController(
   $scope.error = false;
   $scope.showAgreements = true;
   $scope.modalTitle = 'Gebruiksvoorwaarden';
-  $scope.imagesToUpload = [];
   $scope.description = '';
   $scope.copyright = '';
 
   // Scope functions.
   $scope.acceptAgreements = acceptAgreements;
   $scope.cancel = cancel;
-  $scope.uploadImages = uploadAndAddImage;
+  $scope.addImage = uploadAndAddImage;
   $scope.clearError = clearError;
+  $scope.selectFile = selectFile;
+  $scope.allFieldsValid = allFieldsValid;
+
+  var invalidFileErrors = {
+    'default': 'Het geselecteerde bestand voldoet niet aan onze voorwaarden.',
+    'maxSize': 'Het bestand dat je probeert te uploaden is te groot. De maximum grootte is 1MB.'
+  };
 
   /**
    * Accept the agreements.
@@ -58,12 +64,28 @@ function EventFormImageUploadController(
     $scope.error = false;
   }
 
-  function uploadAndAddImage() {
-    var file = $scope.imagesToUpload[0],
-        description = $scope.description,
-        copyrightHolder = $scope.copyright;
+  function selectFile(file, invalidFiles) {
+    $scope.selectedFile = file ? file : null;
 
-    var deferredAddition = $q.defer();
+    // Check if the selected file is invalid and show an error else clear any existing error messages.
+    if (invalidFiles.length) {
+      var knownError = invalidFileErrors[invalidFiles[0].$error];
+      $scope.error = knownError ? knownError : invalidFileErrors.default;
+    } else {
+      clearError();
+    }
+  }
+
+  function uploadAndAddImage() {
+    // Abort if no valid file is selected.
+    if (!$scope.selectedFile) {
+      $scope.error = 'Er is geen bestand geselecteerd';
+      return;
+    }
+
+    var description = $scope.description,
+        copyrightHolder = $scope.copyright,
+        deferredAddition = $q.defer();
 
     function displayError(errorResponse) {
       var errorMessage = errorResponse.data.title;
@@ -71,7 +93,8 @@ function EventFormImageUploadController(
 
       switch (errorMessage) {
         case 'The uploaded file is not an image.':
-          error = 'Het geüpload bestand is geen afbeelding.';
+          error = 'Het geüpload bestand is geen geldige afbeelding. ' +
+            'Enkel bestanden met de extenties .jpeg, .gif of .png zijn toegelaten.';
           break;
       }
 
@@ -95,9 +118,13 @@ function EventFormImageUploadController(
     }
 
     MediaManager
-      .createImage(file, description, copyrightHolder)
+      .createImage($scope.selectedFile, description, copyrightHolder)
       .then(addImageToEvent, displayError);
 
     return deferredAddition.promise;
+  }
+
+  function allFieldsValid() {
+    return $scope.description && $scope.copyright && $scope.selectedFile;
   }
 }

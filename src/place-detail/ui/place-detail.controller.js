@@ -12,7 +12,7 @@ angular
     .controller('PlaceDetailController', PlaceDetail);
 
 /* @ngInject */
-function PlaceDetail($scope, placeId, udbApi) {
+function PlaceDetail($scope, placeId, udbApi, $location) {
   var activeTabId = 'data';
 
   $scope.placeId = placeId;
@@ -35,9 +35,9 @@ function PlaceDetail($scope, placeId, udbApi) {
   ];
 
   // Check if user has permissions.
-  /*udbApi.hasPermission(placeId).then(function(result) {
+  udbApi.hasPlacePermission(placeId).then(function(result) {
     $scope.hasEditPermissions = result.data.hasPermission;
-  });*/
+  });
 
   var placeLoaded = udbApi.getPlaceById($scope.placeId);
 
@@ -80,5 +80,9 @@ function PlaceDetail($scope, placeId, udbApi) {
 
   $scope.makeTabActive = function (tabId) {
     activeTabId = tabId;
+  };
+
+  $scope.openEditPage = function() {
+    $location.path('/place/' + placeId + '/edit');
   };
 }

@@ -19,7 +19,8 @@ function EventFormImageUploadController(
   eventCrud,
   appConfig,
   MediaManager,
-  $q
+  $q,
+  copyrightNegotiator
 ) {
 
   // Scope vars.
@@ -27,7 +28,7 @@ function EventFormImageUploadController(
   $scope.uploadCopyRightInfoUrl = appConfig.uploadCopyRightInfoUrl;
   $scope.saving = false;
   $scope.error = false;
-  $scope.showAgreements = true;
+  $scope.showAgreements = !copyrightNegotiator.confirmed();
   $scope.modalTitle = 'Gebruiksvoorwaarden';
   $scope.imagesToUpload = [];
   $scope.description = '';
@@ -45,6 +46,7 @@ function EventFormImageUploadController(
   function acceptAgreements() {
     $scope.modalTitle = 'Nieuwe afbeelding toevoegen';
     $scope.showAgreements = false;
+    copyrightNegotiator.confirm();
   }
 
   /**
